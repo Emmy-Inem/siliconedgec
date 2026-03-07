@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BookOpen, Users, Award, ChevronRight } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -47,37 +47,50 @@ function useTypewriter(words: string[], speed = 80, pause = 2000) {
   return text;
 }
 
-const trustLogos = [
-  "AWS", "Google Cloud", "Microsoft Azure", "Docker", "Kubernetes",
-  "Terraform", "Python", "TensorFlow", "React", "PostgreSQL",
+const instructors = [
+  { name: "Mary Roberts", role: "Professional Web Developer", rating: 4.5, students: 9692, courses: 3 },
+  { name: "DevOps Mentor", role: "Developer of Bootcamp", rating: 4.5, students: 5128, courses: 5 },
+  { name: "Ross Johnson", role: "Engineering Architect", rating: 4.5, students: 7423, courses: 8 },
+  { name: "James Davies", role: "Cloud Engineer", rating: 4.5, students: 3896, courses: 5 },
 ];
 
-const valueProps = [
-  {
-    icon: BookOpen,
-    title: "Instructor-Led",
-    description: "Learn live from industry veterans who bring real-world experience to every session.",
-  },
-  {
-    icon: Users,
-    title: "Job Ready",
-    description: "Our curriculum is designed around what employers actually need. Graduate with a portfolio, not just theory.",
-  },
-  {
-    icon: Award,
-    title: "Completion Focused",
-    description: "Structured cohorts, accountability partners, and mentorship to ensure you finish what you start.",
-  },
+const testimonials = [
+  { name: "Linda Shenoy", role: "Developer and Bootcamp Instructor", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
+  { name: "Jean Watson", role: "Engineering Architect", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
+  { name: "John Deo", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
+  { name: "Rubik Nanda", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
+  { name: "Barry Watson", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
 ];
+
+const pricingPlans = [
+  { name: "Starter", price: 0, period: "Free", features: ["Access to free courses", "Community forum access", "Basic certificates", "Email support"], highlight: false },
+  { name: "Professional", price: 49, period: "/month", features: ["All courses included", "Live instructor sessions", "Verified certificates", "Priority support", "Career coaching", "Project reviews"], highlight: true },
+  { name: "Enterprise", price: 199, period: "/month", features: ["Custom team training", "Dedicated account manager", "Analytics dashboard", "Bulk enrollment", "API access", "Custom certificates"], highlight: false },
+];
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.5 },
+};
 
 export default function Index() {
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filteredCourses =
     activeCategory === "All"
       ? courses
       : courses.filter((c) => c.category === activeCategory);
+
+  const scrollCourses = (dir: "left" | "right") => {
+    if (scrollRef.current) {
+      const amount = 340;
+      scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -85,7 +98,8 @@ export default function Index() {
 
       {/* Hero */}
       <section className="bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--teal-glow)/0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(262_83%_58%/0.06),transparent_50%)]" />
         <div className="container mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -94,28 +108,27 @@ export default function Index() {
             className="max-w-3xl"
           >
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
-              Live Online Training
+              Start Learning
             </p>
-            <h1 className="font-heading text-4xl md:text-6xl font-bold text-hero leading-tight mb-4">
-              Master{" "}
+            <h1 className="font-heading text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
               <span className="text-gradient">
                 {typedText}
                 <span className="border-r-2 border-primary animate-typewriter-blink ml-0.5" />
               </span>
-              <br />
-              <span className="text-hero-muted">with Industry Veterans</span>
             </h1>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4">
+              Unlock your tech career
+            </h2>
             <p className="text-hero-muted text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
-              Job-ready skills through practical, instructor-led programs.
-              Join a cohort. Build real projects. Land your next role.
+              Live Online Courses. Hands-On Projects. Real Certifications.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="hover-scale animate-pulse-glow">
                 <Link to="/courses">
                   Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero" asChild>
+              <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
                 <Link to="/for-businesses">For Businesses</Link>
               </Button>
             </div>
@@ -129,72 +142,85 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="border-y border-border bg-muted/50 py-6 overflow-hidden">
-        <div className="container mx-auto px-4 mb-3">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground text-center">Tools & Technologies You'll Master</p>
-        </div>
-        <div className="relative">
-          <div className="flex animate-marquee gap-12 whitespace-nowrap">
-            {[...trustLogos, ...trustLogos].map((logo, i) => (
-              <span key={i} className="text-muted-foreground/60 font-heading font-semibold text-lg">{logo}</span>
-            ))}
+      {/* WhatsApp Community Banner */}
+      <section className="bg-primary/5 border-y border-primary/10 py-6">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-heading font-semibold text-sm">Join Our Community</p>
+              <p className="text-muted-foreground text-xs">Get instant course updates on WhatsApp.</p>
+            </div>
           </div>
+          <a
+            href="https://wa.me/447741247592"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium text-sm hover:underline flex items-center gap-1 hover-scale"
+          >
+            Join WhatsApp Group <ArrowRight className="h-3.5 w-3.5" />
+          </a>
         </div>
       </section>
 
-      {/* Value Propositions */}
+      {/* Why Learn with Silicon Edge */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
+          <motion.div {...fadeInUp} className="text-center mb-4">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Learn with Silicon Edge</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Why <span className="text-gradient">Silicon Edge</span>?
+              Build better skills, <span className="text-gradient">faster</span>
             </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              We don't just teach — we build careers. Our approach combines live instruction, practical projects, and career support.
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We understand the challenges of breaking into or advancing in the tech industry. That's why Silicon Edge Consulting is built on a foundation of active empowerment, ensuring every student not only learns but thrives.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {valueProps.map((prop, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+            {[
+              { icon: BookOpen, title: "Instructor-Led Learning", desc: "Live classes mean active participation, instant answers, and continuous support." },
+              { icon: Award, title: "Built for Completion", desc: "Structured, tutor-led learning ensures course completion and no drop-outs." },
+              { icon: Briefcase, title: "Skills That Get You Hired", desc: "Industry-aligned curriculum builds practical skills and real-life projects." },
+              { icon: Zap, title: "Beyond Certification", desc: "Job training equips you for local and remote IT roles." },
+            ].map((prop, i) => (
               <motion.div
                 key={prop.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all"
+                className="bg-card rounded-xl border border-border p-7 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all group"
               >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                  <prop.icon className="h-7 w-7 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                  <prop.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="font-heading font-semibold text-lg mb-3">{prop.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{prop.description}</p>
+                <h3 className="font-heading font-semibold text-base mb-2">{prop.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{prop.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Course Grid with Category Filter */}
+      {/* Browse Categories - Horizontal Scroll Courses */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-            <div>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">Popular Programs</h2>
-              <p className="text-muted-foreground">Hands-on training designed for the modern tech professional.</p>
+          <motion.div {...fadeInUp}>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+              <div>
+                <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">The world's top courses</h2>
+                <p className="text-muted-foreground">We keep adding new online video courses with new additions published every month.</p>
+              </div>
+              <Link to="/courses" className="text-primary font-medium text-sm flex items-center hover:underline hover-scale">
+                View All <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
             </div>
-            <Link to="/courses" className="text-primary font-medium text-sm flex items-center hover:underline">
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
+          </motion.div>
 
+          {/* Category pills */}
           <div className="flex flex-wrap gap-2 mb-8">
             {categories.map((cat) => (
               <button
@@ -203,7 +229,7 @@ export default function Index() {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCategory === cat
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                    : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground hover-scale"
                 }`}
               >
                 {cat}
@@ -211,43 +237,73 @@ export default function Index() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course, i) => (
-              <CourseCard key={course.id} course={course} index={i} />
-            ))}
+          {/* Horizontal scroll */}
+          <div className="relative">
+            <button
+              onClick={() => scrollCourses("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3 hover-scale"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => scrollCourses("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3 hover-scale"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div
+              ref={scrollRef}
+              className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {filteredCourses.map((course, i) => (
+                <div key={course.id} className="min-w-[300px] max-w-[320px] snap-start flex-shrink-0">
+                  <CourseCard course={course} index={i} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials section */}
+      {/* World-class Instructors */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-14">
-            What Our <span className="text-gradient">Students Say</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: "Adaeze Chukwu", role: "Cloud Engineer at Flutterwave", quote: "Silicon Edge gave me the practical skills that got me hired. The instructors genuinely care about your success.", rating: 5 },
-              { name: "Tunde Bakare", role: "Data Analyst at Paystack", quote: "The cohort-based approach kept me accountable. I completed the program in 8 weeks and landed a role within a month.", rating: 5 },
-              { name: "Halima Yusuf", role: "DevOps Lead at Andela", quote: "The hands-on labs and real-world projects set this apart from every online course I've tried. Worth every naira.", rating: 5 },
-            ].map((t, i) => (
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class Instructors</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              Classes Taught by <span className="text-gradient">Industry Experts</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Silicon Edge teachers are icons, experts, and industry rock stars excited to share their experience, wisdom, and trusted tools with you.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {instructors.map((inst, i) => (
               <motion.div
-                key={t.name}
+                key={inst.name}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-6 space-y-4"
+                className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-lg hover:border-primary/20 transition-all group hover-scale"
               >
-                <div className="flex gap-0.5">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <span key={j} className="text-accent">★</span>
-                  ))}
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <span className="font-heading font-bold text-primary text-2xl">
+                    {inst.name.split(" ").map(n => n[0]).join("")}
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
-                <div>
-                  <p className="font-heading font-semibold text-sm">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
+                <h3 className="font-heading font-semibold">{inst.name}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{inst.role}</p>
+                <div className="flex items-center justify-center gap-1 mt-3">
+                  <Star className="h-4 w-4 fill-accent text-accent" />
+                  <span className="text-sm font-medium">{inst.rating}</span>
+                </div>
+                <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
+                  <span>{inst.students.toLocaleString()} Students</span>
+                  <span>{inst.courses} Courses</span>
                 </div>
               </motion.div>
             ))}
@@ -255,20 +311,253 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Meet Your Mentors */}
+      <section className="py-20 bg-hero">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div {...fadeInUp}>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet Your Mentors</p>
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6">
+                Guiding Your Tech Journey.
+              </h2>
+              <p className="text-hero-muted leading-relaxed mb-8">
+                At Silicon Edge Consulting, your success is our mission, and our tutors are the heart of that commitment. They are more than just instructors; they are dedicated mentors, industry veterans, and passionate educators committed to empowering your growth.
+              </p>
+              <div className="space-y-5">
+                {[
+                  { icon: Shield, title: "Industry Veterans", desc: "Seasoned professionals sharing current insights and best practices." },
+                  { icon: Heart, title: "Dedicated Support", desc: "Personalized guidance, answering questions, and constructive feedback." },
+                  { icon: CheckCircle2, title: "Practical Application Focus", desc: "Hands-on projects and real-world scenarios for confident skill application." },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.15 }}
+                    viewport={{ once: true }}
+                    className="flex gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-heading font-semibold text-hero text-sm">{item.title}</h4>
+                      <p className="text-hero-muted text-sm mt-0.5">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="bg-navy-light rounded-2xl border border-primary/10 p-8 glow-purple"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-heading font-bold text-xs">SE</span>
+                </div>
+                <span className="font-heading font-bold text-hero text-sm">Silicon Edge Consulting</span>
+              </div>
+              <p className="text-hero-muted text-xs uppercase tracking-widest mb-3">Courses</p>
+              <div className="space-y-3">
+                {["Cloud Engineering Crash Course", "DevOps Fundamentals", "AI & ML Bootcamp"].map((title, i) => (
+                  <div key={title} className="bg-navy/50 rounded-lg p-3 flex items-center gap-3 border border-primary/5">
+                    <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-hero text-sm font-medium">{title}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Certificates Section */}
+      <section className="py-20" id="certificates">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Certificates</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              Earn <span className="text-gradient">Verified Certificates</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Complete your courses and receive industry-recognized certificates to showcase your skills to employers worldwide.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { icon: GraduationCap, title: "Course Completion", desc: "Receive a verified certificate upon completing any Silicon Edge program.", color: "primary" },
+              { icon: Shield, title: "Blockchain Verified", desc: "All certificates are digitally verified and tamper-proof for employer trust.", color: "primary" },
+              { icon: Briefcase, title: "LinkedIn Ready", desc: "Share your certificates directly to LinkedIn and boost your professional profile.", color: "primary" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-card rounded-xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all hover-scale"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                  <item.icon className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg mb-2">{item.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            {...fadeInUp}
+            className="mt-12 bg-primary/5 rounded-2xl border border-primary/10 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8"
+          >
+            <div className="flex-1">
+              <h3 className="font-heading text-2xl font-bold mb-3">Sample Certificate</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                Every certificate includes your name, course title, completion date, a unique verification ID, and instructor signature.
+              </p>
+              <Button asChild className="hover-scale">
+                <Link to="/courses">Start a Course <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+            <div className="w-full md:w-80 bg-card rounded-xl border-2 border-primary/20 p-6 text-center shadow-lg">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Certificate of Completion</p>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <GraduationCap className="h-6 w-6 text-primary" />
+              </div>
+              <p className="font-heading font-bold text-lg mb-1">Silicon Edge Consulting</p>
+              <p className="text-sm text-muted-foreground mb-3">has awarded this certificate to</p>
+              <p className="font-heading font-bold text-primary text-lg mb-1">Your Name</p>
+              <p className="text-xs text-muted-foreground">for completing Cloud Engineering Crash Course</p>
+              <div className="border-t border-border mt-4 pt-3">
+                <p className="text-[10px] text-muted-foreground">ID: SE-2025-XXXX • Issued: March 2026</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-20 bg-muted/30" id="pricing">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Pricing</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              Simple, Transparent <span className="text-gradient">Pricing</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Choose the plan that fits your goals. Upgrade or cancel anytime.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {pricingPlans.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className={`rounded-2xl border p-8 transition-all hover-scale ${
+                  plan.highlight
+                    ? "bg-card border-primary shadow-xl shadow-primary/10 relative"
+                    : "bg-card border-border"
+                }`}
+              >
+                {plan.highlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <h3 className="font-heading font-bold text-xl mb-2">{plan.name}</h3>
+                <div className="mb-6">
+                  <span className="font-heading text-4xl font-bold">{plan.price === 0 ? "Free" : `$${plan.price}`}</span>
+                  {plan.price > 0 && <span className="text-muted-foreground text-sm">{plan.period}</span>}
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className="w-full"
+                  variant={plan.highlight ? "default" : "outline"}
+                  asChild
+                >
+                  <Link to="/sign-up">{plan.price === 0 ? "Get Started Free" : "Start Free Trial"}</Link>
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Testimonials</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              Don't just take <span className="text-gradient">our word for it</span>.
+            </h2>
+            <p className="text-muted-foreground">Join thousands learning on Silicon Edge</p>
+          </motion.div>
+
+          <div className="relative">
+            <div className="flex animate-marquee gap-6" style={{ width: "max-content" }}>
+              {[...testimonials, ...testimonials].map((t, i) => (
+                <div key={i} className="w-[340px] bg-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Star key={j} className="h-4 w-4 fill-accent text-accent" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="font-heading font-bold text-primary text-sm">
+                        {t.name.split(" ").map(n => n[0]).join("")}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-heading font-semibold text-sm">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-hero py-20">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-4">
-            Ready to Level Up Your Career?
-          </h2>
-          <p className="text-hero-muted max-w-lg mx-auto mb-8">
-            Join thousands of professionals who have transformed their careers with Silicon Edge.
-          </p>
-          <Button size="lg" asChild>
-            <Link to="/courses">
-              Browse Programs <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <motion.div {...fadeInUp}>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Join more than 1 million learners worldwide</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-4">
+              Start Building your tech career
+            </h2>
+            <p className="text-hero-muted max-w-lg mx-auto mb-8">
+              Effective learning starts with assessment. Learning a new skill is hard work, Silicon Edge makes it easier.
+            </p>
+            <Button size="lg" asChild className="hover-scale animate-pulse-glow">
+              <Link to="/courses">
+                Browse Courses <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
