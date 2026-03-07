@@ -6,82 +6,82 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 10%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 174 72% 40%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 25% 92%;
-    --secondary-foreground: 220 30% 15%;
+    --secondary: 260 20% 95%;
+    --secondary-foreground: 262 47% 20%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 35 95% 55%;
+    --accent: 262 90% 65%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 174 72% 40%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 262 83% 58%;
 
     --radius: 0.75rem;
 
-    --hero-bg: 222 47% 8%;
-    --hero-foreground: 210 40% 98%;
-    --hero-muted: 215 20% 65%;
+    --hero-bg: 250 40% 8%;
+    --hero-foreground: 0 0% 98%;
+    --hero-muted: 250 15% 65%;
 
-    --teal-glow: 174 80% 50%;
-    --navy: 222 47% 8%;
-    --navy-light: 222 30% 15%;
+    --purple-glow: 262 90% 68%;
+    --navy: 250 40% 8%;
+    --navy-light: 250 30% 14%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 262 83% 58%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent: 260 20% 95%;
+    --sidebar-accent-foreground: 262 47% 20%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 174 72% 40%;
+    --sidebar-ring: 262 83% 58%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 35% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 35% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 174 72% 45%;
-    --primary-foreground: 222 47% 8%;
-    --secondary: 222 30% 15%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 25% 14%;
-    --muted-foreground: 215 20% 60%;
-    --accent: 35 95% 55%;
+    --background: 250 40% 5%;
+    --foreground: 0 0% 98%;
+    --card: 250 35% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 250 35% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262 83% 62%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 25% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 250 20% 13%;
+    --muted-foreground: 250 12% 55%;
+    --accent: 262 90% 68%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 25% 18%;
-    --input: 222 25% 18%;
-    --ring: 174 72% 45%;
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 174 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 250 20% 16%;
+    --input: 250 20% 16%;
+    --ring: 262 83% 62%;
+    --sidebar-background: 250 40% 5%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 262 83% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 25% 18%;
-    --sidebar-ring: 174 72% 45%;
+    --sidebar-accent: 250 20% 13%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 250 20% 16%;
+    --sidebar-ring: 262 83% 62%;
   }
 }
 
@@ -99,7 +99,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(var(--teal-glow))];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
   }
   .bg-hero {
     background-color: hsl(var(--hero-bg));
@@ -116,7 +116,16 @@
   .bg-navy-light {
     background-color: hsl(var(--navy-light));
   }
-  .glow-teal {
-    box-shadow: 0 0 30px -5px hsl(var(--teal-glow) / 0.3);
+  .glow-purple {
+    box-shadow: 0 0 40px -8px hsl(var(--purple-glow) / 0.35);
+  }
+}
+
+@layer components {
+  .story-link * {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
   }
 }
