@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+
   return (
     <footer className="bg-navy text-hero-muted">
       <div className="container mx-auto px-4 py-16">
@@ -19,46 +22,53 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-hero mb-4">Programs</h4>
+            <h4 className="font-heading font-semibold text-hero mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/courses" className="hover:text-primary transition-colors">All Courses</Link></li>
-              <li><Link to="/for-businesses" className="hover:text-primary transition-colors">Corporate Training</Link></li>
-              <li><span className="cursor-default">Certifications</span></li>
-              <li><span className="cursor-default">Mentorship</span></li>
+              <li><Link to="/courses" className="hover:text-primary transition-colors">Courses</Link></li>
+              <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
+              <li><Link to="/for-businesses" className="hover:text-primary transition-colors">Support</Link></li>
+              <li><span className="cursor-default">FAQ</span></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-hero mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><span className="cursor-default">About Us</span></li>
-              <li><span className="cursor-default">Careers</span></li>
-              <li><span className="cursor-default">Blog</span></li>
-              <li><span className="cursor-default">Partners</span></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-heading font-semibold text-hero mb-4">Contact</h4>
+            <h4 className="font-heading font-semibold text-hero mb-4">Contact Us</h4>
             <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                3rd floor, 86-90, Paul Street, London, EC2A 4NE
+              </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                hello@siliconedge.com
+                info@siliconedgec.com
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                +234 800 123 4567
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                Lagos, Nigeria
+                +447741247592
               </li>
             </ul>
+          </div>
+
+          <div>
+            <h4 className="font-heading font-semibold text-hero mb-4">Newsletter</h4>
+            <p className="text-sm mb-3">Stay up to date with our latest news, receive exclusive deals, and more.</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Enter Your Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg bg-navy-light border border-navy-light text-sm text-hero placeholder:text-hero-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <button className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity hover-scale">
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="border-t border-navy-light mt-12 pt-8 text-center text-xs">
-          <p>© {new Date().getFullYear()} Silicon Edge Consulting. All rights reserved.</p>
+          <p>© All Rights Reserved {new Date().getFullYear()}. Silicon Edge Consulting.</p>
         </div>
       </div>
     </footer>
