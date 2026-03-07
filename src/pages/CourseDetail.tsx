@@ -1,0 +1,178 @@
+import { useParams, Link } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { WhatsAppFAB } from "@/components/WhatsAppFAB";
+import { courses } from "@/data/courses";
+import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Check, Clock, Star, Users, BarChart3, ArrowLeft, PlayCircle } from "lucide-react";
+import { motion } from "framer-motion";
+
+const difficultyColor: Record<string, string> = {
+  Beginner: "bg-green-100 text-green-700",
+  Intermediate: "bg-amber-100 text-amber-700",
+  Expert: "bg-red-100 text-red-700",
+};
+
+export default function CourseDetail() {
+  const { id } = useParams();
+  const course = courses.find((c) => c.id === id);
+
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 pt-32 text-center">
+          <h1 className="font-heading text-2xl font-bold mb-4">Course Not Found</h1>
+          <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      {/* Course Hero */}
+      <section className="bg-hero pt-28 pb-14">
+        <div className="container mx-auto px-4">
+          <Link to="/courses" className="inline-flex items-center text-hero-muted hover:text-primary text-sm mb-6 transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Courses
+          </Link>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${difficultyColor[course.difficulty]}`}>
+                {course.difficulty}
+              </span>
+              <span className="text-hero-muted text-sm">{course.category}</span>
+            </div>
+            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4 max-w-3xl">{course.title}</h1>
+            <p className="text-hero-muted text-lg max-w-2xl mb-6">{course.description}</p>
+            <div className="flex flex-wrap items-center gap-6 text-hero-muted text-sm">
+              <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-accent text-accent" /> {course.rating} rating</span>
+              <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> {course.studentsEnrolled.toLocaleString()} students</span>
+              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {course.durationHours} hours</span>
+              <span className="flex items-center gap-1.5"><PlayCircle className="h-4 w-4" /> {totalLessons} lessons</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-12">
+              {/* What you'll learn */}
+              <div>
+                <h2 className="font-heading text-2xl font-bold mb-6">What You'll Learn</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {course.learningOutcomes.map((outcome, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-primary/5">
+                      <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{outcome}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Syllabus */}
+              <div>
+                <h2 className="font-heading text-2xl font-bold mb-6">Course Syllabus</h2>
+                <Accordion type="multiple" className="space-y-3">
+                  {course.modules.map((module) => (
+                    <AccordionItem key={module.id} value={module.id} className="border border-border rounded-lg px-4">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3 text-left">
+                          <span className="font-heading font-semibold">{module.title}</span>
+                          <span className="text-xs text-muted-foreground">{module.lessons.length} lessons</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="space-y-2 pb-2">
+                          {module.lessons.map((lesson) => (
+                            <li key={lesson.id} className="flex items-center justify-between text-sm text-muted-foreground py-2 border-t border-border first:border-0">
+                              <span className="flex items-center gap-2">
+                                <PlayCircle className="h-4 w-4" />
+                                {lesson.title}
+                              </span>
+                              <span className="text-xs">{lesson.duration}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+
+              {/* Instructor */}
+              <div>
+                <h2 className="font-heading text-2xl font-bold mb-6">Your Instructor</h2>
+                <div className="bg-card rounded-xl border border-border p-6 flex gap-5">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="font-heading font-bold text-primary text-xl">
+                      {course.instructorName.split(" ").map(n => n[0]).join("")}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-semibold text-lg">{course.instructorName}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{course.instructorBio}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sticky Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 bg-card rounded-xl border border-border p-6 space-y-6 shadow-lg shadow-primary/5">
+                <div className="text-center">
+                  <p className="font-heading text-4xl font-bold text-primary">${course.price}</p>
+                  <p className="text-sm text-muted-foreground mt-1">One-time payment</p>
+                </div>
+
+                <Button size="lg" className="w-full">Enroll Now</Button>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground">Duration</span>
+                    <span className="font-medium">{course.durationHours} hours</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground">Level</span>
+                    <span className="font-medium">{course.difficulty}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground">Modules</span>
+                    <span className="font-medium">{course.modules.length}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground">Lessons</span>
+                    <span className="font-medium">{totalLessons}</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span className="text-muted-foreground">Certificate</span>
+                    <span className="font-medium text-primary">Yes</span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-muted-foreground text-center space-y-1">
+                  <p>✓ Lifetime access to course materials</p>
+                  <p>✓ Live instructor-led sessions</p>
+                  <p>✓ Community & career support</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+      <WhatsAppFAB />
+    </div>
+  );
+}
