@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses" },
+  { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
 ];
 
@@ -52,22 +53,24 @@ export function Header() {
               key={link.href}
               to={link.href}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
+                "text-sm font-medium transition-colors hover:text-primary story-link",
                 scrolled || !isHeroPage ? "text-foreground" : "text-hero-muted hover:text-hero"
               )}
             >
-              {link.label}
+              <span>{link.label}</span>
             </Link>
           ))}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" className={cn(
+          <Button variant="ghost" size="sm" asChild className={cn(
             scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
           )}>
-            Sign In
+            <Link to="/sign-in">Sign In</Link>
           </Button>
-          <Button size="sm">Get Started</Button>
+          <Button size="sm" asChild className="hover-scale">
+            <Link to="/sign-up">Get Started</Link>
+          </Button>
         </div>
 
         <button
@@ -83,7 +86,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden bg-card border-b border-border p-4 space-y-3">
+        <div className="md:hidden bg-card border-b border-border p-4 space-y-3 animate-fade-in">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -95,8 +98,12 @@ export function Header() {
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" className="flex-1">Sign In</Button>
-            <Button size="sm" className="flex-1">Get Started</Button>
+            <Button variant="ghost" size="sm" className="flex-1" asChild>
+              <Link to="/sign-in">Sign In</Link>
+            </Button>
+            <Button size="sm" className="flex-1" asChild>
+              <Link to="/sign-up">Get Started</Link>
+            </Button>
           </div>
         </div>
       )}
