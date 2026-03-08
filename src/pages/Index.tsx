@@ -14,6 +14,7 @@ import instructor2 from "@/assets/instructor-2.jpg";
 import instructor3 from "@/assets/instructor-3.jpg";
 import instructor4 from "@/assets/instructor-4.jpg";
 import courseBanner from "@/assets/course-banner.png";
+import heroTeam from "@/assets/hero-team.jpg";
 
 const typewriterWords = [
   "Artificial Intelligence",
