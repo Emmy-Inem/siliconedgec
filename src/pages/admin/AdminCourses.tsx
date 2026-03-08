@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,26 +6,41 @@ import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Upload, Image, Loader2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Course = Tables<"courses">;
 
 const columns: Column<Course>[] = [
+  {
+    key: "thumbnail_url", label: "Image", render: (c) => (
+      c.thumbnail_url ? (
+        <img src={c.thumbnail_url} alt="" className="w-12 h-8 object-cover rounded" />
+      ) : (
+        <div className="w-12 h-8 rounded bg-muted flex items-center justify-center">
+          <Image className="h-3 w-3 text-muted-foreground" />
+        </div>
+      )
+    )
+  },
   { key: "title", label: "Title" },
   { key: "category", label: "Category" },
-  { key: "difficulty", label: "Level", render: (c) => (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${
-      c.difficulty === "Beginner" ? "bg-green-100 text-green-700" :
-      c.difficulty === "Intermediate" ? "bg-amber-100 text-amber-700" :
-      "bg-red-100 text-red-700"
-    }`}>{c.difficulty}</span>
-  )},
+  {
+    key: "difficulty", label: "Level", render: (c) => (
+      <span className={`text-xs px-2 py-0.5 rounded-full ${c.difficulty === "Beginner" ? "bg-green-100 text-green-700" :
+        c.difficulty === "Intermediate" ? "bg-amber-100 text-amber-700" :
+          "bg-red-100 text-red-700"
+        }`}>{c.difficulty}</span>
+    )
+  },
   { key: "price", label: "Price", render: (c) => `$${c.price}` },
-  { key: "is_published", label: "Status", render: (c) => (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${c.is_published ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-      {c.is_published ? "Published" : "Draft"}
-    </span>
-  )},
+  {
+    key: "is_published", label: "Status", render: (c) => (
+      <span className={`text-xs px-2 py-0.5 rounded-full ${c.is_published ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+        {c.is_published ? "Published" : "Draft"}
+      </span>
+    )
+  },
 ];
 
 const emptyForm = {
@@ -38,6 +53,7 @@ const emptyForm = {
   is_published: false,
   learning_outcomes: [] as string[],
   instructor_id: null as string | null,
+  thumbnail_url: null as string | null,
 };
 
 export default function AdminCourses() {
@@ -45,6 +61,8 @@ export default function AdminCourses() {
   const [editing, setEditing] = useState<Course | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [outcomesText, setOutcomesText] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -65,6 +83,33 @@ export default function AdminCourses() {
       return data;
     },
   });
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("course-thumbnails")
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("course-thumbnails")
+      .getPublicUrl(fileName);
+
+    setForm((prev) => ({ ...prev, thumbnail_url: urlData.publicUrl }));
+    setUploading(false);
+    toast({ title: "Thumbnail uploaded!" });
+  };
 
   const save = useMutation({
     mutationFn: async () => {
@@ -115,6 +160,7 @@ export default function AdminCourses() {
       is_published: c.is_published ?? false,
       learning_outcomes: c.learning_outcomes ?? [],
       instructor_id: c.instructor_id ?? null,
+      thumbnail_url: c.thumbnail_url ?? null,
     });
     setOutcomesText((c.learning_outcomes ?? []).join("\n"));
     setDialogOpen(true);
@@ -151,6 +197,50 @@ export default function AdminCourses() {
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Course" : "Add Course"}</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+            {/* Thumbnail Upload */}
+            <div>
+              <label className="text-sm font-medium block mb-1">Thumbnail Image</label>
+              <div className="flex items-center gap-4">
+                {form.thumbnail_url ? (
+                  <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-border">
+                    <img src={form.thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, thumbnail_url: null }))}
+                      className="absolute top-0.5 right-0.5 bg-background/80 rounded-full w-5 h-5 flex items-center justify-center text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                    <Image className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleThumbnailUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    className="gap-1.5"
+                  >
+                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                    {uploading ? "Uploading..." : "Upload"}
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground mt-1">JPG, PNG, WebP. Max 5MB.</p>
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="text-sm font-medium block mb-1">Title</label>
               <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required className={inputClass} />
@@ -163,13 +253,13 @@ export default function AdminCourses() {
               <div>
                 <label className="text-sm font-medium block mb-1">Category</label>
                 <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputClass}>
-                  {["Cloud Engineering","DevOps","Cybersecurity","Programming & Software Development","Data Engineering","Artificial Intelligence & Machine Learning"].map(c => <option key={c}>{c}</option>)}
+                  {["Cloud Engineering", "DevOps", "Cybersecurity", "Programming & Software Development", "Data Engineering", "Artificial Intelligence & Machine Learning"].map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium block mb-1">Difficulty</label>
                 <select value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} className={inputClass}>
-                  {["Beginner","Intermediate","Expert"].map(d => <option key={d}>{d}</option>)}
+                  {["Beginner", "Intermediate", "Expert"].map(d => <option key={d}>{d}</option>)}
                 </select>
               </div>
             </div>

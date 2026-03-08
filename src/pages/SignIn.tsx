@@ -24,7 +24,10 @@ export default function SignIn() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+      const msg = error.message === "Invalid login credentials"
+        ? "Invalid email or password. If you signed up with Google, use the Google button below."
+        : error.message;
+      toast({ title: "Sign in failed", description: msg, variant: "destructive" });
     } else {
       navigate("/");
     }
