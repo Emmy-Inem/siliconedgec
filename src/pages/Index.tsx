@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { courses, categories } from "@/data/courses";
+import logoLight from "@/assets/logo-light.png";
 
 const typewriterWords = [
   "Artificial Intelligence",
@@ -117,7 +118,7 @@ export default function Index() {
               </span>
             </h1>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4">
-              Unlock your tech career
+              Unlock your tech career<span className="text-gold">.</span>
             </h2>
             <p className="text-hero-muted text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
               Live Online Courses. Hands-On Projects. Real Certifications.
@@ -171,7 +172,7 @@ export default function Index() {
           <motion.div {...fadeInUp} className="text-center mb-4">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Learn with Silicon Edge</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Build better skills, <span className="text-gradient">faster</span>
+              Build better skills, <span className="text-gradient">faster</span><span className="text-gold">.</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               We understand the challenges of breaking into or advancing in the tech industry. That's why Silicon Edge Consulting is built on a foundation of active empowerment, ensuring every student not only learns but thrives.
@@ -273,7 +274,7 @@ export default function Index() {
           <motion.div {...fadeInUp} className="text-center mb-14">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class Instructors</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Classes Taught by <span className="text-gradient">Industry Experts</span>
+               Classes Taught by <span className="text-gradient">Industry Experts</span><span className="text-gold">.</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               Silicon Edge teachers are icons, experts, and industry rock stars excited to share their experience, wisdom, and trusted tools with you.
@@ -318,7 +319,7 @@ export default function Index() {
             <motion.div {...fadeInUp}>
               <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet Your Mentors</p>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6">
-                Guiding Your Tech Journey.
+                Guiding Your Tech Journey<span className="text-gold">.</span>
               </h2>
               <p className="text-hero-muted leading-relaxed mb-8">
                 At Silicon Edge Consulting, your success is our mission, and our tutors are the heart of that commitment. They are more than just instructors; they are dedicated mentors, industry veterans, and passionate educators committed to empowering your growth.
@@ -357,10 +358,7 @@ export default function Index() {
               className="bg-navy-light rounded-2xl border border-primary/10 p-8 glow-purple"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-heading font-bold text-xs">SE</span>
-                </div>
-                <span className="font-heading font-bold text-hero text-sm">Silicon Edge Consulting</span>
+                <img src={logoLight} alt="Silicon Edge" className="h-6 w-auto" />
               </div>
               <p className="text-hero-muted text-xs uppercase tracking-widest mb-3">Courses</p>
               <div className="space-y-3">
