@@ -20,7 +20,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const isHeroPage = location.pathname === "/";
+  const darkHeroPages = ["/", "/for-businesses", "/certificates", "/pricing"];
+  const isHeroPage = darkHeroPages.includes(location.pathname);
   const { user, isAdmin, signOut } = useAuth();
   const { count } = useCart();
 
