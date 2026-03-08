@@ -63,11 +63,7 @@ const testimonials = [
   { name: "Barry Watson", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
 ];
 
-const pricingPlans = [
-  { name: "Starter", price: 0, period: "Free", features: ["Access to free courses", "Community forum access", "Basic certificates", "Email support"], highlight: false },
-  { name: "Professional", price: 49, period: "/month", features: ["All courses included", "Live instructor sessions", "Verified certificates", "Priority support", "Career coaching", "Project reviews"], highlight: true },
-  { name: "Enterprise", price: 199, period: "/month", features: ["Custom team training", "Dedicated account manager", "Analytics dashboard", "Bulk enrollment", "API access", "Custom certificates"], highlight: false },
-];
+const pricingPlans: never[] = []; // removed - now on /pricing page
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
