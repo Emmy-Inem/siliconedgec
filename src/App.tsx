@@ -26,6 +26,7 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSiteContent from "./pages/admin/AdminSiteContent";
 import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
 
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
               <Route index element={<AdminOverview />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="courses" element={<AdminCourses />} />
               <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
               <Route path="instructors" element={<AdminInstructors />} />
