@@ -2,67 +2,258 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, Target, ArrowRight } from "lucide-react";
+import {
+  Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
+  Cloud, Code, Shield, Palette, Globe, Brain, Quote,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.5 },
+};
+
+const features = [
+  { icon: Zap, title: "Live Classes", desc: "Interactive, expert-led sessions for real-time engagement and immediate answers." },
+  { icon: Layers, title: "Learn on-the-go", desc: "Flexible access to recordings and resources, fitting any schedule." },
+  { icon: Award, title: "Certificates", desc: "Validate skills with official, verifiable course completion documents." },
+  { icon: Briefcase, title: "Real Projects", desc: "Build a strong portfolio with practical, industry-relevant assignments." },
+];
+
+const techCategories = [
+  { icon: Cloud, title: "Cloud Platforms", desc: "AWS, Azure, Google Cloud, etc" },
+  { icon: Code, title: "Programming Languages", desc: "Javascript, PHP, Swift, etc" },
+  { icon: Shield, title: "Cybersecurity Tools", desc: "Pen Testing, Ethical hacking, etc" },
+  { icon: Palette, title: "Product Design & UX/UI", desc: "Figma, Wireframing, Prototyping..." },
+  { icon: Globe, title: "Website Design", desc: "Framer, Webflow, WordPress, etc" },
+  { icon: Brain, title: "Data & AI", desc: "PyTorch, Tensorflow, SQL, etc" },
+];
+
+const testimonials = [
+  {
+    quote: "Silicon Edge Consulting delivered exactly what we needed. Their customized IT training for our team was exceptional; the instructor-led format truly engaged our staff. We've seen a noticeable improvement in productivity and confidence. Highly recommend for any business looking to effectively upskill their workforce.",
+    name: "Ali",
+    role: "Project Lead, Tech Solutions Inc.",
+  },
+  {
+    quote: "We engaged Silicon Edge for a cybersecurity training program, and the experience was seamless. The courses were highly practical, with real-world applications, and their dedicated support ensured our team got the most out of every session. A great partner for corporate learning.",
+    name: "Bernhard",
+    role: "HR Director, Global Innovations Ltd.",
+  },
+];
 
 export default function ForBusinesses() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="bg-hero pt-28 pb-20">
-        <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-2xl">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">Enterprise Solutions</p>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4">
-              Upskill Your Entire Team
+      {/* ─── Hero ─── */}
+      <section className="bg-hero pt-28 pb-20 relative overflow-hidden">
+        {/* Subtle glow */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
+        <div className="container mx-auto px-4 relative">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-2xl">
+            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
+              Give Your Workforce a Winning Edge
             </h1>
-            <p className="text-hero-muted text-lg leading-relaxed">
-              Custom training programs designed for your organization's technology stack and growth objectives.
+            <p className="text-hero-muted text-lg mb-6">Equip your business to win!</p>
+            <ul className="space-y-3 mb-8">
+              {["Access several Tech Courses", "Course Progress Tracking", "Course Resources & Materials"].map((t) => (
+                <li key={t} className="flex items-center gap-3 text-hero-muted">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button size="lg" asChild className="hover-scale">
+                <a href="#contact-form">Sign up your business</a>
+              </Button>
+              <a href="#contact-form" className="text-primary font-medium text-sm hover:underline story-link">
+                Questions? Talk to an expert
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Feature Grid ─── */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {features.map((item, i) => (
+              <motion.div
+                key={item.title}
+                {...fadeUp}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="text-center md:text-left"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto md:mx-0">
+                  <item.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-base mb-2">{item.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Onboard, Upskill, Retain ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...fadeUp}>
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">Onboard, Upskill, Retain.</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-4 leading-tight">
+              Elevate your team's capabilities, driving innovation and growth.
+            </h2>
+            <p className="text-muted-foreground text-base mb-8 leading-relaxed">
+              Empower your workforce, bridging skill gaps and fostering a culture of continuous innovation.
+            </p>
+            <ul className="space-y-3">
+              {["Instructor-led training", "Customized programs", "Flexible delivery options", "Employee certifications"].map((t) => (
+                <li key={t} className="flex items-center gap-3 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Bullet Point Features ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...fadeUp}>
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">Bullet Point Features</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-4 leading-tight">
+              Onboarding junior tech talent or growing your senior engineers?
+            </h2>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              Enjoy a structured, practical, and scalable training designed to upgrade your workforce, without disrupting productivity.
             </p>
           </motion.div>
         </div>
       </section>
 
-      <section className="py-20">
+      {/* ─── Tech Solutions Grid (dark section) ─── */}
+      <section className="py-20 bg-hero">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {[
-              { icon: Building2, title: "Custom Curriculum", desc: "Programs tailored to your company's tech stack and business goals." },
-              { icon: Users, title: "Dedicated Cohorts", desc: "Private cohorts for your team with flexible scheduling." },
-              { icon: Target, title: "Measurable Outcomes", desc: "Track ROI with detailed progress reports and skill assessments." },
-            ].map((item, i) => (
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <p className="font-medium text-xs tracking-[0.25em] uppercase mb-4" style={{ color: "hsl(var(--gold))" }}>
+              Learn Any Tech Solution
+            </p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold text-hero mb-3">
+              Mastering Tomorrow's Tech, Today.
+            </h2>
+            <p className="text-hero-muted max-w-xl mx-auto">
+              Gain proficiency in the leading technologies and software driving industry innovation.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            {techCategories.map((cat, i) => (
               <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 20 }}
+                key={cat.title}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
+                transition={{ duration: 0.35, delay: i * 0.06 }}
                 viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-8 text-center"
+                className="rounded-xl border p-6 text-center hover:border-primary/40 transition-colors"
+                style={{ borderColor: "hsl(var(--navy-light))", background: "hsl(var(--navy-light))" }}
               >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                  <item.icon className="h-7 w-7 text-primary" />
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center mx-auto mb-3">
+                  <cat.icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="font-heading font-semibold text-lg mb-3">{item.title}</h3>
-                <p className="text-muted-foreground text-sm">{item.desc}</p>
+                <h3 className="font-heading font-semibold text-sm text-hero mb-1">{cat.title}</h3>
+                <p className="text-hero-muted text-xs">{cat.desc}</p>
               </motion.div>
             ))}
           </div>
 
-          {/* Lead Form */}
-          <div className="max-w-lg mx-auto">
-            <h2 className="font-heading text-2xl font-bold text-center mb-8">Get a Custom Training Proposal</h2>
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <input placeholder="Company Name" className="w-full px-4 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <input placeholder="Your Full Name" className="w-full px-4 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <input type="email" placeholder="Work Email" className="w-full px-4 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <input placeholder="Team Size" className="w-full px-4 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              <textarea placeholder="Tell us about your training needs..." rows={4} className="w-full px-4 py-3 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
-              <Button size="lg" className="w-full">
-                Request Proposal <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
+          <p className="text-hero-muted text-center mt-8 text-sm">... and many more technologies</p>
+        </div>
+      </section>
+
+      {/* ─── Testimonials ─── */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                {...fadeUp}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="bg-card rounded-xl border border-border p-8"
+              >
+                <Quote className="h-6 w-6 text-primary/30 mb-4" />
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6">"{t.quote}"</p>
+                <div>
+                  <p className="font-heading font-semibold text-sm">{t.name}</p>
+                  <p className="text-muted-foreground text-xs">{t.role}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── CTA + Contact Form ─── */}
+      <section id="contact-form" className="py-20 bg-hero">
+        <div className="container mx-auto px-4 text-center">
+          <motion.div {...fadeUp}>
+            <p className="font-medium text-xs tracking-[0.25em] uppercase mb-4" style={{ color: "hsl(var(--gold))" }}>
+              Get Your Team Trained Today
+            </p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold text-hero mb-3">
+              Ready to Empower Your Workforce?
+            </h2>
+            <p className="text-hero-muted mb-10 max-w-lg mx-auto">
+              Let's discuss how tailored IT training can transform your business.
+            </p>
+          </motion.div>
+
+          <motion.form
+            {...fadeUp}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="max-w-lg mx-auto space-y-4 text-left"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <input
+              placeholder="Company Name"
+              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
+              style={{ borderColor: "hsl(var(--navy-light))" }}
+            />
+            <input
+              placeholder="Your Full Name"
+              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
+              style={{ borderColor: "hsl(var(--navy-light))" }}
+            />
+            <input
+              type="email"
+              placeholder="Work Email"
+              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
+              style={{ borderColor: "hsl(var(--navy-light))" }}
+            />
+            <input
+              placeholder="Team Size"
+              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
+              style={{ borderColor: "hsl(var(--navy-light))" }}
+            />
+            <textarea
+              placeholder="Tell us about your training needs..."
+              rows={4}
+              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted resize-none"
+              style={{ borderColor: "hsl(var(--navy-light))" }}
+            />
+            <Button size="lg" className="w-full hover-scale">
+              Get Your Team Trained Today <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.form>
         </div>
       </section>
 
