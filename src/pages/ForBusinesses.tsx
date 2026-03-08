@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import businessTraining from "@/assets/business-training.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -76,6 +77,21 @@ export default function ForBusinesses() {
                 Questions? Talk to an expert
               </a>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Hero Image ─── */}
+      <section className="pb-10 -mt-6">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="rounded-2xl overflow-hidden border border-border shadow-xl"
+          >
+            <img src={businessTraining} alt="Corporate tech training workshop" className="w-full h-auto object-cover max-h-[400px]" />
           </motion.div>
         </div>
       </section>
