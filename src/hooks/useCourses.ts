@@ -37,6 +37,7 @@ export interface DbCourse {
   modules: DbModule[];
 }
 
+// Lightweight fetch for listing pages — no modules/lessons
 async function fetchCourses(): Promise<DbCourse[]> {
   const { data: courses, error } = await supabase
     .from("courses")
@@ -47,33 +48,14 @@ async function fetchCourses(): Promise<DbCourse[]> {
   if (error) throw error;
   if (!courses || courses.length === 0) return [];
 
-  const courseIds = courses.map((c) => c.id);
-
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*, lessons:lessons(id, title, duration, order_index)")
-    .in("course_id", courseIds)
-    .order("order_index");
-
-  const modulesByCourse: Record<string, DbModule[]> = {};
-  (modules ?? []).forEach((m: any) => {
-    const cid = m.course_id;
-    if (!modulesByCourse[cid]) modulesByCourse[cid] = [];
-    modulesByCourse[cid].push({
-      id: m.id,
-      title: m.title,
-      order_index: m.order_index,
-      lessons: (m.lessons ?? []).sort((a: DbLesson, b: DbLesson) => a.order_index - b.order_index),
-    });
-  });
-
   return courses.map((c: any) => ({
     ...c,
     instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
-    modules: (modulesByCourse[c.id] ?? []).sort((a, b) => a.order_index - b.order_index),
+    modules: [],
   }));
 }
 
+// Full fetch with modules/lessons for detail page
 async function fetchCourseById(id: string): Promise<DbCourse | null> {
   const { data: course, error } = await supabase
     .from("courses")
@@ -106,6 +88,7 @@ export function useCourses() {
   return useQuery({
     queryKey: ["courses"],
     queryFn: fetchCourses,
+    staleTime: 1000 * 60 * 5, // 5 min cache
   });
 }
 
@@ -114,5 +97,6 @@ export function useCourse(id: string | undefined) {
     queryKey: ["course", id],
     queryFn: () => fetchCourseById(id!),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5,
   });
 }
