@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
-  Megaphone, BarChart3, Activity, Zap
+  Megaphone, BarChart3, Activity, Zap, Download
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -37,7 +38,19 @@ function AnimatedNumber({ value, prefix = "", suffix = "" }: { value: number; pr
   return <>{prefix}{display.toLocaleString()}{suffix}</>;
 }
 
+function downloadCSV(filename: string, headers: string[], rows: string[][]) {
+  const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminAnalytics() {
+  const { toast } = useToast();
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics"],
     queryFn: async () => {
@@ -134,14 +147,31 @@ export default function AdminAnalytics() {
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex items-center gap-3"
+        className="flex items-center justify-between"
       >
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <Zap className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Zap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-heading text-2xl font-bold">Analytics</h1>
+            <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              if (!data) return;
+              downloadCSV("analytics-monthly.csv",
+                ["Month", "Enrollments", "Users", "Referrals"],
+                (data.monthlyData ?? []).map(m => [m.month, String(m.enrollments), String(m.users), String(m.referrals)])
+              );
+              toast({ title: "Exported", description: "Monthly trends CSV downloaded." });
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> Export CSV
+          </button>
         </div>
       </motion.div>
 

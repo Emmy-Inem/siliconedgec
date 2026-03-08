@@ -5,18 +5,28 @@ import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import type { Tables } from "@/integrations/supabase/types";
 
-type Enrollment = Tables<"enrollments">;
+interface EnrollmentRow {
+  id: string;
+  user_id: string;
+  course_id: string;
+  payment_status: string | null;
+  progress_percentage: number | null;
+  is_completed: boolean | null;
+  created_at: string;
+  updated_at: string;
+  user_name: string;
+  course_title: string;
+}
 
-const columns: Column<Enrollment>[] = [
-  { key: "user_id", label: "User", render: (e) => <span className="font-mono text-xs">{e.user_id.slice(0, 8)}...</span> },
-  { key: "course_id", label: "Course", render: (e) => <span className="font-mono text-xs">{e.course_id.slice(0, 8)}...</span> },
+const columns: Column<EnrollmentRow>[] = [
+  { key: "user_name", label: "User", render: (e) => e.user_name || <span className="font-mono text-xs text-muted-foreground">{e.user_id.slice(0, 8)}...</span> },
+  { key: "course_title", label: "Course", render: (e) => e.course_title || <span className="font-mono text-xs text-muted-foreground">{e.course_id.slice(0, 8)}...</span> },
   { key: "payment_status", label: "Payment", render: (e) => (
     <span className={`text-xs px-2 py-0.5 rounded-full ${
-      e.payment_status === "paid" ? "bg-green-100 text-green-700" :
-      e.payment_status === "refunded" ? "bg-red-100 text-red-700" :
-      "bg-amber-100 text-amber-700"
+      e.payment_status === "paid" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+      e.payment_status === "refunded" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
     }`}>{e.payment_status}</span>
   )},
   { key: "progress_percentage", label: "Progress", render: (e) => (
@@ -28,11 +38,12 @@ const columns: Column<Enrollment>[] = [
     </div>
   )},
   { key: "is_completed", label: "Completed", render: (e) => e.is_completed ? "✅" : "—" },
+  { key: "created_at", label: "Date", render: (e) => new Date(e.created_at).toLocaleDateString() },
 ];
 
 export default function AdminEnrollments() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Enrollment | null>(null);
+  const [editing, setEditing] = useState<EnrollmentRow | null>(null);
   const [form, setForm] = useState({ payment_status: "pending", progress_percentage: 0, is_completed: false });
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -40,9 +51,23 @@ export default function AdminEnrollments() {
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-enrollments"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      const [enrollmentsRes, profilesRes, coursesRes] = await Promise.all([
+        supabase.from("enrollments").select("*").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("user_id, full_name"),
+        supabase.from("courses").select("id, title"),
+      ]);
+      if (enrollmentsRes.error) throw enrollmentsRes.error;
+
+      const profileMap = new Map<string, string>();
+      (profilesRes.data ?? []).forEach((p) => profileMap.set(p.user_id, p.full_name ?? ""));
+      const courseMap = new Map<string, string>();
+      (coursesRes.data ?? []).forEach((c) => courseMap.set(c.id, c.title));
+
+      return (enrollmentsRes.data ?? []).map((e) => ({
+        ...e,
+        user_name: profileMap.get(e.user_id) ?? "",
+        course_title: courseMap.get(e.course_id) ?? "",
+      })) as EnrollmentRow[];
     },
   });
 
