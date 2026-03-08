@@ -15,5 +15,5 @@ export async function logAdminActivity(
     entity_type: entityType,
     entity_id: entityId ?? null,
     details: details ?? null,
-  });
+  } as any);
 }
