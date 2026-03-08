@@ -27,6 +27,8 @@ import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSiteContent from "./pages/admin/AdminSiteContent";
 import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminEmail from "./pages/admin/AdminEmail";
+import AdminActivityLog from "./pages/admin/AdminActivityLog";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,8 @@ const App = () => (
               <Route path="pricing" element={<AdminPricing />} />
               <Route path="content" element={<AdminSiteContent />} />
               <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
+              <Route path="email" element={<AdminEmail />} />
+              <Route path="activity-log" element={<AdminActivityLog />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

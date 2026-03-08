@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           category: string
@@ -75,6 +105,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_announcements: {
+        Row: {
+          body: string
+          id: string
+          recipient_count: number | null
+          sent_at: string
+          sent_by: string
+          status: string
+          subject: string
+          target_audience: string
+        }
+        Insert: {
+          body: string
+          id?: string
+          recipient_count?: number | null
+          sent_at?: string
+          sent_by: string
+          status?: string
+          subject: string
+          target_audience?: string
+        }
+        Update: {
+          body?: string
+          id?: string
+          recipient_count?: number | null
+          sent_at?: string
+          sent_by?: string
+          status?: string
+          subject?: string
+          target_audience?: string
+        }
+        Relationships: []
       }
       enrollments: {
         Row: {
@@ -279,6 +342,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pricing_plans: {
         Row: {

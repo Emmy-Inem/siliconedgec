@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { NotificationBell } from "@/components/admin/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export default function AdminLayout() {
             <h2 className="font-heading font-semibold text-sm">Admin Panel</h2>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs text-muted-foreground">{user?.email}</span>
