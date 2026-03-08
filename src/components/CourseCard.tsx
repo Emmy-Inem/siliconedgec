@@ -64,10 +64,14 @@ export function CourseCard({ course, index = 0 }: { course: DbCourse; index?: nu
 
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-[9px] font-bold text-primary">
-                    {(course.instructor?.name ?? "?").split(" ").map((n) => n[0]).join("")}
-                  </span>
+                <div className="w-6 h-6 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  {course.instructor?.avatar_url ? (
+                    <img src={course.instructor.avatar_url} alt={course.instructor.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[9px] font-bold text-primary">
+                      {(course.instructor?.name ?? "?").split(" ").map((n) => n[0]).join("")}
+                    </span>
+                  )}
                 </div>
                 <span className="text-xs sm:text-sm text-muted-foreground truncate">
                   {course.instructor?.name ?? "Instructor"}
