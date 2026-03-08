@@ -9,6 +9,11 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import logoLight from "@/assets/logo-light.png";
+import instructor1 from "@/assets/instructor-1.jpg";
+import instructor2 from "@/assets/instructor-2.jpg";
+import instructor3 from "@/assets/instructor-3.jpg";
+import instructor4 from "@/assets/instructor-4.jpg";
+import courseBanner from "@/assets/course-banner.png";
 
 const typewriterWords = [
   "Artificial Intelligence",
