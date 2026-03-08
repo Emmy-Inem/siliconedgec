@@ -7,7 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { courses, categories } from "@/data/courses";
+import { useCourses } from "@/hooks/useCourses";
 import logoLight from "@/assets/logo-light.png";
 
 const typewriterWords = [
@@ -76,6 +76,9 @@ export default function Index() {
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { data: courses = [] } = useCourses();
+
+  const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
 
   const filteredCourses =
     activeCategory === "All"

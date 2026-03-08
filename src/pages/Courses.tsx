@@ -1,18 +1,24 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { courses, categories } from "@/data/courses";
-import { Search } from "lucide-react";
+import { useCourses } from "@/hooks/useCourses";
+import { Search, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const difficulties = ["All Levels", "Beginner", "Intermediate", "Expert"];
 
 export default function Courses() {
+  const { data: courses = [], isLoading } = useCourses();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
   const [search, setSearch] = useState("");
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(courses.map((c) => c.category)));
+    return ["All", ...cats.sort()];
+  }, [courses]);
 
   const filtered = courses.filter((c) => {
     const matchCategory = activeCategory === "All" || c.category === activeCategory;
@@ -38,7 +44,6 @@ export default function Courses() {
 
       <section className="py-10">
         <div className="container mx-auto px-4">
-          {/* Search */}
           <div className="relative max-w-md mb-8">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
@@ -50,7 +55,6 @@ export default function Courses() {
             />
           </div>
 
-          {/* Filters */}
           <div className="space-y-4 mb-8">
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
@@ -84,19 +88,29 @@ export default function Courses() {
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground mb-6">{filtered.length} program{filtered.length !== 1 ? "s" : ""} found</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((course, i) => (
-              <CourseCard key={course.id} course={course} index={i} />
-            ))}
-          </div>
-
-          {filtered.length === 0 && (
-            <div className="text-center py-20 text-muted-foreground">
-              <p className="text-lg">No courses match your filters.</p>
-              <p className="text-sm mt-2">Try adjusting your search or category selection.</p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-6">
+                {filtered.length} program{filtered.length !== 1 ? "s" : ""} found
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filtered.map((course, i) => (
+                  <CourseCard key={course.id} course={course} index={i} />
+                ))}
+              </div>
+
+              {filtered.length === 0 && (
+                <div className="text-center py-20 text-muted-foreground">
+                  <p className="text-lg">No courses match your filters.</p>
+                  <p className="text-sm mt-2">Try adjusting your search or category selection.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
