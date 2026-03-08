@@ -14,51 +14,68 @@ export function CourseCard({ course, index = 0 }: { course: DbCourse; index?: nu
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.08 }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
       viewport={{ once: true }}
     >
-      <Link to={`/courses/${course.id}`} className="group block">
-        <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5 group-hover:-translate-y-1 group-hover:border-primary/30">
-          <div className="aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden">
+      <Link to={`/courses/${course.id}`} className="group block h-full">
+        <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5 group-hover:-translate-y-1 group-hover:border-primary/30 h-full flex flex-col">
+          {/* Thumbnail */}
+          <div className="aspect-[16/10] sm:aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden flex-shrink-0">
             {course.thumbnail_url ? (
-              <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" />
+              <img src={course.thumbnail_url} alt={course.title} className="w-full h-full object-cover" loading="lazy" />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-heading text-2xl font-bold text-primary/60">{course.category}</span>
+              <div className="absolute inset-0 flex items-center justify-center px-4">
+                <span className="font-heading text-lg sm:text-2xl font-bold text-primary/60 text-center leading-tight">
+                  {course.category}
+                </span>
               </div>
             )}
-            <div className="absolute top-3 right-3">
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${difficultyColor[course.difficulty] ?? ""}`}>
+            <div className="absolute top-2.5 right-2.5">
+              <span className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full ${difficultyColor[course.difficulty] ?? ""}`}>
                 {course.difficulty}
               </span>
             </div>
           </div>
 
-          <div className="p-5 space-y-3">
-            <h3 className="font-heading font-semibold text-card-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
+          {/* Content */}
+          <div className="p-4 sm:p-5 space-y-2.5 sm:space-y-3 flex flex-col flex-1">
+            <h3 className="font-heading font-semibold text-sm sm:text-base text-card-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
               {course.title}
             </h3>
 
-            <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 flex-1">{course.description}</p>
 
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 {course.duration_hours}h
               </span>
+              {(course.rating ?? 0) > 0 && (
+                <span className="flex items-center gap-1">
+                  <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-accent text-accent" />
+                  {course.rating}
+                </span>
+              )}
               <span className="flex items-center gap-1">
-                <Star className="h-3.5 w-3.5 fill-accent text-accent" />
-                {course.rating ?? 0}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+                <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 {(course.students_enrolled ?? 0).toLocaleString()}
               </span>
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-border">
-              <span className="text-sm text-muted-foreground">{course.instructor?.name ?? "Instructor"}</span>
-              <span className="font-heading font-bold text-primary">${course.price}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[9px] font-bold text-primary">
+                    {(course.instructor?.name ?? "?").split(" ").map((n) => n[0]).join("")}
+                  </span>
+                </div>
+                <span className="text-xs sm:text-sm text-muted-foreground truncate">
+                  {course.instructor?.name ?? "Instructor"}
+                </span>
+              </div>
+              <span className="font-heading font-bold text-primary text-sm sm:text-base flex-shrink-0">
+                {course.price === 0 ? "Free" : `$${course.price}`}
+              </span>
             </div>
           </div>
         </div>
