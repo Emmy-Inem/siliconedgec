@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Star, Clock, Users } from "lucide-react";
 import { motion } from "framer-motion";
@@ -10,7 +11,8 @@ const difficultyColor: Record<string, string> = {
   Expert: "bg-red-100 text-red-700",
 };
 
-export function CourseCard({ course, index = 0 }: { course: DbCourse; index?: number }) {
+export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
+  function CourseCard({ course, index = 0 }, ref) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
