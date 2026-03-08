@@ -22,7 +22,6 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
         transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
         viewport={{ once: true }}
       >
-    >
       <Link to={`/courses/${course.id}`} className="group block h-full">
         <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/8 group-hover:border-primary/30 h-full flex flex-col">
           {/* Thumbnail */}
