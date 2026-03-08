@@ -14,7 +14,7 @@ export interface Column<T> {
   render?: (item: T) => React.ReactNode;
 }
 
-interface AdminCrudTableProps<T extends { id: string }> {
+export interface AdminCrudTableProps<T extends { id: string }> {
   title: string;
   data: T[];
   columns: Column<T>[];
@@ -23,6 +23,7 @@ interface AdminCrudTableProps<T extends { id: string }> {
   onDelete: (id: string) => void;
   isLoading?: boolean;
   addLabel?: string;
+  extraActions?: (item: T) => React.ReactNode;
 }
 
 export function AdminCrudTable<T extends { id: string }>({
@@ -34,6 +35,7 @@ export function AdminCrudTable<T extends { id: string }>({
   onDelete,
   isLoading,
   addLabel = "Add New",
+  extraActions,
 }: AdminCrudTableProps<T>) {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -100,6 +102,7 @@ export function AdminCrudTable<T extends { id: string }>({
                       ))}
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {extraActions && extraActions(item)}
                           <button
                             onClick={() => onEdit(item)}
                             className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
