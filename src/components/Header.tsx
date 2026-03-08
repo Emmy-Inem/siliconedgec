@@ -20,7 +20,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const isHeroPage = location.pathname === "/";
+  const darkHeroPages = ["/", "/for-businesses", "/certificates", "/pricing"];
+  const isHeroPage = darkHeroPages.includes(location.pathname);
   const { user, isAdmin, signOut } = useAuth();
   const { count } = useCart();
 
@@ -120,7 +121,10 @@ export function Header() {
 
         {/* Mobile: cart + menu toggle */}
         <div className="md:hidden flex items-center gap-2">
-          <Link to="/cart" className="relative p-2 text-foreground">
+          <Link to="/cart" className={cn(
+            "relative p-2",
+            scrolled || !isHeroPage ? "text-foreground" : "text-hero"
+          )}>
             <ShoppingCart className="h-5 w-5" />
             {count > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">

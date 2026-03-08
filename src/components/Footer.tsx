@@ -23,7 +23,7 @@ export function Footer() {
   return (
     <footer className="bg-navy text-hero-muted">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <img src={logoLight} alt={settings?.site_name || "Silicon Edge Consulting"} className="h-8 w-auto" />
