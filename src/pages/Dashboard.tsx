@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatNaira } from "@/lib/format-currency";
 
 interface EnrolledCourse {
   id: string;
@@ -29,9 +31,22 @@ interface EnrolledCourse {
   };
 }
 
+interface BookmarkedCourse {
+  id: string;
+  course_id: string;
+  course: {
+    id: string;
+    title: string;
+    thumbnail_url: string | null;
+    category: string;
+    price: number;
+  };
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
 
@@ -39,17 +54,18 @@ export default function Dashboard() {
     if (!user) return;
 
     const fetchData = async () => {
-      const [enrollRes, profileRes] = await Promise.all([
+      const [enrollRes, profileRes, bookmarkRes] = await Promise.all([
         supabase
           .from("enrollments")
           .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
+        supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
         supabase
-          .from("profiles")
-          .select("full_name")
+          .from("bookmarks")
+          .select("id, course_id, course:courses(id, title, thumbnail_url, category, price)")
           .eq("user_id", user.id)
-          .maybeSingle(),
+          .order("created_at", { ascending: false }),
       ]);
 
       if (enrollRes.data) {
@@ -61,11 +77,24 @@ export default function Dashboard() {
         );
       }
       if (profileRes.data) setProfile(profileRes.data);
+      if (bookmarkRes.data) {
+        setBookmarks(
+          (bookmarkRes.data as any[]).map((b) => ({
+            ...b,
+            course: Array.isArray(b.course) ? b.course[0] : b.course,
+          }))
+        );
+      }
       setFetching(false);
     };
 
     fetchData();
   }, [user]);
+
+  const removeBookmark = async (bookmarkId: string) => {
+    await supabase.from("bookmarks").delete().eq("id", bookmarkId);
+    setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId));
+  };
 
   if (loading) return null;
   if (!user) return <Navigate to="/sign-in" replace />;
@@ -83,7 +112,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero */}
       <section className="bg-hero pt-28 pb-14">
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -97,11 +125,12 @@ export default function Dashboard() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
             {[
-              { icon: BookOpen, label: "Enrolled Courses", value: enrollments.length },
+              { icon: BookOpen, label: "Enrolled", value: enrollments.length },
               { icon: TrendingUp, label: "Avg Progress", value: `${avgProgress}%` },
-              { icon: Award, label: "Certificates Earned", value: completed.length },
+              { icon: Award, label: "Certificates", value: completed.length },
+              { icon: Bookmark, label: "Bookmarks", value: bookmarks.length },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -110,13 +139,13 @@ export default function Dashboard() {
                 transition={{ duration: 0.4, delay: i * 0.1 }}
               >
                 <Card>
-                  <CardContent className="flex items-center gap-4 p-6">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <stat.icon className="h-6 w-6 text-primary" />
+                  <CardContent className="flex items-center gap-3 p-4 md:p-6">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <stat.icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-heading font-bold">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="text-xl md:text-2xl font-heading font-bold">{stat.value}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -126,113 +155,126 @@ export default function Dashboard() {
 
           {fetching ? (
             <div className="text-center py-20 text-muted-foreground">Loading your courses…</div>
-          ) : enrollments.length === 0 ? (
-            <div className="text-center py-20">
-              <GraduationCap className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-              <h2 className="font-heading text-xl font-semibold mb-2">No courses yet</h2>
-              <p className="text-muted-foreground mb-6">Start your learning journey today.</p>
-              <Button asChild>
-                <Link to="/courses">Browse Courses</Link>
-              </Button>
-            </div>
           ) : (
-            <div className="space-y-10">
-              {/* In Progress */}
-              {inProgress.length > 0 && (
-                <div>
-                  <h2 className="font-heading text-xl font-bold mb-4">In Progress</h2>
+            <Tabs defaultValue="courses" className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
+                <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="courses">
+                {enrollments.length === 0 ? (
+                  <div className="text-center py-20">
+                    <GraduationCap className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <h2 className="font-heading text-xl font-semibold mb-2">No courses yet</h2>
+                    <p className="text-muted-foreground mb-6">Start your learning journey today.</p>
+                    <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+                  </div>
+                ) : (
+                  <div className="space-y-10">
+                    {inProgress.length > 0 && (
+                      <div>
+                        <h2 className="font-heading text-xl font-bold mb-4">In Progress</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {inProgress.map((enroll, i) => (
+                            <motion.div key={enroll.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
+                              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                                {enroll.course?.thumbnail_url && (
+                                  <img src={enroll.course.thumbnail_url} alt={enroll.course.title} className="w-full h-40 object-cover" />
+                                )}
+                                <CardHeader className="pb-2">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge variant="secondary" className="text-xs">{enroll.course?.category}</Badge>
+                                    <Badge variant="outline" className="text-xs">{enroll.course?.difficulty}</Badge>
+                                  </div>
+                                  <CardTitle className="text-base leading-snug">{enroll.course?.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  <div>
+                                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                      <span>Progress</span>
+                                      <span>{enroll.progress_percentage ?? 0}%</span>
+                                    </div>
+                                    <Progress value={enroll.progress_percentage ?? 0} className="h-2" />
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Clock className="h-3 w-3" />
+                                    {enroll.course?.duration_hours}h total
+                                  </div>
+                                  <Button size="sm" className="w-full" asChild>
+                                    <Link to={`/courses/${enroll.course_id}`}>Continue Learning</Link>
+                                  </Button>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {completed.length > 0 && (
+                      <div>
+                        <h2 className="font-heading text-xl font-bold mb-4">Completed — Certificates</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {completed.map((enroll, i) => (
+                            <motion.div key={enroll.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
+                              <Card className="overflow-hidden border-primary/20">
+                                <CardHeader className="pb-2">
+                                  <Badge className="bg-primary/10 text-primary text-xs border-0 w-fit">Completed</Badge>
+                                  <CardTitle className="text-base leading-snug">{enroll.course?.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                  <Progress value={100} className="h-2" />
+                                  <p className="text-xs text-muted-foreground">
+                                    Completed on {new Date(enroll.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <Button size="sm" variant="outline" className="flex-1 gap-1.5">
+                                      <Download className="h-3.5 w-3.5" /> Certificate
+                                    </Button>
+                                    <Button size="sm" variant="ghost" asChild className="flex-1">
+                                      <Link to={`/courses/${enroll.course_id}`}>Review</Link>
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="bookmarks">
+                {bookmarks.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Bookmark className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <h2 className="font-heading text-xl font-semibold mb-2">No bookmarks yet</h2>
+                    <p className="text-muted-foreground mb-6">Save courses you're interested in for later.</p>
+                    <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+                  </div>
+                ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {inProgress.map((enroll, i) => (
-                      <motion.div
-                        key={enroll.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.05 }}
-                      >
+                    {bookmarks.map((bm, i) => (
+                      <motion.div key={bm.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                          {enroll.course?.thumbnail_url && (
-                            <img
-                              src={enroll.course.thumbnail_url}
-                              alt={enroll.course.title}
-                              className="w-full h-40 object-cover"
-                            />
+                          {bm.course?.thumbnail_url && (
+                            <img src={bm.course.thumbnail_url} alt={bm.course.title} className="w-full h-40 object-cover" />
                           )}
                           <CardHeader className="pb-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="secondary" className="text-xs">
-                                {enroll.course?.category}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {enroll.course?.difficulty}
-                              </Badge>
-                            </div>
-                            <CardTitle className="text-base leading-snug">
-                              {enroll.course?.title}
-                            </CardTitle>
+                            <Badge variant="secondary" className="text-xs w-fit">{bm.course?.category}</Badge>
+                            <CardTitle className="text-base leading-snug">{bm.course?.title}</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                <span>Progress</span>
-                                <span>{enroll.progress_percentage ?? 0}%</span>
-                              </div>
-                              <Progress value={enroll.progress_percentage ?? 0} className="h-2" />
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              {enroll.course?.duration_hours}h total
-                            </div>
-                            <Button size="sm" className="w-full" asChild>
-                              <Link to={`/courses/${enroll.course_id}`}>Continue Learning</Link>
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Completed */}
-              {completed.length > 0 && (
-                <div>
-                  <h2 className="font-heading text-xl font-bold mb-4">Completed — Certificates</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {completed.map((enroll, i) => (
-                      <motion.div
-                        key={enroll.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.05 }}
-                      >
-                        <Card className="overflow-hidden border-primary/20">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className="bg-primary/10 text-primary text-xs border-0">
-                                Completed
-                              </Badge>
-                            </div>
-                            <CardTitle className="text-base leading-snug">
-                              {enroll.course?.title}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <Progress value={100} className="h-2" />
-                            <p className="text-xs text-muted-foreground">
-                              Completed on{" "}
-                              {new Date(enroll.created_at).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </p>
+                            <p className="font-heading font-bold text-primary">{formatNaira(bm.course?.price ?? 0)}</p>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="flex-1 gap-1.5">
-                                <Download className="h-3.5 w-3.5" />
-                                Certificate
+                              <Button size="sm" className="flex-1" asChild>
+                                <Link to={`/courses/${bm.course_id}`}>View Course</Link>
                               </Button>
-                              <Button size="sm" variant="ghost" asChild className="flex-1">
-                                <Link to={`/courses/${enroll.course_id}`}>Review</Link>
+                              <Button size="sm" variant="ghost" onClick={() => removeBookmark(bm.id)} className="text-muted-foreground hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </CardContent>
@@ -240,9 +282,9 @@ export default function Dashboard() {
                       </motion.div>
                     ))}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </section>
