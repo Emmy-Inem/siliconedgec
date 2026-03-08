@@ -50,6 +50,7 @@ const App = () => (
 
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
               <Route index element={<AdminOverview />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="courses" element={<AdminCourses />} />
               <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
               <Route path="instructors" element={<AdminInstructors />} />
