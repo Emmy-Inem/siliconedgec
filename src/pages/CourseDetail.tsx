@@ -275,6 +275,16 @@ export default function CourseDetail() {
         </div>
       </section>
 
+      {course && (
+        <PaymentModal
+          open={paymentOpen}
+          onOpenChange={setPaymentOpen}
+          courseTitle={course.title}
+          price={course.price}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+
       <Footer />
       <WhatsAppFAB />
     </div>
