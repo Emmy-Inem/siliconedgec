@@ -13,6 +13,7 @@ import Certificates from "./pages/Certificates";
 import Pricing from "./pages/Pricing";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/dashboard" element={<Dashboard />} />
 
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
               <Route index element={<AdminOverview />} />
