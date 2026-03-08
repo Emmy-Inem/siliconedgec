@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
 
@@ -21,6 +22,7 @@ export function Header() {
   const location = useLocation();
   const isHeroPage = location.pathname === "/";
   const { user, isAdmin, signOut } = useAuth();
+  const { count } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -64,6 +66,24 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          {/* Cart Icon */}
+          <Link
+            to="/cart"
+            className={cn(
+              "relative p-2 rounded-md transition-colors",
+              scrolled || !isHeroPage
+                ? "text-foreground hover:text-primary hover:bg-muted"
+                : "text-hero-muted hover:text-hero hover:bg-navy-light"
+            )}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {count > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4.5 w-4.5 min-w-[18px] flex items-center justify-center px-1">
+                {count}
+              </span>
+            )}
+          </Link>
+
           {user ? (
             <>
               {isAdmin && (
@@ -98,13 +118,24 @@ export function Header() {
           )}
         </div>
 
-        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? (
-            <X className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
-          ) : (
-            <Menu className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
-          )}
-        </button>
+        {/* Mobile: cart + menu toggle */}
+        <div className="md:hidden flex items-center gap-2">
+          <Link to="/cart" className="relative p-2 text-foreground">
+            <ShoppingCart className="h-5 w-5" />
+            {count > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {count}
+              </span>
+            )}
+          </Link>
+          <button onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? (
+              <X className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
+            ) : (
+              <Menu className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
+            )}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (

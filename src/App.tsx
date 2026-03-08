@@ -4,10 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
+import Cart from "./pages/Cart";
 import ForBusinesses from "./pages/ForBusinesses";
 import Certificates from "./pages/Certificates";
 import Pricing from "./pages/Pricing";
@@ -40,36 +42,39 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/courses/:id" element={<CourseDetail />} />
-            <Route path="/for-businesses" element={<ForBusinesses />} />
-            <Route path="/certificates" element={<Certificates />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+          <CartProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:id" element={<CourseDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/for-businesses" element={<ForBusinesses />} />
+              <Route path="/certificates" element={<Certificates />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-            <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
-              <Route index element={<AdminOverview />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="courses" element={<AdminCourses />} />
-              <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
-              <Route path="instructors" element={<AdminInstructors />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="enrollments" element={<AdminEnrollments />} />
-              <Route path="testimonials" element={<AdminTestimonials />} />
-              <Route path="pricing" element={<AdminPricing />} />
-              <Route path="content" element={<AdminSiteContent />} />
-              <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
-              <Route path="email" element={<AdminEmail />} />
-              <Route path="activity-log" element={<AdminActivityLog />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
+              <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+                <Route index element={<AdminOverview />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="courses" element={<AdminCourses />} />
+                <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
+                <Route path="instructors" element={<AdminInstructors />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="enrollments" element={<AdminEnrollments />} />
+                <Route path="testimonials" element={<AdminTestimonials />} />
+                <Route path="pricing" element={<AdminPricing />} />
+                <Route path="content" element={<AdminSiteContent />} />
+                <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
+                <Route path="email" element={<AdminEmail />} />
+                <Route path="activity-log" element={<AdminActivityLog />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -6,14 +6,19 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourse } from "@/hooks/useCourses";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useReviews } from "@/hooks/useReviews";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentModal } from "@/components/PaymentModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart,
-  Lock, Award, FileText, MonitorPlay, Infinity, Bookmark,
+  Lock, Award, FileText, MonitorPlay, Infinity, Bookmark, BookmarkCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +38,14 @@ export default function CourseDetail() {
   const qc = useQueryClient();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const { data: course, isLoading, error } = useCourse(id);
+  const { addToCart, isInCart } = useCart();
+  const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
+  const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
+
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(userReview?.rating ?? 5);
+  const [reviewComment, setReviewComment] = useState(userReview?.comment ?? "");
+  const [hoverRating, setHoverRating] = useState(0);
 
   const { data: enrollment } = useQuery({
     queryKey: ["enrollment", id, user?.id],
@@ -65,13 +78,22 @@ export default function CourseDetail() {
     onError: (e) => toast({ title: "Enrollment failed", description: e.message, variant: "destructive" }),
   });
 
-  const handleEnroll = () => {
+  const handleAddToCart = () => {
     if (!user) { navigate("/sign-in"); return; }
-    if (course && course.price > 0) { setPaymentOpen(true); return; }
-    enroll.mutate();
+    addToCart(id!);
+  };
+
+  const handleBookmark = () => {
+    if (!user) { navigate("/sign-in"); return; }
+    toggleBookmark(id!);
   };
 
   const handlePaymentSuccess = () => { enroll.mutate(); };
+
+  const handleSubmitReview = () => {
+    if (!user) { navigate("/sign-in"); return; }
+    submitReview.mutate({ rating: reviewRating, comment: reviewComment });
+  };
 
   if (isLoading) {
     return (
@@ -100,7 +122,9 @@ export default function CourseDetail() {
 
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
   const isEnrolled = !!enrollment;
-  const originalPrice = Math.round(course.price * 1.2); // ~20% markup as "was" price
+  const bookmarked = isBookmarked(id!);
+  const inCart = isInCart(id!);
+  const originalPrice = Math.round(course.price * 1.2);
   const hours = Math.floor(course.duration_hours);
   const minutes = Math.round((course.duration_hours - hours) * 60);
 
@@ -128,14 +152,14 @@ export default function CourseDetail() {
                 <Users className="h-4 w-4" />
                 {(course.students_enrolled ?? 0)} Enrolled
               </span>
-              {(course.rating ?? 0) > 0 && (
+              {(avgRating > 0 || (course.rating ?? 0) > 0) && (
                 <span className="flex items-center gap-1.5">
                   <span className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(course.rating ?? 0) ? "fill-accent text-accent" : "text-hero-muted/30"}`} />
+                      <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(avgRating || course.rating || 0) ? "fill-accent text-accent" : "text-hero-muted/30"}`} />
                     ))}
                   </span>
-                  {course.rating} ({4})
+                  {avgRating || course.rating} ({reviewCount || 4})
                 </span>
               )}
               <span className="flex items-center gap-1.5">
@@ -147,13 +171,13 @@ export default function CourseDetail() {
         </div>
       </section>
 
-      {/* Main Content — mobile: stacked (content then sidebar), desktop: side by side */}
+      {/* Main Content */}
       <section className="py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
 
-            {/* Left Column: Curriculum & Description */}
-            <div className="flex-1 min-w-0 order-2 lg:order-1">
+            {/* Left Column: Curriculum, Description & Reviews */}
+            <div className="flex-1 min-w-0 order-2 lg:order-1 space-y-8">
               <Tabs defaultValue="curriculum" className="w-full">
                 <TabsList className="w-full justify-start bg-muted/50 rounded-t-lg rounded-b-none border border-border border-b-0 px-1">
                   <TabsTrigger value="curriculum" className="data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-heading font-semibold">
@@ -163,7 +187,6 @@ export default function CourseDetail() {
                     Description
                   </TabsTrigger>
                 </TabsList>
-
                 <div className="border border-border rounded-b-lg p-4 md:p-6 bg-card">
                   <TabsContent value="curriculum" className="mt-0">
                     {course.modules.length > 0 ? (
@@ -193,7 +216,6 @@ export default function CourseDetail() {
                       <p className="text-muted-foreground text-sm py-6 text-center">Curriculum coming soon.</p>
                     )}
                   </TabsContent>
-
                   <TabsContent value="description" className="mt-0">
                     <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-4">
                       <p>{course.description}</p>
@@ -214,6 +236,89 @@ export default function CourseDetail() {
                   </TabsContent>
                 </div>
               </Tabs>
+
+              {/* Reviews Section */}
+              <div className="space-y-6">
+                <h2 className="font-heading text-xl font-bold">Reviews ({reviewCount})</h2>
+
+                {/* Write/Edit Review (only for enrolled users) */}
+                {isEnrolled && (
+                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
+                    <h3 className="font-heading font-semibold text-sm">
+                      {userReview ? "Update Your Review" : "Write a Review"}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          onClick={() => setReviewRating(star)}
+                          className="transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`h-6 w-6 ${
+                              star <= (hoverRating || reviewRating)
+                                ? "fill-accent text-accent"
+                                : "text-muted-foreground/30"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-2">{reviewRating}/5</span>
+                    </div>
+                    <Textarea
+                      placeholder="Share your experience with this course..."
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      rows={3}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSubmitReview}
+                      disabled={submitReview.isPending}
+                    >
+                      {submitReview.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                      {userReview ? "Update Review" : "Submit Review"}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Review List */}
+                {reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="bg-card rounded-xl border border-border p-4 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {review.profile?.avatar_url ? (
+                              <img src={review.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-bold text-primary">
+                                {(review.profile?.full_name ?? "U").charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{review.profile?.full_name ?? "Student"}</p>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-accent text-accent" : "text-muted-foreground/20"}`} />
+                              ))}
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-4">No reviews yet. Be the first to review this course!</p>
+                )}
+              </div>
             </div>
 
             {/* Right Column / Sidebar */}
@@ -223,11 +328,7 @@ export default function CourseDetail() {
                 {/* Thumbnail */}
                 {course.thumbnail_url && (
                   <div className="rounded-xl overflow-hidden border border-border shadow-md">
-                    <img
-                      src={course.thumbnail_url}
-                      alt={course.title}
-                      className="w-full aspect-video object-cover"
-                    />
+                    <img src={course.thumbnail_url} alt={course.title} className="w-full aspect-video object-cover" />
                   </div>
                 )}
 
@@ -246,8 +347,10 @@ export default function CourseDetail() {
 
                   {isEnrolled ? (
                     <div className="space-y-2">
-                      <Button size="lg" className="w-full" variant="secondary" asChild>
-                        <Link to="/dashboard">Go to Dashboard</Link>
+                      <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
+                        <Link to="/dashboard">
+                          <CheckCircle2 className="h-4 w-4" /> Go to Dashboard
+                        </Link>
                       </Button>
                       <p className="text-xs text-center text-muted-foreground">
                         ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
@@ -258,19 +361,21 @@ export default function CourseDetail() {
                       <Button
                         size="lg"
                         className="w-full gap-2"
-                        onClick={handleEnroll}
-                        disabled={enroll.isPending}
+                        onClick={handleAddToCart}
+                        disabled={inCart}
                       >
-                        {enroll.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <ShoppingCart className="h-4 w-4" />
-                        )}
-                        {enroll.isPending ? "Processing..." : "Add to cart"}
+                        <ShoppingCart className="h-4 w-4" />
+                        {inCart ? "Already in Cart" : "Add to cart"}
                       </Button>
-                      <Button size="lg" variant="outline" className="w-full gap-2">
-                        <Bookmark className="h-4 w-4" />
-                        Add to Bookmark
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full gap-2"
+                        onClick={handleBookmark}
+                        disabled={isToggling}
+                      >
+                        {bookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                        {bookmarked ? "Bookmarked" : "Add to Bookmark"}
                       </Button>
                     </div>
                   )}
@@ -282,23 +387,23 @@ export default function CourseDetail() {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-center gap-3">
                       <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>{hours > 0 ? `${hours} hours` : ""}{minutes > 0 ? ` ${minutes} minutes` : ""} video</span>
+                      {hours > 0 ? `${hours} hours` : ""}{minutes > 0 ? ` ${minutes} minutes` : ""} video
                     </li>
                     <li className="flex items-center gap-3">
                       <Award className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>Certificate</span>
+                      Certificate
                     </li>
                     <li className="flex items-center gap-3">
                       <FileText className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>{course.modules.length > 0 ? course.modules.length : 12} Article{course.modules.length !== 1 ? "s" : ""}</span>
+                      {course.modules.length > 0 ? course.modules.length : 12} Article{course.modules.length !== 1 ? "s" : ""}
                     </li>
                     <li className="flex items-center gap-3">
                       <MonitorPlay className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>Watch Offline</span>
+                      Watch Offline
                     </li>
                     <li className="flex items-center gap-3">
                       <Infinity className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>Lifetime access</span>
+                      Lifetime access
                     </li>
                   </ul>
                 </div>
@@ -320,13 +425,11 @@ export default function CourseDetail() {
                         <h4 className="font-heading font-semibold text-sm">{course.instructor.name}</h4>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Star className="h-3 w-3 fill-accent text-accent" />
-                          <span>{course.rating ?? 4.5}</span>
+                          <span>{avgRating || course.rating || 4.5}</span>
                           <span className="ml-0.5">Instructor Rating</span>
                         </div>
                       </div>
                     </div>
-
-                    {/* Instructor Stats */}
                     <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
                       <div className="text-center">
                         <p className="font-heading font-bold text-lg">{course.students_enrolled ?? 0}</p>
@@ -337,11 +440,10 @@ export default function CourseDetail() {
                         <p className="text-xs text-muted-foreground">Courses</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{Math.max(4, totalLessons)}</p>
+                        <p className="font-heading font-bold text-lg">{reviewCount || 4}</p>
                         <p className="text-xs text-muted-foreground">Reviews</p>
                       </div>
                     </div>
-
                     <Button variant="outline" size="sm" className="w-full text-xs">
                       View Details
                     </Button>
