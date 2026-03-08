@@ -391,9 +391,21 @@ export default function Index() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="rounded-2xl overflow-hidden border border-primary/10 glow-purple"
+              className="relative"
             >
-              <img src={courseBanner} alt="Cloud Engineering Crash Course" className="w-full h-full object-cover" />
+              <div className="absolute -inset-3 rounded-2xl bg-primary/8 blur-xl" />
+              <div className="rounded-2xl overflow-hidden border border-primary/10 glow-purple relative">
+                <img src={studentLearning} alt="Professional learning tech skills" className="w-full h-full object-cover" />
+                {/* Floating stats badge */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-3 -right-3 bg-card rounded-xl border border-border shadow-lg p-3 flex items-center gap-2"
+                >
+                  <Star className="h-4 w-4 fill-accent text-accent" />
+                  <span className="text-xs font-heading font-bold">4.8 Rating</span>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
