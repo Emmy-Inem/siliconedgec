@@ -26,6 +26,7 @@ export default function CourseDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const { data: course, isLoading, error } = useCourse(id);
 
   // Check if already enrolled
