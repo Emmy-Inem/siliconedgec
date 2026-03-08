@@ -29,6 +29,7 @@ import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminEmail from "./pages/admin/AdminEmail";
 import AdminActivityLog from "./pages/admin/AdminActivityLog";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
               <Route path="email" element={<AdminEmail />} />
               <Route path="activity-log" element={<AdminActivityLog />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

@@ -1,10 +1,24 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import { useState } from "react";
 import logoLight from "@/assets/logo-light.png";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+
+const SOCIAL_ICONS: Record<string, typeof Facebook> = {
+  social_facebook: Facebook,
+  social_twitter: Twitter,
+  social_instagram: Instagram,
+  social_linkedin: Linkedin,
+  social_youtube: Youtube,
+};
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const { data: settings } = useSiteSettings();
+
+  const socials = Object.entries(SOCIAL_ICONS)
+    .filter(([key]) => settings?.[key as keyof typeof settings])
+    .map(([key, Icon]) => ({ url: settings?.[key as keyof typeof settings] as string, Icon }));
 
   return (
     <footer className="bg-navy text-hero-muted">
@@ -12,11 +26,20 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
             <Link to="/" className="inline-block">
-              <img src={logoLight} alt="Silicon Edge Consulting" className="h-8 w-auto" />
+              <img src={logoLight} alt={settings?.site_name || "Silicon Edge Consulting"} className="h-8 w-auto" />
             </Link>
             <p className="text-sm leading-relaxed">
-              Empowering professionals with job-ready tech skills through live, instructor-led training programs.
+              {settings?.site_tagline || "Empowering professionals with job-ready tech skills through live, instructor-led training programs."}
             </p>
+            {socials.length > 0 && (
+              <div className="flex gap-3 pt-2">
+                {socials.map(({ url, Icon }) => (
+                  <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-navy-light flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
+                    <Icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
@@ -34,15 +57,15 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                3rd floor, 86-90, Paul Street, London, EC2A 4NE
+                {settings?.contact_address || "3rd floor, 86-90, Paul Street, London, EC2A 4NE"}
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                info@siliconedgec.com
+                {settings?.contact_email || "info@siliconedgec.com"}
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                +447741247592
+                {settings?.contact_phone || "+447741247592"}
               </li>
             </ul>
           </div>
@@ -66,7 +89,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-navy-light mt-12 pt-8 text-center text-xs">
-          <p>© All Rights Reserved {new Date().getFullYear()}. Silicon Edge Consulting. Website by Instasite Studio</p>
+          <p>{settings?.footer_copyright || `© All Rights Reserved ${new Date().getFullYear()}. Silicon Edge Consulting. Website by Instasite Studio`}</p>
         </div>
       </div>
     </footer>
