@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
-  Megaphone, BarChart3, Activity, Zap
+  Megaphone, BarChart3, Activity, Zap, Download
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
