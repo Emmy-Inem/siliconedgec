@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import logoLight from "@/assets/logo-light.png";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -10,12 +11,9 @@ export function Footer() {
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-heading font-bold text-sm">SE</span>
-              </div>
-              <span className="font-heading font-bold text-lg text-hero">Silicon Edge</span>
-            </div>
+            <Link to="/" className="inline-block">
+              <img src={logoLight} alt="Silicon Edge Consulting" className="h-8 w-auto" />
+            </Link>
             <p className="text-sm leading-relaxed">
               Empowering professionals with job-ready tech skills through live, instructor-led training programs.
             </p>
@@ -68,7 +66,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-navy-light mt-12 pt-8 text-center text-xs">
-          <p>© All Rights Reserved {new Date().getFullYear()}. Silicon Edge Consulting.</p>
+          <p>© All Rights Reserved {new Date().getFullYear()}. Silicon Edge Consulting. Website by Instasite Studio</p>
         </div>
       </div>
     </footer>
