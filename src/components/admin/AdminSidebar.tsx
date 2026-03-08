@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote, 
-  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight
+  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
   { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
   { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
+  { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
   { label: "Site Content", href: "/admin/content", icon: FileText },
 ];
 

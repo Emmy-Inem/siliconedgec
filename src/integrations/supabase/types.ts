@@ -117,6 +117,57 @@ export type Database = {
           },
         ]
       }
+      influencer_referrals: {
+        Row: {
+          commission_earned: number
+          course_id: string
+          created_at: string
+          discount_applied: number
+          final_price: number
+          id: string
+          original_price: number
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          commission_earned?: number
+          course_id: string
+          created_at?: string
+          discount_applied?: number
+          final_price?: number
+          id?: string
+          original_price?: number
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          commission_earned?: number
+          course_id?: string
+          created_at?: string
+          discount_applied?: number
+          final_price?: number
+          id?: string
+          original_price?: number
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_referrals_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_referrals_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructors: {
         Row: {
           avatar_url: string | null
@@ -292,6 +343,57 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          commission_percentage: number
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          influencer_email: string | null
+          influencer_name: string
+          is_active: boolean
+          max_uses: number | null
+          revenue_generated: number
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          code: string
+          commission_percentage?: number
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          influencer_email?: string | null
+          influencer_name: string
+          is_active?: boolean
+          max_uses?: number | null
+          revenue_generated?: number
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          code?: string
+          commission_percentage?: number
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          influencer_email?: string | null
+          influencer_name?: string
+          is_active?: boolean
+          max_uses?: number | null
+          revenue_generated?: number
+          updated_at?: string
+          usage_count?: number
         }
         Relationships: []
       }

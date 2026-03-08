@@ -25,6 +25,7 @@ import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSiteContent from "./pages/admin/AdminSiteContent";
+import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="pricing" element={<AdminPricing />} />
               <Route path="content" element={<AdminSiteContent />} />
+              <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
