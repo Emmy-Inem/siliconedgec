@@ -63,7 +63,7 @@ const testimonials = [
   { name: "Barry Watson", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
 ];
 
-const pricingPlans: never[] = []; // removed - now on /pricing page
+
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -372,129 +372,8 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Certificates Section */}
-      <section className="py-20" id="certificates">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-14">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Certificates</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Earn <span className="text-gradient">Verified Certificates</span>
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Complete your courses and receive industry-recognized certificates to showcase your skills to employers worldwide.
-            </p>
-          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: GraduationCap, title: "Course Completion", desc: "Receive a verified certificate upon completing any Silicon Edge program.", color: "primary" },
-              { icon: Shield, title: "Blockchain Verified", desc: "All certificates are digitally verified and tamper-proof for employer trust.", color: "primary" },
-              { icon: Briefcase, title: "LinkedIn Ready", desc: "Share your certificates directly to LinkedIn and boost your professional profile.", color: "primary" },
-            ].map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all hover-scale"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                  <item.icon className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="font-heading font-semibold text-lg mb-2">{item.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
 
-          <motion.div
-            {...fadeInUp}
-            className="mt-12 bg-primary/5 rounded-2xl border border-primary/10 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8"
-          >
-            <div className="flex-1">
-              <h3 className="font-heading text-2xl font-bold mb-3">Sample Certificate</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Every certificate includes your name, course title, completion date, a unique verification ID, and instructor signature.
-              </p>
-              <Button asChild className="hover-scale">
-                <Link to="/courses">Start a Course <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-            <div className="w-full md:w-80 bg-card rounded-xl border-2 border-primary/20 p-6 text-center shadow-lg">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Certificate of Completion</p>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                <GraduationCap className="h-6 w-6 text-primary" />
-              </div>
-              <p className="font-heading font-bold text-lg mb-1">Silicon Edge Consulting</p>
-              <p className="text-sm text-muted-foreground mb-3">has awarded this certificate to</p>
-              <p className="font-heading font-bold text-primary text-lg mb-1">Your Name</p>
-              <p className="text-xs text-muted-foreground">for completing Cloud Engineering Crash Course</p>
-              <div className="border-t border-border mt-4 pt-3">
-                <p className="text-[10px] text-muted-foreground">ID: SE-2025-XXXX • Issued: March 2026</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="py-20 bg-muted/30" id="pricing">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-14">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Pricing</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Simple, Transparent <span className="text-gradient">Pricing</span>
-            </h2>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Choose the plan that fits your goals. Upgrade or cancel anytime.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {pricingPlans.map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className={`rounded-2xl border p-8 transition-all hover-scale ${
-                  plan.highlight
-                    ? "bg-card border-primary shadow-xl shadow-primary/10 relative"
-                    : "bg-card border-border"
-                }`}
-              >
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="font-heading font-bold text-xl mb-2">{plan.name}</h3>
-                <div className="mb-6">
-                  <span className="font-heading text-4xl font-bold">{plan.price === 0 ? "Free" : `$${plan.price}`}</span>
-                  {plan.price > 0 && <span className="text-muted-foreground text-sm">{plan.period}</span>}
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="w-full"
-                  variant={plan.highlight ? "default" : "outline"}
-                  asChild
-                >
-                  <Link to="/sign-up">{plan.price === 0 ? "Get Started Free" : "Start Free Trial"}</Link>
-                </Button>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials */}
       <section className="py-20 overflow-hidden">
