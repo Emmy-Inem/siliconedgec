@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Star, Clock, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
+import { formatNaira } from "@/lib/format-currency";
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -78,7 +79,7 @@ export function CourseCard({ course, index = 0 }: { course: DbCourse; index?: nu
                 </span>
               </div>
               <span className="font-heading font-bold text-primary text-sm sm:text-base flex-shrink-0">
-                {course.price === 0 ? "Free" : `$${course.price}`}
+                {formatNaira(course.price)}
               </span>
             </div>
           </div>

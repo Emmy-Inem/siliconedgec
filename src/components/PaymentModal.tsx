@@ -8,6 +8,7 @@ import { CreditCard, Loader2, Shield, Lock, Tag, CheckCircle2, X } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { formatNaira } from "@/lib/format-currency";
 
 type PaymentMethod = "card" | "paystack" | "google-pay";
 
