@@ -7,7 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { courses, categories } from "@/data/courses";
+import { useCourses } from "@/hooks/useCourses";
 import logoLight from "@/assets/logo-light.png";
 
 const typewriterWords = [
