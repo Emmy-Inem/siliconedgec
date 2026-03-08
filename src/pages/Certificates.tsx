@@ -184,90 +184,100 @@ function BrandedCertificate({
   instructorName?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-2xl" style={{ background: "hsl(var(--navy))" }}>
-      {/* Gold border frame */}
+    <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white">
+      {/* Gold outer border */}
       <div className="absolute inset-0 rounded-2xl border-[3px]" style={{ borderColor: "hsl(var(--gold))" }} />
-      <div className="absolute inset-2 rounded-xl border" style={{ borderColor: "hsl(var(--gold) / 0.4)" }} />
 
-      {/* Hexagon pattern background (matching SEC brand) */}
+      {/* Purple branded corners */}
+      <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden">
+        <div className="absolute -top-10 -left-10 w-28 h-28 rotate-45" style={{ background: "hsl(var(--primary))" }} />
+      </div>
+      <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-28 h-28 rotate-45" style={{ background: "hsl(var(--primary))" }} />
+      </div>
+      <div className="absolute bottom-0 left-0 w-20 h-20 overflow-hidden">
+        <div className="absolute -bottom-10 -left-10 w-28 h-28 rotate-45" style={{ background: "hsl(var(--primary))" }} />
+      </div>
+      <div className="absolute bottom-0 right-0 w-20 h-20 overflow-hidden">
+        <div className="absolute -bottom-10 -right-10 w-28 h-28 rotate-45" style={{ background: "hsl(var(--primary))" }} />
+      </div>
+
+      {/* Subtle hexagon watermark */}
       <div
-        className="absolute inset-0 opacity-[0.06]"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%237c3aed' stroke-width='1'/%3E%3C/svg%3E")`,
           backgroundSize: "60px 52px",
         }}
       />
 
       <div className="relative p-8 md:p-14 text-center">
-        {/* Top gold accent bar */}
-        <div className="w-full h-1 rounded-full mb-8 mx-auto max-w-xs" style={{ background: `linear-gradient(90deg, transparent, hsl(var(--gold)), transparent)` }} />
+        {/* Top gold accent line */}
+        <div className="w-32 h-1 rounded-full mb-8 mx-auto" style={{ background: "hsl(var(--gold))" }} />
 
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logoLight} alt="Silicon Edge Consulting" className="h-12" />
+          <img src={logoDark} alt="Silicon Edge Consulting" className="h-12" />
         </div>
 
-        {/* Certificate title with gold background like brand style */}
-        <div className="inline-block px-6 py-2 mb-8 border-2 rounded" style={{ borderColor: "hsl(var(--gold))", background: "hsl(var(--gold) / 0.15)" }}>
-          <p className="text-xs uppercase tracking-[0.35em] font-heading font-bold" style={{ color: "hsl(var(--gold))" }}>
+        {/* Certificate title badge */}
+        <div className="inline-block px-6 py-2 mb-8 border-2 rounded" style={{ borderColor: "hsl(var(--gold))", background: "hsl(45 100% 51% / 0.1)" }}>
+          <p className="text-xs uppercase tracking-[0.35em] font-heading font-bold" style={{ color: "hsl(var(--navy))" }}>
             Certificate of Completion
           </p>
         </div>
 
-        <p className="text-sm mb-3" style={{ color: "hsl(var(--hero-muted))" }}>This is to certify that</p>
+        <p className="text-sm mb-3" style={{ color: "#6b7280" }}>This is to certify that</p>
 
-        {/* Student name - bold purple like SEC brand */}
+        {/* Student name */}
         <p className="font-heading font-bold text-3xl md:text-4xl mb-4" style={{ color: "hsl(var(--primary))" }}>
           {studentName}
         </p>
 
-        <p className="text-sm mb-3" style={{ color: "hsl(var(--hero-muted))" }}>has successfully completed</p>
+        <p className="text-sm mb-3" style={{ color: "#6b7280" }}>has successfully completed</p>
 
-        {/* Course name - white bold like SEC typography */}
-        <p className="font-heading font-bold text-xl md:text-2xl mb-8" style={{ color: "hsl(var(--hero-foreground))" }}>
+        {/* Course name */}
+        <p className="font-heading font-bold text-xl md:text-2xl mb-8" style={{ color: "hsl(var(--navy))" }}>
           {courseName}
         </p>
 
         {/* Verification badges */}
         <div className="flex items-center justify-center gap-6 mb-8">
-          <div className="flex items-center gap-2 text-sm" style={{ color: "hsl(var(--hero-muted))" }}>
-            <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--gold))" }} />
+          <div className="flex items-center gap-2 text-sm" style={{ color: "#6b7280" }}>
+            <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
             All modules completed
           </div>
-          <div className="flex items-center gap-2 text-sm" style={{ color: "hsl(var(--hero-muted))" }}>
-            <Shield className="h-4 w-4" style={{ color: "hsl(var(--gold))" }} />
+          <div className="flex items-center gap-2 text-sm" style={{ color: "#6b7280" }}>
+            <Shield className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
             Digitally verified
           </div>
         </div>
 
         {/* Gold divider */}
-        <div className="w-full h-px mb-6" style={{ background: `linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5), transparent)` }} />
+        <div className="w-full h-px mb-6" style={{ background: "hsl(var(--gold))" }} />
 
-        {/* Footer info bar - styled like SEC social bar */}
-        <div className="grid grid-cols-3 gap-4 text-left rounded-lg p-4 border" style={{ borderColor: "hsl(var(--gold) / 0.3)", background: "hsl(var(--gold) / 0.05)" }}>
+        {/* Footer info bar */}
+        <div className="grid grid-cols-3 gap-4 text-left rounded-lg p-4" style={{ background: "hsl(var(--navy))" }}>
           <div>
             <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Date Issued</p>
-            <p className="text-sm font-heading font-semibold" style={{ color: "hsl(var(--hero-foreground))" }}>{date}</p>
+            <p className="text-sm font-heading font-semibold text-white">{date}</p>
           </div>
           <div className="text-center">
             {instructorName && (
               <>
                 <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Instructor</p>
-                <p className="text-sm font-heading font-semibold" style={{ color: "hsl(var(--hero-foreground))" }}>{instructorName}</p>
+                <p className="text-sm font-heading font-semibold text-white">{instructorName}</p>
               </>
             )}
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Certificate ID</p>
-            <p className="text-sm font-heading font-semibold font-mono" style={{ color: "hsl(var(--hero-foreground))" }}>{certId}</p>
+            <p className="text-sm font-heading font-semibold font-mono text-white">{certId}</p>
           </div>
         </div>
 
-        {/* Bottom gold accent bar */}
-        <div className="w-full h-1 rounded-full mt-8 mx-auto max-w-xs" style={{ background: `linear-gradient(90deg, transparent, hsl(var(--gold)), transparent)` }} />
-
-        {/* Website watermark */}
-        <p className="mt-4 text-[10px] tracking-wider" style={{ color: "hsl(var(--hero-muted) / 0.6)" }}>www.siliconedgec.com</p>
+        {/* Website */}
+        <p className="mt-6 text-[10px] tracking-wider" style={{ color: "#9ca3af" }}>www.siliconedgec.com</p>
       </div>
     </div>
   );
