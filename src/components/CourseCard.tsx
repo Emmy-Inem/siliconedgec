@@ -13,13 +13,15 @@ const difficultyColor: Record<string, string> = {
 
 export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
   function CourseCard({ course, index = 0 }, ref) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -6, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
-      viewport={{ once: true }}
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -6, transition: { duration: 0.2 } }}
+        transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
+        viewport={{ once: true }}
+      >
     >
       <Link to={`/courses/${course.id}`} className="group block h-full">
         <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/8 group-hover:border-primary/30 h-full flex flex-col">
