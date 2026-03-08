@@ -106,44 +106,76 @@ export default function Index() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.1),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(262_83%_58%/0.06),transparent_50%)]" />
         <div className="container mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
-              Start Learning
-            </p>
-            <h1 className="font-heading text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
-              <span className="text-gradient">
-                {typedText}
-                <span className="border-r-2 border-primary animate-typewriter-blink ml-0.5" />
-              </span>
-            </h1>
-            <h2 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4">
-              Unlock your tech career<span className="text-gold">.</span>
-            </h2>
-            <p className="text-hero-muted text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
-              Live Online Courses. Hands-On Projects. Real Certifications.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild className="hover-scale animate-pulse-glow">
-                <Link to="/courses">
-                  Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                <Link to="/for-businesses">For Businesses</Link>
-              </Button>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
+                Start Learning
+              </p>
+              <h1 className="font-heading text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
+                <span className="text-gradient">
+                  {typedText}
+                  <span className="border-r-2 border-primary animate-typewriter-blink ml-0.5" />
+                </span>
+              </h1>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4">
+                Unlock your tech career<span className="text-gold">.</span>
+              </h2>
+              <p className="text-hero-muted text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
+                Live Online Courses. Hands-On Projects. Real Certifications.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button size="lg" asChild className="hover-scale animate-pulse-glow">
+                  <Link to="/courses">
+                    Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
+                  <Link to="/for-businesses">For Businesses</Link>
+                </Button>
+              </div>
 
-            <div className="flex items-center gap-6 mt-10 text-hero-muted text-sm">
-              <span className="flex items-center gap-2"><span className="text-primary font-bold text-lg">6,000+</span> Students</span>
-              <span className="flex items-center gap-2"><span className="text-primary font-bold text-lg">95%</span> Completion</span>
-              <span className="flex items-center gap-2"><span className="text-primary font-bold text-lg">4.8</span> Avg Rating</span>
-            </div>
-          </motion.div>
+              <div className="flex items-center gap-6 mt-10 text-hero-muted text-sm">
+                <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex items-center gap-2"><span className="text-primary font-bold text-lg">6,000+</span> Students</motion.span>
+                <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex items-center gap-2"><span className="text-primary font-bold text-lg">95%</span> Completion</motion.span>
+                <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="flex items-center gap-2"><span className="text-primary font-bold text-lg">4.8</span> Avg Rating</motion.span>
+              </div>
+            </motion.div>
+
+            {/* Hero image */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: 40 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-2xl bg-primary/10 blur-2xl" />
+                <img
+                  src={heroTeam}
+                  alt="Team collaborating on tech training"
+                  className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/10 w-full"
+                />
+                {/* Floating badge */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -bottom-4 -left-4 bg-card rounded-xl border border-border shadow-lg p-3 flex items-center gap-2"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-heading font-bold">6,000+</p>
+                    <p className="text-[10px] text-muted-foreground">Graduates</p>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
