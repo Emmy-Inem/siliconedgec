@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
 ];
@@ -18,6 +20,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const isHeroPage = location.pathname === "/";
+  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -61,20 +64,41 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild className={cn(
-            scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
-          )}>
-            <Link to="/sign-in">Sign In</Link>
-          </Button>
-          <Button size="sm" asChild className="hover-scale">
-            <Link to="/sign-up">Get Started</Link>
-          </Button>
+          {user ? (
+            <>
+              {isAdmin && (
+                <Button variant="ghost" size="sm" asChild className={cn(
+                  scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
+                )}>
+                  <Link to="/admin"><LayoutDashboard className="h-4 w-4 mr-1" /> Admin</Link>
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" asChild className={cn(
+                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
+              )}>
+                <Link to="/dashboard"><User className="h-4 w-4 mr-1" /> Dashboard</Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={signOut} className={cn(
+                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
+              )}>
+                <LogOut className="h-4 w-4 mr-1" /> Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild className={cn(
+                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
+              )}>
+                <Link to="/sign-in">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild className="hover-scale">
+                <Link to="/sign-up">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
-        <button
-          className="md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
+        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? (
             <X className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
           ) : (
@@ -96,12 +120,25 @@ export function Header() {
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" size="sm" className="flex-1" asChild>
-              <Link to="/sign-in">Sign In</Link>
-            </Button>
-            <Button size="sm" className="flex-1" asChild>
-              <Link to="/sign-up">Get Started</Link>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" className="flex-1" asChild>
+                  <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                </Button>
+                <Button size="sm" className="flex-1" onClick={() => { signOut(); setMenuOpen(false); }}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" className="flex-1" asChild>
+                  <Link to="/sign-in" onClick={() => setMenuOpen(false)}>Sign In</Link>
+                </Button>
+                <Button size="sm" className="flex-1" asChild>
+                  <Link to="/sign-up" onClick={() => setMenuOpen(false)}>Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
