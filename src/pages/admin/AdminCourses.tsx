@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -87,6 +88,11 @@ export default function AdminCourses() {
         onAdd={() => { setEditing(null); setForm(emptyForm); setDialogOpen(true); }}
         onEdit={(c) => { setEditing(c); setForm({ title: c.title, description: c.description ?? "", category: c.category, price: Number(c.price), difficulty: c.difficulty, duration_hours: Number(c.duration_hours), is_published: c.is_published ?? false, learning_outcomes: c.learning_outcomes ?? [] }); setDialogOpen(true); }}
         onDelete={(id) => del.mutate(id)}
+        extraActions={(c) => (
+          <Link to={`/admin/courses/${c.id}/modules`}>
+            <Button size="sm" variant="outline" className="text-xs">Modules</Button>
+          </Link>
+        )}
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

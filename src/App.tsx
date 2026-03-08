@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminCourses from "./pages/admin/AdminCourses";
+import AdminCourseModules from "./pages/admin/AdminCourseModules";
 import AdminInstructors from "./pages/admin/AdminInstructors";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
               <Route index element={<AdminOverview />} />
               <Route path="courses" element={<AdminCourses />} />
+              <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
               <Route path="instructors" element={<AdminInstructors />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="enrollments" element={<AdminEnrollments />} />
