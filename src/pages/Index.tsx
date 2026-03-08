@@ -295,10 +295,8 @@ export default function Index() {
                 viewport={{ once: true }}
                 className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-lg hover:border-primary/20 transition-all group hover-scale"
               >
-                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <span className="font-heading font-bold text-primary text-2xl">
-                    {inst.name.split(" ").map(n => n[0]).join("")}
-                  </span>
+                <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4">
+                  <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
                 </div>
                 <h3 className="font-heading font-semibold">{inst.name}</h3>
                 <p className="text-muted-foreground text-sm mt-1">{inst.role}</p>
@@ -359,22 +357,9 @@ export default function Index() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="bg-navy-light rounded-2xl border border-primary/10 p-8 glow-purple"
+              className="rounded-2xl overflow-hidden border border-primary/10 glow-purple"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <img src={logoLight} alt="Silicon Edge" className="h-6 w-auto" />
-              </div>
-              <p className="text-hero-muted text-xs uppercase tracking-widest mb-3">Courses</p>
-              <div className="space-y-3">
-                {["Cloud Engineering Crash Course", "DevOps Fundamentals", "AI & ML Bootcamp"].map((title, i) => (
-                  <div key={title} className="bg-navy/50 rounded-lg p-3 flex items-center gap-3 border border-primary/5">
-                    <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <GraduationCap className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-hero text-sm font-medium">{title}</span>
-                  </div>
-                ))}
-              </div>
+              <img src={courseBanner} alt="Cloud Engineering Crash Course" className="w-full h-full object-cover" />
             </motion.div>
           </div>
         </div>
