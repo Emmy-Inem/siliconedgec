@@ -26,12 +26,12 @@ export interface Module {
 
 export const categories = [
   "All",
-  "Artificial Intelligence",
-  "Cloud Computing",
+  "Cloud Engineering",
   "DevOps",
-  "Data Science",
   "Cybersecurity",
-  "Web Development",
+  "Programming & Software Development",
+  "Data Engineering",
+  "Artificial Intelligence & Machine Learning",
 ];
 
 export const courses: Course[] = [

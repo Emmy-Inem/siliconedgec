@@ -36,6 +36,9 @@
 
     --radius: 0.75rem;
 
+    --gold: 45 100% 51%;
+    --gold-foreground: 0 0% 10%;
+
     --hero-bg: 250 40% 8%;
     --hero-foreground: 0 0% 98%;
     --hero-muted: 250 15% 65%;
@@ -74,6 +77,8 @@
     --border: 250 20% 16%;
     --input: 250 20% 16%;
     --ring: 262 83% 62%;
+    --gold: 45 100% 51%;
+    --gold-foreground: 0 0% 10%;
     --sidebar-background: 250 40% 5%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 262 83% 62%;

@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoDark from "@/assets/logo-dark.png";
+import logoLight from "@/assets/logo-light.png";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -23,6 +25,8 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const showLight = !scrolled && isHeroPage;
+
   return (
     <header
       className={cn(
@@ -34,17 +38,11 @@ export function Header() {
     >
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-heading font-bold text-sm">SE</span>
-          </div>
-          <span
-            className={cn(
-              "font-heading font-bold text-lg transition-colors",
-              scrolled || !isHeroPage ? "text-foreground" : "text-hero"
-            )}
-          >
-            Silicon Edge
-          </span>
+          <img
+            src={showLight ? logoLight : logoDark}
+            alt="Silicon Edge Consulting"
+            className="h-8 w-auto"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
