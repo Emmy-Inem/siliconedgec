@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
-  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3
+  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -37,6 +37,13 @@ const sections = [
     label: "Marketing",
     items: [
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
+      { label: "Email & Announcements", href: "/admin/email", icon: Mail },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
     ],
   },
 ];
