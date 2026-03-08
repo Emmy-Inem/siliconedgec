@@ -26,6 +26,7 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSiteContent from "./pages/admin/AdminSiteContent";
 import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
