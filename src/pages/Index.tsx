@@ -54,10 +54,10 @@ function useTypewriter(words: string[], speed = 80, pause = 2000) {
 }
 
 const instructors = [
-  { name: "Mary Roberts", role: "Professional Web Developer", rating: 4.5, students: 9692, courses: 3 },
-  { name: "DevOps Mentor", role: "Developer of Bootcamp", rating: 4.5, students: 5128, courses: 5 },
-  { name: "Ross Johnson", role: "Engineering Architect", rating: 4.5, students: 7423, courses: 8 },
-  { name: "James Davies", role: "Cloud Engineer", rating: 4.5, students: 3896, courses: 5 },
+  { name: "Mary Roberts", role: "Professional Web Developer", rating: 4.5, students: 9692, courses: 3, image: instructor1 },
+  { name: "DevOps Mentor", role: "Developer of Bootcamp", rating: 4.5, students: 5128, courses: 5, image: instructor2 },
+  { name: "Ross Johnson", role: "Engineering Architect", rating: 4.5, students: 7423, courses: 8, image: instructor3 },
+  { name: "James Davies", role: "Cloud Engineer", rating: 4.5, students: 3896, courses: 5, image: instructor4 },
 ];
 
 const testimonials = [
