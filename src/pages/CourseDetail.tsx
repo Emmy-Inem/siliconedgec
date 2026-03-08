@@ -66,6 +66,14 @@ export default function CourseDetail() {
       navigate("/sign-in");
       return;
     }
+    if (course && course.price > 0) {
+      setPaymentOpen(true);
+      return;
+    }
+    enroll.mutate();
+  };
+
+  const handlePaymentSuccess = () => {
     enroll.mutate();
   };
 
