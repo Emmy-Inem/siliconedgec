@@ -7,6 +7,7 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourse } from "@/hooks/useCourses";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PaymentModal } from "@/components/PaymentModal";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart } from "lucide-react";
@@ -25,6 +26,7 @@ export default function CourseDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const { data: course, isLoading, error } = useCourse(id);
 
   // Check if already enrolled
@@ -64,6 +66,14 @@ export default function CourseDetail() {
       navigate("/sign-in");
       return;
     }
+    if (course && course.price > 0) {
+      setPaymentOpen(true);
+      return;
+    }
+    enroll.mutate();
+  };
+
+  const handlePaymentSuccess = () => {
     enroll.mutate();
   };
 
@@ -264,6 +274,16 @@ export default function CourseDetail() {
           </div>
         </div>
       </section>
+
+      {course && (
+        <PaymentModal
+          open={paymentOpen}
+          onOpenChange={setPaymentOpen}
+          courseTitle={course.title}
+          price={course.price}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
 
       <Footer />
       <WhatsAppFAB />
