@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
-  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity
+  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -44,6 +44,7 @@ const sections = [
     label: "System",
     items: [
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
+      { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
 ];
