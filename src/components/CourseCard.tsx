@@ -90,5 +90,6 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
         </div>
       </Link>
     </motion.div>
+    );
   }
 );
