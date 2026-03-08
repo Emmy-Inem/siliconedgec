@@ -15,11 +15,12 @@ export function CourseCard({ course, index = 0 }: { course: DbCourse; index?: nu
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -6, transition: { duration: 0.2 } }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
       viewport={{ once: true }}
     >
       <Link to={`/courses/${course.id}`} className="group block h-full">
-        <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5 group-hover:-translate-y-1 group-hover:border-primary/30 h-full flex flex-col">
+        <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/8 group-hover:border-primary/30 h-full flex flex-col">
           {/* Thumbnail */}
           <div className="aspect-[16/10] sm:aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden flex-shrink-0">
             {course.thumbnail_url ? (
