@@ -147,14 +147,31 @@ export default function AdminAnalytics() {
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex items-center gap-3"
+        className="flex items-center justify-between"
       >
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <Zap className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Zap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-heading text-2xl font-bold">Analytics</h1>
+            <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              if (!data) return;
+              downloadCSV("analytics-monthly.csv",
+                ["Month", "Enrollments", "Users", "Referrals"],
+                (data.monthlyData ?? []).map(m => [m.month, String(m.enrollments), String(m.users), String(m.referrals)])
+              );
+              toast({ title: "Exported", description: "Monthly trends CSV downloaded." });
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> Export CSV
+          </button>
         </div>
       </motion.div>
 
