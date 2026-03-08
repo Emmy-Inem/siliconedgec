@@ -1,12 +1,17 @@
-import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourse } from "@/hooks/useCourses";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, Clock, Star, Users, ArrowLeft, PlayCircle, Loader2 } from "lucide-react";
+import { Check, Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -16,7 +21,51 @@ const difficultyColor: Record<string, string> = {
 
 export default function CourseDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const { data: course, isLoading, error } = useCourse(id);
+
+  // Check if already enrolled
+  const { data: enrollment } = useQuery({
+    queryKey: ["enrollment", id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("enrollments")
+        .select("id, progress_percentage, is_completed")
+        .eq("user_id", user!.id)
+        .eq("course_id", id!)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!id,
+  });
+
+  const enroll = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("enrollments").insert({
+        user_id: user!.id,
+        course_id: id!,
+        payment_status: "confirmed",
+        progress_percentage: 0,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["enrollment", id, user?.id] });
+      toast({ title: "Enrolled successfully!", description: "You can now access this course from your dashboard." });
+    },
+    onError: (e) => toast({ title: "Enrollment failed", description: e.message, variant: "destructive" }),
+  });
+
+  const handleEnroll = () => {
+    if (!user) {
+      navigate("/sign-in");
+      return;
+    }
+    enroll.mutate();
+  };
 
   if (isLoading) {
     return (
@@ -44,6 +93,7 @@ export default function CourseDetail() {
   }
 
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+  const isEnrolled = !!enrollment;
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,7 +127,6 @@ export default function CourseDetail() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-12">
-              {/* What you'll learn */}
               {course.learning_outcomes && course.learning_outcomes.length > 0 && (
                 <div>
                   <h2 className="font-heading text-2xl font-bold mb-6">What You'll Learn</h2>
@@ -92,7 +141,6 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Syllabus */}
               {course.modules.length > 0 && (
                 <div>
                   <h2 className="font-heading text-2xl font-bold mb-6">Course Syllabus</h2>
@@ -124,7 +172,6 @@ export default function CourseDetail() {
                 </div>
               )}
 
-              {/* Instructor */}
               {course.instructor && (
                 <div>
                   <h2 className="font-heading text-2xl font-bold mb-6">Your Instructor</h2>
@@ -151,11 +198,38 @@ export default function CourseDetail() {
             <div className="lg:col-span-1">
               <div className="sticky top-24 bg-card rounded-xl border border-border p-6 space-y-6 shadow-lg shadow-primary/5">
                 <div className="text-center">
-                  <p className="font-heading text-4xl font-bold text-primary">${course.price}</p>
-                  <p className="text-sm text-muted-foreground mt-1">One-time payment</p>
+                  <p className="font-heading text-4xl font-bold text-primary">
+                    {course.price === 0 ? "Free" : `$${course.price}`}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {course.price === 0 ? "No payment required" : "One-time payment"}
+                  </p>
                 </div>
 
-                <Button size="lg" className="w-full">Enroll Now</Button>
+                {isEnrolled ? (
+                  <div className="space-y-3">
+                    <Button size="lg" className="w-full" variant="secondary" asChild>
+                      <Link to="/dashboard">Go to Dashboard</Link>
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">
+                      ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full gap-2"
+                    onClick={handleEnroll}
+                    disabled={enroll.isPending}
+                  >
+                    {enroll.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="h-4 w-4" />
+                    )}
+                    {enroll.isPending ? "Enrolling..." : "Enroll Now"}
+                  </Button>
+                )}
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between py-2 border-b border-border">
