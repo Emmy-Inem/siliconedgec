@@ -107,7 +107,7 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
         discount_value: data.discount_value,
         influencer_name: data.influencer_name,
       });
-      toast({ title: "Promo code applied!", description: `You saved $${appliedPromo ? discountAmount : data.discount_type === "percentage" ? Math.round((price * data.discount_value) / 100 * 100) / 100 : Math.min(data.discount_value, price)}` });
+      toast({ title: "Promo code applied!", description: `You saved ${formatNaira(appliedPromo ? discountAmount : data.discount_type === "percentage" ? Math.round((price * data.discount_value) / 100 * 100) / 100 : Math.min(data.discount_value, price))}` });
     } catch {
       setPromoError("Failed to validate promo code");
     } finally {
@@ -163,11 +163,11 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
             <div className="text-right">
               {appliedPromo ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm line-through text-muted-foreground">${price}</span>
-                  <span className="font-heading text-2xl font-bold text-primary">${finalPrice}</span>
+                  <span className="text-sm line-through text-muted-foreground">{formatNaira(price)}</span>
+                  <span className="font-heading text-2xl font-bold text-primary">{formatNaira(finalPrice)}</span>
                 </div>
               ) : (
-                <span className="font-heading text-2xl font-bold text-primary">${price}</span>
+                <span className="font-heading text-2xl font-bold text-primary">{formatNaira(price)}</span>
               )}
             </div>
           </div>
@@ -181,7 +181,7 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                    {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `$${appliedPromo.discount_value} off`}
+                    {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatNaira(appliedPromo.discount_value)} off`}
                   </span>
                 </div>
                 <button onClick={removePromo} className="text-muted-foreground hover:text-foreground">
@@ -218,16 +218,16 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
             <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${price}</span>
+                <span>{formatNaira(price)}</span>
               </div>
               <div className="flex justify-between text-green-600">
                 <span>Discount ({appliedPromo.code})</span>
-                <span>-${discountAmount}</span>
+                <span>-{formatNaira(discountAmount)}</span>
               </div>
               <Separator className="my-1" />
               <div className="flex justify-between font-semibold">
                 <span>Total</span>
-                <span className="text-primary">${finalPrice}</span>
+                <span className="text-primary">{formatNaira(finalPrice)}</span>
               </div>
             </div>
           )}
@@ -274,7 +274,7 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
                 </div>
                 <Button className="w-full gap-2" size="lg" onClick={handleSubmit} disabled={!isCardValid || processing}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-                  {processing ? "Processing..." : `Pay $${finalPrice}`}
+                  {processing ? "Processing..." : `Pay ${formatNaira(finalPrice)}`}
                 </Button>
               </motion.div>
             )}
@@ -293,7 +293,7 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
                 </div>
                 <Button className="w-full gap-2" size="lg" onClick={handlePaystack} disabled={!email || processing} style={{ background: "hsl(197, 100%, 47%)" }}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <PaystackIcon size={18} />}
-                  {processing ? "Redirecting..." : `Pay with Paystack — $${finalPrice}`}
+                  {processing ? "Redirecting..." : `Pay with Paystack — ${formatNaira(finalPrice)}`}
                 </Button>
               </motion.div>
             )}
@@ -308,7 +308,7 @@ export function PaymentModal({ open, onOpenChange, courseTitle, price, onPayment
                 </div>
                 <Button className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90" size="lg" onClick={handleGooglePay} disabled={processing}>
                   {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <GooglePayIcon size={18} />}
-                  {processing ? "Processing..." : `Pay $${finalPrice} with Google Pay`}
+                  {processing ? "Processing..." : `Pay ${formatNaira(finalPrice)} with Google Pay`}
                 </Button>
               </motion.div>
             )}
