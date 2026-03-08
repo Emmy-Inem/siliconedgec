@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Check, Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { formatNaira } from "@/lib/format-currency";
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -209,7 +210,7 @@ export default function CourseDetail() {
               <div className="sticky top-24 bg-card rounded-xl border border-border p-6 space-y-6 shadow-lg shadow-primary/5">
                 <div className="text-center">
                   <p className="font-heading text-4xl font-bold text-primary">
-                    {course.price === 0 ? "Free" : `$${course.price}`}
+                    {formatNaira(course.price)}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {course.price === 0 ? "No payment required" : "One-time payment"}
