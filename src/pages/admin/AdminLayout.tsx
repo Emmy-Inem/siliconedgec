@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
@@ -11,18 +12,29 @@ export default function AdminLayout() {
     <div className="min-h-screen flex w-full bg-background">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-card shrink-0">
-          <h2 className="font-heading font-semibold text-sm">Admin Panel</h2>
+        <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-card/80 backdrop-blur-sm shrink-0 sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <h2 className="font-heading font-semibold text-sm">Admin Panel</h2>
+          </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
-            <Button variant="ghost" size="sm" onClick={signOut}>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs text-muted-foreground">{user?.email}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={signOut} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
               <LogOut className="h-4 w-4 mr-1" /> Sign Out
             </Button>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">
+        <motion.main
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 overflow-auto p-6"
+        >
           <Outlet />
-        </main>
+        </motion.main>
       </div>
     </div>
   );

@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
-  Megaphone, BarChart3
+  Megaphone, BarChart3, Activity, Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
+import { useEffect, useState } from "react";
 
 const COLORS = [
   "hsl(262, 83%, 58%)",
@@ -18,6 +19,23 @@ const COLORS = [
   "hsl(0, 84%, 60%)",
   "hsl(280, 65%, 60%)",
 ];
+
+function AnimatedNumber({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = value;
+    if (end === 0) { setDisplay(0); return; }
+    const step = Math.max(1, Math.floor(end / 72));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setDisplay(end); clearInterval(timer); }
+      else setDisplay(start);
+    }, 1000 / 60);
+    return () => clearInterval(timer);
+  }, [value]);
+  return <>{prefix}{display.toLocaleString()}{suffix}</>;
+}
 
 export default function AdminAnalytics() {
   const { data, isLoading } = useQuery({
@@ -36,10 +54,8 @@ export default function AdminAnalytics() {
       const profiles = profilesRes.data ?? [];
       const promos = promosRes.data ?? [];
       const referrals = referralsRes.data ?? [];
-
       const now = new Date();
 
-      // Revenue estimation from enrollments
       const courseMap = new Map(courses.map(c => [c.id, c]));
       let totalEstRevenue = 0;
       const paidEnrollments = enrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid");
@@ -48,36 +64,23 @@ export default function AdminAnalytics() {
         if (course) totalEstRevenue += Number(course.price ?? 0);
       });
 
-      // Promo stats
       const totalPromoRevenue = promos.reduce((s, p) => s + Number(p.revenue_generated ?? 0), 0);
       const totalCommission = referrals.reduce((s, r) => s + Number(r.commission_earned ?? 0), 0);
       const totalDiscount = referrals.reduce((s, r) => s + Number(r.discount_applied ?? 0), 0);
 
-      // Monthly data (12 months)
       const monthlyData = Array.from({ length: 12 }, (_, i) => {
         const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
         const label = d.toLocaleString("default", { month: "short", year: "2-digit" });
-        const enrCount = enrollments.filter(e => {
-          const ed = new Date(e.created_at);
-          return ed.getMonth() === d.getMonth() && ed.getFullYear() === d.getFullYear();
-        }).length;
-        const userCount = profiles.filter(p => {
-          const pd = new Date(p.created_at);
-          return pd.getMonth() === d.getMonth() && pd.getFullYear() === d.getFullYear();
-        }).length;
-        const refCount = referrals.filter(r => {
-          const rd = new Date(r.created_at);
-          return rd.getMonth() === d.getMonth() && rd.getFullYear() === d.getFullYear();
-        }).length;
+        const enrCount = enrollments.filter(e => { const ed = new Date(e.created_at); return ed.getMonth() === d.getMonth() && ed.getFullYear() === d.getFullYear(); }).length;
+        const userCount = profiles.filter(p => { const pd = new Date(p.created_at); return pd.getMonth() === d.getMonth() && pd.getFullYear() === d.getFullYear(); }).length;
+        const refCount = referrals.filter(r => { const rd = new Date(r.created_at); return rd.getMonth() === d.getMonth() && rd.getFullYear() === d.getFullYear(); }).length;
         return { month: label, enrollments: enrCount, users: userCount, referrals: refCount };
       });
 
-      // Difficulty breakdown
       const diffMap: Record<string, number> = {};
       courses.forEach(c => { diffMap[c.difficulty] = (diffMap[c.difficulty] ?? 0) + 1; });
       const difficultyData = Object.entries(diffMap).map(([name, value]) => ({ name, value }));
 
-      // Category revenue
       const catRevenue: Record<string, number> = {};
       paidEnrollments.forEach(e => {
         const course = courseMap.get(e.course_id);
@@ -88,167 +91,180 @@ export default function AdminAnalytics() {
       });
       const catRevenueData = Object.entries(catRevenue).map(([name, revenue]) => ({ name, revenue }));
 
-      // Top courses by enrollment
       const courseEnrMap: Record<string, number> = {};
       enrollments.forEach(e => { courseEnrMap[e.course_id] = (courseEnrMap[e.course_id] ?? 0) + 1; });
       const topCourses = Object.entries(courseEnrMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([id, count]) => {
-          const c = courseMap.get(id);
-          return { name: c ? (c.category.length > 20 ? c.category.slice(0, 18) + "…" : c.category) : id.slice(0, 8), enrollments: count };
-        });
+        .sort((a, b) => b[1] - a[1]).slice(0, 5)
+        .map(([id, count]) => { const c = courseMap.get(id); return { name: c ? (c.category.length > 20 ? c.category.slice(0, 18) + "…" : c.category) : id.slice(0, 8), enrollments: count }; });
 
-      // Completion rate
       const completedCount = enrollments.filter(e => e.is_completed).length;
       const completionRate = enrollments.length > 0 ? Math.round((completedCount / enrollments.length) * 100) : 0;
-      const avgProgress = enrollments.length > 0
-        ? Math.round(enrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / enrollments.length)
-        : 0;
-
-      // Top promos
+      const avgProgress = enrollments.length > 0 ? Math.round(enrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / enrollments.length) : 0;
       const topPromos = [...promos].sort((a, b) => Number(b.revenue_generated) - Number(a.revenue_generated)).slice(0, 5);
 
-      return {
-        totalCourses: courses.length,
-        totalUsers: profiles.length,
-        totalEnrollments: enrollments.length,
-        totalEstRevenue,
-        totalPromoRevenue,
-        totalCommission,
-        totalDiscount,
-        completionRate,
-        avgProgress,
-        paidCount: paidEnrollments.length,
-        monthlyData,
-        difficultyData,
-        catRevenueData,
-        topCourses,
-        topPromos,
-      };
+      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos };
     },
   });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
   const kpis = [
-    { label: "Est. Revenue", value: `$${(data?.totalEstRevenue ?? 0).toLocaleString()}`, icon: DollarSign, accent: "text-green-500", bg: "bg-green-500/10" },
-    { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, accent: "text-primary", bg: "bg-primary/10" },
-    { label: "Completion Rate", value: `${data?.completionRate ?? 0}%`, icon: TrendingUp, accent: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Avg Progress", value: `${data?.avgProgress ?? 0}%`, icon: BarChart3, accent: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Promo Revenue", value: `$${(data?.totalPromoRevenue ?? 0).toLocaleString()}`, icon: Megaphone, accent: "text-purple-500", bg: "bg-purple-500/10" },
-    { label: "Commission Paid", value: `$${(data?.totalCommission ?? 0).toLocaleString()}`, icon: ArrowDownRight, accent: "text-red-400", bg: "bg-red-500/10" },
+    { label: "Est. Revenue", value: data?.totalEstRevenue ?? 0, prefix: "$", icon: DollarSign, gradient: "from-green-500/15 to-emerald-500/5", accent: "text-green-500" },
+    { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
+    { label: "Completion Rate", value: data?.completionRate ?? 0, suffix: "%", icon: TrendingUp, gradient: "from-amber-500/15 to-yellow-500/5", accent: "text-amber-500" },
+    { label: "Avg Progress", value: data?.avgProgress ?? 0, suffix: "%", icon: BarChart3, gradient: "from-blue-500/15 to-cyan-500/5", accent: "text-blue-500" },
+    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-purple-500/15 to-fuchsia-500/5", accent: "text-purple-500" },
+    { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "$", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
   ];
+
+  const tooltipStyle = { fontSize: 11, borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 32px -8px hsl(var(--primary) / 0.1)" };
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-2xl font-bold mb-1">Analytics</h1>
-        <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex items-center gap-3"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+          <Zap className="h-5 w-5 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="font-heading text-2xl font-bold">Analytics</h1>
+          <p className="text-sm text-muted-foreground">In-depth platform metrics and performance insights.</p>
+        </div>
+      </motion.div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {kpis.map((kpi, i) => (
           <motion.div
             key={kpi.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className="bg-card rounded-xl border border-border p-4"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 20 }}
+            whileHover={{ y: -2, scale: 1.02 }}
+            className="relative overflow-hidden bg-card rounded-2xl border border-border p-4 group hover:border-primary/20 transition-all duration-300"
           >
-            <div className={`w-8 h-8 rounded-lg ${kpi.bg} flex items-center justify-center mb-2`}>
-              <kpi.icon className={`h-4 w-4 ${kpi.accent}`} />
+            <div className={`absolute inset-0 bg-gradient-to-br ${kpi.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+            <div className="relative z-10">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${kpi.gradient} flex items-center justify-center mb-2`}>
+                <kpi.icon className={`h-4 w-4 ${kpi.accent}`} />
+              </div>
+              <p className="font-heading text-lg font-bold">
+                <AnimatedNumber value={kpi.value} prefix={kpi.prefix} suffix={kpi.suffix} />
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium">{kpi.label}</p>
             </div>
-            <p className="font-heading text-lg font-bold">{kpi.value}</p>
-            <p className="text-[10px] text-muted-foreground">{kpi.label}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Main charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Enrollment & User Trends */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h3 className="font-heading font-semibold text-sm mb-1">Enrollment & User Trends</h3>
-          <p className="text-xs text-muted-foreground mb-4">12-month overview</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-heading font-semibold text-sm">Enrollment & User Trends</h3>
+              <p className="text-xs text-muted-foreground">12-month overview</p>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Activity className="h-4 w-4 text-primary" />
+            </div>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data?.monthlyData ?? []}>
                 <defs>
-                  <linearGradient id="enrGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="analyticsEnrGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="usrGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="analyticsUsrGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                <Area type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" fill="url(#enrGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="users" stroke="hsl(142, 71%, 45%)" fill="url(#usrGrad)" strokeWidth={2} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Area type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" fill="url(#analyticsEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(262, 83%, 58%)", strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="users" stroke="hsl(142, 71%, 45%)" fill="url(#analyticsUsrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(142, 71%, 45%)", strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
           <div className="flex gap-4 mt-2">
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(262, 83%, 58%)" }} /> Enrollments
-            </span>
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: "hsl(142, 71%, 45%)" }} /> New Users
-            </span>
+            {[{ color: "hsl(262, 83%, 58%)", label: "Enrollments" }, { color: "hsl(142, 71%, 45%)", label: "New Users" }].map(l => (
+              <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} /> {l.label}
+              </span>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Revenue by Category */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h3 className="font-heading font-semibold text-sm mb-1">Revenue by Category</h3>
-          <p className="text-xs text-muted-foreground mb-4">Based on paid enrollments</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-heading font-semibold text-sm">Revenue by Category</h3>
+              <p className="text-xs text-muted-foreground">Based on paid enrollments</p>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-primary" />
+            </div>
+          </div>
           <div className="h-64">
             {(data?.catRevenueData ?? []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.catRevenueData ?? []} layout="vertical">
                   <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} formatter={(v: number) => [`$${v}`, "Revenue"]} />
-                  <Bar dataKey="revenue" fill="hsl(197, 100%, 47%)" radius={[0, 4, 4, 0]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`$${v}`, "Revenue"]} />
+                  <Bar dataKey="revenue" fill="hsl(197, 100%, 47%)" radius={[0, 6, 6, 0]} animationDuration={800} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-20">No revenue data yet</p>
+              <div className="flex flex-col items-center justify-center h-full">
+                <DollarSign className="h-8 w-8 text-muted-foreground/20 mb-2" />
+                <p className="text-sm text-muted-foreground">No revenue data yet</p>
+              </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Difficulty Breakdown */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h3 className="font-heading font-semibold text-sm mb-4">Course Difficulty</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300">
+          <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-primary" /> Course Difficulty
+          </h3>
           <div className="h-48">
             {(data?.difficultyData ?? []).length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={data?.difficultyData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={65} strokeWidth={2}>
+                  <Pie data={data?.difficultyData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={65} strokeWidth={2} animationBegin={300} animationDuration={800}>
                     {(data?.difficultyData ?? []).map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
+                  <Tooltip contentStyle={tooltipStyle} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-16">No data</p>
+              <div className="flex items-center justify-center h-full"><p className="text-sm text-muted-foreground">No data</p></div>
             )}
           </div>
           <div className="flex justify-center gap-4 mt-1">
@@ -258,61 +274,77 @@ export default function AdminAnalytics() {
               </span>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Top Courses */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h3 className="font-heading font-semibold text-sm mb-4">Top Courses by Enrollment</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300">
+          <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> Top Courses by Enrollment
+          </h3>
           <div className="space-y-3">
             {(data?.topCourses ?? []).length > 0 ? (
               (data?.topCourses ?? []).map((c, i) => (
-                <div key={c.name} className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary flex-shrink-0">{i + 1}</span>
+                <motion.div
+                  key={c.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.05 }}
+                  className="flex items-center gap-3 group/course"
+                >
+                  <span className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center text-[10px] font-bold text-primary flex-shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate">{c.name}</p>
-                    <div className="w-full h-1.5 bg-muted rounded-full mt-1">
-                      <div
+                    <div className="w-full h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
+                      <motion.div
                         className="h-full rounded-full"
-                        style={{
-                          width: `${Math.min(100, (c.enrollments / Math.max(1, data?.topCourses?.[0]?.enrollments ?? 1)) * 100)}%`,
-                          background: COLORS[i % COLORS.length],
-                        }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, (c.enrollments / Math.max(1, data?.topCourses?.[0]?.enrollments ?? 1)) * 100)}%` }}
+                        transition={{ delay: 0.5 + i * 0.08, duration: 0.6, ease: "easeOut" }}
+                        style={{ background: COLORS[i % COLORS.length] }}
                       />
                     </div>
                   </div>
-                  <span className="text-xs font-medium flex-shrink-0">{c.enrollments}</span>
-                </div>
+                  <span className="text-xs font-semibold flex-shrink-0 tabular-nums">{c.enrollments}</span>
+                </motion.div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">No enrollments yet</p>
+              <div className="text-center py-10"><p className="text-sm text-muted-foreground">No enrollments yet</p></div>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Top Promo Codes */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <h3 className="font-heading font-semibold text-sm mb-4">Top Promo Codes</h3>
-          <div className="space-y-3">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300">
+          <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
+            <Megaphone className="h-4 w-4 text-primary" /> Top Promo Codes
+          </h3>
+          <div className="space-y-2">
             {(data?.topPromos ?? []).length > 0 ? (
-              (data?.topPromos ?? []).map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+              (data?.topPromos ?? []).map((p: any, i: number) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.05 }}
+                  className="flex items-center justify-between py-2.5 px-3 rounded-lg border border-border hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-200"
+                >
                   <div>
-                    <p className="text-xs font-mono font-medium">{p.code}</p>
+                    <p className="text-xs font-mono font-semibold">{p.code}</p>
                     <p className="text-[10px] text-muted-foreground">{p.usage_count} uses</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-medium">${Number(p.revenue_generated).toLocaleString()}</p>
-                    <span className={`text-[10px] ${p.is_active ? "text-green-600" : "text-muted-foreground"}`}>
-                      {p.is_active ? "Active" : "Inactive"}
+                    <p className="text-xs font-semibold tabular-nums">${Number(p.revenue_generated).toLocaleString()}</p>
+                    <span className={`text-[10px] font-medium ${p.is_active ? "text-green-500" : "text-muted-foreground"}`}>
+                      {p.is_active ? "● Active" : "○ Inactive"}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">No promo codes yet</p>
+              <div className="text-center py-10"><p className="text-sm text-muted-foreground">No promo codes yet</p></div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

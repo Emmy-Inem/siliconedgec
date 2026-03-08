@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import logoDark from "@/assets/logo-dark.png";
 
 const sections = [
@@ -46,31 +47,44 @@ export function AdminSidebar() {
 
   return (
     <aside className={cn(
-      "bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0",
+      "bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0 relative",
       collapsed ? "w-16" : "w-64"
     )}>
       <div className="h-16 border-b border-border flex items-center justify-between px-4">
-        {!collapsed && (
-          <Link to="/admin">
-            <img src={logoDark} alt="Silicon Edge" className="h-7 w-auto" />
-          </Link>
-        )}
-        <button
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <Link to="/admin">
+                <img src={logoDark} alt="Silicon Edge" className="h-7 w-auto" />
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+          className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
+        </motion.button>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-5">
         {sections.map((section) => (
           <div key={section.label}>
-            {!collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-3 mb-2">
-                {section.label}
-              </p>
-            )}
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 px-3 mb-2"
+                >
+                  {section.label}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <div className="space-y-0.5">
               {section.items.map((item) => {
                 const active = location.pathname === item.href ||
@@ -81,14 +95,36 @@ export function AdminSidebar() {
                     to={item.href}
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span>{item.label}</span>}
+                    {active && (
+                      <motion.div
+                        layoutId="sidebar-active"
+                        className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20"
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      />
+                    )}
+                    {!active && (
+                      <div className="absolute inset-0 rounded-xl hover:bg-muted transition-colors" />
+                    )}
+                    <item.icon className="h-4 w-4 shrink-0 relative z-10" />
+                    <AnimatePresence>
+                      {!collapsed && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="relative z-10 whitespace-nowrap overflow-hidden"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </Link>
                 );
               })}
@@ -100,10 +136,16 @@ export function AdminSidebar() {
       <div className="p-3 border-t border-border">
         <Link
           to="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Back to Site</span>}
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="whitespace-nowrap">
+                Back to Site
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
       </div>
     </aside>
