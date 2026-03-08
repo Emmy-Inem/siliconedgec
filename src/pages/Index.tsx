@@ -76,6 +76,9 @@ export default function Index() {
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { data: courses = [] } = useCourses();
+
+  const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
 
   const filteredCourses =
     activeCategory === "All"
