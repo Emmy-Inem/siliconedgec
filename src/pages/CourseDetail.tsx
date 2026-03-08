@@ -7,6 +7,7 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourse } from "@/hooks/useCourses";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PaymentModal } from "@/components/PaymentModal";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart } from "lucide-react";
