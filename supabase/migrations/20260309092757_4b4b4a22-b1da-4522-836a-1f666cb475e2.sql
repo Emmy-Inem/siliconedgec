@@ -1,0 +1,3 @@
+UPDATE courses SET thumbnail_url = 'https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png' WHERE id = '3b1f29ec-8fd4-4ff0-9357-1987b90e6c91';
+
+UPDATE courses SET thumbnail_url = 'https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-webinar.jpg' WHERE id = 'fdac017c-415f-4928-a47d-fc2fb79927af';
