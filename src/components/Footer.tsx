@@ -1,6 +1,6 @@
+import { forwardRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, ArrowRight, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
-import { useState } from "react";
 import logoLight from "@/assets/logo-light.png";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -12,7 +12,7 @@ const SOCIAL_ICONS: Record<string, typeof Facebook> = {
   social_youtube: Youtube,
 };
 
-export function Footer() {
+export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
   const [email, setEmail] = useState("");
   const { data: settings } = useSiteSettings();
 
