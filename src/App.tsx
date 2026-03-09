@@ -43,6 +43,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <CartProvider>
             <Routes>
               <Route path="/" element={<Index />} />

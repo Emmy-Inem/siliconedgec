@@ -110,8 +110,27 @@ export default function Index() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            className="max-w-3xl mx-auto text-center"
           >
+            {/* Cloud provider logos */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              {[
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg", alt: "Google Cloud" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
+              ].map((logo) => (
+                <motion.div
+                  key={logo.alt}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-card shadow-sm flex items-center justify-center p-2"
+                >
+                  <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
+                </motion.div>
+              ))}
+            </div>
+
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
               Start Learning
             </p>
@@ -124,24 +143,38 @@ export default function Index() {
             <h2 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4">
               Unlock your tech career<span className="text-gold">.</span>
             </h2>
-            <p className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mb-8 leading-relaxed">
+            <p className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed">
               Live Online Courses. Hands-On Projects. Real Certifications.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               <Button size="lg" asChild className="hover-scale animate-pulse-glow">
                 <Link to="/courses">
                   Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                <Link to="/for-businesses">For Businesses</Link>
+                <Link to="/sign-up">Sign up now</Link>
               </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-8 sm:mt-10 text-hero-muted text-xs sm:text-sm">
-              <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex items-center gap-1.5"><span className="text-primary font-bold text-base sm:text-lg">6,000+</span> Students</motion.span>
-              <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex items-center gap-1.5"><span className="text-primary font-bold text-base sm:text-lg">95%</span> Completion</motion.span>
-              <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="flex items-center gap-1.5"><span className="text-primary font-bold text-base sm:text-lg">4.8</span> Avg Rating</motion.span>
+            {/* Tech logos below CTA */}
+            <div className="flex items-center justify-center gap-4 mt-10">
+              {[
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg", alt: "Python" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg", alt: "Angular" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", alt: "JavaScript" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openal/openal-original.svg", alt: "AI" },
+              ].map((logo, i) => (
+                <motion.div
+                  key={logo.alt}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-card shadow-sm flex items-center justify-center p-2.5"
+                >
+                  <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>
