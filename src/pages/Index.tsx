@@ -16,11 +16,10 @@ import instructor4 from "@/assets/instructor-4.jpg";
 import courseBanner from "@/assets/course-banner.png";
 
 const typewriterWords = [
+  "Cloud Engineering",
+  "Software Engineering",
   "Artificial Intelligence",
-  "Cloud Architecture",
-  "DevOps Engineering",
-  "Data Science",
-  "Cybersecurity",
+  "Web Development",
 ];
 
 function useTypewriter(words: string[], speed = 80, pause = 2000) {
