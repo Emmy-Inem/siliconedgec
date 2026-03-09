@@ -21,7 +21,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
     .map(([key, Icon]) => ({ url: settings?.[key as keyof typeof settings] as string, Icon }));
 
   return (
-    <footer className="bg-navy text-hero-muted">
+    <footer ref={ref} className="bg-navy text-hero-muted">
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           <div className="space-y-4">
