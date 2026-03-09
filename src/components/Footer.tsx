@@ -94,4 +94,4 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
       </div>
     </footer>
   );
-}
+});
