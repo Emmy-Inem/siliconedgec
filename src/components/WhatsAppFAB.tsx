@@ -1,12 +1,14 @@
+import { forwardRef } from "react";
 import { MessageCircle } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
-export function WhatsAppFAB() {
+export const WhatsAppFAB = forwardRef<HTMLAnchorElement>(function WhatsAppFAB(_, ref) {
   const { data: settings } = useSiteSettings();
   const number = settings?.whatsapp_number || "2348001234567";
 
   return (
     <a
+      ref={ref}
       href={`https://wa.me/${number}`}
       target="_blank"
       rel="noopener noreferrer"
@@ -16,4 +18,4 @@ export function WhatsAppFAB() {
       <MessageCircle className="h-6 w-6 text-primary-foreground" />
     </a>
   );
-}
+});
