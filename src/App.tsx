@@ -33,6 +33,14 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminEmail from "./pages/admin/AdminEmail";
 import AdminActivityLog from "./pages/admin/AdminActivityLog";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminTags from "./pages/admin/AdminTags";
+import AdminLearningPaths from "./pages/admin/AdminLearningPaths";
+import AdminStudents from "./pages/admin/AdminStudents";
+import AdminQuizzes from "./pages/admin/AdminQuizzes";
+import AdminQuizAttempts from "./pages/admin/AdminQuizAttempts";
+import AdminQnA from "./pages/admin/AdminQnA";
+import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
 
 const queryClient = new QueryClient();
 
