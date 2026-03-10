@@ -33,6 +33,14 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminEmail from "./pages/admin/AdminEmail";
 import AdminActivityLog from "./pages/admin/AdminActivityLog";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminTags from "./pages/admin/AdminTags";
+import AdminLearningPaths from "./pages/admin/AdminLearningPaths";
+import AdminStudents from "./pages/admin/AdminStudents";
+import AdminQuizzes from "./pages/admin/AdminQuizzes";
+import AdminQuizAttempts from "./pages/admin/AdminQuizAttempts";
+import AdminQnA from "./pages/admin/AdminQnA";
+import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +79,14 @@ const App = () => (
                 <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
                 <Route path="email" element={<AdminEmail />} />
                 <Route path="activity-log" element={<AdminActivityLog />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="tags" element={<AdminTags />} />
+                <Route path="paths" element={<AdminLearningPaths />} />
+                <Route path="students" element={<AdminStudents />} />
+                <Route path="quizzes" element={<AdminQuizzes />} />
+                <Route path="quiz-attempts" element={<AdminQuizAttempts />} />
+                <Route path="qna" element={<AdminQnA />} />
+                <Route path="announcements" element={<AdminCourseAnnouncements />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 

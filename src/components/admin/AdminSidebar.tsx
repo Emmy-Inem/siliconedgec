@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
-  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings
+  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -17,32 +18,50 @@ const sections = [
     ],
   },
   {
-    label: "Content",
+    label: "Tutor LMS",
     items: [
+      { label: "Learning Paths", href: "/admin/paths", icon: Route },
       { label: "Courses", href: "/admin/courses", icon: BookOpen },
-      { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
-      { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
-      { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
-      { label: "Site Content", href: "/admin/content", icon: FileText },
+      { label: "Categories", href: "/admin/categories", icon: FolderTree },
+      { label: "Tags", href: "/admin/tags", icon: Tag },
     ],
   },
   {
-    label: "People",
+    label: "Students",
     items: [
-      { label: "Users", href: "/admin/users", icon: Users },
+      { label: "Students", href: "/admin/students", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+      { label: "Quizzes", href: "/admin/quizzes", icon: ClipboardCheck },
+      { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: ClipboardCheck },
+      { label: "Q&A", href: "/admin/qna", icon: HelpCircle },
+    ],
+  },
+  {
+    label: "Communication",
+    items: [
+      { label: "Announcements", href: "/admin/announcements", icon: Bell },
+      { label: "Email & Blasts", href: "/admin/email", icon: Mail },
     ],
   },
   {
     label: "Marketing",
     items: [
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
-      { label: "Email & Announcements", href: "/admin/email", icon: Mail },
+      { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
+      { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
+      { label: "Site Content", href: "/admin/content", icon: FileText },
     ],
   },
   {
     label: "System",
     items: [
+      { label: "Users & Roles", href: "/admin/users", icon: Users },
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],

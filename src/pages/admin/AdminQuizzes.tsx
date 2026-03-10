@@ -1,0 +1,206 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Trash2, Check } from "lucide-react";
+
+interface Quiz {
+  id: string;
+  lesson_id: string;
+  title: string;
+  passing_score: number;
+  lessons?: { title: string; modules?: { courses?: { title: string } } } | null;
+}
+
+interface QuizQuestion {
+  id: string;
+  quiz_id: string;
+  question_text: string;
+  options: string[];
+  correct_answer: string;
+  order_index: number;
+}
+
+export default function AdminQuizzes() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Quiz | null>(null);
+  const [form, setForm] = useState({ title: "", lesson_id: "", passing_score: "70" });
+  const [questionsDialogOpen, setQuestionsDialogOpen] = useState(false);
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
+
+  const { data: quizzes = [], isLoading } = useQuery({
+    queryKey: ["admin-quizzes"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("quizzes").select("*, lessons(title, modules(courses(title)))").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Quiz[];
+    },
+  });
+
+  const { data: lessons = [] } = useQuery({
+    queryKey: ["admin-all-lessons"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("lessons").select("id, title, modules(courses(title))").order("title");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: questions = [] } = useQuery({
+    queryKey: ["admin-quiz-questions", selectedQuiz?.id],
+    queryFn: async () => {
+      if (!selectedQuiz) return [];
+      const { data, error } = await supabase.from("quiz_questions").select("*").eq("quiz_id", selectedQuiz.id).order("order_index");
+      if (error) throw error;
+      return data as QuizQuestion[];
+    },
+    enabled: !!selectedQuiz,
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const payload = { title: form.title, lesson_id: form.lesson_id, passing_score: parseInt(form.passing_score) };
+      if (editing) {
+        const { error } = await supabase.from("quizzes").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("quizzes").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); setDialogOpen(false); toast({ title: editing ? "Quiz updated" : "Quiz created" }); },
+    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.from("quizzes").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); toast({ title: "Quiz deleted" }); },
+  });
+
+  const addQuestion = useMutation({
+    mutationFn: async () => {
+      if (!selectedQuiz) return;
+      const opts = qForm.options.filter(Boolean);
+      const { error } = await supabase.from("quiz_questions").insert({
+        quiz_id: selectedQuiz.id, question_text: qForm.question_text, options: opts,
+        correct_answer: qForm.correct_answer, order_index: questions.length,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-quiz-questions", selectedQuiz?.id] });
+      setQForm({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
+      toast({ title: "Question added" });
+    },
+    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const removeQuestion = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.from("quiz_questions").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quiz-questions", selectedQuiz?.id] }); toast({ title: "Question deleted" }); },
+  });
+
+  const columns: Column<Quiz>[] = [
+    { key: "title", label: "Quiz Title" },
+    { key: "lesson_id", label: "Lesson", render: (q) => <span className="text-xs">{(q.lessons as any)?.title || "—"}</span> },
+    { key: "passing_score", label: "Passing Score", render: (q) => <Badge variant="secondary">{q.passing_score}%</Badge> },
+  ];
+
+  const openAdd = () => { setEditing(null); setForm({ title: "", lesson_id: "", passing_score: "70" }); setDialogOpen(true); };
+  const openEdit = (q: Quiz) => { setEditing(q); setForm({ title: q.title, lesson_id: q.lesson_id, passing_score: String(q.passing_score) }); setDialogOpen(true); };
+  const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
+
+  return (
+    <>
+      <AdminCrudTable
+        title="Quizzes"
+        data={quizzes}
+        columns={columns}
+        onAdd={openAdd}
+        onEdit={openEdit}
+        onDelete={(id) => remove.mutate(id)}
+        isLoading={isLoading}
+        addLabel="Add Quiz"
+        extraActions={(item) => (
+          <button onClick={() => { setSelectedQuiz(item); setQuestionsDialogOpen(true); }} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+            Q&A
+          </button>
+        )}
+      />
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? "Edit Quiz" : "Add Quiz"}</DialogTitle></DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Title</label>
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">Lesson</label>
+              <select value={form.lesson_id} onChange={(e) => setForm({ ...form, lesson_id: e.target.value })} required className={inputClass}>
+                <option value="">Select lesson...</option>
+                {lessons.map((l: any) => <option key={l.id} value={l.id}>{l.modules?.courses?.title ? `${l.modules.courses.title} → ` : ""}{l.title}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">Passing Score (%)</label>
+              <input type="number" min="0" max="100" value={form.passing_score} onChange={(e) => setForm({ ...form, passing_score: e.target.value })} className={inputClass} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={save.isPending}>{save.isPending ? "Saving..." : "Save"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={questionsDialogOpen} onOpenChange={setQuestionsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Questions for "{selectedQuiz?.title}"</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            {questions.map((q, i) => (
+              <div key={q.id} className="bg-muted/50 rounded-lg p-3 text-sm">
+                <div className="flex justify-between items-start">
+                  <p className="font-medium">{i + 1}. {q.question_text}</p>
+                  <button onClick={() => removeQuestion.mutate(q.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
+                <div className="mt-2 space-y-1">
+                  {(q.options as string[]).map((opt, j) => (
+                    <div key={j} className="flex items-center gap-2 text-xs">
+                      {opt === q.correct_answer ? <Check className="h-3 w-3 text-green-500" /> : <span className="w-3" />}
+                      <span className={opt === q.correct_answer ? "text-green-600 font-medium" : ""}>{opt}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="border-t border-border pt-4">
+              <p className="text-sm font-medium mb-3">Add Question</p>
+              <div className="space-y-3">
+                <input value={qForm.question_text} onChange={(e) => setQForm({ ...qForm, question_text: e.target.value })} placeholder="Question text" className={inputClass} />
+                {qForm.options.map((opt, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input type="radio" name="correct" checked={qForm.correct_answer === opt && opt !== ""} onChange={() => setQForm({ ...qForm, correct_answer: opt })} />
+                    <input value={opt} onChange={(e) => { const opts = [...qForm.options]; opts[i] = e.target.value; setQForm({ ...qForm, options: opts }); }} placeholder={`Option ${i + 1}`} className={inputClass} />
+                  </div>
+                ))}
+                <Button size="sm" onClick={() => addQuestion.mutate()} disabled={!qForm.question_text || !qForm.correct_answer || addQuestion.isPending}>
+                  <Plus className="h-3 w-3 mr-1" /> Add Question
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
