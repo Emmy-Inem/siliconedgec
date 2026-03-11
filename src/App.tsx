@@ -71,6 +71,8 @@ const App = () => (
                 <Route index element={<AdminOverview />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="courses" element={<AdminCourses />} />
+                <Route path="courses/new" element={<AdminCourseCreate />} />
+                <Route path="courses/:courseId/edit" element={<AdminCourseCreate />} />
                 <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
                 <Route path="instructors" element={<AdminInstructors />} />
                 <Route path="users" element={<AdminUsers />} />
