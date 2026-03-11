@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
+import { UtmTracker } from "@/components/UtmTracker";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
