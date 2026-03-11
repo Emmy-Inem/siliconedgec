@@ -57,6 +57,7 @@ const emptyForm = {
 };
 
 export default function AdminCourses() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Course | null>(null);
   const [form, setForm] = useState(emptyForm);
