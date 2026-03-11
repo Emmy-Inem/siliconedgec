@@ -46,6 +46,7 @@ const sections = [
   {
     label: "Marketing",
     items: [
+      { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
     ],
