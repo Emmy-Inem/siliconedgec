@@ -55,6 +55,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <UtmTracker />
           <CartProvider>
             <Routes>
               <Route path="/" element={<Index />} />
