@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
+import { UtmTracker } from "@/components/UtmTracker";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
@@ -21,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminCourses from "./pages/admin/AdminCourses";
+import AdminCourseCreate from "./pages/admin/AdminCourseCreate";
 import AdminCourseModules from "./pages/admin/AdminCourseModules";
 import AdminInstructors from "./pages/admin/AdminInstructors";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -30,6 +32,7 @@ import AdminPricing from "./pages/admin/AdminPricing";
 import AdminSiteContent from "./pages/admin/AdminSiteContent";
 import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminMarketingAnalytics from "./pages/admin/AdminMarketingAnalytics";
 import AdminEmail from "./pages/admin/AdminEmail";
 import AdminActivityLog from "./pages/admin/AdminActivityLog";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -52,6 +55,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <UtmTracker />
           <CartProvider>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -69,6 +73,8 @@ const App = () => (
                 <Route index element={<AdminOverview />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="courses" element={<AdminCourses />} />
+                <Route path="courses/new" element={<AdminCourseCreate />} />
+                <Route path="courses/:courseId/edit" element={<AdminCourseCreate />} />
                 <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
                 <Route path="instructors" element={<AdminInstructors />} />
                 <Route path="users" element={<AdminUsers />} />
@@ -77,6 +83,7 @@ const App = () => (
                 <Route path="pricing" element={<AdminPricing />} />
                 <Route path="content" element={<AdminSiteContent />} />
                 <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
+                <Route path="marketing" element={<AdminMarketingAnalytics />} />
                 <Route path="email" element={<AdminEmail />} />
                 <Route path="activity-log" element={<AdminActivityLog />} />
                 <Route path="categories" element={<AdminCategories />} />

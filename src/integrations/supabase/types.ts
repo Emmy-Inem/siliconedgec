@@ -253,56 +253,104 @@ export type Database = {
         Row: {
           category: string
           category_id: string | null
+          course_type: string | null
           created_at: string
+          cross_sell_course_ids: string[] | null
+          currency: string | null
           description: string | null
           difficulty: string
+          discount_end: string | null
+          discount_price: number | null
+          discount_start: string | null
           duration_hours: number
+          early_bird_price: number | null
+          enable_reviews: boolean | null
+          enrollment_end: string | null
+          enrollment_start: string | null
           id: string
           instructor_id: string | null
+          intro_video_url: string | null
           is_published: boolean | null
           learning_outcomes: string[] | null
+          max_enrollment: number | null
           price: number
+          product_type: string | null
+          purchase_note: string | null
           rating: number | null
+          status: string | null
           students_enrolled: number | null
           thumbnail_url: string | null
           title: string
           updated_at: string
+          upsell_course_ids: string[] | null
         }
         Insert: {
           category: string
           category_id?: string | null
+          course_type?: string | null
           created_at?: string
+          cross_sell_course_ids?: string[] | null
+          currency?: string | null
           description?: string | null
           difficulty: string
+          discount_end?: string | null
+          discount_price?: number | null
+          discount_start?: string | null
           duration_hours: number
+          early_bird_price?: number | null
+          enable_reviews?: boolean | null
+          enrollment_end?: string | null
+          enrollment_start?: string | null
           id?: string
           instructor_id?: string | null
+          intro_video_url?: string | null
           is_published?: boolean | null
           learning_outcomes?: string[] | null
+          max_enrollment?: number | null
           price?: number
+          product_type?: string | null
+          purchase_note?: string | null
           rating?: number | null
+          status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          upsell_course_ids?: string[] | null
         }
         Update: {
           category?: string
           category_id?: string | null
+          course_type?: string | null
           created_at?: string
+          cross_sell_course_ids?: string[] | null
+          currency?: string | null
           description?: string | null
           difficulty?: string
+          discount_end?: string | null
+          discount_price?: number | null
+          discount_start?: string | null
           duration_hours?: number
+          early_bird_price?: number | null
+          enable_reviews?: boolean | null
+          enrollment_end?: string | null
+          enrollment_start?: string | null
           id?: string
           instructor_id?: string | null
+          intro_video_url?: string | null
           is_published?: boolean | null
           learning_outcomes?: string[] | null
+          max_enrollment?: number | null
           price?: number
+          product_type?: string | null
+          purchase_note?: string | null
           rating?: number | null
+          status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          upsell_course_ids?: string[] | null
         }
         Relationships: [
           {
@@ -482,6 +530,51 @@ export type Database = {
           role?: string | null
           students_count?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      lead_sources: {
+        Row: {
+          created_at: string
+          form_data: Json | null
+          form_type: string | null
+          id: string
+          landing_page: string | null
+          referrer: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          form_data?: Json | null
+          form_type?: string | null
+          id?: string
+          landing_page?: string | null
+          referrer?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          form_data?: Json | null
+          form_type?: string | null
+          id?: string
+          landing_page?: string | null
+          referrer?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }

@@ -1,12 +1,12 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Image, Loader2 } from "lucide-react";
+import { Upload, Image, Loader2, Plus } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Course = Tables<"courses">;
@@ -57,6 +57,7 @@ const emptyForm = {
 };
 
 export default function AdminCourses() {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Course | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -182,9 +183,9 @@ export default function AdminCourses() {
         data={courses}
         columns={columns}
         isLoading={isLoading}
-        addLabel="Add Course"
-        onAdd={openAdd}
-        onEdit={openEdit}
+        addLabel="Add New Product"
+        onAdd={() => navigate("/admin/courses/new")}
+        onEdit={(c) => navigate(`/admin/courses/${c.id}/edit`)}
         onDelete={(id) => del.mutate(id)}
         extraActions={(c) => (
           <Link to={`/admin/courses/${c.id}/modules`}>
