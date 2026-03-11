@@ -183,9 +183,9 @@ export default function AdminCourses() {
         data={courses}
         columns={columns}
         isLoading={isLoading}
-        addLabel="Add Course"
-        onAdd={openAdd}
-        onEdit={openEdit}
+        addLabel="Add New Product"
+        onAdd={() => navigate("/admin/courses/new")}
+        onEdit={(c) => navigate(`/admin/courses/${c.id}/edit`)}
         onDelete={(id) => del.mutate(id)}
         extraActions={(c) => (
           <Link to={`/admin/courses/${c.id}/modules`}>
