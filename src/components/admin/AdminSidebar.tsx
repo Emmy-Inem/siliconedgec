@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
