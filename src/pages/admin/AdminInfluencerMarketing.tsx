@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Copy, Trash2, TrendingUp, Users, DollarSign, Ticket,
-  Loader2, RefreshCw, BarChart3, Eye
+  Loader2, RefreshCw, BarChart3, Eye, Link2
 } from "lucide-react";
 import { format } from "date-fns";
 
