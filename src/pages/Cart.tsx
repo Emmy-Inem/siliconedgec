@@ -33,12 +33,31 @@ export default function Cart() {
   const handleFreeEnroll = async () => {
     if (!user) return;
     setEnrolling(true);
+    const courseIds: string[] = [];
     for (const item of items) {
       await supabase.from("enrollments").upsert(
         { user_id: user.id, course_id: item.course_id, payment_status: "confirmed", progress_percentage: 0 },
         { onConflict: "user_id,course_id" }
       ).select();
+      courseIds.push(item.course_id);
     }
+
+    // Track lead with UTM attribution
+    const utm = getStoredUtmParams();
+    for (const courseId of courseIds) {
+      await trackLead({
+        formType: "enrollment",
+        formData: {
+          courseId,
+          utm_source: utm.utm_source,
+          utm_medium: utm.utm_medium,
+          utm_campaign: utm.utm_campaign,
+          utm_content: utm.utm_content,
+          utm_term: utm.utm_term,
+        },
+      });
+    }
+
     await clearCart();
     setEnrolling(false);
     toast({ title: "Enrolled successfully!", description: "You can now access your courses from the dashboard." });

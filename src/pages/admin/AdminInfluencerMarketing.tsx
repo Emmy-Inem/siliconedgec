@@ -396,6 +396,29 @@ export default function AdminInfluencerMarketing() {
                 <p className="font-mono text-2xl font-bold text-primary">{detailCode.code}</p>
                 <p className="text-sm text-muted-foreground mt-1">by {detailCode.influencer_name}</p>
               </div>
+
+              {/* UTM Tracking Link */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> UTM Tracking Link</p>
+                <div className="bg-background rounded-md border border-border p-2.5">
+                  <p className="font-mono text-xs break-all text-foreground select-all">
+                    {`${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2 text-xs"
+                  onClick={() => {
+                    const url = `${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`;
+                    navigator.clipboard.writeText(url);
+                    toast({ title: "UTM link copied!", description: "Share this link with the influencer for tracked referrals." });
+                  }}
+                >
+                  <Copy className="h-3 w-3" /> Copy UTM Link
+                </Button>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailRow label="Discount" value={detailCode.discount_type === "percentage" ? `${detailCode.discount_value}%` : `$${detailCode.discount_value}`} />
                 <DetailRow label="Commission" value={`${detailCode.commission_percentage}%`} />

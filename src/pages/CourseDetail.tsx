@@ -72,6 +72,20 @@ export default function CourseDetail() {
         progress_percentage: 0,
       });
       if (error) throw error;
+
+      // Track lead with UTM attribution
+      const utm = getStoredUtmParams();
+      await trackLead({
+        formType: "enrollment",
+        formData: {
+          courseId: id,
+          utm_source: utm.utm_source,
+          utm_medium: utm.utm_medium,
+          utm_campaign: utm.utm_campaign,
+          utm_content: utm.utm_content,
+          utm_term: utm.utm_term,
+        },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["enrollment", id, user?.id] });
