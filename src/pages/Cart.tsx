@@ -13,6 +13,8 @@ import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag } from "lucide-re
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
+import { trackLead } from "@/lib/track-lead";
+import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 
 export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
