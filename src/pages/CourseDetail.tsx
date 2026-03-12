@@ -23,6 +23,8 @@ import {
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
+import { trackLead } from "@/lib/track-lead";
+import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
