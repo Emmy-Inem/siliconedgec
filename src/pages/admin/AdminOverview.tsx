@@ -91,7 +91,7 @@ function StatCard({ card, i }: { card: any; i: number }) {
   );
 }
 
-function ChartCard({ title, subtitle, icon: Icon, children, delay = 0 }: { title: string; subtitle: string; icon: any; children: React.ReactNode; delay?: number }) {
+const ChartCard = ({ title, subtitle, icon: Icon, children, delay = 0 }: { title: string; subtitle: string; icon: any; children: React.ReactNode; delay?: number }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
