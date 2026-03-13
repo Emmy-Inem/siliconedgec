@@ -89,6 +89,7 @@ export default function AdminCourseCreate() {
         title: existingCourse.title,
         description: existingCourse.description ?? "",
         category: existingCourse.category,
+        category_id: existingCourse.category_id ?? null,
         difficulty: existingCourse.difficulty,
         duration_hours: Number(existingCourse.duration_hours),
         learning_outcomes: (existingCourse.learning_outcomes ?? []).join("\n"),
@@ -109,9 +110,27 @@ export default function AdminCourseCreate() {
         enable_reviews: (existingCourse as any).enable_reviews ?? true,
         status: (existingCourse as any).status ?? "draft",
         instructor_id: existingCourse.instructor_id ?? null,
+        tag_ids: [],
       });
     }
   }, [existingCourse]);
+
+  // Load existing course tags
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ["admin-course-tags", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("course_tags").select("tag_id").eq("course_id", courseId!);
+      if (error) throw error;
+      return data.map(t => t.tag_id);
+    },
+    enabled: isEditing,
+  });
+
+  useEffect(() => {
+    if (existingTags.length > 0) {
+      setForm(prev => ({ ...prev, tag_ids: existingTags }));
+    }
+  }, [existingTags]);
 
   const { data: instructors = [] } = useQuery({
     queryKey: ["admin-instructors-list"],
