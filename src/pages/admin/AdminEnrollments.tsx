@@ -88,7 +88,11 @@ export default function AdminEnrollments() {
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("enrollments").delete().eq("id", id); if (error) throw error; },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("enrollments").delete().eq("id", id);
+      if (error) throw error;
+      await logAdminActivity("delete", "enrollment", id);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); toast({ title: "Deleted" }); },
   });
 

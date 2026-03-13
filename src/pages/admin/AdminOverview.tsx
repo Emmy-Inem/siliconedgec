@@ -330,7 +330,7 @@ export default function AdminOverview() {
                       <GraduationCap className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium font-mono">{e.course_id?.slice(0, 8)}...</p>
+                      <p className="text-xs font-medium">{e.course_title}</p>
                       <p className="text-[10px] text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
