@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File
+  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File, X
 } from "lucide-react";
 import { formatNaira } from "@/lib/format-currency";
+import { logAdminActivity } from "@/lib/admin-logger";
 
 const STEPS = [
   { label: "Course Info", icon: "📝" },
@@ -19,11 +20,6 @@ const STEPS = [
 
 const PRODUCT_TYPES = ["Simple Product", "Grouped Product", "External Product", "Variable Product"];
 const COURSE_TYPES = ["Virtual Course", "Downloadable Course", "Tutor-Led Program"];
-const CATEGORIES = [
-  "Cloud Engineering", "DevOps", "Cybersecurity",
-  "Programming & Software Development", "Data Engineering",
-  "Artificial Intelligence & Machine Learning",
-];
 const DIFFICULTIES = ["Beginner", "Intermediate", "Expert"];
 
 const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
