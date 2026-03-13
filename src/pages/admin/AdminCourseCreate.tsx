@@ -311,8 +311,16 @@ export default function AdminCourseCreate() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium block mb-1">Category</label>
-                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className={inputClass}>
-                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  <select
+                    value={form.category}
+                    onChange={e => {
+                      const selected = categories.find(c => c.name === e.target.value);
+                      setForm({ ...form, category: e.target.value, category_id: selected?.id ?? null });
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -331,6 +339,36 @@ export default function AdminCourseCreate() {
                 <select value={form.instructor_id ?? ""} onChange={e => setForm({ ...form, instructor_id: e.target.value || null })} className={inputClass}>
                   <option value="">No instructor assigned</option>
                   {instructors.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                </select>
+              </div>
+              {/* Tags */}
+              <div>
+                <label className="text-sm font-medium block mb-1">Tags</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {form.tag_ids.map(tid => {
+                    const tag = allTags.find(t => t.id === tid);
+                    return tag ? (
+                      <span key={tid} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                        {tag.name}
+                        <button type="button" onClick={() => setForm(prev => ({ ...prev, tag_ids: prev.tag_ids.filter(id => id !== tid) }))}
+                          className="hover:text-destructive"><X className="h-3 w-3" /></button>
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+                <select
+                  value=""
+                  onChange={e => {
+                    if (e.target.value && !form.tag_ids.includes(e.target.value)) {
+                      setForm(prev => ({ ...prev, tag_ids: [...prev.tag_ids, e.target.value] }));
+                    }
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">Add a tag...</option>
+                  {allTags.filter(t => !form.tag_ids.includes(t.id)).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
                 </select>
               </div>
               <div>
