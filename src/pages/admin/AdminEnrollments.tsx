@@ -78,7 +78,12 @@ export default function AdminEnrollments() {
       const { error } = await supabase.from("enrollments").update(form).eq("id", editing.id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); setDialogOpen(false); toast({ title: "Updated" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-enrollments"] });
+      setDialogOpen(false);
+      toast({ title: "Updated" });
+      if (editing) logAdminActivity("update", "enrollment", editing.id, { payment_status: form.payment_status });
+    },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
