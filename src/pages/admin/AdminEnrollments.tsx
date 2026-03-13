@@ -5,6 +5,7 @@ import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { logAdminActivity } from "@/lib/admin-logger";
 
 interface EnrollmentRow {
   id: string;
