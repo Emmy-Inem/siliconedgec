@@ -41,7 +41,8 @@ export default function AdminCourseCreate() {
     course_type: "Virtual Course",
     title: "",
     description: "",
-    category: "Cloud Engineering",
+    category: "",
+    category_id: null as string | null,
     difficulty: "Beginner",
     duration_hours: 10,
     learning_outcomes: "",
@@ -65,6 +66,8 @@ export default function AdminCourseCreate() {
     enable_reviews: true,
     status: "draft",
     instructor_id: null as string | null,
+    // Tags
+    tag_ids: [] as string[],
   });
 
   // Load existing course for editing
