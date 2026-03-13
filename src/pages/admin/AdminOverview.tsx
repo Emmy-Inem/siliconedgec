@@ -118,7 +118,7 @@ export default function AdminOverview() {
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const [courses, instructors, enrollments, testimonials, plans, profiles, promoCodes] = await Promise.all([
-        supabase.from("courses").select("id, is_published, category, price, students_enrolled, created_at"),
+        supabase.from("courses").select("id, title, is_published, category, price, students_enrolled, created_at"),
         supabase.from("instructors").select("id", { count: "exact", head: true }),
         supabase.from("enrollments").select("id, payment_status, created_at, course_id"),
         supabase.from("testimonials").select("id", { count: "exact", head: true }),
@@ -162,7 +162,14 @@ export default function AdminOverview() {
         return { month: monthStr, signups: count };
       });
 
-      const recentEnrollments = allEnrollments.slice(0, 5);
+      // Build course title map for recent enrollments
+      const courseMap = new Map<string, string>();
+      allCourses.forEach(c => courseMap.set(c.id, c.title));
+
+      const recentEnrollments = allEnrollments.slice(0, 5).map(e => ({
+        ...e,
+        course_title: courseMap.get(e.course_id) ?? e.course_id?.slice(0, 8) + "...",
+      }));
 
       return {
         courses: allCourses.length,
