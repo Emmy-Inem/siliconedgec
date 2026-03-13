@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,10 @@ export interface AdminCrudTableProps<T extends { id: string }> {
   isLoading?: boolean;
   addLabel?: string;
   extraActions?: (item: T) => React.ReactNode;
+  pageSize?: number;
 }
+
+const PAGE_SIZE_DEFAULT = 15;
 
 export function AdminCrudTable<T extends { id: string }>({
   title,
@@ -36,9 +39,11 @@ export function AdminCrudTable<T extends { id: string }>({
   isLoading,
   addLabel = "Add New",
   extraActions,
+  pageSize = PAGE_SIZE_DEFAULT,
 }: AdminCrudTableProps<T>) {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   const filtered = data.filter((item) =>
     columns.some((col) => {
@@ -46,6 +51,16 @@ export function AdminCrudTable<T extends { id: string }>({
       return val && String(val).toLowerCase().includes(search.toLowerCase());
     })
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const paged = filtered.slice(safePage * pageSize, (safePage + 1) * pageSize);
+
+  // Reset page when search changes
+  const handleSearch = (val: string) => {
+    setSearch(val);
+    setPage(0);
+  };
 
   return (
     <div>
@@ -62,7 +77,7 @@ export function AdminCrudTable<T extends { id: string }>({
           type="text"
           placeholder="Search..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>
@@ -86,14 +101,14 @@ export function AdminCrudTable<T extends { id: string }>({
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {paged.length === 0 ? (
                   <tr>
                     <td colSpan={columns.length + 1} className="text-center py-8 text-muted-foreground">
                       No items found
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((item) => (
+                  paged.map((item) => (
                     <tr key={item.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                       {columns.map((col) => (
                         <td key={col.key} className="px-4 py-3">
@@ -123,6 +138,56 @@ export function AdminCrudTable<T extends { id: string }>({
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/30">
+              <span className="text-xs text-muted-foreground">
+                Showing {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, filtered.length)} of {filtered.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={safePage === 0}
+                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i;
+                  } else if (safePage < 3) {
+                    pageNum = i;
+                  } else if (safePage > totalPages - 4) {
+                    pageNum = totalPages - 5 + i;
+                  } else {
+                    pageNum = safePage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`w-8 h-8 rounded-md text-xs font-medium transition-colors ${
+                        safePage === pageNum
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={safePage >= totalPages - 1}
+                  className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

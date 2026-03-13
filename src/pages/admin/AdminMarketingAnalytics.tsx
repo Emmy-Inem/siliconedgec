@@ -101,6 +101,13 @@ export default function AdminMarketingAnalytics() {
       .sort((a, b) => b.leads - a.leads);
   }, [filtered]);
 
+  // Form type breakdown
+  const formTypeData = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach(l => { const ft = l.form_type || "unknown"; map[ft] = (map[ft] ?? 0) + 1; });
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [filtered]);
+
   const inputClass = "px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   if (isLoading) {
@@ -216,6 +223,54 @@ export default function AdminMarketingAnalytics() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground">No campaigns tracked yet</div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Form Type Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+          className="bg-card rounded-2xl border border-border p-5">
+          <h3 className="font-heading font-semibold text-sm mb-4">Lead Type Breakdown</h3>
+          <div className="h-64">
+            {formTypeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={formTypeData}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="value" fill="hsl(142, 71%, 45%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">No data yet</div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-2">
+            {formTypeData.map((ft, i) => (
+              <span key={ft.name} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} /> {ft.name} ({ft.value})
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+          className="bg-card rounded-2xl border border-border p-5">
+          <h3 className="font-heading font-semibold text-sm mb-4">Medium Breakdown</h3>
+          <div className="h-64">
+            {mediumData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={mediumData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80} strokeWidth={2}>
+                    {mediumData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">No data yet</div>
             )}
           </div>
         </motion.div>

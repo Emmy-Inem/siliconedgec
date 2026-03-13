@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File
+  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File, X
 } from "lucide-react";
 import { formatNaira } from "@/lib/format-currency";
+import { logAdminActivity } from "@/lib/admin-logger";
 
 const STEPS = [
   { label: "Course Info", icon: "📝" },
@@ -19,11 +20,6 @@ const STEPS = [
 
 const PRODUCT_TYPES = ["Simple Product", "Grouped Product", "External Product", "Variable Product"];
 const COURSE_TYPES = ["Virtual Course", "Downloadable Course", "Tutor-Led Program"];
-const CATEGORIES = [
-  "Cloud Engineering", "DevOps", "Cybersecurity",
-  "Programming & Software Development", "Data Engineering",
-  "Artificial Intelligence & Machine Learning",
-];
 const DIFFICULTIES = ["Beginner", "Intermediate", "Expert"];
 
 const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
@@ -45,7 +41,8 @@ export default function AdminCourseCreate() {
     course_type: "Virtual Course",
     title: "",
     description: "",
-    category: "Cloud Engineering",
+    category: "",
+    category_id: null as string | null,
     difficulty: "Beginner",
     duration_hours: 10,
     learning_outcomes: "",
@@ -69,6 +66,8 @@ export default function AdminCourseCreate() {
     enable_reviews: true,
     status: "draft",
     instructor_id: null as string | null,
+    // Tags
+    tag_ids: [] as string[],
   });
 
   // Load existing course for editing
@@ -90,6 +89,7 @@ export default function AdminCourseCreate() {
         title: existingCourse.title,
         description: existingCourse.description ?? "",
         category: existingCourse.category,
+        category_id: existingCourse.category_id ?? null,
         difficulty: existingCourse.difficulty,
         duration_hours: Number(existingCourse.duration_hours),
         learning_outcomes: (existingCourse.learning_outcomes ?? []).join("\n"),
@@ -110,9 +110,27 @@ export default function AdminCourseCreate() {
         enable_reviews: (existingCourse as any).enable_reviews ?? true,
         status: (existingCourse as any).status ?? "draft",
         instructor_id: existingCourse.instructor_id ?? null,
+        tag_ids: [],
       });
     }
   }, [existingCourse]);
+
+  // Load existing course tags
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ["admin-course-tags", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("course_tags").select("tag_id").eq("course_id", courseId!);
+      if (error) throw error;
+      return data.map(t => t.tag_id);
+    },
+    enabled: isEditing,
+  });
+
+  useEffect(() => {
+    if (existingTags.length > 0) {
+      setForm(prev => ({ ...prev, tag_ids: existingTags }));
+    }
+  }, [existingTags]);
 
   const { data: instructors = [] } = useQuery({
     queryKey: ["admin-instructors-list"],
@@ -127,6 +145,24 @@ export default function AdminCourseCreate() {
     queryKey: ["admin-courses-list-all"],
     queryFn: async () => {
       const { data, error } = await supabase.from("courses").select("id, title").order("title");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["admin-categories-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name").order("order_index");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: allTags = [] } = useQuery({
+    queryKey: ["admin-tags-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tags").select("id, name").order("name");
       if (error) throw error;
       return data;
     },
@@ -150,6 +186,7 @@ export default function AdminCourseCreate() {
     title: form.title,
     description: form.description,
     category: form.category,
+    category_id: form.category_id,
     difficulty: form.difficulty,
     duration_hours: form.duration_hours,
     learning_outcomes: form.learning_outcomes.split("\n").map(s => s.trim()).filter(Boolean),
@@ -178,13 +215,27 @@ export default function AdminCourseCreate() {
   const saveMutation = useMutation({
     mutationFn: async (statusOverride?: string) => {
       const payload = buildPayload(statusOverride);
+      let savedCourseId = courseId;
       if (isEditing) {
         const { error } = await supabase.from("courses").update(payload).eq("id", courseId!);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("courses").insert(payload);
+        const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
         if (error) throw error;
+        savedCourseId = data.id;
       }
+
+      // Sync tags
+      if (savedCourseId) {
+        await supabase.from("course_tags").delete().eq("course_id", savedCourseId);
+        if (form.tag_ids.length > 0) {
+          await supabase.from("course_tags").insert(
+            form.tag_ids.map(tag_id => ({ course_id: savedCourseId!, tag_id }))
+          );
+        }
+      }
+
+      await logAdminActivity(isEditing ? "update" : "create", "course", savedCourseId ?? undefined, { title: form.title });
     },
     onSuccess: (_, statusOverride) => {
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
@@ -275,8 +326,16 @@ export default function AdminCourseCreate() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium block mb-1">Category</label>
-                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className={inputClass}>
-                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  <select
+                    value={form.category}
+                    onChange={e => {
+                      const selected = categories.find(c => c.name === e.target.value);
+                      setForm({ ...form, category: e.target.value, category_id: selected?.id ?? null });
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -295,6 +354,36 @@ export default function AdminCourseCreate() {
                 <select value={form.instructor_id ?? ""} onChange={e => setForm({ ...form, instructor_id: e.target.value || null })} className={inputClass}>
                   <option value="">No instructor assigned</option>
                   {instructors.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                </select>
+              </div>
+              {/* Tags */}
+              <div>
+                <label className="text-sm font-medium block mb-1">Tags</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {form.tag_ids.map(tid => {
+                    const tag = allTags.find(t => t.id === tid);
+                    return tag ? (
+                      <span key={tid} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                        {tag.name}
+                        <button type="button" onClick={() => setForm(prev => ({ ...prev, tag_ids: prev.tag_ids.filter(id => id !== tid) }))}
+                          className="hover:text-destructive"><X className="h-3 w-3" /></button>
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+                <select
+                  value=""
+                  onChange={e => {
+                    if (e.target.value && !form.tag_ids.includes(e.target.value)) {
+                      setForm(prev => ({ ...prev, tag_ids: [...prev.tag_ids, e.target.value] }));
+                    }
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">Add a tag...</option>
+                  {allTags.filter(t => !form.tag_ids.includes(t.id)).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
                 </select>
               </div>
               <div>

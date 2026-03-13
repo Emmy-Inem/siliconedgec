@@ -5,6 +5,7 @@ import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { logAdminActivity } from "@/lib/admin-logger";
 
 interface EnrollmentRow {
   id: string;
@@ -77,12 +78,21 @@ export default function AdminEnrollments() {
       const { error } = await supabase.from("enrollments").update(form).eq("id", editing.id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); setDialogOpen(false); toast({ title: "Updated" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-enrollments"] });
+      setDialogOpen(false);
+      toast({ title: "Updated" });
+      if (editing) logAdminActivity("update", "enrollment", editing.id, { payment_status: form.payment_status });
+    },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("enrollments").delete().eq("id", id); if (error) throw error; },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("enrollments").delete().eq("id", id);
+      if (error) throw error;
+      await logAdminActivity("delete", "enrollment", id);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-enrollments"] }); toast({ title: "Deleted" }); },
   });
 

@@ -92,7 +92,26 @@ export default function SignIn() {
               </div>
 
               <div className="flex justify-end">
-                <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={async () => {
+                    if (!email) {
+                      toast({ title: "Enter your email", description: "Please enter your email address first.", variant: "destructive" });
+                      return;
+                    }
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/sign-in`,
+                    });
+                    if (error) {
+                      toast({ title: "Error", description: error.message, variant: "destructive" });
+                    } else {
+                      toast({ title: "Check your email", description: "A password reset link has been sent to your email." });
+                    }
+                  }}
+                >
+                  Forgot password?
+                </button>
               </div>
 
               <Button type="submit" className="w-full" size="lg" disabled={loading}>

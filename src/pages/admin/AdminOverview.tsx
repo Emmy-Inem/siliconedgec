@@ -118,7 +118,7 @@ export default function AdminOverview() {
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const [courses, instructors, enrollments, testimonials, plans, profiles, promoCodes] = await Promise.all([
-        supabase.from("courses").select("id, is_published, category, price, students_enrolled, created_at"),
+        supabase.from("courses").select("id, title, is_published, category, price, students_enrolled, created_at"),
         supabase.from("instructors").select("id", { count: "exact", head: true }),
         supabase.from("enrollments").select("id, payment_status, created_at, course_id"),
         supabase.from("testimonials").select("id", { count: "exact", head: true }),
@@ -162,7 +162,14 @@ export default function AdminOverview() {
         return { month: monthStr, signups: count };
       });
 
-      const recentEnrollments = allEnrollments.slice(0, 5);
+      // Build course title map for recent enrollments
+      const courseMap = new Map<string, string>();
+      allCourses.forEach(c => courseMap.set(c.id, c.title));
+
+      const recentEnrollments = allEnrollments.slice(0, 5).map(e => ({
+        ...e,
+        course_title: courseMap.get(e.course_id) ?? e.course_id?.slice(0, 8) + "...",
+      }));
 
       return {
         courses: allCourses.length,
@@ -188,7 +195,7 @@ export default function AdminOverview() {
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
     { label: "Enrollments", value: stats?.enrollments ?? 0, sub: `${stats?.totalRevenue ?? 0} paid`, icon: GraduationCap, href: "/admin/enrollments" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
-    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `$${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
+    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `₦${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
     { label: "Testimonials", value: stats?.testimonials ?? 0, sub: "published reviews", icon: MessageSquareQuote, href: "/admin/testimonials" },
   ];
 
@@ -323,7 +330,7 @@ export default function AdminOverview() {
                       <GraduationCap className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium font-mono">{e.course_id?.slice(0, 8)}...</p>
+                      <p className="text-xs font-medium">{e.course_title}</p>
                       <p className="text-[10px] text-muted-foreground">{new Date(e.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
