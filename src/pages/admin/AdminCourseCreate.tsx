@@ -186,6 +186,7 @@ export default function AdminCourseCreate() {
     title: form.title,
     description: form.description,
     category: form.category,
+    category_id: form.category_id,
     difficulty: form.difficulty,
     duration_hours: form.duration_hours,
     learning_outcomes: form.learning_outcomes.split("\n").map(s => s.trim()).filter(Boolean),
@@ -214,13 +215,27 @@ export default function AdminCourseCreate() {
   const saveMutation = useMutation({
     mutationFn: async (statusOverride?: string) => {
       const payload = buildPayload(statusOverride);
+      let savedCourseId = courseId;
       if (isEditing) {
         const { error } = await supabase.from("courses").update(payload).eq("id", courseId!);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("courses").insert(payload);
+        const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
         if (error) throw error;
+        savedCourseId = data.id;
       }
+
+      // Sync tags
+      if (savedCourseId) {
+        await supabase.from("course_tags").delete().eq("course_id", savedCourseId);
+        if (form.tag_ids.length > 0) {
+          await supabase.from("course_tags").insert(
+            form.tag_ids.map(tag_id => ({ course_id: savedCourseId!, tag_id }))
+          );
+        }
+      }
+
+      await logAdminActivity(isEditing ? "update" : "create", "course", savedCourseId ?? undefined, { title: form.title });
     },
     onSuccess: (_, statusOverride) => {
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
