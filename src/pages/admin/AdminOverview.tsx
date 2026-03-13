@@ -195,7 +195,7 @@ export default function AdminOverview() {
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
     { label: "Enrollments", value: stats?.enrollments ?? 0, sub: `${stats?.totalRevenue ?? 0} paid`, icon: GraduationCap, href: "/admin/enrollments" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
-    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `$${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
+    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `₦${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
     { label: "Testimonials", value: stats?.testimonials ?? 0, sub: "published reviews", icon: MessageSquareQuote, href: "/admin/testimonials" },
   ];
 
