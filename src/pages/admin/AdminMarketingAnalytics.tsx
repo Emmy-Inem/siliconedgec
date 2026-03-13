@@ -101,6 +101,13 @@ export default function AdminMarketingAnalytics() {
       .sort((a, b) => b.leads - a.leads);
   }, [filtered]);
 
+  // Form type breakdown
+  const formTypeData = useMemo(() => {
+    const map: Record<string, number> = {};
+    filtered.forEach(l => { const ft = l.form_type || "unknown"; map[ft] = (map[ft] ?? 0) + 1; });
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [filtered]);
+
   const inputClass = "px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   if (isLoading) {
