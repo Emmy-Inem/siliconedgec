@@ -150,6 +150,24 @@ export default function AdminCourseCreate() {
     },
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ["admin-categories-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("id, name").order("order_index");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: allTags = [] } = useQuery({
+    queryKey: ["admin-tags-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tags").select("id, name").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
