@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Shield, ShieldCheck, User } from "lucide-react";
+import { logAdminActivity } from "@/lib/admin-logger";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Profile = Tables<"profiles">;
@@ -68,16 +69,12 @@ export default function AdminUsers() {
   const save = useMutation({
     mutationFn: async () => {
       if (!editing) return;
-      // Update profile
       const { error: profileErr } = await supabase.from("profiles").update({ full_name: form.full_name, bio: form.bio }).eq("id", editing.id);
       if (profileErr) throw profileErr;
 
-      // Update role
       const currentRole = editing.role ?? "user";
       if (form.role !== currentRole) {
-        // Delete existing role
         await supabase.from("user_roles").delete().eq("user_id", editing.user_id);
-        // Insert new role (skip if "user" — no row needed)
         if (form.role !== "user") {
           const { error: roleErr } = await supabase.from("user_roles").insert({
             user_id: editing.user_id,
@@ -85,18 +82,11 @@ export default function AdminUsers() {
           });
           if (roleErr) throw roleErr;
         }
+        await logAdminActivity("update_role", "user", editing.user_id, { from: currentRole, to: form.role });
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); setDialogOpen(false); toast({ title: "User updated" }); },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
-  });
-
-  const del = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("profiles").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast({ title: "User profile deleted" }); },
   });
 
   return (
@@ -104,7 +94,7 @@ export default function AdminUsers() {
       <AdminCrudTable title="Users" data={data} columns={columns} isLoading={isLoading} addLabel="(Users self-register)"
         onAdd={() => toast({ title: "Info", description: "Users create accounts via the Sign Up page." })}
         onEdit={(p) => { setEditing(p); setForm({ full_name: p.full_name ?? "", bio: p.bio ?? "", role: p.role ?? "user" }); setDialogOpen(true); }}
-        onDelete={(id) => del.mutate(id)}
+        onDelete={() => toast({ title: "Not allowed", description: "User profiles cannot be deleted from the admin panel for security reasons.", variant: "destructive" })}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
