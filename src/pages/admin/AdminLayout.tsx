@@ -1,13 +1,20 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
+import { canAccessRoute } from "@/lib/admin-permissions";
 import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export default function AdminLayout() {
-  const { user, signOut } = useAuth();
+  const { user, adminRole, signOut } = useAuth();
+  const location = useLocation();
+
+  // Route-level permission guard
+  if (adminRole && !canAccessRoute(adminRole, location.pathname)) {
+    return <Navigate to="/admin" replace />;
+  }
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -17,6 +24,9 @@ export default function AdminLayout() {
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
             <h2 className="font-heading font-semibold text-sm">Admin Panel</h2>
+            {adminRole === "moderator" && (
+              <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium">Moderator</span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />

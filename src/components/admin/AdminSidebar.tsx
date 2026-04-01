@@ -9,6 +9,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAccessibleSections } from "@/lib/admin-permissions";
 
 const sections = [
   {
@@ -70,12 +72,12 @@ const sections = [
   },
 ];
 
-function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+function SidebarContent({ collapsed, onNavigate, filteredSections }: { collapsed: boolean; onNavigate?: () => void; filteredSections: typeof sections }) {
   const location = useLocation();
 
   return (
     <nav className="flex-1 overflow-y-auto p-3 space-y-5">
-      {sections.map((section) => (
+      {filteredSections.map((section) => (
         <div key={section.label}>
           <AnimatePresence>
             {!collapsed && (
@@ -144,12 +146,16 @@ export function AdminSidebar() {
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { adminRole } = useAuth();
 
-  // Mobile: drawer overlay
+  const allowedSections = getAccessibleSections(adminRole);
+  const filteredSections = allowedSections
+    ? sections.filter((s) => allowedSections.includes(s.label))
+    : sections;
+
   if (isMobile) {
     return (
       <>
-        {/* Mobile toggle button rendered via AdminLayout header */}
         <AnimatePresence>
           {mobileOpen && (
             <>
@@ -175,7 +181,7 @@ export function AdminSidebar() {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+                <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} filteredSections={filteredSections} />
                 <div className="p-3 border-t border-border">
                   <Link
                     to="/"
@@ -190,7 +196,6 @@ export function AdminSidebar() {
             </>
           )}
         </AnimatePresence>
-        {/* Expose toggle function for the header */}
         <button
           onClick={() => setMobileOpen(true)}
           className="fixed bottom-4 left-4 z-30 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center md:hidden"
@@ -202,7 +207,6 @@ export function AdminSidebar() {
     );
   }
 
-  // Desktop: collapsible sidebar
   return (
     <aside className={cn(
       "bg-card border-r border-border flex flex-col transition-all duration-300 shrink-0 relative",
@@ -228,7 +232,7 @@ export function AdminSidebar() {
         </motion.button>
       </div>
 
-      <SidebarContent collapsed={collapsed} />
+      <SidebarContent collapsed={collapsed} filteredSections={filteredSections} />
 
       <div className="p-3 border-t border-border">
         <Link
