@@ -102,14 +102,14 @@ const staggerContainer = {
 
 const staggerItem = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
 };
 
 const sectionReveal = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
-  transition: { type: "spring", stiffness: 60, damping: 20 },
+  transition: { type: "spring" as const, stiffness: 60, damping: 20 },
 };
 
 export default function Index() {
