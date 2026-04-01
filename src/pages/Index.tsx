@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { ArrowRight, BookOpen, Users, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,30 @@ function useTypewriter(words: string[], speed = 80, pause = 2000) {
   return text;
 }
 
+function CountUp({ target, duration = 2 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const increment = target / (duration * 60);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 1000 / 60);
+    return () => clearInterval(timer);
+  }, [inView, target, duration]);
+
+  return <span ref={ref}>{count.toLocaleString()}</span>;
+}
+
 const instructors = [
   { name: "Mary Roberts", role: "Professional Web Developer", rating: 4.5, students: 9692, courses: 3, image: instructor1 },
   { name: "DevOps Mentor", role: "Developer of Bootcamp", rating: 4.5, students: 5128, courses: 5, image: instructor2 },
@@ -67,20 +91,37 @@ const testimonials = [
   { name: "Barry Watson", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
 ];
 
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
 
+const staggerItem = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
+};
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
+const sectionReveal = {
+  initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.5 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { type: "spring" as const, stiffness: 60, damping: 20 },
 };
 
 export default function Index() {
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const { data: courses = [] } = useCourses();
+
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
 
@@ -101,18 +142,38 @@ export default function Index() {
       <Header />
 
       {/* Hero */}
-      <section className="bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.1),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(262_83%_58%/0.06),transparent_50%)]" />
-        <div className="container mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28 relative">
+      <section ref={heroRef} className="bg-hero relative overflow-hidden">
+        {/* Animated gradient mesh background */}
+        <div className="absolute inset-0 gradient-mesh" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(262_83%_58%/0.08),transparent_50%)]" />
+
+        {/* Floating orbs */}
+        <motion.div
+          className="absolute top-20 right-[15%] w-64 h-64 rounded-full bg-primary/5 blur-3xl"
+          animate={{ y: [0, -30, 0], x: [0, 15, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-10 left-[10%] w-48 h-48 rounded-full bg-accent/5 blur-3xl"
+          animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28 relative">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ type: "spring", stiffness: 50, damping: 20 }}
             className="max-w-3xl mx-auto text-center"
           >
             {/* Cloud provider logos */}
-            <div className="flex items-center justify-center gap-4 mb-8">
+            <motion.div
+              className="flex items-center justify-center gap-4 mb-8"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
               {[
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg", alt: "Google Cloud" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
@@ -120,19 +181,23 @@ export default function Index() {
               ].map((logo) => (
                 <motion.div
                   key={logo.alt}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-card shadow-sm flex items-center justify-center p-2"
+                  variants={staggerItem}
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2 border border-border/30"
                 >
                   <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
 
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-primary font-medium text-sm tracking-widest uppercase mb-4"
+            >
               Start Learning
-            </p>
+            </motion.p>
             <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
               <span className="text-gradient">
                 {typedText}
@@ -142,11 +207,21 @@ export default function Index() {
             <h2 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4">
               Unlock your tech career<span className="text-gold">.</span>
             </h2>
-            <p className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed"
+            >
               Live Online Courses. Hands-On Projects. Real Certifications.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button size="lg" asChild className="hover-scale animate-pulse-glow">
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, type: "spring" }}
+              className="flex flex-wrap justify-center gap-3"
+            >
+              <Button size="lg" asChild className="shimmer-btn text-primary-foreground hover-scale relative overflow-hidden">
                 <Link to="/courses">
                   Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -154,38 +229,45 @@ export default function Index() {
               <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
                 <Link to="/sign-up">Sign up now</Link>
               </Button>
-            </div>
+            </motion.div>
 
             {/* Tech logos below CTA */}
-            <div className="flex items-center justify-center gap-4 mt-10">
+            <motion.div
+              className="flex items-center justify-center gap-4 mt-10"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
               {[
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg", alt: "Python" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg", alt: "Angular" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", alt: "JavaScript" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openal/openal-original.svg", alt: "AI" },
-              ].map((logo, i) => (
+              ].map((logo) => (
                 <motion.div
                   key={logo.alt}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-card shadow-sm flex items-center justify-center p-2.5"
+                  variants={staggerItem}
+                  whileHover={{ scale: 1.2, y: -5 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2.5 border border-border/30"
                 >
                   <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       {/* WhatsApp Community Banner */}
       <section className="bg-primary/5 border-y border-primary/10 py-6">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"
+            >
               <Users className="h-5 w-5 text-primary" />
-            </div>
+            </motion.div>
             <div>
               <p className="font-heading font-semibold text-sm">Join Our Community</p>
               <p className="text-muted-foreground text-xs">Get instant course updates on WhatsApp.</p>
@@ -205,7 +287,7 @@ export default function Index() {
       {/* Why Learn with Silicon Edge */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-4">
+          <motion.div {...sectionReveal} className="text-center mb-4">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Learn with Silicon Edge</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
               Build better skills, <span className="text-gradient">faster</span><span className="text-gold">.</span>
@@ -215,36 +297,74 @@ export default function Index() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14"
+          >
             {[
               { icon: BookOpen, title: "Instructor-Led Learning", desc: "Live classes mean active participation, instant answers, and continuous support." },
               { icon: Award, title: "Built for Completion", desc: "Structured, tutor-led learning ensures course completion and no drop-outs." },
               { icon: Briefcase, title: "Skills That Get You Hired", desc: "Industry-aligned curriculum builds practical skills and real-life projects." },
               { icon: Zap, title: "Beyond Certification", desc: "Job training equips you for local and remote IT roles." },
-            ].map((prop, i) => (
+            ].map((prop) => (
               <motion.div
                 key={prop.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-7 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all group"
+                variants={staggerItem}
+                whileHover={{ y: -8, transition: { type: "spring", stiffness: 300 } }}
+                className="glass-card rounded-xl border border-border p-7 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 transition-all group relative overflow-hidden"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                {/* Hover glow */}
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)]" />
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors relative z-10"
+                >
                   <prop.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-heading font-semibold text-base mb-2">{prop.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{prop.desc}</p>
+                </motion.div>
+                <h3 className="font-heading font-semibold text-base mb-2 relative z-10">{prop.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed relative z-10">{prop.desc}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-12 bg-hero relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-50" />
+        <div className="container mx-auto px-4 relative">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-8"
+          >
+            {[
+              { value: 5000, label: "Students Enrolled", suffix: "+" },
+              { value: 50, label: "Expert Courses", suffix: "+" },
+              { value: 95, label: "Completion Rate", suffix: "%" },
+              { value: 20, label: "Industry Partners", suffix: "+" },
+            ].map((stat) => (
+              <motion.div key={stat.label} variants={staggerItem} className="text-center">
+                <p className="font-heading text-3xl md:text-4xl font-bold text-hero">
+                  <CountUp target={stat.value} />
+                  <span className="text-primary">{stat.suffix}</span>
+                </p>
+                <p className="text-hero-muted text-sm mt-1">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* Browse Categories - Horizontal Scroll Courses */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp}>
+          <motion.div {...sectionReveal}>
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
@@ -260,34 +380,40 @@ export default function Index() {
           {/* Category pills */}
           <div className="flex flex-wrap gap-2 mb-8">
             {categories.map((cat) => (
-              <button
+              <motion.button
                 key={cat}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeCategory === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground hover-scale"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                    : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
                 }`}
               >
                 {cat}
-              </button>
+              </motion.button>
             ))}
           </div>
 
           {/* Horizontal scroll */}
           <div className="relative">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => scrollCourses("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3 hover-scale"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3"
             >
               <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => scrollCourses("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3 hover-scale"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3"
             >
               <ChevronRight className="h-5 w-5" />
-            </button>
+            </motion.button>
 
             <div
               ref={scrollRef}
@@ -307,7 +433,7 @@ export default function Index() {
       {/* World-class Instructors */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-14">
+          <motion.div {...sectionReveal} className="text-center mb-14">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class Instructors</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
                Classes Taught by <span className="text-gradient">Industry Experts</span><span className="text-gold">.</span>
@@ -317,40 +443,53 @@ export default function Index() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {instructors.map((inst, i) => (
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {instructors.map((inst) => (
               <motion.div
                 key={inst.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-lg hover:border-primary/20 transition-all group hover-scale"
+                variants={staggerItem}
+                whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
+                className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all group relative overflow-hidden"
               >
-                <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_30%,hsl(var(--primary)/0.06),transparent_70%)]" />
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 ring-2 ring-transparent group-hover:ring-primary/30 transition-all relative z-10"
+                >
                   <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
-                </div>
-                <h3 className="font-heading font-semibold">{inst.name}</h3>
-                <p className="text-muted-foreground text-sm mt-1">{inst.role}</p>
-                <div className="flex items-center justify-center gap-1 mt-3">
+                </motion.div>
+                <h3 className="font-heading font-semibold relative z-10">{inst.name}</h3>
+                <p className="text-muted-foreground text-sm mt-1 relative z-10">{inst.role}</p>
+                <div className="flex items-center justify-center gap-1 mt-3 relative z-10">
                   <Star className="h-4 w-4 fill-accent text-accent" />
                   <span className="text-sm font-medium">{inst.rating}</span>
                 </div>
-                <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground relative z-10"
+                >
                   <span>{inst.students.toLocaleString()} Students</span>
                   <span>{inst.courses} Courses</span>
-                </div>
+                </motion.div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Meet Your Mentors */}
-      <section className="py-20 bg-hero">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-hero relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-30" />
+        <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div {...fadeInUp}>
+            <motion.div {...sectionReveal}>
               <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet Your Mentors</p>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6">
                 Guiding Your Tech Journey<span className="text-gold">.</span>
@@ -366,15 +505,19 @@ export default function Index() {
                 ].map((item, i) => (
                   <motion.div
                     key={item.title}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.15 }}
+                    transition={{ type: "spring", stiffness: 80, delay: i * 0.15 }}
                     viewport={{ once: true }}
+                    whileHover={{ x: 8 }}
                     className="flex gap-4"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                    <motion.div
+                      whileHover={{ scale: 1.15, rotate: 5 }}
+                      className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0"
+                    >
                       <item.icon className="h-5 w-5 text-primary" />
-                    </div>
+                    </motion.div>
                     <div>
                       <h4 className="font-heading font-semibold text-hero text-sm">{item.title}</h4>
                       <p className="text-hero-muted text-sm mt-0.5">{item.desc}</p>
@@ -385,10 +528,11 @@ export default function Index() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+              transition={{ type: "spring", stiffness: 60, damping: 20 }}
+              whileHover={{ scale: 1.02, rotate: 1 }}
               className="rounded-2xl overflow-hidden border border-primary/10 glow-purple"
             >
               <img src={courseBanner} alt="Cloud Engineering Crash Course" className="w-full h-full object-cover" />
@@ -397,13 +541,10 @@ export default function Index() {
         </div>
       </section>
 
-
-
-
       {/* Testimonials */}
       <section className="py-20 overflow-hidden">
         <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-14">
+          <motion.div {...sectionReveal} className="text-center mb-14">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Testimonials</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
               Don't just take <span className="text-gradient">our word for it</span>.
@@ -411,10 +552,14 @@ export default function Index() {
             <p className="text-muted-foreground">Join thousands learning on Silicon Edge</p>
           </motion.div>
 
-          <div className="relative">
-            <div className="flex animate-marquee gap-6" style={{ width: "max-content" }}>
+          <div className="relative group/marquee">
+            <div className="flex animate-marquee gap-6 group-hover/marquee:[animation-play-state:paused]" style={{ width: "max-content" }}>
               {[...testimonials, ...testimonials].map((t, i) => (
-                <div key={i} className="w-[340px] bg-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0">
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
+                  className="w-[340px] glass-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0 hover:border-primary/20 hover:shadow-lg transition-all"
+                >
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, j) => (
                       <Star key={j} className="h-4 w-4 fill-accent text-accent" />
@@ -432,7 +577,7 @@ export default function Index() {
                       <p className="text-xs text-muted-foreground">{t.role}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -440,9 +585,15 @@ export default function Index() {
       </section>
 
       {/* CTA */}
-      <section className="bg-hero py-20">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div {...fadeInUp}>
+      <section className="bg-hero py-20 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-40" />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 blur-3xl"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div className="container mx-auto px-4 text-center relative">
+          <motion.div {...sectionReveal}>
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Join more than 1 million learners worldwide</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-4">
               Start Building your tech career
@@ -450,11 +601,13 @@ export default function Index() {
             <p className="text-hero-muted max-w-lg mx-auto mb-8">
               Effective learning starts with assessment. Learning a new skill is hard work, Silicon Edge makes it easier.
             </p>
-            <Button size="lg" asChild className="hover-scale animate-pulse-glow">
-              <Link to="/courses">
-                Browse Courses <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
+                <Link to="/courses">
+                  Browse Courses <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </motion.div>
           </motion.div>
         </div>
       </section>

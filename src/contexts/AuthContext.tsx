@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import type { AdminRole } from "@/lib/admin-permissions";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  adminRole: AdminRole;
   signOut: () => Promise<void>;
 }
 
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isAdmin: false,
+  adminRole: null,
   signOut: async () => {},
 });
 
@@ -22,22 +25,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState<AdminRole>(null);
 
   const checkAdminRole = async (userId: string) => {
     try {
-      const { data } = await supabase.rpc("has_role", {
+      // Check admin first
+      const { data: isAdm } = await supabase.rpc("has_role", {
         _user_id: userId,
         _role: "admin",
       });
-      setIsAdmin(!!data);
+      if (isAdm) {
+        setAdminRole("admin");
+        return;
+      }
+      // Check moderator
+      const { data: isMod } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "moderator",
+      });
+      if (isMod) {
+        setAdminRole("moderator");
+        return;
+      }
+      setAdminRole(null);
     } catch {
-      setIsAdmin(false);
+      setAdminRole(null);
     }
   };
 
   useEffect(() => {
-    // Get initial session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -48,16 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Listen for auth changes after initial load
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-
         if (session?.user) {
           checkAdminRole(session.user.id).finally(() => setLoading(false));
         } else {
-          setIsAdmin(false);
+          setAdminRole(null);
           setLoading(false);
         }
       }
@@ -70,8 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const isAdmin = adminRole === "admin" || adminRole === "moderator";
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, adminRole, signOut }}>
       {children}
     </AuthContext.Provider>
   );
