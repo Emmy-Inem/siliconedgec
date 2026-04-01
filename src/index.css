@@ -130,6 +130,29 @@
   .glow-purple {
     box-shadow: 0 0 40px -8px hsl(var(--purple-glow) / 0.35);
   }
+  .glass-card {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .shimmer-btn {
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+    background-image: linear-gradient(
+      110deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary)) 40%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--primary)) 60%,
+      hsl(var(--primary)) 100%
+    );
+  }
+  .gradient-mesh {
+    background:
+      radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, hsl(var(--gold) / 0.04) 0%, transparent 50%);
+  }
 }
 
 @layer components {
