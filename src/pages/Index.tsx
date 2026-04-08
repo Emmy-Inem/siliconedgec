@@ -329,34 +329,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-50" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
-          >
-            {[
-              { value: 0, label: "Students Enrolled", suffix: "+" },
-              { value: 0, label: "Expert Courses", suffix: "+" },
-              { value: 100, label: "Completion Rate", suffix: "%" },
-              { value: 0, label: "Industry Partners", suffix: "+" },
-            ].map((stat) => (
-              <motion.div key={stat.label} variants={staggerItem} className="text-center">
-                <p className="font-heading text-3xl md:text-4xl font-bold text-hero">
-                  <CountUp target={stat.value} />
-                  <span className="text-primary">{stat.suffix}</span>
-                </p>
-                <p className="text-hero-muted text-sm mt-1">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
 
       {/* Browse Categories - Horizontal Scroll Courses */}
       <section className="py-20 bg-muted/30">
