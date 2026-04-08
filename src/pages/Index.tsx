@@ -77,18 +77,15 @@ function CountUp({ target, duration = 2 }: { target: number; duration?: number }
 }
 
 const instructors = [
-  { name: "Mary Roberts", role: "Professional Web Developer", rating: 4.5, students: 9692, courses: 3, image: instructor1 },
-  { name: "DevOps Mentor", role: "Developer of Bootcamp", rating: 4.5, students: 5128, courses: 5, image: instructor2 },
-  { name: "Ross Johnson", role: "Engineering Architect", rating: 4.5, students: 7423, courses: 8, image: instructor3 },
-  { name: "James Davies", role: "Cloud Engineer", rating: 4.5, students: 3896, courses: 5, image: instructor4 },
+  { name: "Instructor", role: "Cloud Engineer", rating: 4.8, students: 0, courses: 0, image: instructor1 },
+  { name: "Instructor", role: "DevOps Engineer", rating: 4.7, students: 0, courses: 0, image: instructor2 },
+  { name: "Instructor", role: "Software Engineer", rating: 4.9, students: 0, courses: 0, image: instructor3 },
+  { name: "Instructor", role: "AI/ML Specialist", rating: 4.8, students: 0, courses: 0, image: instructor4 },
 ];
 
 const testimonials = [
-  { name: "Linda Shenoy", role: "Developer and Bootcamp Instructor", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
-  { name: "Jean Watson", role: "Engineering Architect", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
-  { name: "John Deo", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
-  { name: "Rubik Nanda", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
-  { name: "Barry Watson", role: "Web Developer, UK", quote: "I started at stage zero. With Silicon Edge I was able to start learning online and eventually build up enough knowledge and skills to transition into a well-paying career." },
+  { name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer." },
+  { name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role." },
 ];
 
 const staggerContainer = {
@@ -344,10 +341,10 @@ export default function Index() {
             className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
             {[
-              { value: 5000, label: "Students Enrolled", suffix: "+" },
-              { value: 50, label: "Expert Courses", suffix: "+" },
-              { value: 95, label: "Completion Rate", suffix: "%" },
-              { value: 20, label: "Industry Partners", suffix: "+" },
+              { value: 0, label: "Students Enrolled", suffix: "+" },
+              { value: 0, label: "Expert Courses", suffix: "+" },
+              { value: 100, label: "Completion Rate", suffix: "%" },
+              { value: 0, label: "Industry Partners", suffix: "+" },
             ].map((stat) => (
               <motion.div key={stat.label} variants={staggerItem} className="text-center">
                 <p className="font-heading text-3xl md:text-4xl font-bold text-hero">
@@ -594,7 +591,7 @@ export default function Index() {
         />
         <div className="container mx-auto px-4 text-center relative">
           <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Join more than 1 million learners worldwide</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Start your learning journey today</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-4">
               Start Building your tech career
             </h2>
