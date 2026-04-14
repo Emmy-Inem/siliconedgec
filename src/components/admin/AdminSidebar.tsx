@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -51,6 +51,7 @@ const sections = [
     items: [
       { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
+      { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
     ],
   },
