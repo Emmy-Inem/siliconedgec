@@ -73,6 +73,51 @@ export type Database = {
           },
         ]
       }
+      business_leads: {
+        Row: {
+          company_name: string
+          company_size: string | null
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          industry: string | null
+          message: string | null
+          phone: string | null
+          status: string
+          training_needs: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          company_size?: string | null
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          industry?: string | null
+          message?: string | null
+          phone?: string | null
+          status?: string
+          training_needs?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          company_size?: string | null
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          industry?: string | null
+          message?: string | null
+          phone?: string | null
+          status?: string
+          training_needs?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           course_id: string

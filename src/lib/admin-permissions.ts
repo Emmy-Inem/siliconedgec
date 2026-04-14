@@ -23,6 +23,7 @@ const ADMIN_ONLY_ROUTES = [
   "/admin/settings",
   "/admin/marketing",
   "/admin/influencers-marketing",
+  "/admin/business-leads",
   "/admin/activity-log",
   "/admin/email",
   "/admin/pricing",
