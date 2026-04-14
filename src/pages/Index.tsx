@@ -20,6 +20,11 @@ const typewriterWords = [
   "Software Engineering",
   "Artificial Intelligence",
   "Web Development",
+  "Cybersecurity",
+  "Data Science",
+  "DevOps",
+  "Product Design",
+  "UI/UX Design",
 ];
 
 function useTypewriter(words: string[], speed = 80, pause = 2000) {
@@ -198,7 +203,7 @@ export default function Index() {
             <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
               <span className="text-gradient">
                 {typedText}
-                <span className="border-r-2 border-primary animate-typewriter-blink ml-0.5" />
+                <span className="inline-block w-[3px] h-[1em] bg-primary ml-1 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
               </span>
             </h1>
             <h2 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4">
