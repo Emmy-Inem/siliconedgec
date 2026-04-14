@@ -44,6 +44,8 @@ import AdminQuizzes from "./pages/admin/AdminQuizzes";
 import AdminQuizAttempts from "./pages/admin/AdminQuizAttempts";
 import AdminQnA from "./pages/admin/AdminQnA";
 import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
+import AdminBusinessLeads from "./pages/admin/AdminBusinessLeads";
+import CourseLearning from "./pages/CourseLearning";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,7 @@ const App = () => (
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/courses/:id/learn" element={<CourseLearning />} />
 
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route index element={<AdminOverview />} />
@@ -94,6 +97,7 @@ const App = () => (
                 <Route path="quiz-attempts" element={<AdminQuizAttempts />} />
                 <Route path="qna" element={<AdminQnA />} />
                 <Route path="announcements" element={<AdminCourseAnnouncements />} />
+                <Route path="business-leads" element={<AdminBusinessLeads />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 
