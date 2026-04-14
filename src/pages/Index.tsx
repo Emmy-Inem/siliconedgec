@@ -200,7 +200,7 @@ export default function Index() {
             >
               Start Learning
             </motion.p>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2">
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2 min-h-[2.5em] sm:min-h-[2em]">
               <span className="text-gradient">
                 {typedText}
                 <span className="inline-block w-[3px] h-[1em] bg-primary ml-1 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
