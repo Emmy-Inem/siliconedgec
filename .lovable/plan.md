@@ -1,111 +1,87 @@
 
 
-# Plan: Premium Homepage Animations + Role-Based Admin Access Control
+# Plan: Homepage Animation Fixes + Backend/Admin Feature Audit
 
-## Part 1: Premium Homepage Redesign with Dynamic Animations
+## Part 1: Homepage Typewriter — Add More Courses & Fix Animation
 
-### Current State
-The homepage uses basic Framer Motion `fadeInUp` animations and simple hover effects. It looks functional but not "breathtaking."
+**Current issue:** The typewriter only cycles through 4 terms: "Cloud Engineering", "Software Engineering", "Artificial Intelligence", "Web Development". The blinking cursor uses a class `animate-typewriter-blink` that may not be defined, causing a broken animation.
 
-### Changes
+**Changes to `src/pages/Index.tsx`:**
+- Expand `typewriterWords` array to include: "Cloud Engineering", "Software Engineering", "Artificial Intelligence", "Web Development", "Cybersecurity", "Data Science", "DevOps", "Product Design", "UI/UX Design"
+- Fix the cursor blink — replace the `animate-typewriter-blink` class with a proper Tailwind animation or inline style using `animate-pulse` or a custom keyframe
+- Ensure the typewriter text has a minimum height so the layout doesn't jump between words of different lengths
 
-**A. Enhanced Animation System** (`src/pages/Index.tsx`)
-- Add staggered children animations for card grids (cards cascade in with slight delays)
-- Add parallax-style scroll effects on the hero section background gradients
-- Add a subtle floating particle/gradient orb effect behind the hero text
-- Add smooth `whileHover` 3D tilt/lift effects on course cards and instructor cards
-- Add count-up number animations for stats (students, courses, etc.)
-- Add a gradient border shimmer animation on the hero CTA button
-- Add scroll-triggered section reveal animations with spring physics (not just linear fade)
-
-**B. Premium Visual Polish** (`src/index.css`, `tailwind.config.ts`)
-- Add glassmorphism effects (backdrop-blur + semi-transparent backgrounds) on feature cards
-- Add subtle gradient mesh background sections
-- Add smooth section transitions with overlapping curved dividers
-- Add new keyframes: `shimmer`, `gradient-shift`, `float-slow`, `scale-bounce`
-- Add a "shine" sweep animation on the CTA buttons
-
-**C. Specific Section Upgrades**
-- **Hero**: Animated gradient mesh background, larger typography with gradient text animations, floating tech logos with gentle bobbing, shimmer effect on CTA
-- **Feature Cards**: Glass card effect with backdrop-blur, hover glow ring, icon pop animation on hover
-- **Course Carousel**: Cards with 3D perspective tilt on hover, smoother scroll snap
-- **Instructor Cards**: Hover reveals rating/stats with slide-up animation
-- **Testimonials**: Smoother infinite marquee with pause-on-hover
-- **CTA Section**: Animated background gradient shift, pulsing glow
-
-**D. CourseCard Enhancement** (`src/components/CourseCard.tsx`)
-- Add image zoom on hover
-- Add gradient overlay on thumbnail
-- Add smoother shadow transitions
+**Changes to `tailwind.config.ts`:**
+- Add `typewriter-blink` keyframe if missing (alternating opacity 0/1 at 500ms interval)
 
 ---
 
-## Part 2: Granular Role-Based Admin Access Control
+## Part 2: Missing Backend, Admin & Business Features Audit
 
-### Current State
-- 3 roles exist: `admin`, `moderator`, `user`
-- `RequireAdmin` only checks `isAdmin` (binary)
-- All admin users see all sidebar items and have full access
-- Moderators exist in the DB but have no differentiated access
+Here is a comprehensive list of what's missing or incomplete before the platform is production-ready:
 
-### Design
+### A. Payment Processing (CRITICAL — Not Functional)
+- **No edge functions exist** for Paystack or Stripe integration
+- `PaymentModal.tsx` collects card details client-side but has no backend to process payments
+- No payment verification, webhook handling, or order/receipt storage
+- **Action needed:** Create Paystack edge function, payment verification flow, and `orders` table
 
-**Role Permissions Model:**
+### B. Business/Corporate Features (Partially Missing)
+- The `/for-businesses` form doesn't actually submit data anywhere — `onSubmit` just calls `e.preventDefault()`
+- No `business_leads` table to store corporate inquiries
+- No admin view for managing business lead submissions
+- **Action needed:** Create `business_leads` table, wire up form submission, add admin page for viewing leads
 
-```text
-Role         | Access
--------------|------------------------------------------
-admin        | Full access to everything
-moderator    | Courses, Students, Enrollments, Q&A,
-             | Announcements, Quizzes, Testimonials
-             | (NO access to: Users & Roles, Settings,
-             | Marketing Analytics, Influencer Marketing,
-             | Activity Log, Email Blasts, Pricing Plans)
-user         | No admin access
-```
+### C. Email System (Not Functional)
+- `AdminEmail.tsx` exists but no edge function to actually send emails
+- No transactional email setup (welcome emails, enrollment confirmations, password resets)
+- **Action needed:** Create email-sending edge function, configure email templates
 
-### Changes
+### D. Course Content Delivery
+- No video/content hosting or playback — lessons have `content_url` but no player component
+- No lesson viewer page where students consume course materials
+- Students can see enrolled courses in Dashboard but can't actually take them
+- **Action needed:** Create `/courses/:id/learn` route with lesson viewer, video player, and progress tracking
 
-**A. Create Permission System** (`src/lib/admin-permissions.ts`)
-- Define a `ROLE_PERMISSIONS` map that maps each role to a list of allowed admin route paths
-- Export a `canAccessRoute(role, path)` helper
-- Export a `getAccessibleSections(role)` to filter sidebar sections
+### E. Certificate Generation
+- `Certificates.tsx` page exists but certificates are not generated from actual course completion data
+- No PDF generation for certificates
+- **Action needed:** Create certificate generation (edge function or client-side PDF), link to enrollment completion
 
-**B. Update AuthContext** (`src/contexts/AuthContext.tsx`)
-- Add `adminRole: 'admin' | 'moderator' | null` to context (instead of just boolean `isAdmin`)
-- Fetch the actual role string from `user_roles` table
-- Keep `isAdmin` for backward compatibility (true if role is admin OR moderator)
+### F. File/Resource Management
+- `course-thumbnails` storage bucket exists but no general course resources/materials storage
+- No way to upload/download course materials (PDFs, slides, assignments)
+- **Action needed:** Create `course-resources` storage bucket, admin upload UI, student download UI
 
-**C. Update RequireAdmin** (`src/components/RequireAdmin.tsx`)
-- Accept optional `requiredRole?: 'admin' | 'moderator'` prop
-- Add per-route permission checking using the permission map
+### G. Admin Features Still Incomplete
+1. **AdminOverview dashboard** — should show real metrics (revenue, active students, recent enrollments) from DB
+2. **AdminAnalytics** — should pull real enrollment/revenue data, not mock data
+3. **Notification system** — `NotificationBell.tsx` exists but notifications aren't created by any triggers
+4. **Bulk operations** — no bulk delete/update in admin tables
+5. **Admin search** — no global search across admin sections
 
-**D. Update AdminSidebar** (`src/components/admin/AdminSidebar.tsx`)
-- Filter sidebar sections based on `adminRole` using `getAccessibleSections()`
-- Moderators only see their allowed sections
+### H. Authentication Gaps
+- Google OAuth is referenced in architecture but may not be configured
+- No "Forgot Password" flow completion (reset page after email link)
+- No email verification enforcement check
 
-**E. Update AdminLayout** (`src/pages/admin/AdminLayout.tsx`)
-- Check current route against user's permissions
-- Redirect to admin overview if accessing unauthorized route
+### I. Real-time Features Missing
+- No real-time notifications for new enrollments, Q&A posts
+- No live class scheduling/integration (mentioned in business features)
+- `supabase_realtime` not enabled on any tables
 
-**F. Update App.tsx Routes**
-- No route structure changes needed; permission enforcement happens in AdminLayout and RequireAdmin
+### J. SEO & Performance
+- No meta tags/Open Graph tags on pages
+- No sitemap generation
+- No lazy loading for route-level code splitting
 
-### Technical Details
-- No database changes needed (existing `app_role` enum already has `admin`, `moderator`, `user`)
-- Permission checks are client-side for UI filtering, server-side RLS already protects data
-- The `has_role` function already works for both admin and moderator roles
+---
 
-### Files to Create
-- `src/lib/admin-permissions.ts`
+## What This Plan Will Implement Now
+
+Only **Part 1** (typewriter fix + more courses) will be implemented in this round. The audit above is provided for your awareness and prioritization.
 
 ### Files to Modify
-- `src/pages/Index.tsx` -- premium animations
-- `src/components/CourseCard.tsx` -- enhanced hover effects
-- `src/index.css` -- new animation utilities
-- `tailwind.config.ts` -- new keyframes
-- `src/contexts/AuthContext.tsx` -- add `adminRole`
-- `src/components/RequireAdmin.tsx` -- role-based check
-- `src/components/admin/AdminSidebar.tsx` -- filtered sections
-- `src/pages/admin/AdminLayout.tsx` -- route permission guard
+- `src/pages/Index.tsx` — expand typewriter words, fix cursor blink animation
+- `tailwind.config.ts` — add `typewriter-blink` keyframe if missing
 
