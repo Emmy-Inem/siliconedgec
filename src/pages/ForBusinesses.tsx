@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
-  Cloud, Code, Shield, Palette, Globe, Brain, Quote,
+  Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/business-training.jpg";
 
 const fadeUp = {
@@ -47,13 +49,52 @@ const testimonials = [
 ];
 
 export default function ForBusinesses() {
+  const [formData, setFormData] = useState({
+    company_name: "",
+    contact_name: "",
+    email: "",
+    company_size: "",
+    training_needs: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.company_name || !formData.contact_name || !formData.email) {
+      toast({ title: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("business_leads").insert({
+      company_name: formData.company_name,
+      contact_name: formData.contact_name,
+      email: formData.email,
+      company_size: formData.company_size,
+      training_needs: formData.training_needs,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
+    } else {
+      setSubmitted(true);
+      toast({ title: "Request submitted!", description: "We'll be in touch shortly." });
+    }
+  };
+
+  const inputClass =
+    "w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted";
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
       {/* ─── Hero ─── */}
       <section className="bg-hero pt-28 pb-20 relative overflow-hidden">
-        {/* Subtle glow */}
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
         <div className="container mx-auto px-4 relative">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-2xl">
@@ -233,43 +274,74 @@ export default function ForBusinesses() {
             </p>
           </motion.div>
 
-          <motion.form
-            {...fadeUp}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="max-w-lg mx-auto space-y-4 text-left"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              placeholder="Company Name"
-              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
-              style={{ borderColor: "hsl(var(--navy-light))" }}
-            />
-            <input
-              placeholder="Your Full Name"
-              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
-              style={{ borderColor: "hsl(var(--navy-light))" }}
-            />
-            <input
-              type="email"
-              placeholder="Work Email"
-              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
-              style={{ borderColor: "hsl(var(--navy-light))" }}
-            />
-            <input
-              placeholder="Team Size"
-              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted"
-              style={{ borderColor: "hsl(var(--navy-light))" }}
-            />
-            <textarea
-              placeholder="Tell us about your training needs..."
-              rows={4}
-              className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-card/10 text-hero placeholder:text-hero-muted resize-none"
-              style={{ borderColor: "hsl(var(--navy-light))" }}
-            />
-            <Button size="lg" className="w-full hover-scale">
-              Get Your Team Trained Today <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.form>
+          {submitted ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="max-w-lg mx-auto text-center py-12"
+            >
+              <CheckCircle2 className="h-16 w-16 mx-auto mb-4" style={{ color: "hsl(var(--gold))" }} />
+              <h3 className="font-heading text-xl font-bold text-hero mb-2">Thank You!</h3>
+              <p className="text-hero-muted">Your request has been submitted. Our team will reach out within 24 hours.</p>
+            </motion.div>
+          ) : (
+            <motion.form
+              {...fadeUp}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="max-w-lg mx-auto space-y-4 text-left"
+              onSubmit={handleSubmit}
+            >
+              <input
+                name="company_name"
+                placeholder="Company Name *"
+                value={formData.company_name}
+                onChange={handleChange}
+                required
+                className={inputClass}
+                style={{ borderColor: "hsl(var(--navy-light))" }}
+              />
+              <input
+                name="contact_name"
+                placeholder="Your Full Name *"
+                value={formData.contact_name}
+                onChange={handleChange}
+                required
+                className={inputClass}
+                style={{ borderColor: "hsl(var(--navy-light))" }}
+              />
+              <input
+                name="email"
+                type="email"
+                placeholder="Work Email *"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className={inputClass}
+                style={{ borderColor: "hsl(var(--navy-light))" }}
+              />
+              <input
+                name="company_size"
+                placeholder="Team Size"
+                value={formData.company_size}
+                onChange={handleChange}
+                className={inputClass}
+                style={{ borderColor: "hsl(var(--navy-light))" }}
+              />
+              <textarea
+                name="training_needs"
+                placeholder="Tell us about your training needs..."
+                rows={4}
+                value={formData.training_needs}
+                onChange={handleChange}
+                className={`${inputClass} resize-none`}
+                style={{ borderColor: "hsl(var(--navy-light))" }}
+              />
+              <Button size="lg" className="w-full hover-scale" disabled={submitting}>
+                {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Get Your Team Trained Today <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </motion.form>
+          )}
         </div>
       </section>
 
