@@ -147,10 +147,10 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           {/* Promo */}
           <div className="space-y-2">
             {appliedPromo ? (
-              <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2.5">
+              <div className="flex items-center justify-between bg-accent/40 border border-accent rounded-lg px-3 py-2.5">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">
                     {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatNaira(appliedPromo.discount_value)} off`}
                   </span>
                 </div>
@@ -181,7 +181,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           {appliedPromo && (
             <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatNaira(price)}</span></div>
-              <div className="flex justify-between text-green-600"><span>Discount ({appliedPromo.code})</span><span>-{formatNaira(discountAmount)}</span></div>
+              <div className="flex justify-between text-primary"><span>Discount ({appliedPromo.code})</span><span>-{formatNaira(discountAmount)}</span></div>
               <Separator className="my-1" />
               <div className="flex justify-between font-semibold"><span>Total</span><span className="text-primary">{formatNaira(finalPrice)}</span></div>
             </div>
