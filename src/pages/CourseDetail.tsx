@@ -475,6 +475,7 @@ export default function CourseDetail() {
         <PaymentModal
           open={paymentOpen}
           onOpenChange={setPaymentOpen}
+          courseId={course.id}
           courseTitle={course.title}
           price={course.price}
           onPaymentSuccess={handlePaymentSuccess}
