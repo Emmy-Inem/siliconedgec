@@ -169,11 +169,12 @@ export default function Cart() {
         </div>
       </section>
 
-      {paymentOpen && (
+      {paymentOpen && items.length > 0 && (
         <PaymentModal
           open={paymentOpen}
           onOpenChange={setPaymentOpen}
-          courseTitle={`${count} course${count !== 1 ? "s" : ""}`}
+          courseId={items[0].course_id}
+          courseTitle={count === 1 ? `${count} course` : `${count} courses (paying one at a time)`}
           price={total}
           onPaymentSuccess={handlePaymentSuccess}
         />

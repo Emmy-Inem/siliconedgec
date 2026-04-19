@@ -46,6 +46,7 @@ import AdminQnA from "./pages/admin/AdminQnA";
 import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
 import AdminBusinessLeads from "./pages/admin/AdminBusinessLeads";
 import CourseLearning from "./pages/CourseLearning";
+import VerifyCertificate from "./pages/VerifyCertificate";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
+              <Route path="/verify/:code" element={<VerifyCertificate />} />
 
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route index element={<AdminOverview />} />
