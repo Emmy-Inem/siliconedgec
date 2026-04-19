@@ -174,6 +174,36 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          issued_at: string
+          metadata: Json | null
+          user_id: string
+          verification_code: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          metadata?: Json | null
+          user_id: string
+          verification_code: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          metadata?: Json | null
+          user_id?: string
+          verification_code?: string
+        }
+        Relationships: []
+      }
       course_announcements: {
         Row: {
           content: string
@@ -724,6 +754,45 @@ export type Database = {
           },
         ]
       }
+      lesson_resources: {
+        Row: {
+          course_id: string
+          created_at: string
+          file_name: string
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          lesson_id: string
+          order_index: number
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          file_name: string
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          lesson_id: string
+          order_index?: number
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          lesson_id?: string
+          order_index?: number
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           content_type: string | null
@@ -826,6 +895,54 @@ export type Database = {
           message?: string | null
           title?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          amount: number
+          course_id: string
+          created_at: string
+          currency: string
+          discount_amount: number | null
+          id: string
+          metadata: Json | null
+          paystack_reference: string | null
+          promo_code_id: string | null
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          course_id: string
+          created_at?: string
+          currency?: string
+          discount_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          promo_code_id?: string | null
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          course_id?: string
+          created_at?: string
+          currency?: string
+          discount_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          promo_code_id?: string | null
+          reference?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
