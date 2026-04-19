@@ -39,10 +39,27 @@ export default function CourseDetail() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
+
+  // Verify Paystack payment after redirect callback
+  useEffect(() => {
+    const reference = searchParams.get("reference") ?? searchParams.get("trxref");
+    if (reference && searchParams.get("verify") === "1") {
+      supabase.functions.invoke("paystack-verify", { body: { reference } }).then(({ data }) => {
+        if (data?.verified) {
+          toast({ title: "Payment confirmed", description: "You're now enrolled. Welcome aboard!" });
+          qc.invalidateQueries({ queryKey: ["enrollment", id] });
+        } else {
+          toast({ title: "Payment not confirmed", description: data?.message ?? "Please contact support.", variant: "destructive" });
+        }
+        setSearchParams({});
+      });
+    }
+  }, [searchParams, id, qc, setSearchParams, toast]);
 
   // Review form state
   const [reviewRating, setReviewRating] = useState(userReview?.rating ?? 5);
