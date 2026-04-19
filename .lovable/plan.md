@@ -1,87 +1,104 @@
 
 
-# Plan: Homepage Animation Fixes + Backend/Admin Feature Audit
+# Plan: Major Feature Expansion to Match WordPress Stack
 
-## Part 1: Homepage Typewriter — Add More Courses & Fix Animation
-
-**Current issue:** The typewriter only cycles through 4 terms: "Cloud Engineering", "Software Engineering", "Artificial Intelligence", "Web Development". The blinking cursor uses a class `animate-typewriter-blink` that may not be defined, causing a broken animation.
-
-**Changes to `src/pages/Index.tsx`:**
-- Expand `typewriterWords` array to include: "Cloud Engineering", "Software Engineering", "Artificial Intelligence", "Web Development", "Cybersecurity", "Data Science", "DevOps", "Product Design", "UI/UX Design"
-- Fix the cursor blink — replace the `animate-typewriter-blink` class with a proper Tailwind animation or inline style using `animate-pulse` or a custom keyframe
-- Ensure the typewriter text has a minimum height so the layout doesn't jump between words of different lengths
-
-**Changes to `tailwind.config.ts`:**
-- Add `typewriter-blink` keyframe if missing (alternating opacity 0/1 at 500ms interval)
+Based on the WordPress/WooCommerce plugins in your screenshots, here is what's missing from the Lovable rebuild and what I'll implement in **prioritized phases**. We'll execute Phase 1 in this round (the highest-impact items needed before onboarding users), and you can approve subsequent phases as follow-ups.
 
 ---
 
-## Part 2: Missing Backend, Admin & Business Features Audit
+## Mapping Your WordPress Plugins → Lovable Status
 
-Here is a comprehensive list of what's missing or incomplete before the platform is production-ready:
-
-### A. Payment Processing (CRITICAL — Not Functional)
-- **No edge functions exist** for Paystack or Stripe integration
-- `PaymentModal.tsx` collects card details client-side but has no backend to process payments
-- No payment verification, webhook handling, or order/receipt storage
-- **Action needed:** Create Paystack edge function, payment verification flow, and `orders` table
-
-### B. Business/Corporate Features (Partially Missing)
-- The `/for-businesses` form doesn't actually submit data anywhere — `onSubmit` just calls `e.preventDefault()`
-- No `business_leads` table to store corporate inquiries
-- No admin view for managing business lead submissions
-- **Action needed:** Create `business_leads` table, wire up form submission, add admin page for viewing leads
-
-### C. Email System (Not Functional)
-- `AdminEmail.tsx` exists but no edge function to actually send emails
-- No transactional email setup (welcome emails, enrollment confirmations, password resets)
-- **Action needed:** Create email-sending edge function, configure email templates
-
-### D. Course Content Delivery
-- No video/content hosting or playback — lessons have `content_url` but no player component
-- No lesson viewer page where students consume course materials
-- Students can see enrolled courses in Dashboard but can't actually take them
-- **Action needed:** Create `/courses/:id/learn` route with lesson viewer, video player, and progress tracking
-
-### E. Certificate Generation
-- `Certificates.tsx` page exists but certificates are not generated from actual course completion data
-- No PDF generation for certificates
-- **Action needed:** Create certificate generation (edge function or client-side PDF), link to enrollment completion
-
-### F. File/Resource Management
-- `course-thumbnails` storage bucket exists but no general course resources/materials storage
-- No way to upload/download course materials (PDFs, slides, assignments)
-- **Action needed:** Create `course-resources` storage bucket, admin upload UI, student download UI
-
-### G. Admin Features Still Incomplete
-1. **AdminOverview dashboard** — should show real metrics (revenue, active students, recent enrollments) from DB
-2. **AdminAnalytics** — should pull real enrollment/revenue data, not mock data
-3. **Notification system** — `NotificationBell.tsx` exists but notifications aren't created by any triggers
-4. **Bulk operations** — no bulk delete/update in admin tables
-5. **Admin search** — no global search across admin sections
-
-### H. Authentication Gaps
-- Google OAuth is referenced in architecture but may not be configured
-- No "Forgot Password" flow completion (reset page after email link)
-- No email verification enforcement check
-
-### I. Real-time Features Missing
-- No real-time notifications for new enrollments, Q&A posts
-- No live class scheduling/integration (mentioned in business features)
-- `supabase_realtime` not enabled on any tables
-
-### J. SEO & Performance
-- No meta tags/Open Graph tags on pages
-- No sitemap generation
-- No lazy loading for route-level code splitting
+| Plugin | Purpose | Status in Lovable |
+|---|---|---|
+| Paystack WooCommerce | Payments | **MISSING — critical** |
+| Tutor LMS | Courses/lessons/quizzes | Partial (no certificates engine, no resources) |
+| HubSpot | CRM/leads | Partial (business_leads exists, no pipeline) |
+| Yoast SEO | SEO meta | **MISSING** |
+| Site Kit (GA4) | Analytics | Replaced with internal tracking |
+| Nextend Social Login | Google sign-in | Configured but needs UI buttons |
+| WP Job Manager | Job board | **MISSING entirely** |
+| YITH Affiliates | Referral commissions | Done (influencer system) |
+| Bit Assist | Live chat | Partial (WhatsApp FAB only) |
+| Loginizer | Brute-force protection | **MISSING** |
+| User Activity Log | Audit trail | Done |
+| WPCode | Header/footer scripts | **MISSING** (no admin script injector) |
+| Image Optimizer | Asset optimization | Handled by Vite |
+| UpdraftPlus | Backups | Handled by Lovable Cloud |
 
 ---
 
-## What This Plan Will Implement Now
+## Phase 1 — Implement Now (Production Readiness)
 
-Only **Part 1** (typewriter fix + more courses) will be implemented in this round. The audit above is provided for your awareness and prioritization.
+### 1. Paystack Payment Integration (CRITICAL)
+- New edge function `paystack-initialize` — creates payment session, returns auth URL
+- New edge function `paystack-verify` — verifies transaction, creates enrollment, generates order
+- New `orders` table — stores transaction reference, amount, status, course_id, user_id
+- Rewrite `PaymentModal.tsx` to redirect to Paystack inline checkout (no card data collected client-side)
+- Requires user to add `PAYSTACK_SECRET_KEY` secret
 
-### Files to Modify
-- `src/pages/Index.tsx` — expand typewriter words, fix cursor blink animation
-- `tailwind.config.ts` — add `typewriter-blink` keyframe if missing
+### 2. Course Resources & Materials
+- New `course-resources` storage bucket (private, signed URLs)
+- New `lesson_resources` table (lesson_id, file_url, file_name, file_size, type)
+- Admin UI in `AdminCourseModules` to upload PDFs/slides/zips per lesson
+- Student download UI in `CourseLearning.tsx` resources tab
+
+### 3. Certificate Engine (real generation)
+- Replace mock certificates page with actual completion-based certificates
+- New `certificates` table (cert_id, user_id, course_id, issued_at, verification_code)
+- Auto-issue when `enrollments.is_completed = true` (DB trigger)
+- Public verification route `/verify/:code` to validate certificate authenticity
+- Improve PDF generation with QR code linking to verification page
+
+### 4. SEO Foundation (Yoast replacement)
+- Install `react-helmet-async`
+- Add `<SEO>` component with title, description, OG tags, Twitter cards per page
+- Apply to Index, Courses, CourseDetail, Pricing, ForBusinesses
+- Generate dynamic `sitemap.xml` via edge function
+- Add structured data (JSON-LD) for courses
+
+### 5. Google OAuth Sign-in Buttons
+- Add "Continue with Google" button on SignIn and SignUp pages
+- Wire up `supabase.auth.signInWithOAuth({ provider: 'google' })`
+- (Provider must be enabled in Cloud auth settings — will surface if not)
+
+### 6. Real Admin Dashboard Metrics
+- Replace mock data in `AdminOverview` and `AdminAnalytics` with real DB queries:
+  - Total revenue (sum of completed orders)
+  - Active students (enrollments last 30 days)
+  - Revenue by month chart
+  - Top courses by enrollment
+  - Recent activity feed
+
+---
+
+## Phase 2 — Approve Later
+
+- **Job Board** (WP Job Manager replacement): `jobs` table, public listings page, application flow, admin job manager
+- **Live Chat Widget** (Bit Assist replacement): in-app chat widget with admin inbox, replaces WhatsApp-only FAB
+- **Brute-force Protection** (Loginizer): edge function tracking failed logins by IP, temporary lockouts
+- **Custom Scripts Injector** (WPCode): admin UI to add header/footer scripts (GA, Meta Pixel, etc.) stored in `site_settings`
+- **Email System** (transactional): wire up Lovable email infrastructure for welcome, enrollment confirmation, password reset, certificate issued
+- **Live Classes Integration**: Zoom/Google Meet link scheduling per course session, calendar view for students
+
+---
+
+## Phase 3 — Polish
+
+- HubSpot-style CRM pipeline view for business leads (kanban)
+- Drip email campaigns for nurturing
+- Course bundle/learning path checkout
+- Wishlist & course recommendations
+- Mobile PWA install prompt
+
+---
+
+## Files Created/Modified in Phase 1
+
+**New edge functions:** `paystack-initialize`, `paystack-verify`, `generate-sitemap`
+**New tables:** `orders`, `lesson_resources`, `certificates`
+**New storage bucket:** `course-resources` (private)
+**New components:** `src/components/SEO.tsx`, `src/pages/VerifyCertificate.tsx`
+**Modified:** `PaymentModal.tsx`, `CourseLearning.tsx`, `Certificates.tsx`, `SignIn.tsx`, `SignUp.tsx`, `AdminOverview.tsx`, `AdminAnalytics.tsx`, `AdminCourseModules.tsx`, `App.tsx`, `index.html`
+
+**Required secret:** `PAYSTACK_SECRET_KEY` (will request from you on approval)
 
