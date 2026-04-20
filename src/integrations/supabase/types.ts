@@ -204,6 +204,80 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          status: string
+          subject: string | null
+          unread_admin_count: number | null
+          unread_user_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          subject?: string | null
+          unread_admin_count?: number | null
+          unread_user_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          subject?: string | null
+          unread_admin_count?: number | null
+          unread_user_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          sender_id: string
+          sender_role?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_announcements: {
         Row: {
           content: string
@@ -608,6 +682,131 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          cover_letter: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          job_id: string
+          notes: string | null
+          phone: string | null
+          resume_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_letter?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_letter?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          application_url: string | null
+          applications_count: number | null
+          benefits: string | null
+          company: string
+          contact_email: string | null
+          created_at: string
+          currency: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          is_published: boolean | null
+          is_remote: boolean | null
+          job_type: string
+          location: string | null
+          posted_by: string | null
+          requirements: string | null
+          salary_max: number | null
+          salary_min: number | null
+          title: string
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          application_url?: string | null
+          applications_count?: number | null
+          benefits?: string | null
+          company: string
+          contact_email?: string | null
+          created_at?: string
+          currency?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_remote?: boolean | null
+          job_type?: string
+          location?: string | null
+          posted_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          title: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          application_url?: string | null
+          applications_count?: number | null
+          benefits?: string | null
+          company?: string
+          contact_email?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_remote?: boolean | null
+          job_type?: string
+          location?: string | null
+          posted_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          title?: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       lead_sources: {
         Row: {
           created_at: string
@@ -833,6 +1032,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          ip_address: string | null
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       modules: {
         Row: {
@@ -1322,6 +1548,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_login_locked: {
+        Args: { _email: string; _ip: string }
         Returns: boolean
       }
     }
