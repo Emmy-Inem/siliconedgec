@@ -47,6 +47,14 @@ import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
 import AdminBusinessLeads from "./pages/admin/AdminBusinessLeads";
 import CourseLearning from "./pages/CourseLearning";
 import VerifyCertificate from "./pages/VerifyCertificate";
+import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
+import AdminJobs from "./pages/admin/AdminJobs";
+import AdminJobApplications from "./pages/admin/AdminJobApplications";
+import AdminChat from "./pages/admin/AdminChat";
+import AdminCustomScripts from "./pages/admin/AdminCustomScripts";
+import { LiveChat } from "./components/LiveChat";
+import { CustomScripts } from "./components/CustomScripts";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +81,8 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
 
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route index element={<AdminOverview />} />
@@ -100,11 +110,17 @@ const App = () => (
                 <Route path="qna" element={<AdminQnA />} />
                 <Route path="announcements" element={<AdminCourseAnnouncements />} />
                 <Route path="business-leads" element={<AdminBusinessLeads />} />
+                <Route path="jobs" element={<AdminJobs />} />
+                <Route path="job-applications" element={<AdminJobApplications />} />
+                <Route path="chat" element={<AdminChat />} />
+                <Route path="custom-scripts" element={<AdminCustomScripts />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <LiveChat />
+            <CustomScripts />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>

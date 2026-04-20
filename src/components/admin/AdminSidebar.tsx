@@ -44,6 +44,7 @@ const sections = [
     items: [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
+      { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
     ],
   },
   {
@@ -53,6 +54,13 @@ const sections = [
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
       { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
+    ],
+  },
+  {
+    label: "Jobs",
+    items: [
+      { label: "Job Listings", href: "/admin/jobs", icon: Briefcase },
+      { label: "Applications", href: "/admin/job-applications", icon: Users },
     ],
   },
   {
@@ -68,6 +76,7 @@ const sections = [
     items: [
       { label: "Users & Roles", href: "/admin/users", icon: Users },
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
+      { label: "Custom Scripts", href: "/admin/custom-scripts", icon: FileText },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },

@@ -11,6 +11,7 @@ import logoLight from "@/assets/logo-light.png";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses" },
+  { label: "Jobs", href: "/jobs" },
   { label: "Pricing", href: "/pricing" },
   { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
