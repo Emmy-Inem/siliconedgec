@@ -177,8 +177,8 @@ export default function CourseDetail() {
           provider: { "@type": "Organization", name: "Silicon Edge Consulting" },
           offers: {
             "@type": "Offer",
-            price: course.discount_price ?? course.price,
-            priceCurrency: course.currency ?? "NGN",
+            price: (course as any).discount_price ?? course.price,
+            priceCurrency: (course as any).currency ?? "NGN",
             availability: "https://schema.org/InStock",
           },
           aggregateRating: course.rating ? {
