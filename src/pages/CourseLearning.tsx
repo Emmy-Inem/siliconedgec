@@ -81,7 +81,21 @@ export default function CourseLearning() {
         .in("lesson_id", allLessonIds);
       return data ?? [];
     },
-    enabled: !!user && !!course,
+  });
+
+  // Fetch downloadable resources for current lesson
+  const { data: resources = [] } = useQuery({
+    queryKey: ["lesson-resources-student", selectedLessonId],
+    queryFn: async () => {
+      if (!selectedLessonId) return [];
+      const { data } = await supabase
+        .from("lesson_resources")
+        .select("id, file_name, file_url, file_size, file_type")
+        .eq("lesson_id", selectedLessonId)
+        .order("order_index");
+      return data ?? [];
+    },
+    enabled: !!selectedLessonId,
   });
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
