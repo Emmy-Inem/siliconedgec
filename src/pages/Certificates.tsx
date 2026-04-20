@@ -25,16 +25,26 @@ const fadeUp = {
 export default function Certificates() {
   const { user } = useAuth();
 
-  const { data: completedCourses } = useQuery({
-    queryKey: ["completed-courses", user?.id],
+  // Real DB-backed certificates (auto-issued via trigger when course completed)
+  const { data: certificates = [], isLoading } = useQuery({
+    queryKey: ["my-certificates", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("enrollments")
-        .select("*, courses(title, category, duration_hours, instructor_id, instructors:instructor_id(name))")
+      const { data: certs } = await supabase
+        .from("certificates")
+        .select("*")
         .eq("user_id", user!.id)
-        .eq("is_completed", true);
-      return data ?? [];
+        .order("issued_at", { ascending: false });
+      if (!certs?.length) return [];
+      const courseIds = certs.map((c) => c.course_id);
+      const { data: courses } = await supabase
+        .from("courses")
+        .select("id, title, category, instructor_id, instructors:instructor_id(name)")
+        .in("id", courseIds);
+      return certs.map((c) => ({
+        ...c,
+        course: courses?.find((co) => co.id === c.course_id),
+      }));
     },
   });
 
