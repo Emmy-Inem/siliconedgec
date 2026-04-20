@@ -28,6 +28,10 @@ const ADMIN_ONLY_ROUTES = [
   "/admin/email",
   "/admin/pricing",
   "/admin/content",
+  "/admin/jobs",
+  "/admin/job-applications",
+  "/admin/chat",
+  "/admin/custom-scripts",
 ];
 
 export function canAccessRoute(role: AdminRole, path: string): boolean {
