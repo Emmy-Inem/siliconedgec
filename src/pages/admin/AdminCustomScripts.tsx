@@ -29,8 +29,8 @@ export default function AdminCustomScripts() {
   const save = async () => {
     setSaving(true);
     const upserts = [
-      { key: "custom_head_script", value: head, content_type: "html" },
-      { key: "custom_body_script", value: body, content_type: "html" },
+      { key: "custom_head_script", value: head, content_type: "setting" },
+      { key: "custom_body_script", value: body, content_type: "setting" },
     ];
     for (const row of upserts) {
       const { data: existing } = await supabase.from("site_content").select("id").eq("key", row.key).maybeSingle();
@@ -54,10 +54,10 @@ export default function AdminCustomScripts() {
         <p className="text-sm text-muted-foreground mt-1">Inject tracking pixels, analytics, or custom code site-wide without touching the codebase.</p>
       </div>
 
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex gap-3 items-start text-sm">
-        <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+      <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex gap-3 items-start text-sm">
+        <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
         <div>
-          <p className="font-medium text-yellow-800 dark:text-yellow-300">Security warning</p>
+          <p className="font-medium text-destructive">Security warning</p>
           <p className="text-muted-foreground mt-1">Only paste scripts from trusted sources. Malicious code added here will execute for every visitor.</p>
         </div>
       </div>

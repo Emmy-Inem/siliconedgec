@@ -14,6 +14,8 @@ export interface SiteSettings {
   social_linkedin: string;
   social_youtube: string;
   footer_copyright: string;
+  custom_head_script: string;
+  custom_body_script: string;
 }
 
 const DEFAULTS: SiteSettings = {
@@ -29,6 +31,8 @@ const DEFAULTS: SiteSettings = {
   social_linkedin: "",
   social_youtube: "",
   footer_copyright: "",
+  custom_head_script: "",
+  custom_body_script: "",
 };
 
 export function useSiteSettings() {
