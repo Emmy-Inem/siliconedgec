@@ -363,57 +363,7 @@ function CertificateForPDF({
     </div>
   );
 }
-  // Standalone PDF-only version with inline styles for html2canvas compatibility
-  return (
-    <div style={{ width: 900, background: "#fff", padding: 0, fontFamily: "'Space Grotesk', sans-serif" }}>
-      <div style={{ border: "3px solid #d4a017", borderRadius: 16, position: "relative", overflow: "hidden" }}>
-        {/* Purple corners */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
-        </div>
-        <div style={{ position: "absolute", top: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
-        </div>
-        <div style={{ position: "absolute", bottom: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
-        </div>
-        <div style={{ position: "absolute", bottom: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
-        </div>
 
-        <div style={{ padding: "50px 60px", textAlign: "center" }}>
-          <div style={{ width: 120, height: 4, background: "#d4a017", margin: "0 auto 30px", borderRadius: 2 }} />
-          <img src={logoDark} alt="Silicon Edge Consulting" style={{ height: 44, marginBottom: 24 }} crossOrigin="anonymous" />
-          <div style={{ display: "inline-block", padding: "8px 24px", border: "2px solid #d4a017", borderRadius: 4, background: "rgba(212,160,23,0.1)", marginBottom: 30 }}>
-            <p style={{ fontSize: 11, letterSpacing: "0.35em", textTransform: "uppercase", fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Certificate of Completion</p>
-          </div>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>This is to certify that</p>
-          <p style={{ fontSize: 34, fontWeight: 700, color: "#7c3aed", margin: "0 0 16px" }}>{studentName}</p>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>has successfully completed</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: "0 0 30px" }}>{courseName}</p>
-          <div style={{ width: "100%", height: 1, background: "#d4a017", marginBottom: 24 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", background: "#1a1a2e", borderRadius: 8, padding: 16 }}>
-            <div style={{ textAlign: "left" }}>
-              <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Date Issued</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0 }}>{date}</p>
-            </div>
-            {instructorName && (
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Instructor</p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0 }}>{instructorName}</p>
-              </div>
-            )}
-            <div style={{ textAlign: "right" }}>
-              <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Certificate ID</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "monospace" }}>{certId}</p>
-            </div>
-          </div>
-          <p style={{ fontSize: 10, color: "#9ca3af", letterSpacing: "0.15em", marginTop: 20 }}>www.siliconedgec.com</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function BrandedCertificate({
   studentName, courseName, date, certId, instructorName,
