@@ -23,6 +23,18 @@ export default function SignIn() {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Log attempt for brute-force protection (fire-and-forget)
+    supabase.functions.invoke("check-login-attempt", {
+      body: { email, success: !error },
+    }).then(({ data }) => {
+      if (data?.locked) {
+        toast({
+          title: "Too many failed attempts",
+          description: "Please wait 15 minutes before trying again, or reset your password.",
+          variant: "destructive",
+        });
+      }
+    }).catch(() => {});
     setLoading(false);
     if (error) {
       const msg = error.message === "Invalid login credentials"
