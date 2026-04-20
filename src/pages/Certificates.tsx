@@ -183,9 +183,9 @@ export default function Certificates() {
 }
 
 function CertificateCardWithDownload({
-  courseName, studentName, date, certId, instructorName,
+  courseName, studentName, date, certId, instructorName, verifyUrl,
 }: {
-  courseName: string; studentName: string; date: string; certId: string; instructorName?: string;
+  courseName: string; studentName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
   const certRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -194,7 +194,6 @@ function CertificateCardWithDownload({
   const handleDownload = useCallback(async () => {
     setShowCert(true);
     setDownloading(true);
-    // Wait for render
     await new Promise((r) => setTimeout(r, 300));
     if (!certRef.current) return;
     try {
@@ -224,7 +223,12 @@ function CertificateCardWithDownload({
         <div className="flex-1 min-w-0">
           <h3 className="font-heading font-semibold text-sm truncate">{courseName}</h3>
           <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
-          <p className="text-muted-foreground text-xs font-mono">{certId}</p>
+          <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
+          {verifyUrl && (
+            <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
+              <Shield className="h-3 w-3" /> Verify
+            </Link>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1 text-xs text-primary font-medium">
@@ -243,11 +247,10 @@ function CertificateCardWithDownload({
           </Button>
         </div>
       </motion.div>
-      {/* Hidden certificate for PDF rendering */}
       {showCert && (
         <div className="fixed -left-[9999px] top-0">
           <div ref={certRef}>
-            <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
+            <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} verifyUrl={verifyUrl} />
           </div>
         </div>
       )}
