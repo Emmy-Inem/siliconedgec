@@ -296,6 +296,16 @@ export default function AdminCourseModules() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {resourcesLesson && courseId && (
+        <LessonResourcesManager
+          open={!!resourcesLesson}
+          onOpenChange={(o) => !o && setResourcesLesson(null)}
+          lessonId={resourcesLesson.id}
+          lessonTitle={resourcesLesson.title}
+          courseId={courseId}
+        />
+      )}
     </div>
   );
 }
