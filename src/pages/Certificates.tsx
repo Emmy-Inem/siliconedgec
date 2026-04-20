@@ -65,6 +65,10 @@ export default function Certificates() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Verifiable Certificates — Silicon Edge"
+        description="Earn verifiable, QR-coded course completion certificates. Each certificate has a unique ID employers can validate online."
+      />
       <Header />
 
       <section className="bg-hero pt-28 pb-14 relative overflow-hidden">
