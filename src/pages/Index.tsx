@@ -14,6 +14,7 @@ import instructor2 from "@/assets/instructor-2.jpg";
 import instructor3 from "@/assets/instructor-3.jpg";
 import instructor4 from "@/assets/instructor-4.jpg";
 import courseBanner from "@/assets/course-banner.png";
+import { SEO } from "@/components/SEO";
 
 const typewriterWords = [
   "Cloud Engineering",
@@ -141,6 +142,17 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Silicon Edge Consulting — Job-Ready Tech Training in AI, Cloud & DevOps"
+        description="Master AI, Cloud, DevOps, Cybersecurity & Web Development through live, instructor-led training. Earn verified certificates and build real projects with industry veterans."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "Silicon Edge Consulting",
+          url: typeof window !== "undefined" ? window.location.origin : undefined,
+          sameAs: ["https://siliconedgec.lovable.app"],
+        }}
+      />
       <Header />
 
       {/* Hero */}

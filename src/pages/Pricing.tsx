@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SEO } from "@/components/SEO";
 
 const plans = [
   {
@@ -119,6 +120,10 @@ const sectionReveal = {
 export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Pricing — Beginner to Advanced Tech Courses"
+        description="Transparent pricing in Naira. Choose Beginner (₦100,000), Intermediate (₦600,000), or Advanced packages to match your career goals."
+      />
       <Header />
 
       {/* Hero */}

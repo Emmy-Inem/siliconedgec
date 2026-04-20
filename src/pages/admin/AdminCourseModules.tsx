@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 
 interface Module {
   id: string;
@@ -37,6 +38,7 @@ export default function AdminCourseModules() {
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [lessonForm, setLessonForm] = useState({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
+  const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const { data: course } = useQuery({
     queryKey: ["admin-course", courseId],
@@ -217,6 +219,9 @@ export default function AdminCourseModules() {
                             {lesson.duration && <span className="text-xs text-muted-foreground">({lesson.duration})</span>}
                           </span>
                           <span className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" title="Manage resources" onClick={() => setResourcesLesson(lesson)}>
+                              <Paperclip className="h-3 w-3" />
+                            </Button>
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
                               setEditingLesson(lesson);
                               setLessonForm({ title: lesson.title, duration: lesson.duration ?? "", module_id: lesson.module_id, content_type: lesson.content_type ?? "video", content_url: lesson.content_url ?? "" });
@@ -291,6 +296,16 @@ export default function AdminCourseModules() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {resourcesLesson && courseId && (
+        <LessonResourcesManager
+          open={!!resourcesLesson}
+          onOpenChange={(o) => !o && setResourcesLesson(null)}
+          lessonId={resourcesLesson.id}
+          lessonTitle={resourcesLesson.title}
+          courseId={courseId}
+        />
+      )}
     </div>
   );
 }

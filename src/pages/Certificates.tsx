@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { GraduationCap, Shield, Download, ExternalLink, Award, CheckCircle2, Loader2 } from "lucide-react";
@@ -8,11 +8,12 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 import logoDark from "@/assets/logo-dark.png";
 import certificateCelebration from "@/assets/certificate-celebration.jpg";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useState } from "react";
+import { SEO } from "@/components/SEO";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -24,16 +25,26 @@ const fadeUp = {
 export default function Certificates() {
   const { user } = useAuth();
 
-  const { data: completedCourses } = useQuery({
-    queryKey: ["completed-courses", user?.id],
+  // Real DB-backed certificates (auto-issued via trigger when course completed)
+  const { data: certificates = [], isLoading } = useQuery({
+    queryKey: ["my-certificates", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("enrollments")
-        .select("*, courses(title, category, duration_hours, instructor_id, instructors:instructor_id(name))")
+      const { data: certs } = await supabase
+        .from("certificates")
+        .select("*")
         .eq("user_id", user!.id)
-        .eq("is_completed", true);
-      return data ?? [];
+        .order("issued_at", { ascending: false });
+      if (!certs?.length) return [];
+      const courseIds = certs.map((c) => c.course_id);
+      const { data: courses } = await supabase
+        .from("courses")
+        .select("id, title, category, instructor_id, instructors:instructor_id(name)")
+        .in("id", courseIds);
+      return certs.map((c) => ({
+        ...c,
+        course: courses?.find((co) => co.id === c.course_id),
+      }));
     },
   });
 
@@ -54,6 +65,10 @@ export default function Certificates() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Verifiable Certificates — Silicon Edge"
+        description="Earn verifiable, QR-coded course completion certificates. Each certificate has a unique ID employers can validate online."
+      />
       <Header />
 
       <section className="bg-hero pt-28 pb-14 relative overflow-hidden">
@@ -113,21 +128,22 @@ export default function Certificates() {
           </div>
 
           {/* User's Earned Certificates */}
-          {user && completedCourses && completedCourses.length > 0 && (
+          {user && certificates && certificates.length > 0 && (
             <motion.div {...fadeUp} className="mb-16">
               <h2 className="font-heading text-2xl font-bold mb-6 text-center">Your Certificates</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {completedCourses.map((enrollment: any) => {
-                  const certDate = new Date(enrollment.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-                  const certId = `SE-${enrollment.id.slice(0, 8).toUpperCase()}`;
+                {certificates.map((cert: any) => {
+                  const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+                  const verifyUrl = `${window.location.origin}/verify/${cert.verification_code}`;
                   return (
                     <CertificateCardWithDownload
-                      key={enrollment.id}
-                      courseName={enrollment.courses?.title ?? "Course"}
+                      key={cert.id}
+                      courseName={cert.course?.title ?? "Course"}
                       studentName={userName}
                       date={certDate}
-                      certId={certId}
-                      instructorName={enrollment.courses?.instructors?.name}
+                      certId={cert.verification_code}
+                      verifyUrl={verifyUrl}
+                      instructorName={cert.course?.instructors?.name}
                     />
                   );
                 })}
@@ -135,10 +151,17 @@ export default function Certificates() {
             </motion.div>
           )}
 
+          {user && !isLoading && certificates.length === 0 && (
+            <motion.div {...fadeUp} className="max-w-2xl mx-auto mb-16 text-center bg-card rounded-2xl border border-border p-10">
+              <Award className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-muted-foreground">You haven't earned any certificates yet. Complete a course to receive one automatically.</p>
+            </motion.div>
+          )}
+
           {/* Sample Certificate Preview */}
           <motion.div {...fadeUp} className="max-w-3xl mx-auto">
             <h2 className="font-heading text-2xl font-bold mb-6 text-center">
-              {user && completedCourses && completedCourses.length > 0 ? "Certificate Preview" : "Sample Certificate"}
+              {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
             <DownloadableCertificate
               studentName={userName}
@@ -164,9 +187,9 @@ export default function Certificates() {
 }
 
 function CertificateCardWithDownload({
-  courseName, studentName, date, certId, instructorName,
+  courseName, studentName, date, certId, instructorName, verifyUrl,
 }: {
-  courseName: string; studentName: string; date: string; certId: string; instructorName?: string;
+  courseName: string; studentName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
   const certRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -175,7 +198,6 @@ function CertificateCardWithDownload({
   const handleDownload = useCallback(async () => {
     setShowCert(true);
     setDownloading(true);
-    // Wait for render
     await new Promise((r) => setTimeout(r, 300));
     if (!certRef.current) return;
     try {
@@ -205,7 +227,12 @@ function CertificateCardWithDownload({
         <div className="flex-1 min-w-0">
           <h3 className="font-heading font-semibold text-sm truncate">{courseName}</h3>
           <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
-          <p className="text-muted-foreground text-xs font-mono">{certId}</p>
+          <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
+          {verifyUrl && (
+            <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
+              <Shield className="h-3 w-3" /> Verify
+            </Link>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1 text-xs text-primary font-medium">
@@ -224,11 +251,10 @@ function CertificateCardWithDownload({
           </Button>
         </div>
       </motion.div>
-      {/* Hidden certificate for PDF rendering */}
       {showCert && (
         <div className="fixed -left-[9999px] top-0">
           <div ref={certRef}>
-            <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
+            <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} verifyUrl={verifyUrl} />
           </div>
         </div>
       )}
@@ -281,15 +307,13 @@ function DownloadableCertificate({
 }
 
 function CertificateForPDF({
-  studentName, courseName, date, certId, instructorName,
+  studentName, courseName, date, certId, instructorName, verifyUrl,
 }: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string;
+  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
-  // Standalone PDF-only version with inline styles for html2canvas compatibility
   return (
     <div style={{ width: 900, background: "#fff", padding: 0, fontFamily: "'Space Grotesk', sans-serif" }}>
       <div style={{ border: "3px solid #d4a017", borderRadius: 16, position: "relative", overflow: "hidden" }}>
-        {/* Purple corners */}
         <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
         </div>
@@ -314,7 +338,7 @@ function CertificateForPDF({
           <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>has successfully completed</p>
           <p style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: "0 0 30px" }}>{courseName}</p>
           <div style={{ width: "100%", height: 1, background: "#d4a017", marginBottom: 24 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", background: "#1a1a2e", borderRadius: 8, padding: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1a1a2e", borderRadius: 8, padding: 16 }}>
             <div style={{ textAlign: "left" }}>
               <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Date Issued</p>
               <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0 }}>{date}</p>
@@ -329,13 +353,21 @@ function CertificateForPDF({
               <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Certificate ID</p>
               <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "monospace" }}>{certId}</p>
             </div>
+            {verifyUrl && (
+              <div style={{ background: "#fff", padding: 6, borderRadius: 4, marginLeft: 16 }}>
+                <QRCodeSVG value={verifyUrl} size={64} level="M" />
+              </div>
+            )}
           </div>
-          <p style={{ fontSize: 10, color: "#9ca3af", letterSpacing: "0.15em", marginTop: 20 }}>www.siliconedgec.com</p>
+          <p style={{ fontSize: 10, color: "#9ca3af", letterSpacing: "0.15em", marginTop: 20 }}>
+            {verifyUrl ? `Verify at: ${verifyUrl}` : "www.siliconedgec.com"}
+          </p>
         </div>
       </div>
     </div>
   );
 }
+
 
 function BrandedCertificate({
   studentName, courseName, date, certId, instructorName,

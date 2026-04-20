@@ -7,6 +7,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { Search, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 const difficulties = ["All Levels", "Beginner", "Intermediate", "Expert"];
 
@@ -42,6 +43,20 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="All Courses — Live Instructor-Led Tech Training"
+        description="Browse live, expert-led courses in Cloud, AI, DevOps, Cybersecurity, Web Development and more. Filter by category and difficulty to find the right path."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: filtered.slice(0, 10).map((c, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: c.title,
+            url: `${typeof window !== "undefined" ? window.location.origin : ""}/courses/${c.id}`,
+          })),
+        }}
+      />
       <Header />
 
       <section className="bg-hero pt-28 pb-14">

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Play, FileText, Lock, BookOpen } from "lucide-react";
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Play, FileText, Lock, BookOpen, Download, Paperclip } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -81,7 +81,21 @@ export default function CourseLearning() {
         .in("lesson_id", allLessonIds);
       return data ?? [];
     },
-    enabled: !!user && !!course,
+  });
+
+  // Fetch downloadable resources for current lesson
+  const { data: resources = [] } = useQuery({
+    queryKey: ["lesson-resources-student", selectedLessonId],
+    queryFn: async () => {
+      if (!selectedLessonId) return [];
+      const { data } = await supabase
+        .from("lesson_resources")
+        .select("id, file_name, file_url, file_size, file_type")
+        .eq("lesson_id", selectedLessonId)
+        .order("order_index");
+      return data ?? [];
+    },
+    enabled: !!selectedLessonId,
   });
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
@@ -247,6 +261,32 @@ export default function CourseLearning() {
                   Next <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
+
+              {/* Resources */}
+              {resources.length > 0 && (
+                <div className="pt-6 border-t border-border">
+                  <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-primary" /> Lesson Resources
+                  </h3>
+                  <ul className="space-y-2">
+                    {resources.map((r: any) => (
+                      <li key={r.id}>
+                        <a
+                          href={r.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download={r.file_name}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-colors group"
+                        >
+                          <FileText className="h-4 w-4 text-primary shrink-0" />
+                          <span className="text-sm flex-1 truncate">{r.file_name}</span>
+                          <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </motion.div>
           ) : (
             <div className="text-center py-20">

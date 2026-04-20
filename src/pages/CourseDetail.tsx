@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { trackLead } from "@/lib/track-lead";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
+import { SEO } from "@/components/SEO";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
@@ -163,6 +164,30 @@ export default function CourseDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={`${course.title} — Silicon Edge`}
+        description={(course.description ?? `Master ${course.title} with live, instructor-led training.`).slice(0, 155)}
+        image={course.thumbnail_url ?? undefined}
+        type="article"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Course",
+          name: course.title,
+          description: course.description ?? undefined,
+          provider: { "@type": "Organization", name: "Silicon Edge Consulting" },
+          offers: {
+            "@type": "Offer",
+            price: (course as any).discount_price ?? course.price,
+            priceCurrency: (course as any).currency ?? "NGN",
+            availability: "https://schema.org/InStock",
+          },
+          aggregateRating: course.rating ? {
+            "@type": "AggregateRating",
+            ratingValue: course.rating,
+            ratingCount: Math.max(course.students_enrolled ?? 1, 1),
+          } : undefined,
+        }}
+      />
       <Header />
 
       {/* Hero Banner */}
