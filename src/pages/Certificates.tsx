@@ -124,21 +124,22 @@ export default function Certificates() {
           </div>
 
           {/* User's Earned Certificates */}
-          {user && completedCourses && completedCourses.length > 0 && (
+          {user && certificates && certificates.length > 0 && (
             <motion.div {...fadeUp} className="mb-16">
               <h2 className="font-heading text-2xl font-bold mb-6 text-center">Your Certificates</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {completedCourses.map((enrollment: any) => {
-                  const certDate = new Date(enrollment.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-                  const certId = `SE-${enrollment.id.slice(0, 8).toUpperCase()}`;
+                {certificates.map((cert: any) => {
+                  const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+                  const verifyUrl = `${window.location.origin}/verify/${cert.verification_code}`;
                   return (
                     <CertificateCardWithDownload
-                      key={enrollment.id}
-                      courseName={enrollment.courses?.title ?? "Course"}
+                      key={cert.id}
+                      courseName={cert.course?.title ?? "Course"}
                       studentName={userName}
                       date={certDate}
-                      certId={certId}
-                      instructorName={enrollment.courses?.instructors?.name}
+                      certId={cert.verification_code}
+                      verifyUrl={verifyUrl}
+                      instructorName={cert.course?.instructors?.name}
                     />
                   );
                 })}
@@ -146,10 +147,17 @@ export default function Certificates() {
             </motion.div>
           )}
 
+          {user && !isLoading && certificates.length === 0 && (
+            <motion.div {...fadeUp} className="max-w-2xl mx-auto mb-16 text-center bg-card rounded-2xl border border-border p-10">
+              <Award className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-muted-foreground">You haven't earned any certificates yet. Complete a course to receive one automatically.</p>
+            </motion.div>
+          )}
+
           {/* Sample Certificate Preview */}
           <motion.div {...fadeUp} className="max-w-3xl mx-auto">
             <h2 className="font-heading text-2xl font-bold mb-6 text-center">
-              {user && completedCourses && completedCourses.length > 0 ? "Certificate Preview" : "Sample Certificate"}
+              {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
             <DownloadableCertificate
               studentName={userName}
