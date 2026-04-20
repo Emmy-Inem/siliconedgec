@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/business-training.jpg";
+import { SEO } from "@/components/SEO";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -91,6 +92,10 @@ export default function ForBusinesses() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Corporate Tech Training for Businesses — Silicon Edge"
+        description="Upskill your team with custom corporate training in Cloud, AI, DevOps, and Cybersecurity. Live instructor-led sessions, real projects, and verifiable certificates."
+      />
       <Header />
 
       {/* ─── Hero ─── */}
