@@ -1572,6 +1572,7 @@ export type Database = {
           influencer_email: string | null
           influencer_name: string
           is_active: boolean
+          landing_path: string | null
           max_uses: number | null
           revenue_generated: number
           slug: string | null
@@ -1589,6 +1590,7 @@ export type Database = {
           influencer_email?: string | null
           influencer_name: string
           is_active?: boolean
+          landing_path?: string | null
           max_uses?: number | null
           revenue_generated?: number
           slug?: string | null
@@ -1606,6 +1608,7 @@ export type Database = {
           influencer_email?: string | null
           influencer_name?: string
           is_active?: boolean
+          landing_path?: string | null
           max_uses?: number | null
           revenue_generated?: number
           slug?: string | null

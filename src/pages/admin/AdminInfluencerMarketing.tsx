@@ -42,6 +42,9 @@ export default function AdminInfluencerMarketing() {
     commission_percentage: "10",
     max_uses: "",
     expires_at: "",
+    landing_target: "courses", // courses | home | course | custom
+    landing_course_id: "",
+    landing_path: "",
   });
 
   const resetForm = () => setForm({
@@ -54,6 +57,9 @@ export default function AdminInfluencerMarketing() {
     commission_percentage: "10",
     max_uses: "",
     expires_at: "",
+    landing_target: "courses",
+    landing_course_id: "",
+    landing_path: "",
   });
 
   // Queries
@@ -81,6 +87,24 @@ export default function AdminInfluencerMarketing() {
     },
   });
 
+  const { data: courseList = [] } = useQuery({
+    queryKey: ["admin-promo-courses"],
+    queryFn: async () => {
+      const { data } = await supabase.from("courses").select("id, title").eq("is_published", true).order("title");
+      return data ?? [];
+    },
+  });
+
+  const computeLandingPath = (f: typeof form): string => {
+    if (f.landing_target === "home") return "/";
+    if (f.landing_target === "courses") return "/courses";
+    if (f.landing_target === "course" && f.landing_course_id) return `/courses/${f.landing_course_id}`;
+    if (f.landing_target === "custom" && f.landing_path) {
+      return f.landing_path.startsWith("/") ? f.landing_path : `/${f.landing_path}`;
+    }
+    return "/courses";
+  };
+
   // Stats
   const totalRevenue = promoCodes.reduce((s: number, p: any) => s + Number(p.revenue_generated || 0), 0);
   const totalUses = promoCodes.reduce((s: number, p: any) => s + (p.usage_count || 0), 0);
@@ -101,6 +125,7 @@ export default function AdminInfluencerMarketing() {
         commission_percentage: Number(form.commission_percentage),
         max_uses: form.max_uses ? Number(form.max_uses) : null,
         expires_at: form.expires_at || null,
+        landing_path: computeLandingPath(form),
       });
       if (error) throw error;
     },
@@ -213,6 +238,36 @@ export default function AdminInfluencerMarketing() {
                   <Label>Expires At (optional)</Label>
                   <Input type="datetime-local" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
                 </div>
+              </div>
+              <div className="space-y-2 border-t border-border pt-4">
+                <Label className="flex items-center gap-1.5"><Link2 className="h-3.5 w-3.5" /> Link Destination</Label>
+                <Select value={form.landing_target} onValueChange={(v) => setForm({ ...form, landing_target: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="courses">Courses Catalog (/courses)</SelectItem>
+                    <SelectItem value="home">Home Page (/)</SelectItem>
+                    <SelectItem value="course">Specific Course</SelectItem>
+                    <SelectItem value="custom">Custom Page Path</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.landing_target === "course" && (
+                  <Select value={form.landing_course_id} onValueChange={(v) => setForm({ ...form, landing_course_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Pick a course..." /></SelectTrigger>
+                    <SelectContent>
+                      {courseList.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {form.landing_target === "custom" && (
+                  <Input
+                    value={form.landing_path}
+                    onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
+                    placeholder="/pricing or /for-businesses"
+                  />
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  Final URL: <span className="font-mono text-primary">{`/r/${form.slug || "your-slug"}`}</span> → <span className="font-mono">{computeLandingPath(form)}</span>
+                </p>
               </div>
               <Button className="w-full" onClick={() => createPromo.mutate()} disabled={!form.code || !form.influencer_name || createPromo.isPending}>
                 {createPromo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -421,6 +476,11 @@ export default function AdminInfluencerMarketing() {
                     <p className="font-mono text-sm break-all text-primary font-semibold select-all">
                       {`${window.location.origin}/r/${detailCode.slug}`}
                     </p>
+                    {detailCode.landing_path && (
+                      <p className="font-mono text-[10px] text-muted-foreground mt-1">
+                        → lands on <span className="text-foreground">{detailCode.landing_path}</span>
+                      </p>
+                    )}
                   </div>
                   <Button
                     size="sm"

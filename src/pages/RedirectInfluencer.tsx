@@ -12,7 +12,7 @@ export default function RedirectInfluencer() {
     const run = async () => {
       if (!slug) { navigate("/courses", { replace: true }); return; }
       const { data } = await (supabase.from("promo_codes") as any)
-        .select("code, influencer_name, is_active")
+        .select("code, influencer_name, is_active, landing_path")
         .eq("slug", slug.toLowerCase())
         .eq("is_active", true)
         .maybeSingle();
@@ -31,7 +31,10 @@ export default function RedirectInfluencer() {
       }
 
       const courseParam = params.get("course");
-      navigate(courseParam ? `/courses/${courseParam}` : "/courses", { replace: true });
+      const destination = courseParam
+        ? `/courses/${courseParam}`
+        : (data?.landing_path && data.landing_path.startsWith("/") ? data.landing_path : "/courses");
+      navigate(destination, { replace: true });
     };
     run();
   }, [slug, navigate, params]);

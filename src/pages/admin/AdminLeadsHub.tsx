@@ -143,15 +143,37 @@ export default function AdminLeadsHub() {
   }), [unified, registrations, enrollments, businessLeads]);
 
   const exportCsv = () => {
-    const header = ["Source", "Name", "Email", "Phone", "Course/Company", "Status", "Created"];
+    const header = ["Source", "Name", "Email", "Phone", "Course/Company", "Status", "Meta", "Created"];
     const lines = filtered.map((r) => [
-      r.source, r.name, r.email, r.phone ?? "", r.course_title ?? "", r.status ?? "", new Date(r.created_at).toISOString(),
+      r.source, r.name, r.email, r.phone ?? "", r.course_title ?? "", r.status ?? "", r.meta ?? "", new Date(r.created_at).toISOString(),
     ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
     const blob = new Blob([[header.join(","), ...lines].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `leads-hub-${Date.now()}.csv`; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-hub-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
     URL.revokeObjectURL(url);
   };
+
+  // Group filtered results by date label (Today / Yesterday / This Week / Older)
+  const grouped = useMemo(() => {
+    const groups: Record<string, UnifiedLead[]> = {};
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterday = startOfDay - 86400000;
+    const weekAgo = startOfDay - 7 * 86400000;
+    filtered.forEach((u) => {
+      const t = +new Date(u.created_at);
+      const label =
+        t >= startOfDay ? "Today" :
+        t >= yesterday ? "Yesterday" :
+        t >= weekAgo ? "Earlier this week" :
+        new Date(u.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      (groups[label] ||= []).push(u);
+    });
+    return Object.entries(groups);
+  }, [filtered]);
 
   const isLoading = l1 || l2 || l3;
 
@@ -223,11 +245,18 @@ export default function AdminLeadsHub() {
             <p className="text-muted-foreground">No leads match your filters.</p>
           </div>
         ) : (
-          <div className="divide-y divide-border max-h-[70vh] overflow-y-auto">
-            {filtered.map((u, i) => {
-              const meta = SOURCE_META[u.source];
-              const Icon = meta.Icon;
-              return (
+          <div className="max-h-[70vh] overflow-y-auto">
+            {grouped.map(([label, items]) => (
+              <div key={label}>
+                <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border px-5 py-2 flex items-center justify-between z-10">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+                  <span className="text-[10px] text-muted-foreground/70">{items.length} {items.length === 1 ? "lead" : "leads"}</span>
+                </div>
+                <div className="divide-y divide-border">
+                {items.map((u, i) => {
+                  const meta = SOURCE_META[u.source];
+                  const Icon = meta.Icon;
+                  return (
                 <motion.div key={u.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.008, 0.25) }}
                   className="flex items-start gap-4 px-5 py-3.5 hover:bg-muted/30">
@@ -265,11 +294,14 @@ export default function AdminLeadsHub() {
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground/70 shrink-0 self-center">
-                    {new Date(u.created_at).toLocaleDateString()}
+                    {new Date(u.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </motion.div>
-              );
-            })}
+                  );
+                })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
