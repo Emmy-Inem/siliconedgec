@@ -35,16 +35,22 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const [appliedPromo, setAppliedPromo] = useState<PromoResult | null>(null);
   const [promoError, setPromoError] = useState("");
 
-  const discountAmount = appliedPromo
-    ? appliedPromo.discount_type === "percentage"
-      ? Math.round((price * appliedPromo.discount_value) / 100 * 100) / 100
-      : Math.min(appliedPromo.discount_value, price)
-    : 0;
+  // Auto-apply pending promo from short influencer link (sessionStorage.pending_promo)
+  useEffect(() => {
+    if (!open) return;
+    const pending = sessionStorage.getItem("pending_promo");
+    if (pending && !appliedPromo && !promoInput) {
+      setPromoInput(pending.toUpperCase());
+      // Defer apply so state is updated
+      setTimeout(() => {
+        applyPromoCodeWith(pending.toUpperCase());
+        sessionStorage.removeItem("pending_promo");
+      }, 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-  const finalPrice = Math.max(0, Math.round((price - discountAmount) * 100) / 100);
-
-  const applyPromoCode = async () => {
-    const code = promoInput.trim().toUpperCase();
+  const applyPromoCodeWith = async (code: string) => {
     if (!code) return;
     setPromoLoading(true);
     setPromoError("");
@@ -59,17 +65,12 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       if (!data) { setPromoError("Invalid or expired promo code"); return; }
       if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
       if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }
-
       const calcDiscount = data.discount_type === "percentage"
         ? Math.round((price * data.discount_value) / 100 * 100) / 100
         : Math.min(data.discount_value, price);
-
       setAppliedPromo({
-        id: data.id,
-        code: data.code,
-        discount_type: data.discount_type,
-        discount_value: data.discount_value,
-        influencer_name: data.influencer_name,
+        id: data.id, code: data.code, discount_type: data.discount_type,
+        discount_value: data.discount_value, influencer_name: data.influencer_name,
       });
       toast({ title: "Promo applied", description: `You saved ${formatNaira(calcDiscount)}` });
     } catch {
@@ -78,6 +79,16 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       setPromoLoading(false);
     }
   };
+
+  const discountAmount = appliedPromo
+    ? appliedPromo.discount_type === "percentage"
+      ? Math.round((price * appliedPromo.discount_value) / 100 * 100) / 100
+      : Math.min(appliedPromo.discount_value, price)
+    : 0;
+
+  const finalPrice = Math.max(0, Math.round((price - discountAmount) * 100) / 100);
+
+  const applyPromoCode = () => applyPromoCodeWith(promoInput.trim().toUpperCase());
 
   const removePromo = () => {
     setAppliedPromo(null);
