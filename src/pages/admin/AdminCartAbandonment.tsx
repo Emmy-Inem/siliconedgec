@@ -29,7 +29,7 @@ export default function AdminCartAbandonment() {
   });
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-cart-profiles"],
-    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
+    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name, bio")).data ?? [],
   });
 
   const courseFor = (id: string) => courses.find((c: any) => c.id === id);

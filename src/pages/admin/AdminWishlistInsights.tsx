@@ -24,7 +24,7 @@ export default function AdminWishlistInsights() {
   });
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-bm-profiles"],
-    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
+    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name, bio")).data ?? [],
   });
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-bm-enrollments"],
