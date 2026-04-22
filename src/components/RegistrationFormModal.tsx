@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { logUserActivity } from "@/lib/user-activity";
+import { trackLead } from "@/lib/track-lead";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Name is required").max(100),
@@ -74,6 +76,18 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
           payment_status: "free",
         });
       }
+
+      // Track activity & lead source
+      await Promise.all([
+        logUserActivity({
+          user_id: user?.id ?? null,
+          action: "webinar_registration",
+          entity_type: "course",
+          entity_id: courseId,
+          metadata: { course_title: courseTitle, email: parsed.data.email },
+        }),
+        trackLead({ formType: "webinar_registration", formData: { course_id: courseId, ...parsed.data } }),
+      ]);
 
       setDone(true);
       toast({ title: "Registration confirmed", description: `You're registered for ${courseTitle}.` });
