@@ -123,7 +123,7 @@ export default function SignIn() {
                       return;
                     }
                     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                      redirectTo: `${window.location.origin}/sign-in`,
+                      redirectTo: `${window.location.origin}/reset-password`,
                     });
                     if (error) {
                       toast({ title: "Error", description: error.message, variant: "destructive" });
