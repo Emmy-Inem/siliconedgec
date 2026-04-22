@@ -593,24 +593,45 @@ export default function AdminInfluencerMarketing() {
 
               {/* UTM Tracking Link */}
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Advanced: Full UTM Link</p>
-                <div className="bg-background rounded-md border border-border p-2.5">
-                  <p className="font-mono text-xs break-all text-foreground select-all">
-                    {`${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full gap-2 text-xs"
-                  onClick={() => {
-                    const url = `${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`;
-                    navigator.clipboard.writeText(url);
-                    toast({ title: "UTM link copied!", description: "Share this link with the influencer for tracked referrals." });
-                  }}
-                >
-                  <Copy className="h-3 w-3" /> Copy UTM Link
-                </Button>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Custom UTM Link (full URL)</p>
+                {(() => {
+                  const path = detailCode.landing_path || "/courses";
+                  const utmUrl = buildUtmUrl(window.location.origin, path, {
+                    source: detailCode.influencer_name,
+                    medium: "influencer",
+                    campaign: detailCode.code,
+                    content: "promo",
+                  });
+                  return (
+                    <>
+                      <div className="bg-background rounded-md border border-border p-2.5">
+                        <p className="font-mono text-xs break-all text-foreground select-all">{utmUrl}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground mt-1">Destination: <span className="text-foreground">{path}</span></p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-2 text-xs"
+                          onClick={() => {
+                            navigator.clipboard.writeText(utmUrl);
+                            toast({ title: "UTM link copied!", description: "Share this link for tracked referrals." });
+                          }}
+                        >
+                          <Copy className="h-3 w-3" /> Copy UTM Link
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 text-xs"
+                          onClick={() => window.open(utmUrl, "_blank")}
+                        >
+                          <ExternalLink className="h-3 w-3" /> Preview
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
