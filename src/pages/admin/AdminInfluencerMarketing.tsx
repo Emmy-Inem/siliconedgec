@@ -368,8 +368,14 @@ export default function AdminInfluencerMarketing() {
                   );
                 })()}
               </div>
+            </div>
+            <div className="px-6 py-3 border-t border-border bg-background shrink-0 flex items-center justify-between gap-3">
+              <p className="text-[11px] text-muted-foreground hidden sm:block">
+                {!form.influencer_name && "Influencer name is required"}
+                {form.landing_target === "custom" && !validatePath(form.landing_path).ok && form.landing_path && " · Fix the path"}
+                {form.landing_target === "course" && !form.landing_course_id && " · Pick a course"}
+              </p>
               <Button
-                className="w-full"
                 onClick={() => createPromo.mutate()}
                 disabled={
                   !form.code ||
