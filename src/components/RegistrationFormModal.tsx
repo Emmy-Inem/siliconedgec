@@ -56,7 +56,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("course_registrations").insert({
+      const { error } = await (supabase.from("course_registrations") as any).insert({
         course_id: courseId,
         user_id: user?.id ?? null,
         registration_type: "webinar",
