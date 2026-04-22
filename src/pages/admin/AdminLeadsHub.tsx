@@ -5,12 +5,17 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Inbox, Search, Download, Mail, MessageCircle, GraduationCap,
-  ClipboardCheck, Briefcase, Loader2, Filter, Users
+  ClipboardCheck, Briefcase, Loader2, Filter, Users, AtSign, Copy
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 type UnifiedLead = {
   id: string;
@@ -34,6 +39,9 @@ export default function AdminLeadsHub() {
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
+  const [extractorOpen, setExtractorOpen] = useState(false);
+  const [includeName, setIncludeName] = useState(false);
+  const { toast } = useToast();
 
   const { data: registrations = [], isLoading: l1 } = useQuery({
     queryKey: ["hub-registrations"],
@@ -191,7 +199,12 @@ export default function AdminLeadsHub() {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setExtractorOpen(true)}>
+            <AtSign className="h-4 w-4 mr-2" />Extract Emails
+          </Button>
+          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
