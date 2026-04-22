@@ -30,6 +30,7 @@ const sections = [
       { label: "Tags", href: "/admin/tags", icon: Tag },
       { label: "Brands", href: "/admin/brands", icon: Award },
       { label: "Reviews", href: "/admin/reviews", icon: Star },
+      { label: "Certificates", href: "/admin/certificates", icon: Award },
     ],
   },
   {
@@ -49,14 +50,16 @@ const sections = [
     label: "Communication",
     items: [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
+      { label: "Notifications Composer", href: "/admin/notifications", icon: BellIcon },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
       { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
       { label: "Live Classes", href: "/admin/live-classes", icon: Video },
     ],
   },
   {
-    label: "Marketing",
+    label: "Commerce",
     items: [
+      { label: "Orders & Payments", href: "/admin/orders", icon: Receipt },
       { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
