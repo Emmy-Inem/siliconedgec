@@ -50,7 +50,7 @@ export default function AdminPages() {
     queryFn: async () => {
       const { data, error } = await (supabase.from("cms_pages" as any).select("*").order("order_index"));
       if (error) throw error;
-      return (data as unknown) as Page[];
+      return (data as unknown as Page[]);
     },
   });
 

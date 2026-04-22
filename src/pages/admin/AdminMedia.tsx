@@ -34,7 +34,7 @@ export default function AdminMedia() {
     queryFn: async () => {
       const { data, error } = await (supabase.from("media_library" as any).select("*").order("created_at", { ascending: false }));
       if (error) throw error;
-      return (data as unknown) as MediaItem[];
+      return (data as unknown as MediaItem[]);
     },
   });
 

@@ -51,7 +51,7 @@ export default function AdminBrands() {
     queryFn: async () => {
       const { data, error } = await (supabase.from("brands" as any).select("*").order("order_index"));
       if (error) throw error;
-      return (data as unknown) as Brand[];
+      return (data as unknown as Brand[]);
     },
   });
 
