@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,7 +6,6 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { PaymentModal } from "@/components/PaymentModal";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag } from "lucide-react";
@@ -15,24 +14,92 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { trackLead } from "@/lib/track-lead";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
+import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 
 export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [enrolling, setEnrolling] = useState(false);
+  const [processing, setProcessing] = useState(false);
+
+  // After Paystack redirect: ?reference=... -> verify and issue receipt
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get("reference") || params.get("trxref");
+    if (!reference || !user) return;
+    (async () => {
+      setProcessing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("paystack-cart-verify", { body: { reference } });
+        if (error) throw error;
+        if (!data?.verified) {
+          toast({ title: "Payment not completed", description: data?.message ?? "Please try again.", variant: "destructive" });
+          return;
+        }
+        // Build receipt
+        const courseIds: string[] = data.course_ids ?? [];
+        const { data: courses } = await supabase.from("courses").select("id, title, price, discount_price").in("id", courseIds);
+        const lines = (courses ?? []).map((c: any) => ({
+          title: c.title,
+          amount: Number(c.discount_price ?? c.price),
+        }));
+        downloadReceiptPdf({
+          reference,
+          customerName: user.user_metadata?.full_name ?? "",
+          customerEmail: user.email ?? "",
+          lines,
+          total: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
+        });
+        await refresh();
+        toast({ title: "Payment confirmed", description: "Your receipt is downloading." });
+        navigate("/dashboard", { replace: true });
+      } catch (e: any) {
+        toast({ title: "Verification failed", description: e?.message ?? "Try again.", variant: "destructive" });
+      } finally {
+        setProcessing(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleCheckout = () => {
     if (!user) { navigate("/sign-in"); return; }
     if (total === 0) { handleFreeEnroll(); return; }
-    setPaymentOpen(true);
+    handlePaidCheckout();
+  };
+
+  const handlePaidCheckout = async () => {
+    setProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("paystack-cart-initialize", {
+        body: {
+          course_ids: items.map((i) => i.course_id),
+          callback_url: `${window.location.origin}/cart`,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.free) {
+        await clearCart();
+        toast({ title: "Enrolled successfully!" });
+        navigate("/dashboard");
+        return;
+      }
+      if (data?.authorization_url) {
+        window.location.href = data.authorization_url;
+        return;
+      }
+      throw new Error("Unexpected response from payment provider");
+    } catch (e: any) {
+      toast({ title: "Checkout failed", description: e?.message ?? "Try again.", variant: "destructive" });
+      setProcessing(false);
+    }
   };
 
   const handleFreeEnroll = async () => {
     if (!user) return;
-    setEnrolling(true);
+    setProcessing(true);
     const courseIds: string[] = [];
     for (const item of items) {
       await supabase.from("enrollments").upsert(
@@ -59,13 +126,9 @@ export default function Cart() {
     }
 
     await clearCart();
-    setEnrolling(false);
+    setProcessing(false);
     toast({ title: "Enrolled successfully!", description: "You can now access your courses from the dashboard." });
     navigate("/dashboard");
-  };
-
-  const handlePaymentSuccess = async () => {
-    await handleFreeEnroll(); // Same flow after payment confirmed
   };
 
   return (
