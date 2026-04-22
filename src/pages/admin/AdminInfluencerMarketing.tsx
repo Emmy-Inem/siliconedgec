@@ -172,6 +172,18 @@ export default function AdminInfluencerMarketing() {
                 <Label>Influencer Email</Label>
                 <Input type="email" value={form.influencer_email} onChange={(e) => setForm({ ...form, influencer_email: e.target.value })} placeholder="jane@example.com" />
               </div>
+              <div className="space-y-2">
+                <Label>Custom Short Slug (optional)</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">/r/</span>
+                  <Input
+                    value={form.slug}
+                    onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+                    placeholder={form.influencer_name.toLowerCase().replace(/\s+/g, "-") || "tayo"}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">Lowercase letters, numbers, hyphens. Defaults to influencer name.</p>
+              </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label>Discount Type</Label>
