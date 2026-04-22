@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
@@ -20,65 +22,73 @@ import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminOverview from "./pages/admin/AdminOverview";
-import AdminCourses from "./pages/admin/AdminCourses";
-import AdminCourseCreate from "./pages/admin/AdminCourseCreate";
-import AdminCourseModules from "./pages/admin/AdminCourseModules";
-import AdminInstructors from "./pages/admin/AdminInstructors";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminEnrollments from "./pages/admin/AdminEnrollments";
-import AdminTestimonials from "./pages/admin/AdminTestimonials";
-import AdminPricing from "./pages/admin/AdminPricing";
-import AdminSiteContent from "./pages/admin/AdminSiteContent";
-import AdminInfluencerMarketing from "./pages/admin/AdminInfluencerMarketing";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminMarketingAnalytics from "./pages/admin/AdminMarketingAnalytics";
-import AdminEmail from "./pages/admin/AdminEmail";
-import AdminActivityLog from "./pages/admin/AdminActivityLog";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminCategories from "./pages/admin/AdminCategories";
-import AdminTags from "./pages/admin/AdminTags";
-import AdminLearningPaths from "./pages/admin/AdminLearningPaths";
-import AdminStudents from "./pages/admin/AdminStudents";
-import AdminQuizzes from "./pages/admin/AdminQuizzes";
-import AdminQuizAttempts from "./pages/admin/AdminQuizAttempts";
-import AdminQnA from "./pages/admin/AdminQnA";
-import AdminCourseAnnouncements from "./pages/admin/AdminCourseAnnouncements";
-import AdminBusinessLeads from "./pages/admin/AdminBusinessLeads";
 import CourseLearning from "./pages/CourseLearning";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
-import AdminJobs from "./pages/admin/AdminJobs";
-import AdminJobApplications from "./pages/admin/AdminJobApplications";
-import AdminChat from "./pages/admin/AdminChat";
-import AdminCustomScripts from "./pages/admin/AdminCustomScripts";
-import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
-import AdminRegistrations from "./pages/admin/AdminRegistrations";
-import AdminSEO from "./pages/admin/AdminSEO";
-import AdminUserActivity from "./pages/admin/AdminUserActivity";
-import AdminBrands from "./pages/admin/AdminBrands";
-import AdminBlog from "./pages/admin/AdminBlog";
-import AdminMedia from "./pages/admin/AdminMedia";
-import AdminPages from "./pages/admin/AdminPages";
-import AdminReviews from "./pages/admin/AdminReviews";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
 import { HelmetProvider } from "react-helmet-async";
-import AdminLeadsHub from "./pages/admin/AdminLeadsHub";
 import CmsPagePublic from "./pages/CmsPage";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminCertificates from "./pages/admin/AdminCertificates";
-import AdminNotifications from "./pages/admin/AdminNotifications";
-import AdminCartAbandonment from "./pages/admin/AdminCartAbandonment";
-import AdminLoginSecurity from "./pages/admin/AdminLoginSecurity";
-import AdminWishlistInsights from "./pages/admin/AdminWishlistInsights";
-import AdminCourseHealth from "./pages/admin/AdminCourseHealth";
-import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
-import AdminHomeContent from "./pages/admin/AdminHomeContent";
+
+// Code-split admin pages — they only load when an admin route is visited
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
+const AdminCourseCreate = lazy(() => import("./pages/admin/AdminCourseCreate"));
+const AdminCourseModules = lazy(() => import("./pages/admin/AdminCourseModules"));
+const AdminInstructors = lazy(() => import("./pages/admin/AdminInstructors"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminEnrollments = lazy(() => import("./pages/admin/AdminEnrollments"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
+const AdminPricing = lazy(() => import("./pages/admin/AdminPricing"));
+const AdminSiteContent = lazy(() => import("./pages/admin/AdminSiteContent"));
+const AdminInfluencerMarketing = lazy(() => import("./pages/admin/AdminInfluencerMarketing"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminMarketingAnalytics = lazy(() => import("./pages/admin/AdminMarketingAnalytics"));
+const AdminEmail = lazy(() => import("./pages/admin/AdminEmail"));
+const AdminActivityLog = lazy(() => import("./pages/admin/AdminActivityLog"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminTags = lazy(() => import("./pages/admin/AdminTags"));
+const AdminLearningPaths = lazy(() => import("./pages/admin/AdminLearningPaths"));
+const AdminStudents = lazy(() => import("./pages/admin/AdminStudents"));
+const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
+const AdminQuizAttempts = lazy(() => import("./pages/admin/AdminQuizAttempts"));
+const AdminQnA = lazy(() => import("./pages/admin/AdminQnA"));
+const AdminCourseAnnouncements = lazy(() => import("./pages/admin/AdminCourseAnnouncements"));
+const AdminBusinessLeads = lazy(() => import("./pages/admin/AdminBusinessLeads"));
+const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
+const AdminJobApplications = lazy(() => import("./pages/admin/AdminJobApplications"));
+const AdminChat = lazy(() => import("./pages/admin/AdminChat"));
+const AdminCustomScripts = lazy(() => import("./pages/admin/AdminCustomScripts"));
+const AdminLiveClasses = lazy(() => import("./pages/admin/AdminLiveClasses"));
+const AdminRegistrations = lazy(() => import("./pages/admin/AdminRegistrations"));
+const AdminSEO = lazy(() => import("./pages/admin/AdminSEO"));
+const AdminUserActivity = lazy(() => import("./pages/admin/AdminUserActivity"));
+const AdminBrands = lazy(() => import("./pages/admin/AdminBrands"));
+const AdminBlog = lazy(() => import("./pages/admin/AdminBlog"));
+const AdminMedia = lazy(() => import("./pages/admin/AdminMedia"));
+const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminLeadsHub = lazy(() => import("./pages/admin/AdminLeadsHub"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminCartAbandonment = lazy(() => import("./pages/admin/AdminCartAbandonment"));
+const AdminLoginSecurity = lazy(() => import("./pages/admin/AdminLoginSecurity"));
+const AdminWishlistInsights = lazy(() => import("./pages/admin/AdminWishlistInsights"));
+const AdminCourseHealth = lazy(() => import("./pages/admin/AdminCourseHealth"));
+const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
+const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
+
+const AdminFallback = () => (
+  <div className="flex min-h-[60vh] items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -112,7 +122,16 @@ const App = () => (
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
               <Route path="/p/:slug" element={<CmsPagePublic />} />
 
-              <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+              <Route
+                path="/admin"
+                element={
+                  <RequireAdmin>
+                    <Suspense fallback={<AdminFallback />}>
+                      <AdminLayout />
+                    </Suspense>
+                  </RequireAdmin>
+                }
+              >
                 <Route index element={<AdminOverview />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="courses" element={<AdminCourses />} />

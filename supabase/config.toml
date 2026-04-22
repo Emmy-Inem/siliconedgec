@@ -9,6 +9,15 @@ verify_jwt = false
 [functions.paystack-refund]
 verify_jwt = true
 
+[functions.paystack-cart-initialize]
+verify_jwt = true
+
+[functions.paystack-cart-verify]
+verify_jwt = false
+
+[functions.live-class-reminder]
+verify_jwt = false
+
 [functions.generate-sitemap]
 verify_jwt = false
 

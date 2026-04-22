@@ -1,0 +1,93 @@
+// Sends a reminder email to enrolled students 1 hour before a live class.
+// Triggered by a pg_cron schedule that pings this function every 15 minutes.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
+
+    // Window: classes scheduled to start between 50 and 80 minutes from now (covers 15-min cron jitter)
+    const now = new Date();
+    const start = new Date(now.getTime() + 50 * 60 * 1000).toISOString();
+    const end = new Date(now.getTime() + 80 * 60 * 1000).toISOString();
+
+    const { data: classes, error } = await supabase
+      .from("live_classes")
+      .select("id, course_id, title, scheduled_at, meeting_url, instructor_name")
+      .gte("scheduled_at", start)
+      .lte("scheduled_at", end)
+      .neq("status", "cancelled");
+    if (error) throw error;
+    if (!classes || classes.length === 0) {
+      return new Response(JSON.stringify({ ok: true, sent: 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    let sent = 0;
+
+    for (const cls of classes) {
+      // Find enrolled users for the class' course
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("user_id")
+        .eq("course_id", cls.course_id);
+      if (!enrollments || enrollments.length === 0) continue;
+
+      const userIds = enrollments.map((e) => e.user_id);
+      // Resolve emails via auth admin lookup (batched 50)
+      for (const uid of userIds) {
+        try {
+          const { data: { user } } = await supabase.auth.admin.getUserById(uid);
+          if (!user?.email) continue;
+          const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", uid).maybeSingle();
+          const when = new Date(cls.scheduled_at).toLocaleString("en-NG", { timeZone: "Africa/Lagos" });
+          await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${anon}` },
+            body: JSON.stringify({
+              template_key: "tpl_live_class_reminder",
+              to: user.email,
+              variables: {
+                name: profile?.full_name || user.email.split("@")[0],
+                class_title: cls.title,
+                instructor: cls.instructor_name ?? "your instructor",
+                start_time: when,
+                join_url: cls.meeting_url,
+              },
+              fallback_subject: `Reminder: ${cls.title} starts in 1 hour`,
+              fallback_body: `Hi ${profile?.full_name || ""},\n\nYour live class "${cls.title}" with ${cls.instructor_name ?? "your instructor"} starts at ${when}.\n\nJoin here: ${cls.meeting_url}\n\nSee you there!`,
+            }),
+          }).catch((e) => console.error("reminder send-email failed", e));
+          sent += 1;
+        } catch (e) {
+          console.error("reminder per-user failed", uid, e);
+        }
+      }
+
+      // Mark class as reminded so we don't double-send if cron jitters
+      await supabase.from("live_classes").update({ status: "reminded" }).eq("id", cls.id).eq("status", "scheduled");
+    }
+
+    return new Response(JSON.stringify({ ok: true, sent, classes: classes.length }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("live-class-reminder error", e);
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
