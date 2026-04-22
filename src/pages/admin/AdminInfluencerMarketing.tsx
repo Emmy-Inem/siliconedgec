@@ -364,14 +364,6 @@ export default function AdminInfluencerMarketing() {
                   );
                 })()}
               </div>
-              {/* keep one space-y wrapper closing — original block already closes below */}
-              <div className="hidden">
-                {/* placeholder to balance original closing div removed below */}
-                )}
-                <p className="text-[10px] text-muted-foreground">
-                  Final URL: <span className="font-mono text-primary">{`/r/${form.slug || "your-slug"}`}</span> → <span className="font-mono">{computeLandingPath(form)}</span>
-                </p>
-              </div>
               <Button className="w-full" onClick={() => createPromo.mutate()} disabled={!form.code || !form.influencer_name || createPromo.isPending}>
                 {createPromo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create Promo Code
