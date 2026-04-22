@@ -57,6 +57,11 @@ import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
 import AdminRegistrations from "./pages/admin/AdminRegistrations";
 import AdminSEO from "./pages/admin/AdminSEO";
 import AdminUserActivity from "./pages/admin/AdminUserActivity";
+import AdminBrands from "./pages/admin/AdminBrands";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminMedia from "./pages/admin/AdminMedia";
+import AdminPages from "./pages/admin/AdminPages";
+import AdminReviews from "./pages/admin/AdminReviews";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
@@ -124,6 +129,11 @@ const App = () => (
                 <Route path="registrations" element={<AdminRegistrations />} />
                 <Route path="seo" element={<AdminSEO />} />
                 <Route path="user-activity" element={<AdminUserActivity />} />
+                <Route path="brands" element={<AdminBrands />} />
+                <Route path="blog" element={<AdminBlog />} />
+                <Route path="media" element={<AdminMedia />} />
+                <Route path="pages" element={<AdminPages />} />
+                <Route path="reviews" element={<AdminReviews />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 

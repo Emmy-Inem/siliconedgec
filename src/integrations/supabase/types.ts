@@ -44,6 +44,60 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          category: string | null
+          content: string | null
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           course_id: string
@@ -72,6 +126,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      brands: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          logo_url: string | null
+          name: string
+          order_index: number
+          slug: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          logo_url?: string | null
+          name: string
+          order_index?: number
+          slug: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          logo_url?: string | null
+          name?: string
+          order_index?: number
+          slug?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
       }
       business_leads: {
         Row: {
@@ -283,6 +376,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cms_pages: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          meta_description: string | null
+          order_index: number
+          show_in_footer: boolean
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          order_index?: number
+          show_in_footer?: boolean
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          order_index?: number
+          show_in_footer?: boolean
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       course_announcements: {
         Row: {
@@ -1171,6 +1303,42 @@ export type Database = {
           ip_address?: string | null
           success?: boolean
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          folder: string | null
+          id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          folder?: string | null
+          id?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          folder?: string | null
+          id?: string
+          uploaded_by?: string | null
         }
         Relationships: []
       }

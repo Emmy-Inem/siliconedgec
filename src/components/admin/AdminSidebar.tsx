@@ -2,7 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -27,6 +28,8 @@ const sections = [
       { label: "Courses", href: "/admin/courses", icon: BookOpen },
       { label: "Categories", href: "/admin/categories", icon: FolderTree },
       { label: "Tags", href: "/admin/tags", icon: Tag },
+      { label: "Brands", href: "/admin/brands", icon: Award },
+      { label: "Reviews", href: "/admin/reviews", icon: Star },
     ],
   },
   {
@@ -71,6 +74,9 @@ const sections = [
       { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
       { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
       { label: "Site Content", href: "/admin/content", icon: FileText },
+      { label: "Blog Posts", href: "/admin/blog", icon: Newspaper },
+      { label: "Pages", href: "/admin/pages", icon: FileEdit },
+      { label: "Media Library", href: "/admin/media", icon: ImageIcon },
     ],
   },
   {

@@ -154,12 +154,12 @@ export default function Pricing() {
       </section>
 
       {/* Choose Your Path */}
-      <section className="py-6 bg-primary/5 border-y border-primary/10">
+      <section className="py-8 bg-card border-y border-border">
         <div className="container mx-auto px-4 text-center">
-          <p className="font-heading font-semibold text-sm">
+          <p className="font-heading font-semibold text-base text-foreground">
             Choose Your Path to Mastery
           </p>
-          <p className="text-muted-foreground text-xs max-w-2xl mx-auto mt-1">
+          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mt-2 leading-relaxed">
             Select the learning track that aligns with your career goals. All
             plans include our signature instructor-led classes, real-life
             portfolio projects, job readiness training, and lifetime access to
@@ -260,13 +260,13 @@ export default function Pricing() {
         <div className="absolute inset-0 gradient-mesh opacity-30" />
         <div className="container mx-auto px-4 relative">
           <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">
+            <p className="text-accent font-medium text-sm tracking-widest uppercase mb-3">
               We build tech Careers
             </p>
-            <h2 className="font-heading text-2xl md:text-3xl font-bold text-hero mb-2">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-hero mb-3">
               Our average call quality rating is 4.4 out of 5.
             </h2>
-            <p className="text-hero-muted text-sm">
+            <p className="text-hero-muted text-base">
               That leads to happy tweets like these:
             </p>
           </motion.div>
