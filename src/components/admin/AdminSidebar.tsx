@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -45,6 +45,7 @@ const sections = [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
       { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
+      { label: "Live Classes", href: "/admin/live-classes", icon: Video },
     ],
   },
   {

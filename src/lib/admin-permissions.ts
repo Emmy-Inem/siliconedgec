@@ -16,6 +16,7 @@ const MODERATOR_ROUTES = [
   "/admin/announcements",
   "/admin/testimonials",
   "/admin/instructors",
+  "/admin/live-classes",
 ];
 
 const ADMIN_ONLY_ROUTES = [

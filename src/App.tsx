@@ -53,6 +53,7 @@ import AdminJobs from "./pages/admin/AdminJobs";
 import AdminJobApplications from "./pages/admin/AdminJobApplications";
 import AdminChat from "./pages/admin/AdminChat";
 import AdminCustomScripts from "./pages/admin/AdminCustomScripts";
+import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 
@@ -114,6 +115,7 @@ const App = () => (
                 <Route path="job-applications" element={<AdminJobApplications />} />
                 <Route path="chat" element={<AdminChat />} />
                 <Route path="custom-scripts" element={<AdminCustomScripts />} />
+                <Route path="live-classes" element={<AdminLiveClasses />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 
