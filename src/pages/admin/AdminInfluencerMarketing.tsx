@@ -292,11 +292,81 @@ export default function AdminInfluencerMarketing() {
                   </Select>
                 )}
                 {form.landing_target === "custom" && (
-                  <Input
-                    value={form.landing_path}
-                    onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
-                    placeholder="/pricing or /for-businesses"
-                  />
+                  <>
+                    <Input
+                      value={form.landing_path}
+                      onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
+                      placeholder="/pricing or /for-businesses"
+                    />
+                    {form.landing_path && (() => {
+                      const v = validatePath(form.landing_path);
+                      return v.ok ? (
+                        <p className="text-[10px] text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Valid path</p>
+                      ) : (
+                        <p className="text-[10px] text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {v.reason}</p>
+                      );
+                    })()}
+                  </>
+                )}
+
+                {/* UTM Editor */}
+                <div className="mt-3 pt-3 border-t border-dashed border-border space-y-2">
+                  <Label className="text-xs">UTM Parameters (auto-injected)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="utm_source (e.g. tayo)"
+                      value={form.utm_source}
+                      onChange={(e) => setForm({ ...form, utm_source: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_medium (influencer)"
+                      value={form.utm_medium}
+                      onChange={(e) => setForm({ ...form, utm_medium: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_campaign (promo code)"
+                      value={form.utm_campaign}
+                      onChange={(e) => setForm({ ...form, utm_campaign: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_content (optional)"
+                      value={form.utm_content}
+                      onChange={(e) => setForm({ ...form, utm_content: e.target.value })}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Leave blank to use defaults: source = influencer name, medium = influencer, campaign = promo code.
+                  </p>
+                </div>
+
+                {/* Live Preview */}
+                {(() => {
+                  const path = computeLandingPath(form);
+                  const utm = {
+                    source: form.utm_source || form.influencer_name,
+                    medium: form.utm_medium || "influencer",
+                    campaign: form.utm_campaign || form.code,
+                    content: form.utm_content,
+                  };
+                  const fullUrl = (form.utm_source || form.utm_campaign || form.utm_content)
+                    ? buildUtmUrl(window.location.origin, path, utm)
+                    : `${window.location.origin}${path}`;
+                  return (
+                    <div className="bg-primary/5 border border-primary/20 rounded-md p-2.5 space-y-1.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> Live Preview
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Short link:</p>
+                      <p className="font-mono text-xs break-all text-primary">{`${window.location.origin}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Resolves to:</p>
+                      <p className="font-mono text-[11px] break-all text-foreground">{fullUrl}</p>
+                    </div>
+                  );
+                })()}
+              </div>
+              {/* keep one space-y wrapper closing — original block already closes below */}
+              <div className="hidden">
+                {/* placeholder to balance original closing div removed below */}
                 )}
                 <p className="text-[10px] text-muted-foreground">
                   Final URL: <span className="font-mono text-primary">{`/r/${form.slug || "your-slug"}`}</span> → <span className="font-mono">{computeLandingPath(form)}</span>
