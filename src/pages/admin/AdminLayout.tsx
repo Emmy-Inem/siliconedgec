@@ -1,4 +1,5 @@
 import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +11,14 @@ import { motion } from "framer-motion";
 export default function AdminLayout() {
   const { user, adminRole, signOut } = useAuth();
   const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Reset main scroll AND sidebar nav scroll on route change
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    const sidebarNav = document.querySelector<HTMLElement>("[data-admin-sidebar-nav]");
+    sidebarNav?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
 
   // Route-level permission guard
   if (adminRole && !canAccessRoute(adminRole, location.pathname)) {
@@ -40,6 +49,7 @@ export default function AdminLayout() {
           </div>
         </header>
         <motion.main
+          ref={mainRef as any}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
