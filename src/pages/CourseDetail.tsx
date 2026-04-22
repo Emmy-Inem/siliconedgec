@@ -27,6 +27,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { trackLead } from "@/lib/track-lead";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { SEO } from "@/components/SEO";
+import { logUserActivity } from "@/lib/user-activity";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
@@ -47,6 +48,20 @@ export default function CourseDetail() {
   const { addToCart, isInCart } = useCart();
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
+
+  // Log course view once per page load
+  useEffect(() => {
+    if (id && course) {
+      logUserActivity({
+        user_id: user?.id ?? null,
+        action: "course_view",
+        entity_type: "course",
+        entity_id: id,
+        metadata: { title: course.title },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, course?.id]);
 
   // Verify Paystack payment after redirect callback
   useEffect(() => {
@@ -105,6 +120,13 @@ export default function CourseDetail() {
           utm_content: utm.utm_content,
           utm_term: utm.utm_term,
         },
+      });
+      await logUserActivity({
+        user_id: user!.id,
+        action: "course_enroll",
+        entity_type: "course",
+        entity_id: id!,
+        metadata: { title: course?.title, price: course?.price ?? 0 },
       });
     },
     onSuccess: () => {

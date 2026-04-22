@@ -29,6 +29,8 @@ export default function AdminUserActivity() {
       (profiles ?? []).forEach((p: any) => map.set(p.user_id, p.full_name ?? "Unknown"));
       return ((logs ?? []) as Row[]).map((l) => ({ ...l, full_name: l.user_id ? map.get(l.user_id) : "Guest" }));
     },
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
 
   const actions = Array.from(new Set(rows.map((r) => r.action)));

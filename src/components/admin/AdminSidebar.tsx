@@ -25,7 +25,7 @@ const sections = [
     label: "Tutor LMS",
     items: [
       { label: "Learning Paths", href: "/admin/paths", icon: Route },
-      { label: "Courses", href: "/admin/courses", icon: BookOpen },
+      { label: "Products (Courses)", href: "/admin/courses", icon: BookOpen },
       { label: "Categories", href: "/admin/categories", icon: FolderTree },
       { label: "Tags", href: "/admin/tags", icon: Tag },
       { label: "Brands", href: "/admin/brands", icon: Award },
@@ -33,11 +33,12 @@ const sections = [
     ],
   },
   {
-    label: "Students",
+    label: "Students & Leads",
     items: [
       { label: "Students", href: "/admin/students", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
-      { label: "Registrations", href: "/admin/registrations", icon: ClipboardCheck },
+      { label: "Webinar Registrations", href: "/admin/registrations", icon: ClipboardCheck },
+      { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
       { label: "Quizzes", href: "/admin/quizzes", icon: ClipboardCheck },
       { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: ClipboardCheck },
       { label: "Q&A", href: "/admin/qna", icon: HelpCircle },
@@ -57,7 +58,6 @@ const sections = [
     items: [
       { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
-      { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
     ],
   },

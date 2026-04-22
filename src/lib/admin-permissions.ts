@@ -52,7 +52,7 @@ export function canAccessRoute(role: AdminRole, path: string): boolean {
 const MODERATOR_SECTIONS = [
   "Dashboard",
   "Tutor LMS",
-  "Students",
+  "Students & Leads",
   "Communication",
   "Content",
 ];

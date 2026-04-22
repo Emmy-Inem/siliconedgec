@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BookOpen, Users, GraduationCap, MessageSquareQuote, CreditCard, UserCheck,
-  TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity
+  TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity, ClipboardCheck, Briefcase
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -126,6 +126,10 @@ export default function AdminOverview() {
         supabase.from("profiles").select("id, created_at"),
         supabase.from("promo_codes").select("id, usage_count, revenue_generated, is_active"),
       ]);
+      const [regsRes, leadsRes] = await Promise.all([
+        (supabase.from("course_registrations") as any).select("id, status, created_at"),
+        supabase.from("business_leads").select("id, status, created_at"),
+      ]);
 
       const allCourses = courses.data ?? [];
       const allEnrollments = enrollments.data ?? [];
@@ -186,6 +190,9 @@ export default function AdminOverview() {
         monthlyEnrollments,
         monthlySignups,
         recentEnrollments,
+        registrations: (regsRes.data ?? []).length,
+        newRegistrations: (regsRes.data ?? []).filter((r: any) => r.status === "new").length,
+        businessLeads: (leadsRes.data ?? []).length,
       };
     },
   });
@@ -194,6 +201,8 @@ export default function AdminOverview() {
     { label: "Total Courses", value: stats?.courses ?? 0, sub: `${stats?.published ?? 0} published`, icon: BookOpen, href: "/admin/courses" },
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
     { label: "Enrollments", value: stats?.enrollments ?? 0, sub: `${stats?.totalRevenue ?? 0} paid`, icon: GraduationCap, href: "/admin/enrollments" },
+    { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new leads`, icon: ClipboardCheck, href: "/admin/registrations" },
+    { label: "Business Leads", value: stats?.businessLeads ?? 0, sub: "B2B inquiries", icon: Briefcase, href: "/admin/business-leads" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
     { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `₦${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
     { label: "Testimonials", value: stats?.testimonials ?? 0, sub: "published reviews", icon: MessageSquareQuote, href: "/admin/testimonials" },
