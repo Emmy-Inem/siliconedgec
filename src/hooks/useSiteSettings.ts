@@ -8,6 +8,7 @@ export interface SiteSettings {
   contact_phone: string;
   contact_address: string;
   whatsapp_number: string;
+  whatsapp_community_url: string;
   social_facebook: string;
   social_twitter: string;
   social_instagram: string;
@@ -22,9 +23,10 @@ const DEFAULTS: SiteSettings = {
   site_name: "Silicon Edge Consulting",
   site_tagline: "Empowering professionals with job-ready tech skills",
   contact_email: "info@siliconedgec.com",
-  contact_phone: "+447741247592",
-  contact_address: "3rd floor, 86-90, Paul Street, London, EC2A 4NE",
-  whatsapp_number: "2348001234567",
+  contact_phone: "",
+  contact_address: "",
+  whatsapp_number: "",
+  whatsapp_community_url: "",
   social_facebook: "",
   social_twitter: "",
   social_instagram: "",
