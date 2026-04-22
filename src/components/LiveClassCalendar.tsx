@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Video, Calendar as CalIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Video, Calendar as CalIcon, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
 
 interface LiveClassItem {
   id: string;
@@ -122,17 +123,62 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{c.title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(c.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(c.scheduled_at).toLocaleString(undefined, {
+                    hour: "2-digit", minute: "2-digit",
+                    timeZoneName: "short",
+                  })}
                   {" · "}{c.duration_minutes} min · {c.meeting_provider}
                 </p>
               </div>
-              {showJoin && c.status !== "cancelled" && (
-                <Button size="sm" asChild>
-                  <a href={c.meeting_url} target="_blank" rel="noopener noreferrer">
-                    <Video className="h-3.5 w-3.5 mr-1" />Join
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title="Download .ics"
+                  aria-label="Download calendar invite"
+                  onClick={() => {
+                    const ics = buildIcsFile({
+                      uid: c.id,
+                      title: c.title,
+                      description: `Live class · ${c.meeting_provider}`,
+                      url: c.meeting_url,
+                      start: new Date(c.scheduled_at),
+                      durationMinutes: c.duration_minutes,
+                    });
+                    downloadIcs(`${c.title.replace(/[^\w]+/g, "-").toLowerCase()}.ics`, ics);
+                  }}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title="Add to Google Calendar"
+                  aria-label="Add to Google Calendar"
+                  asChild
+                >
+                  <a
+                    href={googleCalendarUrl({
+                      title: c.title,
+                      description: `Live class · ${c.meeting_provider}`,
+                      url: c.meeting_url,
+                      start: new Date(c.scheduled_at),
+                      durationMinutes: c.duration_minutes,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </Button>
-              )}
+                {showJoin && c.status !== "cancelled" && (
+                  <Button size="sm" asChild>
+                    <a href={c.meeting_url} target="_blank" rel="noopener noreferrer">
+                      <Video className="h-3.5 w-3.5 mr-1" />Join
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
