@@ -371,6 +371,66 @@ export type Database = {
           },
         ]
       }
+      course_registrations: {
+        Row: {
+          country: string | null
+          course_id: string
+          created_at: string
+          email: string
+          experience_level: string | null
+          full_name: string
+          goal: string | null
+          how_did_you_hear: string | null
+          id: string
+          internal_notes: string | null
+          motivation: string | null
+          profession: string | null
+          registration_type: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          country?: string | null
+          course_id: string
+          created_at?: string
+          email: string
+          experience_level?: string | null
+          full_name: string
+          goal?: string | null
+          how_did_you_hear?: string | null
+          id?: string
+          internal_notes?: string | null
+          motivation?: string | null
+          profession?: string | null
+          registration_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          country?: string | null
+          course_id?: string
+          created_at?: string
+          email?: string
+          experience_level?: string | null
+          full_name?: string
+          goal?: string | null
+          how_did_you_hear?: string | null
+          id?: string
+          internal_notes?: string | null
+          motivation?: string | null
+          profession?: string | null
+          registration_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
       course_tags: {
         Row: {
           course_id: string
@@ -1307,6 +1367,7 @@ export type Database = {
           is_active: boolean
           max_uses: number | null
           revenue_generated: number
+          slug: string | null
           updated_at: string
           usage_count: number
         }
@@ -1323,6 +1384,7 @@ export type Database = {
           is_active?: boolean
           max_uses?: number | null
           revenue_generated?: number
+          slug?: string | null
           updated_at?: string
           usage_count?: number
         }
@@ -1339,6 +1401,7 @@ export type Database = {
           is_active?: boolean
           max_uses?: number | null
           revenue_generated?: number
+          slug?: string | null
           updated_at?: string
           usage_count?: number
         }
