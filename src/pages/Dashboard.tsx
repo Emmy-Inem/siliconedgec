@@ -321,6 +321,19 @@ export default function Dashboard() {
                 )}
               </TabsContent>
 
+              <TabsContent value="calendar">
+                {liveClasses.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <h2 className="font-heading text-xl font-semibold mb-2">No live classes scheduled</h2>
+                    <p className="text-muted-foreground mb-6">Live classes for your enrolled courses will appear here.</p>
+                    <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+                  </div>
+                ) : (
+                  <LiveClassCalendar classes={liveClasses as any} />
+                )}
+              </TabsContent>
+
               <TabsContent value="applications">
                 {applications.length === 0 ? (
                   <div className="text-center py-20">
