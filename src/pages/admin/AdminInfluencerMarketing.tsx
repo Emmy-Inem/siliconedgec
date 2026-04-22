@@ -572,12 +572,12 @@ export default function AdminInfluencerMarketing() {
 
       {/* Detail Dialog */}
       <Dialog open={!!detailCode} onOpenChange={(v) => !v && setDetailCode(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-xl p-0 gap-0 max-h-[90vh] flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
             <DialogTitle className="font-heading">Promo Code Details</DialogTitle>
           </DialogHeader>
           {detailCode && (
-            <div className="space-y-4">
+            <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
               <div className="bg-muted/50 rounded-lg p-4 text-center">
                 <p className="font-mono text-2xl font-bold text-primary">{detailCode.code}</p>
                 <p className="text-sm text-muted-foreground mt-1">by {detailCode.influencer_name}</p>
