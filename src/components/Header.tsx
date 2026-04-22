@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
 
-const navLinks = [
+const baseNavLinks = [
   { label: "Home", href: "/" },
   { label: "Courses", href: "/courses" },
-  { label: "Jobs", href: "/jobs" },
   { label: "Pricing", href: "/pricing" },
   { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
@@ -25,6 +25,10 @@ export function Header() {
   const isHeroPage = darkHeroPages.includes(location.pathname);
   const { user, isAdmin, signOut } = useAuth();
   const { count } = useCart();
+  const { data: hasJobs } = useHasPublishedJobs();
+  const navLinks = hasJobs
+    ? [baseNavLinks[0], baseNavLinks[1], { label: "Jobs", href: "/jobs" }, ...baseNavLinks.slice(2)]
+    : baseNavLinks;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
