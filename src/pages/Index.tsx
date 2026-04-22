@@ -493,7 +493,7 @@ export default function Index() {
           >
             {instructors.map((inst) => (
               <motion.div
-                key={inst.name}
+                key={inst.id}
                 variants={staggerItem}
                 whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
                 className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all group relative overflow-hidden"
@@ -597,22 +597,26 @@ export default function Index() {
             <div className="flex animate-marquee gap-6 group-hover/marquee:[animation-play-state:paused]" style={{ width: "max-content" }}>
               {[...testimonials, ...testimonials].map((t, i) => (
                 <motion.div
-                  key={i}
+                  key={`${t.id}-${i}`}
                   whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
                   className="w-[340px] glass-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0 hover:border-primary/20 hover:shadow-lg transition-all"
                 >
                   <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, j) => (
+                    {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
                       <Star key={j} className="h-4 w-4 fill-accent text-accent" />
                     ))}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-heading font-bold text-primary text-sm">
-                        {t.name.split(" ").map(n => n[0]).join("")}
-                      </span>
-                    </div>
+                    {t.avatar_url ? (
+                      <img src={t.avatar_url} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="font-heading font-bold text-primary text-sm">
+                          {t.name.split(" ").map(n => n[0]).join("")}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <p className="font-heading font-semibold text-sm">{t.name}</p>
                       <p className="text-xs text-muted-foreground">{t.role}</p>
