@@ -2,6 +2,7 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { AdminSearch } from "@/components/admin/AdminSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { canAccessRoute } from "@/lib/admin-permissions";
 import { LogOut, Shield } from "lucide-react";
@@ -38,6 +39,7 @@ export default function AdminLayout() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            <AdminSearch />
             <NotificationBell />
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />

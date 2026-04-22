@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Copy, Trash2, TrendingUp, Users, DollarSign, Ticket,
-  Loader2, RefreshCw, BarChart3, Eye, Link2
+  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -23,6 +23,31 @@ function generateCode(prefix = "PROMO") {
   let code = prefix + "-";
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
+}
+
+// Validate a custom landing path: must start with /, no protocol, no spaces, reasonable length
+function validatePath(path: string): { ok: boolean; reason?: string } {
+  if (!path) return { ok: false, reason: "Path is required" };
+  if (/^https?:\/\//i.test(path)) return { ok: false, reason: "Use a relative path, not a full URL" };
+  if (!path.startsWith("/")) return { ok: false, reason: "Must start with /" };
+  if (/\s/.test(path)) return { ok: false, reason: "Cannot contain spaces" };
+  if (path.length > 200) return { ok: false, reason: "Too long (max 200 chars)" };
+  if (!/^\/[a-zA-Z0-9\-_/.?=&%#]*$/.test(path)) return { ok: false, reason: "Contains invalid characters" };
+  return { ok: true };
+}
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function buildUtmUrl(origin: string, path: string, utm: { source?: string; medium?: string; campaign?: string; content?: string; term?: string }) {
+  const url = new URL(path, origin);
+  if (utm.source) url.searchParams.set("utm_source", slugify(utm.source));
+  if (utm.medium) url.searchParams.set("utm_medium", slugify(utm.medium));
+  if (utm.campaign) url.searchParams.set("utm_campaign", slugify(utm.campaign));
+  if (utm.content) url.searchParams.set("utm_content", slugify(utm.content));
+  if (utm.term) url.searchParams.set("utm_term", slugify(utm.term));
+  return url.toString();
 }
 
 export default function AdminInfluencerMarketing() {
@@ -45,6 +70,10 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses", // courses | home | course | custom
     landing_course_id: "",
     landing_path: "",
+    utm_source: "",
+    utm_medium: "influencer",
+    utm_campaign: "",
+    utm_content: "",
   });
 
   const resetForm = () => setForm({
@@ -60,6 +89,10 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses",
     landing_course_id: "",
     landing_path: "",
+    utm_source: "",
+    utm_medium: "influencer",
+    utm_campaign: "",
+    utm_content: "",
   });
 
   // Queries
@@ -259,17 +292,89 @@ export default function AdminInfluencerMarketing() {
                   </Select>
                 )}
                 {form.landing_target === "custom" && (
-                  <Input
-                    value={form.landing_path}
-                    onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
-                    placeholder="/pricing or /for-businesses"
-                  />
+                  <>
+                    <Input
+                      value={form.landing_path}
+                      onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
+                      placeholder="/pricing or /for-businesses"
+                    />
+                    {form.landing_path && (() => {
+                      const v = validatePath(form.landing_path);
+                      return v.ok ? (
+                        <p className="text-[10px] text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Valid path</p>
+                      ) : (
+                        <p className="text-[10px] text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {v.reason}</p>
+                      );
+                    })()}
+                  </>
                 )}
-                <p className="text-[10px] text-muted-foreground">
-                  Final URL: <span className="font-mono text-primary">{`/r/${form.slug || "your-slug"}`}</span> → <span className="font-mono">{computeLandingPath(form)}</span>
-                </p>
+
+                {/* UTM Editor */}
+                <div className="mt-3 pt-3 border-t border-dashed border-border space-y-2">
+                  <Label className="text-xs">UTM Parameters (auto-injected)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="utm_source (e.g. tayo)"
+                      value={form.utm_source}
+                      onChange={(e) => setForm({ ...form, utm_source: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_medium (influencer)"
+                      value={form.utm_medium}
+                      onChange={(e) => setForm({ ...form, utm_medium: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_campaign (promo code)"
+                      value={form.utm_campaign}
+                      onChange={(e) => setForm({ ...form, utm_campaign: e.target.value })}
+                    />
+                    <Input
+                      placeholder="utm_content (optional)"
+                      value={form.utm_content}
+                      onChange={(e) => setForm({ ...form, utm_content: e.target.value })}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Leave blank to use defaults: source = influencer name, medium = influencer, campaign = promo code.
+                  </p>
+                </div>
+
+                {/* Live Preview */}
+                {(() => {
+                  const path = computeLandingPath(form);
+                  const utm = {
+                    source: form.utm_source || form.influencer_name,
+                    medium: form.utm_medium || "influencer",
+                    campaign: form.utm_campaign || form.code,
+                    content: form.utm_content,
+                  };
+                  const fullUrl = (form.utm_source || form.utm_campaign || form.utm_content)
+                    ? buildUtmUrl(window.location.origin, path, utm)
+                    : `${window.location.origin}${path}`;
+                  return (
+                    <div className="bg-primary/5 border border-primary/20 rounded-md p-2.5 space-y-1.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1">
+                        <Eye className="h-3 w-3" /> Live Preview
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Short link:</p>
+                      <p className="font-mono text-xs break-all text-primary">{`${window.location.origin}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Resolves to:</p>
+                      <p className="font-mono text-[11px] break-all text-foreground">{fullUrl}</p>
+                    </div>
+                  );
+                })()}
               </div>
-              <Button className="w-full" onClick={() => createPromo.mutate()} disabled={!form.code || !form.influencer_name || createPromo.isPending}>
+              <Button
+                className="w-full"
+                onClick={() => createPromo.mutate()}
+                disabled={
+                  !form.code ||
+                  !form.influencer_name ||
+                  createPromo.isPending ||
+                  (form.landing_target === "custom" && !validatePath(form.landing_path).ok) ||
+                  (form.landing_target === "course" && !form.landing_course_id)
+                }
+              >
                 {createPromo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create Promo Code
               </Button>
@@ -498,24 +603,45 @@ export default function AdminInfluencerMarketing() {
 
               {/* UTM Tracking Link */}
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Advanced: Full UTM Link</p>
-                <div className="bg-background rounded-md border border-border p-2.5">
-                  <p className="font-mono text-xs break-all text-foreground select-all">
-                    {`${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full gap-2 text-xs"
-                  onClick={() => {
-                    const url = `${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`;
-                    navigator.clipboard.writeText(url);
-                    toast({ title: "UTM link copied!", description: "Share this link with the influencer for tracked referrals." });
-                  }}
-                >
-                  <Copy className="h-3 w-3" /> Copy UTM Link
-                </Button>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Custom UTM Link (full URL)</p>
+                {(() => {
+                  const path = detailCode.landing_path || "/courses";
+                  const utmUrl = buildUtmUrl(window.location.origin, path, {
+                    source: detailCode.influencer_name,
+                    medium: "influencer",
+                    campaign: detailCode.code,
+                    content: "promo",
+                  });
+                  return (
+                    <>
+                      <div className="bg-background rounded-md border border-border p-2.5">
+                        <p className="font-mono text-xs break-all text-foreground select-all">{utmUrl}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground mt-1">Destination: <span className="text-foreground">{path}</span></p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-2 text-xs"
+                          onClick={() => {
+                            navigator.clipboard.writeText(utmUrl);
+                            toast({ title: "UTM link copied!", description: "Share this link for tracked referrals." });
+                          }}
+                        >
+                          <Copy className="h-3 w-3" /> Copy UTM Link
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 text-xs"
+                          onClick={() => window.open(utmUrl, "_blank")}
+                        >
+                          <ExternalLink className="h-3 w-3" /> Preview
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
