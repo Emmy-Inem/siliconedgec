@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, MessageCircle } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Name is required").max(100),
@@ -33,6 +34,7 @@ interface Props {
 export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitle, onSuccess }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: settings } = useSiteSettings();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [form, setForm] = useState({
@@ -76,7 +78,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
       setDone(true);
       toast({ title: "Registration confirmed", description: `You're registered for ${courseTitle}.` });
       onSuccess?.();
-      setTimeout(() => { setDone(false); onOpenChange(false); }, 2000);
+      // Don't auto-close — let user click WhatsApp CTA
     } catch (e: any) {
       toast({ title: "Couldn't register", description: e?.message ?? "Try again", variant: "destructive" });
     } finally {
@@ -93,9 +95,30 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
         </DialogHeader>
 
         {done ? (
-          <div className="py-8 text-center space-y-3">
-            <CheckCircle2 className="h-12 w-12 mx-auto text-primary" />
-            <p className="font-semibold">You're in! Check your email for confirmation.</p>
+          <div className="py-6 text-center space-y-4">
+            <CheckCircle2 className="h-14 w-14 mx-auto text-primary" />
+            <div className="space-y-1">
+              <p className="font-heading font-semibold text-lg">You're registered! 🎉</p>
+              <p className="text-sm text-muted-foreground">Check your email & WhatsApp for the joining link.</p>
+            </div>
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+              <p className="text-sm font-medium">Join our WhatsApp community for updates, networking & support.</p>
+              <Button
+                asChild
+                className="w-full gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white"
+              >
+                <a
+                  href={(settings as any)?.whatsapp_community_url || "https://chat.whatsapp.com/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" /> Join WhatsApp Community
+                </a>
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setDone(false); onOpenChange(false); }}>
+              Close
+            </Button>
           </div>
         ) : (
           <div className="space-y-4 py-2">
