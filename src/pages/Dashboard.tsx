@@ -387,6 +387,10 @@ export default function Dashboard() {
                   </div>
                 )}
               </TabsContent>
+
+              <TabsContent value="profile">
+                <ProfileSettings />
+              </TabsContent>
             </Tabs>
           )}
         </div>
