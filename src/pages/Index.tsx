@@ -9,6 +9,8 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import logoLight from "@/assets/logo-light.png";
 import instructor1 from "@/assets/instructor-1.jpg";
 import instructor2 from "@/assets/instructor-2.jpg";
@@ -71,16 +73,11 @@ function CountUp({ target, duration = 2 }: { target: number; duration?: number }
   return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
-const instructors = [
-  { name: "Instructor", role: "Cloud Engineer", rating: 4.8, students: 0, courses: 0, image: instructor1 },
-  { name: "Instructor", role: "DevOps Engineer", rating: 4.7, students: 0, courses: 0, image: instructor2 },
-  { name: "Instructor", role: "Software Engineer", rating: 4.9, students: 0, courses: 0, image: instructor3 },
-  { name: "Instructor", role: "AI/ML Specialist", rating: 4.8, students: 0, courses: 0, image: instructor4 },
-];
+const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
 
-const testimonials = [
-  { name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer." },
-  { name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role." },
+const fallbackTestimonials = [
+  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role.", avatar_url: null as string | null, rating: 5 },
 ];
 
 const staggerContainer = {
