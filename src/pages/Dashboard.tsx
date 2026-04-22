@@ -10,9 +10,10 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink } from "lucide-react";
+import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
+import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 
 interface EnrolledCourse {
   id: string;
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [applications, setApplications] = useState<JobApplicationRow[]>([]);
+  const [liveClasses, setLiveClasses] = useState<any[]>([]);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
 
@@ -106,6 +108,16 @@ export default function Dashboard() {
             job: Array.isArray(a.job) ? a.job[0] : a.job,
           }))
         );
+      }
+      // Load live classes for enrolled courses
+      const enrolledIds = (enrollRes.data as any[] | null)?.map((e) => e.course_id) ?? [];
+      if (enrolledIds.length) {
+        const { data: lcs } = await supabase
+          .from("live_classes")
+          .select("*")
+          .in("course_id", enrolledIds)
+          .order("scheduled_at", { ascending: true });
+        setLiveClasses(lcs ?? []);
       }
       setFetching(false);
     };
@@ -182,6 +194,7 @@ export default function Dashboard() {
               <TabsList className="mb-6">
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
+                <TabsTrigger value="calendar">Calendar ({liveClasses.length})</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
               </TabsList>
 
@@ -305,6 +318,19 @@ export default function Dashboard() {
                       </motion.div>
                     ))}
                   </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="calendar">
+                {liveClasses.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <h2 className="font-heading text-xl font-semibold mb-2">No live classes scheduled</h2>
+                    <p className="text-muted-foreground mb-6">Live classes for your enrolled courses will appear here.</p>
+                    <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+                  </div>
+                ) : (
+                  <LiveClassCalendar classes={liveClasses as any} />
                 )}
               </TabsContent>
 

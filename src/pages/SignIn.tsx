@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
+import { logUserActivity } from "@/lib/user-activity";
 import logoDark from "@/assets/logo-dark.png";
 
 export default function SignIn() {
@@ -42,6 +43,7 @@ export default function SignIn() {
         : error.message;
       toast({ title: "Sign in failed", description: msg, variant: "destructive" });
     } else {
+      logUserActivity({ action: "login", metadata: { email } });
       navigate("/");
     }
   };

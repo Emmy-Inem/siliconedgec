@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { Video, Plus, Pencil, Trash2, ExternalLink, Calendar, Clock } from "lucide-react";
+import { Video, Plus, Pencil, Trash2, ExternalLink, Calendar, Clock, LayoutGrid, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -49,6 +50,7 @@ export default function AdminLiveClasses() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<LiveClass | null>(null);
   const [form, setForm] = useState<typeof empty>(empty);
+  const [view, setView] = useState<"list" | "calendar">("list");
 
   const { data: classes, isLoading } = useQuery({
     queryKey: ["admin-live-classes"],
@@ -144,9 +146,25 @@ export default function AdminLiveClasses() {
             </p>
           </div>
         </div>
-        <Button onClick={openNew} className="gap-2">
-          <Plus className="h-4 w-4" /> Schedule Class
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-muted rounded-lg p-1 text-xs">
+            <button
+              onClick={() => setView("list")}
+              className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${view === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" /> List
+            </button>
+            <button
+              onClick={() => setView("calendar")}
+              className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${view === "calendar" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+            >
+              <CalendarDays className="h-3.5 w-3.5" /> Calendar
+            </button>
+          </div>
+          <Button onClick={openNew} className="gap-2">
+            <Plus className="h-4 w-4" /> Schedule Class
+          </Button>
+        </div>
       </motion.div>
 
       {isLoading ? (
@@ -156,6 +174,8 @@ export default function AdminLiveClasses() {
           <Video className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground">No live classes scheduled yet</p>
         </div>
+      ) : view === "calendar" ? (
+        <LiveClassCalendar classes={classes as any} showJoin={true} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {classes.map((c) => {

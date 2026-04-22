@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
+import { logUserActivity } from "@/lib/user-activity";
 import logoDark from "@/assets/logo-dark.png";
 
 export default function SignUp() {
@@ -40,6 +41,7 @@ export default function SignUp() {
           body: { template: "welcome", to: data.user.email, data: [name || data.user.email.split("@")[0]] },
         }).catch(() => {});
       }
+      logUserActivity({ action: "signup", user_id: data.user?.id ?? null, metadata: { email, name } });
       toast({ title: "Account created!", description: "Check your email to confirm your account." });
       navigate("/sign-in");
     }
