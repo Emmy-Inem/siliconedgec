@@ -9,6 +9,7 @@ import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Play, FileText, Lock, 
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { LiveClassesTab } from "@/components/LiveClassesTab";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
@@ -292,6 +293,14 @@ export default function CourseLearning() {
             <div className="text-center py-20">
               <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">No lessons available for this course yet.</p>
+            </div>
+          )}
+
+          {/* Live Classes section */}
+          {id && (
+            <div className="max-w-3xl mx-auto mt-10 pt-6 border-t border-border">
+              <h3 className="font-heading font-semibold text-sm mb-4">Live Sessions</h3>
+              <LiveClassesTab courseId={id} />
             </div>
           )}
         </main>
