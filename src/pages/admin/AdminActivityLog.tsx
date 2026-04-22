@@ -1,7 +1,11 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Activity, User, BookOpen, CreditCard, Shield, FileText, Megaphone, Trash2, Pencil, Plus } from "lucide-react";
+import { Activity, User, BookOpen, CreditCard, Shield, FileText, Megaphone, Trash2, Pencil, Plus, Search, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ENTITY_ICONS: Record<string, typeof Activity> = {
   course: BookOpen,
@@ -37,11 +41,17 @@ interface LogEntry {
 }
 
 export default function AdminActivityLog() {
+  const [search, setSearch] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [entityFilter, setEntityFilter] = useState("all");
+  const [adminFilter, setAdminFilter] = useState("all");
+  const [dateRange, setDateRange] = useState("30d");
+
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["admin-activity-log"],
     queryFn: async () => {
       const [logsRes, profilesRes] = await Promise.all([
-        supabase.from("admin_activity_log").select("*").order("created_at", { ascending: false }).limit(100),
+        supabase.from("admin_activity_log").select("*").order("created_at", { ascending: false }).limit(1000),
         supabase.from("profiles").select("user_id, full_name"),
       ]);
       if (logsRes.error) throw logsRes.error;
@@ -56,6 +66,37 @@ export default function AdminActivityLog() {
     },
   });
 
+  const admins = useMemo(() => Array.from(new Set(logs.map((l) => l.admin_name))).sort(), [logs]);
+  const actions = useMemo(() => Array.from(new Set(logs.map((l) => l.action))).sort(), [logs]);
+  const entities = useMemo(() => Array.from(new Set(logs.map((l) => l.entity_type))).sort(), [logs]);
+
+  const filtered = useMemo(() => {
+    const ranges: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
+    const now = Date.now();
+    return logs.filter((l) => {
+      if (actionFilter !== "all" && l.action !== actionFilter) return false;
+      if (entityFilter !== "all" && l.entity_type !== entityFilter) return false;
+      if (adminFilter !== "all" && l.admin_name !== adminFilter) return false;
+      if (dateRange !== "all" && now - +new Date(l.created_at) > (ranges[dateRange] ?? 0) * 86400000) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const inDetails = JSON.stringify(l.details ?? {}).toLowerCase().includes(q);
+        if (!(l.admin_name?.toLowerCase().includes(q) || l.action.includes(q) || l.entity_type.includes(q) || (l.entity_id ?? "").includes(q) || inDetails)) return false;
+      }
+      return true;
+    });
+  }, [logs, actionFilter, entityFilter, adminFilter, dateRange, search]);
+
+  const exportCsv = () => {
+    const header = ["Admin", "Action", "Entity", "Entity ID", "Details", "When"];
+    const lines = filtered.map((l) => [l.admin_name, l.action, l.entity_type, l.entity_id ?? "", JSON.stringify(l.details ?? {}), new Date(l.created_at).toISOString()]
+      .map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+    const blob = new Blob([[header.join(","), ...lines].join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `activity-log-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -66,25 +107,56 @@ export default function AdminActivityLog() {
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <Activity className="h-5 w-5 text-primary-foreground" />
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Activity className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-heading text-2xl font-bold">Activity Log</h1>
+            <p className="text-sm text-muted-foreground">{filtered.length} of {logs.length} entries</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Activity Log</h1>
-          <p className="text-sm text-muted-foreground">Track all admin actions across the platform.</p>
-        </div>
+        <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
       </motion.div>
 
-      {logs.length === 0 ? (
+      <div className="grid gap-2 md:grid-cols-[1fr_140px_140px_160px_140px]">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input className="pl-9" placeholder="Search admin, entity, ID, details..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={actionFilter} onValueChange={setActionFilter}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All actions</SelectItem>{actions.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={entityFilter} onValueChange={setEntityFilter}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All entities</SelectItem>{entities.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={adminFilter} onValueChange={setAdminFilter}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All admins</SelectItem>{admins.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All time</SelectItem>
+            <SelectItem value="7d">7 days</SelectItem>
+            <SelectItem value="30d">30 days</SelectItem>
+            <SelectItem value="90d">90 days</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {filtered.length === 0 ? (
         <div className="bg-card rounded-2xl border border-border p-12 text-center">
           <Activity className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-          <p className="text-muted-foreground">No activity logged yet. Actions will appear here as admins manage the platform.</p>
+          <p className="text-muted-foreground">No activity matches your filters.</p>
         </div>
       ) : (
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="divide-y divide-border">
-            {logs.map((log, i) => {
+            {filtered.slice(0, 200).map((log, i) => {
               const EntityIcon = ENTITY_ICONS[log.entity_type] ?? Activity;
               const ActionIcon = ACTION_ICONS[log.action] ?? Activity;
               const actionColor = ACTION_COLORS[log.action] ?? "text-muted-foreground bg-muted";
