@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
   FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -50,7 +50,7 @@ const sections = [
     label: "Communication",
     items: [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
-      { label: "Notifications Composer", href: "/admin/notifications", icon: BellIcon },
+      { label: "Notifications Composer", href: "/admin/notifications", icon: BellRing },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
       { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
       { label: "Live Classes", href: "/admin/live-classes", icon: Video },
