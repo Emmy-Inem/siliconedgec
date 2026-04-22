@@ -13,6 +13,7 @@ const difficultyColor: Record<string, string> = {
 
 export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
   function CourseCard({ course, index = 0 }, ref) {
+    const isWebinar = (course.price ?? 0) === 0 || course.title.toUpperCase().startsWith("FREE");
     return (
       <motion.div
         ref={ref}
@@ -90,7 +91,11 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 </span>
               </div>
               <span className="font-heading font-bold text-primary text-sm sm:text-base flex-shrink-0">
-                {formatNaira(course.price)}
+                {isWebinar ? (
+                  <span className="text-primary">Free · Register</span>
+                ) : (
+                  formatNaira(course.price)
+                )}
               </span>
             </div>
           </div>

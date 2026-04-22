@@ -36,6 +36,7 @@ export default function AdminInfluencerMarketing() {
     code: generateCode(),
     influencer_name: "",
     influencer_email: "",
+    slug: "",
     discount_type: "percentage",
     discount_value: "10",
     commission_percentage: "10",
@@ -47,6 +48,7 @@ export default function AdminInfluencerMarketing() {
     code: generateCode(),
     influencer_name: "",
     influencer_email: "",
+    slug: "",
     discount_type: "percentage",
     discount_value: "10",
     commission_percentage: "10",
@@ -88,10 +90,12 @@ export default function AdminInfluencerMarketing() {
   // Mutations
   const createPromo = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("promo_codes").insert({
+      const slug = (form.slug || form.influencer_name).toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+      const { error } = await (supabase.from("promo_codes") as any).insert({
         code: form.code.toUpperCase(),
         influencer_name: form.influencer_name,
         influencer_email: form.influencer_email || null,
+        slug: slug || null,
         discount_type: form.discount_type,
         discount_value: Number(form.discount_value),
         commission_percentage: Number(form.commission_percentage),
@@ -167,6 +171,18 @@ export default function AdminInfluencerMarketing() {
               <div className="space-y-2">
                 <Label>Influencer Email</Label>
                 <Input type="email" value={form.influencer_email} onChange={(e) => setForm({ ...form, influencer_email: e.target.value })} placeholder="jane@example.com" />
+              </div>
+              <div className="space-y-2">
+                <Label>Custom Short Slug (optional)</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">/r/</span>
+                  <Input
+                    value={form.slug}
+                    onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+                    placeholder={form.influencer_name.toLowerCase().replace(/\s+/g, "-") || "tayo"}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">Lowercase letters, numbers, hyphens. Defaults to influencer name.</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
@@ -397,9 +413,32 @@ export default function AdminInfluencerMarketing() {
                 <p className="text-sm text-muted-foreground mt-1">by {detailCode.influencer_name}</p>
               </div>
 
+              {/* Short Influencer Link (primary) */}
+              {detailCode.slug && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Short Link (recommended)</p>
+                  <div className="bg-primary/5 border border-primary/30 rounded-md p-2.5">
+                    <p className="font-mono text-sm break-all text-primary font-semibold select-all">
+                      {`${window.location.origin}/r/${detailCode.slug}`}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full gap-2 text-xs"
+                    onClick={() => {
+                      const url = `${window.location.origin}/r/${detailCode.slug}`;
+                      navigator.clipboard.writeText(url);
+                      toast({ title: "Short link copied!", description: "Auto-applies promo + tracks attribution." });
+                    }}
+                  >
+                    <Copy className="h-3 w-3" /> Copy Short Link
+                  </Button>
+                </div>
+              )}
+
               {/* UTM Tracking Link */}
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> UTM Tracking Link</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Advanced: Full UTM Link</p>
                 <div className="bg-background rounded-md border border-border p-2.5">
                   <p className="font-mono text-xs break-all text-foreground select-all">
                     {`${window.location.origin}/courses?utm_source=${encodeURIComponent(detailCode.influencer_name.toLowerCase().replace(/\s+/g, "_"))}&utm_medium=influencer&utm_campaign=${encodeURIComponent(detailCode.code.toLowerCase())}&utm_content=promo`}
