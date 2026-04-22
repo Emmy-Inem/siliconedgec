@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Copy, Trash2, TrendingUp, Users, DollarSign, Ticket,
-  Loader2, RefreshCw, BarChart3, Eye, Link2
+  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -23,6 +23,31 @@ function generateCode(prefix = "PROMO") {
   let code = prefix + "-";
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
+}
+
+// Validate a custom landing path: must start with /, no protocol, no spaces, reasonable length
+function validatePath(path: string): { ok: boolean; reason?: string } {
+  if (!path) return { ok: false, reason: "Path is required" };
+  if (/^https?:\/\//i.test(path)) return { ok: false, reason: "Use a relative path, not a full URL" };
+  if (!path.startsWith("/")) return { ok: false, reason: "Must start with /" };
+  if (/\s/.test(path)) return { ok: false, reason: "Cannot contain spaces" };
+  if (path.length > 200) return { ok: false, reason: "Too long (max 200 chars)" };
+  if (!/^\/[a-zA-Z0-9\-_/.?=&%#]*$/.test(path)) return { ok: false, reason: "Contains invalid characters" };
+  return { ok: true };
+}
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function buildUtmUrl(origin: string, path: string, utm: { source?: string; medium?: string; campaign?: string; content?: string; term?: string }) {
+  const url = new URL(path, origin);
+  if (utm.source) url.searchParams.set("utm_source", slugify(utm.source));
+  if (utm.medium) url.searchParams.set("utm_medium", slugify(utm.medium));
+  if (utm.campaign) url.searchParams.set("utm_campaign", slugify(utm.campaign));
+  if (utm.content) url.searchParams.set("utm_content", slugify(utm.content));
+  if (utm.term) url.searchParams.set("utm_term", slugify(utm.term));
+  return url.toString();
 }
 
 export default function AdminInfluencerMarketing() {
@@ -45,6 +70,10 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses", // courses | home | course | custom
     landing_course_id: "",
     landing_path: "",
+    utm_source: "",
+    utm_medium: "influencer",
+    utm_campaign: "",
+    utm_content: "",
   });
 
   const resetForm = () => setForm({
@@ -60,6 +89,10 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses",
     landing_course_id: "",
     landing_path: "",
+    utm_source: "",
+    utm_medium: "influencer",
+    utm_campaign: "",
+    utm_content: "",
   });
 
   // Queries
