@@ -9,6 +9,8 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import logoLight from "@/assets/logo-light.png";
 import instructor1 from "@/assets/instructor-1.jpg";
 import instructor2 from "@/assets/instructor-2.jpg";
@@ -71,16 +73,11 @@ function CountUp({ target, duration = 2 }: { target: number; duration?: number }
   return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
-const instructors = [
-  { name: "Instructor", role: "Cloud Engineer", rating: 4.8, students: 0, courses: 0, image: instructor1 },
-  { name: "Instructor", role: "DevOps Engineer", rating: 4.7, students: 0, courses: 0, image: instructor2 },
-  { name: "Instructor", role: "Software Engineer", rating: 4.9, students: 0, courses: 0, image: instructor3 },
-  { name: "Instructor", role: "AI/ML Specialist", rating: 4.8, students: 0, courses: 0, image: instructor4 },
-];
+const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
 
-const testimonials = [
-  { name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer." },
-  { name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role." },
+const fallbackTestimonials = [
+  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role.", avatar_url: null as string | null, rating: 5 },
 ];
 
 const staggerContainer = {
@@ -106,6 +103,57 @@ const sectionReveal = {
 
 export default function Index() {
   const { data: home } = useHomeContent();
+  const { data: dbInstructors } = useQuery({
+    queryKey: ["home-instructors"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("id, name, role, avatar_url, rating, students_count, courses_count")
+        .order("created_at", { ascending: true })
+        .limit(8);
+      return data ?? [];
+    },
+  });
+  const { data: dbTestimonials } = useQuery({
+    queryKey: ["home-testimonials"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("testimonials")
+        .select("id, name, role, quote, avatar_url, rating, order_index")
+        .order("order_index", { ascending: true })
+        .limit(20);
+      return data ?? [];
+    },
+  });
+  const instructors = (dbInstructors && dbInstructors.length > 0)
+    ? dbInstructors.map((i, idx) => ({
+        id: i.id,
+        name: i.name,
+        role: i.role ?? "Instructor",
+        rating: Number(i.rating ?? 4.8),
+        students: i.students_count ?? 0,
+        courses: i.courses_count ?? 0,
+        image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
+      }))
+    : fallbackInstructorImages.map((image, idx) => ({
+        id: `placeholder-${idx}`,
+        name: ["Cloud Engineer", "DevOps Engineer", "Software Engineer", "AI/ML Specialist"][idx],
+        role: "Industry Mentor",
+        rating: 4.8,
+        students: 0,
+        courses: 0,
+        image,
+      }));
+  const testimonials = (dbTestimonials && dbTestimonials.length > 0)
+    ? dbTestimonials.map((t) => ({
+        id: t.id,
+        name: t.name,
+        role: t.role ?? "Student",
+        quote: t.quote,
+        avatar_url: t.avatar_url,
+        rating: t.rating ?? 5,
+      }))
+    : fallbackTestimonials;
   const typewriterWords = home?.typewriter_words ?? [
     "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
     "Web Development", "Cybersecurity", "Data Science", "DevOps",
@@ -445,7 +493,7 @@ export default function Index() {
           >
             {instructors.map((inst) => (
               <motion.div
-                key={inst.name}
+                key={inst.id}
                 variants={staggerItem}
                 whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
                 className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all group relative overflow-hidden"
@@ -549,22 +597,26 @@ export default function Index() {
             <div className="flex animate-marquee gap-6 group-hover/marquee:[animation-play-state:paused]" style={{ width: "max-content" }}>
               {[...testimonials, ...testimonials].map((t, i) => (
                 <motion.div
-                  key={i}
+                  key={`${t.id}-${i}`}
                   whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
                   className="w-[340px] glass-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0 hover:border-primary/20 hover:shadow-lg transition-all"
                 >
                   <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, j) => (
+                    {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
                       <Star key={j} className="h-4 w-4 fill-accent text-accent" />
                     ))}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-heading font-bold text-primary text-sm">
-                        {t.name.split(" ").map(n => n[0]).join("")}
-                      </span>
-                    </div>
+                    {t.avatar_url ? (
+                      <img src={t.avatar_url} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="font-heading font-bold text-primary text-sm">
+                          {t.name.split(" ").map(n => n[0]).join("")}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <p className="font-heading font-semibold text-sm">{t.name}</p>
                       <p className="text-xs text-muted-foreground">{t.role}</p>

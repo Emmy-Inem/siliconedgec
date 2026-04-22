@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminOrders() {
   const qc = useQueryClient();
@@ -18,6 +22,8 @@ export default function AdminOrders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState("30d");
+  const [refundTarget, setRefundTarget] = useState<any | null>(null);
+  const [refunding, setRefunding] = useState(false);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-orders"],
@@ -52,6 +58,25 @@ export default function AdminOrders() {
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
+
+  const handleRefund = async () => {
+    if (!refundTarget) return;
+    setRefunding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("paystack-refund", {
+        body: { order_id: refundTarget.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Refund processed", description: data?.already ? "Order was already refunded." : "Paystack confirmed the refund." });
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      setRefundTarget(null);
+    } catch (e: any) {
+      toast({ title: "Refund failed", description: e?.message ?? "Could not process refund", variant: "destructive" });
+    } finally {
+      setRefunding(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const ranges: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
@@ -180,13 +205,11 @@ export default function AdminOrders() {
                     <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       {(o.status === "paid" || o.status === "success") ? (
-                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => updateStatus.mutate({ id: o.id, status: "refunded" })}>
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRefundTarget(o)}>
                           <XCircle className="h-3.5 w-3.5 mr-1" /> Refund
                         </Button>
                       ) : o.status === "refunded" ? (
-                        <Button size="sm" variant="ghost" onClick={() => updateStatus.mutate({ id: o.id, status: "paid" })}>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Restore
-                        </Button>
+                        <Badge variant="outline" className="text-[10px]">Refunded</Badge>
                       ) : (
                         <Button size="sm" variant="ghost" onClick={() => updateStatus.mutate({ id: o.id, status: "paid" })}>
                           Mark Paid
@@ -200,6 +223,29 @@ export default function AdminOrders() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!refundTarget} onOpenChange={(o) => !o && setRefundTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Refund this order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {refundTarget && (
+                <>
+                  This will call Paystack to refund <strong>{formatNaira(Number(refundTarget.amount || 0))}</strong> for order
+                  {" "}<span className="font-mono">{refundTarget.reference}</span> and remove the student's enrollment.
+                  This action cannot be undone from the admin.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={refunding}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleRefund(); }} disabled={refunding} className="bg-destructive hover:bg-destructive/90">
+              {refunding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refund"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

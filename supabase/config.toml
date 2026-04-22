@@ -6,5 +6,11 @@ verify_jwt = true
 [functions.paystack-verify]
 verify_jwt = false
 
+[functions.paystack-refund]
+verify_jwt = true
+
 [functions.generate-sitemap]
+verify_jwt = false
+
+[functions.send-email]
 verify_jwt = false

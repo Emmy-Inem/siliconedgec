@@ -71,6 +71,35 @@ Deno.serve(async (req) => {
       { onConflict: "user_id,course_id" },
     );
 
+    // Fire enrollment confirmation email (best effort)
+    try {
+      const [{ data: courseRow }, { data: profileRow }, { data: { user: userRow } }] = await Promise.all([
+        supabase.from("courses").select("title").eq("id", order.course_id).maybeSingle(),
+        supabase.from("profiles").select("full_name").eq("user_id", order.user_id).maybeSingle(),
+        supabase.auth.admin.getUserById(order.user_id),
+      ]);
+      const recipient = userRow?.email;
+      if (recipient) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${anon}` },
+          body: JSON.stringify({
+            template_key: "tpl_enrollment",
+            to: recipient,
+            variables: {
+              name: profileRow?.full_name || recipient.split("@")[0],
+              course_title: courseRow?.title ?? "your course",
+              course_url: `https://siliconedgec.lovable.app/courses/${order.course_id}/learn`,
+            },
+          }),
+        }).catch((e) => console.error("send-email enrollment failed", e));
+      }
+    } catch (e) {
+      console.error("enrollment email block failed", e);
+    }
+
     // Update promo code usage if applicable
     if (order.promo_code_id) {
       const { data: promo } = await supabase
