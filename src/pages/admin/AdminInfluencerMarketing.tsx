@@ -364,7 +364,17 @@ export default function AdminInfluencerMarketing() {
                   );
                 })()}
               </div>
-              <Button className="w-full" onClick={() => createPromo.mutate()} disabled={!form.code || !form.influencer_name || createPromo.isPending}>
+              <Button
+                className="w-full"
+                onClick={() => createPromo.mutate()}
+                disabled={
+                  !form.code ||
+                  !form.influencer_name ||
+                  createPromo.isPending ||
+                  (form.landing_target === "custom" && !validatePath(form.landing_path).ok) ||
+                  (form.landing_target === "course" && !form.landing_course_id)
+                }
+              >
                 {createPromo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create Promo Code
               </Button>
