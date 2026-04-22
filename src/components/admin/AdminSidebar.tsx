@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
   FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -31,6 +31,7 @@ const sections = [
       { label: "Brands", href: "/admin/brands", icon: Award },
       { label: "Reviews", href: "/admin/reviews", icon: Star },
       { label: "Certificates", href: "/admin/certificates", icon: Award },
+      { label: "Course Health", href: "/admin/course-health", icon: ActivityIcon },
     ],
   },
   {
@@ -41,6 +42,7 @@ const sections = [
       { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
       { label: "Webinar Registrations", href: "/admin/registrations", icon: ClipboardCheck },
       { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
+      { label: "Wishlist Insights", href: "/admin/wishlist", icon: Bookmark },
       { label: "Quizzes", href: "/admin/quizzes", icon: ClipboardCheck },
       { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: ClipboardCheck },
       { label: "Q&A", href: "/admin/qna", icon: HelpCircle },
@@ -52,6 +54,7 @@ const sections = [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
       { label: "Notifications Composer", href: "/admin/notifications", icon: BellRing },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
+      { label: "Email Templates", href: "/admin/email-templates", icon: MailIcon },
       { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
       { label: "Live Classes", href: "/admin/live-classes", icon: Video },
     ],
@@ -60,6 +63,7 @@ const sections = [
     label: "Commerce",
     items: [
       { label: "Orders & Payments", href: "/admin/orders", icon: Receipt },
+      { label: "Cart Abandonment", href: "/admin/cart-abandonment", icon: ShoppingCart },
       { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
       { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
       { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
@@ -87,6 +91,7 @@ const sections = [
     label: "System",
     items: [
       { label: "Users & Roles", href: "/admin/users", icon: Users },
+      { label: "Login Security", href: "/admin/login-security", icon: ShieldCheck },
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
       { label: "User Activity", href: "/admin/user-activity", icon: UserCog },
       { label: "SEO Manager", href: "/admin/seo", icon: Search },

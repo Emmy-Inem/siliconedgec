@@ -70,6 +70,11 @@ import CmsPagePublic from "./pages/CmsPage";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCertificates from "./pages/admin/AdminCertificates";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminCartAbandonment from "./pages/admin/AdminCartAbandonment";
+import AdminLoginSecurity from "./pages/admin/AdminLoginSecurity";
+import AdminWishlistInsights from "./pages/admin/AdminWishlistInsights";
+import AdminCourseHealth from "./pages/admin/AdminCourseHealth";
+import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 
 const queryClient = new QueryClient();
 
@@ -144,6 +149,11 @@ const App = () => (
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="certificates" element={<AdminCertificates />} />
                 <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="cart-abandonment" element={<AdminCartAbandonment />} />
+                <Route path="login-security" element={<AdminLoginSecurity />} />
+                <Route path="wishlist" element={<AdminWishlistInsights />} />
+                <Route path="course-health" element={<AdminCourseHealth />} />
+                <Route path="email-templates" element={<AdminEmailTemplates />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 
