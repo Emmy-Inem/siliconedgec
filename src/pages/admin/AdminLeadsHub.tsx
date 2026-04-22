@@ -143,15 +143,37 @@ export default function AdminLeadsHub() {
   }), [unified, registrations, enrollments, businessLeads]);
 
   const exportCsv = () => {
-    const header = ["Source", "Name", "Email", "Phone", "Course/Company", "Status", "Created"];
+    const header = ["Source", "Name", "Email", "Phone", "Course/Company", "Status", "Meta", "Created"];
     const lines = filtered.map((r) => [
-      r.source, r.name, r.email, r.phone ?? "", r.course_title ?? "", r.status ?? "", new Date(r.created_at).toISOString(),
+      r.source, r.name, r.email, r.phone ?? "", r.course_title ?? "", r.status ?? "", r.meta ?? "", new Date(r.created_at).toISOString(),
     ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
     const blob = new Blob([[header.join(","), ...lines].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `leads-hub-${Date.now()}.csv`; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-hub-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
     URL.revokeObjectURL(url);
   };
+
+  // Group filtered results by date label (Today / Yesterday / This Week / Older)
+  const grouped = useMemo(() => {
+    const groups: Record<string, UnifiedLead[]> = {};
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterday = startOfDay - 86400000;
+    const weekAgo = startOfDay - 7 * 86400000;
+    filtered.forEach((u) => {
+      const t = +new Date(u.created_at);
+      const label =
+        t >= startOfDay ? "Today" :
+        t >= yesterday ? "Yesterday" :
+        t >= weekAgo ? "Earlier this week" :
+        new Date(u.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      (groups[label] ||= []).push(u);
+    });
+    return Object.entries(groups);
+  }, [filtered]);
 
   const isLoading = l1 || l2 || l3;
 
