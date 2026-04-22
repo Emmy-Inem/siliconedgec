@@ -36,6 +36,7 @@ export default function AdminInfluencerMarketing() {
     code: generateCode(),
     influencer_name: "",
     influencer_email: "",
+    slug: "",
     discount_type: "percentage",
     discount_value: "10",
     commission_percentage: "10",
@@ -47,6 +48,7 @@ export default function AdminInfluencerMarketing() {
     code: generateCode(),
     influencer_name: "",
     influencer_email: "",
+    slug: "",
     discount_type: "percentage",
     discount_value: "10",
     commission_percentage: "10",
@@ -88,10 +90,12 @@ export default function AdminInfluencerMarketing() {
   // Mutations
   const createPromo = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("promo_codes").insert({
+      const slug = (form.slug || form.influencer_name).toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+      const { error } = await (supabase.from("promo_codes") as any).insert({
         code: form.code.toUpperCase(),
         influencer_name: form.influencer_name,
         influencer_email: form.influencer_email || null,
+        slug: slug || null,
         discount_type: form.discount_type,
         discount_value: Number(form.discount_value),
         commission_percentage: Number(form.commission_percentage),
