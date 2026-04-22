@@ -38,6 +38,10 @@ const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
     subject: "Your cart is waiting",
     body: "Hi {{name}},\n\nYou left items in your cart. Complete your purchase: {{cart_url}}.",
   },
+  tpl_live_class_reminder: {
+    subject: "Reminder: {{class_title}} starts in 1 hour",
+    body: "Hi {{name}},\n\nYour live class \"{{class_title}}\" with {{instructor}} begins at {{start_time}}.\n\nJoin here: {{join_url}}\n\nSee you there!",
+  },
 };
 
 const LEGACY_TEMPLATES = {
