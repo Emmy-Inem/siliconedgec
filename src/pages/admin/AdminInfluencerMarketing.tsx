@@ -210,12 +210,12 @@ export default function AdminInfluencerMarketing() {
           <DialogTrigger asChild>
             <Button className="gap-2"><Plus className="h-4 w-4" /> Create Promo Code</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-2xl p-0 gap-0 max-h-[90vh] flex flex-col">
+            <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
               <DialogTitle className="font-heading">Create Promo Code</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Promo Code</Label>
                   <div className="flex gap-2">
@@ -246,7 +246,7 @@ export default function AdminInfluencerMarketing() {
                 </div>
                 <p className="text-[10px] text-muted-foreground">Lowercase letters, numbers, hyphens. Defaults to influencer name.</p>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label>Discount Type</Label>
                   <Select value={form.discount_type} onValueChange={(v) => setForm({ ...form, discount_type: v })}>
@@ -266,7 +266,7 @@ export default function AdminInfluencerMarketing() {
                   <Input type="number" value={form.commission_percentage} onChange={(e) => setForm({ ...form, commission_percentage: e.target.value })} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Max Uses (optional)</Label>
                   <Input type="number" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: e.target.value })} placeholder="Unlimited" />
@@ -368,8 +368,14 @@ export default function AdminInfluencerMarketing() {
                   );
                 })()}
               </div>
+            </div>
+            <div className="px-6 py-3 border-t border-border bg-background shrink-0 flex items-center justify-between gap-3">
+              <p className="text-[11px] text-muted-foreground hidden sm:block">
+                {!form.influencer_name && "Influencer name is required"}
+                {form.landing_target === "custom" && !validatePath(form.landing_path).ok && form.landing_path && " · Fix the path"}
+                {form.landing_target === "course" && !form.landing_course_id && " · Pick a course"}
+              </p>
               <Button
-                className="w-full"
                 onClick={() => createPromo.mutate()}
                 disabled={
                   !form.code ||
@@ -566,12 +572,12 @@ export default function AdminInfluencerMarketing() {
 
       {/* Detail Dialog */}
       <Dialog open={!!detailCode} onOpenChange={(v) => !v && setDetailCode(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-xl p-0 gap-0 max-h-[90vh] flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
             <DialogTitle className="font-heading">Promo Code Details</DialogTitle>
           </DialogHeader>
           {detailCode && (
-            <div className="space-y-4">
+            <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
               <div className="bg-muted/50 rounded-lg p-4 text-center">
                 <p className="font-mono text-2xl font-bold text-primary">{detailCode.code}</p>
                 <p className="text-sm text-muted-foreground mt-1">by {detailCode.influencer_name}</p>

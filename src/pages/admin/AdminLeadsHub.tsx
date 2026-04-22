@@ -5,12 +5,17 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Inbox, Search, Download, Mail, MessageCircle, GraduationCap,
-  ClipboardCheck, Briefcase, Loader2, Filter, Users
+  ClipboardCheck, Briefcase, Loader2, Filter, Users, AtSign, Copy
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 type UnifiedLead = {
   id: string;
@@ -34,6 +39,9 @@ export default function AdminLeadsHub() {
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
+  const [extractorOpen, setExtractorOpen] = useState(false);
+  const [includeName, setIncludeName] = useState(false);
+  const { toast } = useToast();
 
   const { data: registrations = [], isLoading: l1 } = useQuery({
     queryKey: ["hub-registrations"],
@@ -177,6 +185,50 @@ export default function AdminLeadsHub() {
 
   const isLoading = l1 || l2 || l3;
 
+  const uniqueEmails = useMemo(() => {
+    const seen = new Map<string, string>(); // email -> name
+    filtered.forEach((u) => {
+      const e = (u.email || "").trim().toLowerCase();
+      if (!e || e === "—" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return;
+      if (!seen.has(e)) seen.set(e, u.name || "");
+    });
+    return Array.from(seen.entries()).map(([email, name]) => ({ email, name }));
+  }, [filtered]);
+
+  const formattedEmails = useMemo(() => {
+    if (includeName) {
+      return uniqueEmails.map((u) => (u.name ? `${u.name} <${u.email}>` : u.email)).join(", ");
+    }
+    return uniqueEmails.map((u) => u.email).join(", ");
+  }, [uniqueEmails, includeName]);
+
+  const copyEmails = async () => {
+    await navigator.clipboard.writeText(formattedEmails);
+    toast({ title: "Copied", description: `${uniqueEmails.length} emails copied to clipboard.` });
+  };
+
+  const downloadEmails = () => {
+    const blob = new Blob([formattedEmails], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-emails-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const openMailto = () => {
+    const batchSize = 90;
+    const first = uniqueEmails.slice(0, batchSize).map((u) => u.email).join(",");
+    window.location.href = `mailto:?bcc=${encodeURIComponent(first)}`;
+    if (uniqueEmails.length > batchSize) {
+      toast({
+        title: "Opened first batch",
+        description: `Loaded first ${batchSize} of ${uniqueEmails.length}. Use Copy or Download to get the rest.`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center justify-between flex-wrap gap-3">
@@ -191,7 +243,12 @@ export default function AdminLeadsHub() {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setExtractorOpen(true)}>
+            <AtSign className="h-4 w-4 mr-2" />Extract Emails
+          </Button>
+          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export CSV</Button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -305,6 +362,44 @@ export default function AdminLeadsHub() {
           </div>
         )}
       </div>
+
+      <Dialog open={extractorOpen} onOpenChange={setExtractorOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2">
+              <AtSign className="h-5 w-5 text-primary" /> Email Extractor
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{uniqueEmails.length}</span> unique emails of {filtered.length} leads
+              </p>
+              <div className="flex items-center gap-2">
+                <Switch id="include-name" checked={includeName} onCheckedChange={setIncludeName} />
+                <Label htmlFor="include-name" className="text-xs cursor-pointer">Include name</Label>
+              </div>
+            </div>
+            <Textarea value={formattedEmails} readOnly rows={10} className="font-mono text-xs" />
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={copyEmails} disabled={uniqueEmails.length === 0}>
+                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+              </Button>
+              <Button size="sm" variant="outline" onClick={downloadEmails} disabled={uniqueEmails.length === 0}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download .txt
+              </Button>
+              <Button size="sm" variant="outline" onClick={openMailto} disabled={uniqueEmails.length === 0}>
+                <Mail className="h-3.5 w-3.5 mr-1.5" /> Open in mail client
+              </Button>
+            </div>
+            {uniqueEmails.length > 90 && (
+              <p className="text-[11px] text-muted-foreground">
+                Note: mailto links auto-chunk to 90 addresses per batch (browser URL limit). Use Copy or Download for larger lists.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
