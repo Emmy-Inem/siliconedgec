@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2 } from "lucide-react";
+import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
 
@@ -43,10 +43,19 @@ interface BookmarkedCourse {
   };
 }
 
+interface JobApplicationRow {
+  id: string;
+  job_id: string;
+  status: string;
+  created_at: string;
+  job: { id: string; title: string; company: string; location: string | null } | null;
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
+  const [applications, setApplications] = useState<JobApplicationRow[]>([]);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
 
@@ -54,7 +63,7 @@ export default function Dashboard() {
     if (!user) return;
 
     const fetchData = async () => {
-      const [enrollRes, profileRes, bookmarkRes] = await Promise.all([
+      const [enrollRes, profileRes, bookmarkRes, appsRes] = await Promise.all([
         supabase
           .from("enrollments")
           .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours)")
@@ -64,6 +73,11 @@ export default function Dashboard() {
         supabase
           .from("bookmarks")
           .select("id, course_id, course:courses(id, title, thumbnail_url, category, price)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("job_applications")
+          .select("id, job_id, status, created_at, job:jobs(id, title, company, location)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
       ]);
@@ -82,6 +96,14 @@ export default function Dashboard() {
           (bookmarkRes.data as any[]).map((b) => ({
             ...b,
             course: Array.isArray(b.course) ? b.course[0] : b.course,
+          }))
+        );
+      }
+      if (appsRes.data) {
+        setApplications(
+          (appsRes.data as any[]).map((a) => ({
+            ...a,
+            job: Array.isArray(a.job) ? a.job[0] : a.job,
           }))
         );
       }
@@ -160,6 +182,7 @@ export default function Dashboard() {
               <TabsList className="mb-6">
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
+                <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="courses">
@@ -281,6 +304,57 @@ export default function Dashboard() {
                         </Card>
                       </motion.div>
                     ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="applications">
+                {applications.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Briefcase className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <h2 className="font-heading text-xl font-semibold mb-2">No applications yet</h2>
+                    <p className="text-muted-foreground mb-6">Apply to open positions on our job board.</p>
+                    <Button asChild><Link to="/jobs">Browse Jobs</Link></Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {applications.map((app, i) => {
+                      const statusColor: Record<string, string> = {
+                        submitted: "bg-blue-500/10 text-blue-600",
+                        reviewing: "bg-amber-500/10 text-amber-600",
+                        interview: "bg-purple-500/10 text-purple-600",
+                        accepted: "bg-green-500/10 text-green-600",
+                        rejected: "bg-red-500/10 text-red-600",
+                      };
+                      return (
+                        <motion.div key={app.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                          <Card>
+                            <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Briefcase className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-heading font-semibold truncate">{app.job?.title ?? "Job removed"}</p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {app.job?.company}{app.job?.location ? ` · ${app.job.location}` : ""}
+                                </p>
+                                <p className="text-xs text-muted-foreground/70 mt-1">
+                                  Applied {new Date(app.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={`${statusColor[app.status] ?? "bg-muted"} border-0 capitalize`}>{app.status}</Badge>
+                                {app.job && (
+                                  <Button size="sm" variant="ghost" asChild>
+                                    <Link to={`/jobs/${app.job_id}`}><ExternalLink className="h-4 w-4" /></Link>
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 )}
               </TabsContent>

@@ -22,7 +22,7 @@ export default function SignUp() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -34,6 +34,12 @@ export default function SignUp() {
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
+      // Fire welcome email (no-op if RESEND_API_KEY not configured)
+      if (data.user?.email) {
+        supabase.functions.invoke("send-email", {
+          body: { template: "welcome", to: data.user.email, data: [name || data.user.email.split("@")[0]] },
+        }).catch(() => {});
+      }
       toast({ title: "Account created!", description: "Check your email to confirm your account." });
       navigate("/sign-in");
     }

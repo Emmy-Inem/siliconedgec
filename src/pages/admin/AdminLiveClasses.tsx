@@ -1,0 +1,278 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
+import { Video, Plus, Pencil, Trash2, ExternalLink, Calendar, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+
+interface LiveClass {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  meeting_url: string;
+  meeting_provider: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  instructor_name: string | null;
+  status: string;
+}
+
+const empty = {
+  course_id: "",
+  title: "",
+  description: "",
+  meeting_url: "",
+  meeting_provider: "zoom",
+  scheduled_at: "",
+  duration_minutes: 60,
+  instructor_name: "",
+  status: "scheduled",
+};
+
+export default function AdminLiveClasses() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<LiveClass | null>(null);
+  const [form, setForm] = useState<typeof empty>(empty);
+
+  const { data: classes, isLoading } = useQuery({
+    queryKey: ["admin-live-classes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("live_classes")
+        .select("*, course:courses(id, title)")
+        .order("scheduled_at", { ascending: true });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const { data: courses } = useQuery({
+    queryKey: ["admin-courses-list"],
+    queryFn: async () => {
+      const { data } = await supabase.from("courses").select("id, title").order("title");
+      return data ?? [];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        ...form,
+        scheduled_at: new Date(form.scheduled_at).toISOString(),
+        created_by: user!.id,
+      };
+      if (editing) {
+        const { error } = await supabase.from("live_classes").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("live_classes").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-live-classes"] });
+      toast({ title: editing ? "Class updated" : "Class scheduled" });
+      setOpen(false); setEditing(null); setForm(empty);
+    },
+    onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("live_classes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-live-classes"] });
+      toast({ title: "Class deleted" });
+    },
+  });
+
+  const openEdit = (c: LiveClass) => {
+    setEditing(c);
+    setForm({
+      course_id: c.course_id,
+      title: c.title,
+      description: c.description ?? "",
+      meeting_url: c.meeting_url,
+      meeting_provider: c.meeting_provider,
+      scheduled_at: c.scheduled_at.slice(0, 16),
+      duration_minutes: c.duration_minutes,
+      instructor_name: c.instructor_name ?? "",
+      status: c.status,
+    });
+    setOpen(true);
+  };
+
+  const openNew = () => {
+    setEditing(null);
+    setForm(empty);
+    setOpen(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex items-center justify-between gap-3"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Video className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-heading text-2xl font-bold">Live Classes</h1>
+            <p className="text-sm text-muted-foreground">
+              Schedule Zoom / Google Meet sessions for enrolled students ({classes?.length ?? 0})
+            </p>
+          </div>
+        </div>
+        <Button onClick={openNew} className="gap-2">
+          <Plus className="h-4 w-4" /> Schedule Class
+        </Button>
+      </motion.div>
+
+      {isLoading ? (
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
+      ) : !classes?.length ? (
+        <div className="text-center py-16 bg-card rounded-2xl border border-border">
+          <Video className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-muted-foreground">No live classes scheduled yet</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {classes.map((c) => {
+            const dt = new Date(c.scheduled_at);
+            const isPast = dt < new Date();
+            return (
+              <div key={c.id} className="bg-card border border-border rounded-2xl p-5 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <Badge variant={isPast ? "outline" : "default"} className="mb-2 capitalize text-xs">
+                      {isPast ? "Past" : c.status}
+                    </Badge>
+                    <h3 className="font-heading font-bold leading-tight">{c.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{c.course?.title}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs uppercase">{c.meeting_provider}</Badge>
+                </div>
+                {c.description && <p className="text-sm text-muted-foreground line-clamp-2">{c.description}</p>}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{dt.toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {c.duration_minutes}m</span>
+                </div>
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <Button size="sm" variant="outline" className="flex-1 gap-1" asChild>
+                    <a href={c.meeting_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3 w-3" /> Join
+                    </a>
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => del.mutate(c.id)} className="text-destructive">
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{editing ? "Edit Live Class" : "Schedule Live Class"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Course</Label>
+              <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
+                <SelectContent>
+                  {courses?.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Title</Label>
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div>
+              <Label>Meeting URL</Label>
+              <Input placeholder="https://zoom.us/j/..." value={form.meeting_url} onChange={(e) => setForm({ ...form, meeting_url: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Provider</Label>
+                <Select value={form.meeting_provider} onValueChange={(v) => setForm({ ...form, meeting_provider: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="zoom">Zoom</SelectItem>
+                    <SelectItem value="google_meet">Google Meet</SelectItem>
+                    <SelectItem value="teams">MS Teams</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="live">Live now</SelectItem>
+                    <SelectItem value="ended">Ended</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Date & Time</Label>
+                <Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
+              </div>
+              <div>
+                <Label>Duration (min)</Label>
+                <Input type="number" value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: parseInt(e.target.value || "60") })} />
+              </div>
+            </div>
+            <div>
+              <Label>Instructor (optional)</Label>
+              <Input value={form.instructor_name} onChange={(e) => setForm({ ...form, instructor_name: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={() => save.mutate()} disabled={save.isPending || !form.course_id || !form.title || !form.meeting_url || !form.scheduled_at}>
+              {editing ? "Update" : "Schedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
