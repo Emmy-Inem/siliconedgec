@@ -42,6 +42,9 @@ export default function AdminInfluencerMarketing() {
     commission_percentage: "10",
     max_uses: "",
     expires_at: "",
+    landing_target: "courses", // courses | home | course | custom
+    landing_course_id: "",
+    landing_path: "",
   });
 
   const resetForm = () => setForm({
@@ -54,6 +57,9 @@ export default function AdminInfluencerMarketing() {
     commission_percentage: "10",
     max_uses: "",
     expires_at: "",
+    landing_target: "courses",
+    landing_course_id: "",
+    landing_path: "",
   });
 
   // Queries
@@ -81,6 +87,24 @@ export default function AdminInfluencerMarketing() {
     },
   });
 
+  const { data: courseList = [] } = useQuery({
+    queryKey: ["admin-promo-courses"],
+    queryFn: async () => {
+      const { data } = await supabase.from("courses").select("id, title").eq("is_published", true).order("title");
+      return data ?? [];
+    },
+  });
+
+  const computeLandingPath = (f: typeof form): string => {
+    if (f.landing_target === "home") return "/";
+    if (f.landing_target === "courses") return "/courses";
+    if (f.landing_target === "course" && f.landing_course_id) return `/courses/${f.landing_course_id}`;
+    if (f.landing_target === "custom" && f.landing_path) {
+      return f.landing_path.startsWith("/") ? f.landing_path : `/${f.landing_path}`;
+    }
+    return "/courses";
+  };
+
   // Stats
   const totalRevenue = promoCodes.reduce((s: number, p: any) => s + Number(p.revenue_generated || 0), 0);
   const totalUses = promoCodes.reduce((s: number, p: any) => s + (p.usage_count || 0), 0);
@@ -101,6 +125,7 @@ export default function AdminInfluencerMarketing() {
         commission_percentage: Number(form.commission_percentage),
         max_uses: form.max_uses ? Number(form.max_uses) : null,
         expires_at: form.expires_at || null,
+        landing_path: computeLandingPath(form),
       });
       if (error) throw error;
     },
