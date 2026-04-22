@@ -1578,6 +1578,10 @@ export type Database = {
           slug: string | null
           updated_at: string
           usage_count: number
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
           code: string
@@ -1596,6 +1600,10 @@ export type Database = {
           slug?: string | null
           updated_at?: string
           usage_count?: number
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
           code?: string
@@ -1614,6 +1622,10 @@ export type Database = {
           slug?: string | null
           updated_at?: string
           usage_count?: number
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
