@@ -92,7 +92,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
               </div>
               <span className="font-heading font-bold text-primary text-sm sm:text-base flex-shrink-0">
                 {isWebinar ? (
-                  <span className="text-green-600 dark:text-green-400">Free · Register</span>
+                  <span className="text-primary">Free · Register</span>
                 ) : (
                   formatNaira(course.price)
                 )}
