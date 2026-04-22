@@ -75,6 +75,7 @@ import AdminLoginSecurity from "./pages/admin/AdminLoginSecurity";
 import AdminWishlistInsights from "./pages/admin/AdminWishlistInsights";
 import AdminCourseHealth from "./pages/admin/AdminCourseHealth";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
+import AdminHomeContent from "./pages/admin/AdminHomeContent";
 
 const queryClient = new QueryClient();
 
@@ -154,6 +155,7 @@ const App = () => (
                 <Route path="wishlist" element={<AdminWishlistInsights />} />
                 <Route path="course-health" element={<AdminCourseHealth />} />
                 <Route path="email-templates" element={<AdminEmailTemplates />} />
+                <Route path="home-content" element={<AdminHomeContent />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 

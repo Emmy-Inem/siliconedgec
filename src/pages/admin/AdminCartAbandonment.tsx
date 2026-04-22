@@ -2,16 +2,22 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ShoppingCart, Search, Loader2, Mail, Clock, Download } from "lucide-react";
+import { ShoppingCart, Search, Loader2, Mail, Clock, Download, ExternalLink, Eye, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 
 export default function AdminCartAbandonment() {
   const [search, setSearch] = useState("");
   const [minAgeHours, setMinAgeHours] = useState(24);
+  const [openUserId, setOpenUserId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["admin-cart-items"],
@@ -23,11 +29,12 @@ export default function AdminCartAbandonment() {
   });
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-cart-profiles"],
-    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
+    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name, bio")).data ?? [],
   });
 
   const courseFor = (id: string) => courses.find((c: any) => c.id === id);
   const userName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? id.slice(0, 8);
+  const profileFor = (id: string) => profiles.find((p: any) => p.user_id === id);
 
   const grouped = useMemo(() => {
     const cutoff = Date.now() - minAgeHours * 3600_000;
@@ -43,9 +50,13 @@ export default function AdminCartAbandonment() {
       total: list.reduce((s, x) => s + Number(courseFor(x.course_id)?.price ?? 0), 0),
       oldest: Math.min(...list.map((x) => +new Date(x.created_at))),
       titles: list.map((x) => courseFor(x.course_id)?.title ?? "—"),
+      items: list,
     })).filter((g) => !search || g.name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => a.oldest - b.oldest);
   }, [items, minAgeHours, search, courses, profiles]);
+
+  const openGroup = openUserId ? grouped.find((g) => g.user_id === openUserId) : null;
+  const openProfile = openUserId ? profileFor(openUserId) : null;
 
   const exportCsv = () => {
     const header = ["User", "Items", "Total Value", "Oldest Item", "Courses"];
@@ -104,18 +115,25 @@ export default function AdminCartAbandonment() {
               </TableHeader>
               <TableBody>
                 {grouped.map((g) => (
-                  <TableRow key={g.user_id}>
-                    <TableCell className="font-medium text-sm">{g.name}</TableCell>
+                  <TableRow key={g.user_id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenUserId(g.user_id)}>
+                    <TableCell className="font-medium text-sm">
+                      <span className="hover:text-primary">{g.name}</span>
+                    </TableCell>
                     <TableCell>{g.count}</TableCell>
                     <TableCell className="font-medium">{formatNaira(g.total)}</TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-[260px] truncate">{g.titles.join(", ")}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(g.oldest).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" asChild>
-                        <a href={`mailto:?subject=Complete your purchase on Silicon Edge&body=Hi ${g.name},%0D%0A%0D%0AYou left ${g.count} item(s) in your cart...`}>
-                          <Mail className="h-3.5 w-3.5 mr-1" /> Recover
-                        </a>
-                      </Button>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => setOpenUserId(g.user_id)} title="View details">
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href={`mailto:?subject=Complete your purchase on Silicon Edge&body=Hi ${g.name},%0D%0A%0D%0AYou left ${g.count} item(s) in your cart...`}>
+                            <Mail className="h-3.5 w-3.5 mr-1" /> Recover
+                          </a>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -124,6 +142,48 @@ export default function AdminCartAbandonment() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!openUserId} onOpenChange={(o) => !o && setOpenUserId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">{openGroup?.name ?? "Customer"}</DialogTitle>
+          </DialogHeader>
+          {openGroup && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="secondary">{openGroup.count} item(s)</Badge>
+                <Badge variant="secondary">{formatNaira(openGroup.total)} cart value</Badge>
+                <Badge variant="outline">Oldest {new Date(openGroup.oldest).toLocaleDateString()}</Badge>
+              </div>
+              {openProfile?.bio && (
+                <p className="text-xs text-muted-foreground border-l-2 border-primary/40 pl-2 italic">{openProfile.bio}</p>
+              )}
+              <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Cart items</p>
+                {openGroup.items.map((it: any) => {
+                  const c = courseFor(it.course_id);
+                  return (
+                    <div key={it.id} className="flex items-center justify-between gap-2 text-xs p-2 rounded-md bg-muted/40">
+                      <span className="truncate">{c?.title ?? "—"}</span>
+                      <span className="text-muted-foreground shrink-0">{formatNaira(Number(c?.price ?? 0))}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
+                <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(openUserId!); toast({ title: "Copied user ID" }); }}>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy ID
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to={`/admin/user-activity?user=${openUserId}`}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> View activity
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

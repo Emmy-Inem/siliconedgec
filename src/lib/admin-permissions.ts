@@ -46,6 +46,7 @@ const ADMIN_ONLY_ROUTES = [
   "/admin/wishlist",
   "/admin/course-health",
   "/admin/email-templates",
+  "/admin/home-content",
 ];
 
 export function canAccessRoute(role: AdminRole, path: string): boolean {

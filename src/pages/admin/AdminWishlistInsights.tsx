@@ -1,14 +1,19 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Bookmark, Loader2, Download, TrendingUp } from "lucide-react";
+import { Bookmark, Loader2, Download, TrendingUp, Eye, Copy, ExternalLink, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminWishlistInsights() {
+  const [openUserId, setOpenUserId] = useState<string | null>(null);
+  const { toast } = useToast();
   const { data: bookmarks = [], isLoading } = useQuery({
     queryKey: ["admin-bookmarks"],
     queryFn: async () => (await supabase.from("bookmarks").select("*").order("created_at", { ascending: false }).limit(2000)).data ?? [],
@@ -19,7 +24,7 @@ export default function AdminWishlistInsights() {
   });
   const { data: profiles = [] } = useQuery({
     queryKey: ["admin-bm-profiles"],
-    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
+    queryFn: async () => (await supabase.from("profiles").select("user_id, full_name, bio")).data ?? [],
   });
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-bm-enrollments"],
@@ -29,6 +34,12 @@ export default function AdminWishlistInsights() {
   const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
   const userName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? id.slice(0, 8);
   const enrolled = useMemo(() => new Set(enrollments.map((e: any) => `${e.user_id}_${e.course_id}`)), [enrollments]);
+  const profileFor = (id: string) => profiles.find((p: any) => p.user_id === id);
+
+  const openUserBookmarks = useMemo(() => {
+    if (!openUserId) return [];
+    return bookmarks.filter((b: any) => b.user_id === openUserId);
+  }, [openUserId, bookmarks]);
 
   const topCourses = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -99,7 +110,7 @@ export default function AdminWishlistInsights() {
                 </TableHeader>
                 <TableBody>
                   {abandoned.map((b: any) => (
-                    <TableRow key={b.id}>
+                    <TableRow key={b.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenUserId(b.user_id)}>
                       <TableCell className="text-sm">{userName(b.user_id)}</TableCell>
                       <TableCell className="text-xs max-w-[180px] truncate">{courseTitle(b.course_id)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</TableCell>
@@ -111,6 +122,51 @@ export default function AdminWishlistInsights() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!openUserId} onOpenChange={(o) => !o && setOpenUserId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">{openUserId ? userName(openUserId) : "User"}</DialogTitle>
+          </DialogHeader>
+          {openUserId && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <Badge variant="secondary">{openUserBookmarks.length} bookmark(s)</Badge>
+                <Badge variant="outline">{openUserBookmarks.filter((b: any) => enrolled.has(`${b.user_id}_${b.course_id}`)).length} converted</Badge>
+              </div>
+              {profileFor(openUserId)?.bio && (
+                <p className="text-xs text-muted-foreground border-l-2 border-primary/40 pl-2 italic">{profileFor(openUserId)?.bio}</p>
+              )}
+              <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Wishlist</p>
+                {openUserBookmarks.map((b: any) => {
+                  const isEnrolled = enrolled.has(`${b.user_id}_${b.course_id}`);
+                  return (
+                    <div key={b.id} className="flex items-center justify-between gap-2 text-xs p-2 rounded-md bg-muted/40">
+                      <span className="truncate">{courseTitle(b.course_id)}</span>
+                      {isEnrolled ? (
+                        <Badge className="text-[9px] gap-1 shrink-0"><CheckCircle2 className="h-2.5 w-2.5" /> Enrolled</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-1 shrink-0"><Circle className="h-2.5 w-2.5" /> Pending</Badge>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
+                <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(openUserId!); toast({ title: "Copied user ID" }); }}>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy ID
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to={`/admin/user-activity?user=${openUserId}`}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> View activity
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

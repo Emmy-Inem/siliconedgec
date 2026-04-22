@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
+import { useHomeContent } from "@/hooks/useHomeContent";
 import logoLight from "@/assets/logo-light.png";
 import instructor1 from "@/assets/instructor-1.jpg";
 import instructor2 from "@/assets/instructor-2.jpg";
@@ -15,18 +16,6 @@ import instructor3 from "@/assets/instructor-3.jpg";
 import instructor4 from "@/assets/instructor-4.jpg";
 import courseBanner from "@/assets/course-banner.png";
 import { SEO } from "@/components/SEO";
-
-const typewriterWords = [
-  "Cloud Engineering",
-  "Software Engineering",
-  "Artificial Intelligence",
-  "Web Development",
-  "Cybersecurity",
-  "Data Science",
-  "DevOps",
-  "Product Design",
-  "UI/UX Design",
-];
 
 function useTypewriter(words: string[], speed = 80, pause = 2000) {
   const [text, setText] = useState("");
@@ -116,6 +105,12 @@ const sectionReveal = {
 };
 
 export default function Index() {
+  const { data: home } = useHomeContent();
+  const typewriterWords = home?.typewriter_words ?? [
+    "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
+    "Web Development", "Cybersecurity", "Data Science", "DevOps",
+    "Product Design", "UI/UX Design",
+  ];
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -192,10 +187,12 @@ export default function Index() {
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg", alt: "Google Cloud" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-              ].map((logo) => (
+              ].map((logo, i) => (
                 <motion.div
                   key={logo.alt}
                   variants={staggerItem}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2 border border-border/30"
                 >
@@ -210,7 +207,7 @@ export default function Index() {
               transition={{ delay: 0.3 }}
               className="text-primary font-medium text-sm tracking-widest uppercase mb-4"
             >
-              Start Learning
+              {home?.hero_eyebrow ?? "Start Learning"}
             </motion.p>
             <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2 min-h-[2.5em] sm:min-h-[2em]">
               <span className="text-gradient">
@@ -227,7 +224,7 @@ export default function Index() {
               transition={{ delay: 0.5 }}
               className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed"
             >
-              Live Online Courses. Hands-On Projects. Real Certifications.
+              {home?.hero_subtitle ?? "Live Online Courses. Hands-On Projects. Real Certifications."}
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -237,11 +234,11 @@ export default function Index() {
             >
               <Button size="lg" asChild className="shimmer-btn text-primary-foreground hover-scale relative overflow-hidden">
                 <Link to="/courses">
-                  Explore Courses <ArrowRight className="ml-2 h-4 w-4" />
+                  {home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                <Link to="/sign-up">Sign up now</Link>
+                <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
               </Button>
             </motion.div>
 
@@ -257,10 +254,12 @@ export default function Index() {
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg", alt: "Angular" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", alt: "JavaScript" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openal/openal-original.svg", alt: "AI" },
-              ].map((logo) => (
+              ].map((logo, i) => (
                 <motion.div
                   key={logo.alt}
                   variants={staggerItem}
+                  animate={{ y: [0, -7, 0] }}
+                  transition={{ duration: 3.5 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.5 + i * 0.25 }}
                   whileHover={{ scale: 1.2, y: -5 }}
                   className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2.5 border border-border/30"
                 >
@@ -277,18 +276,19 @@ export default function Index() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <motion.div
-              whileHover={{ scale: 1.1 }}
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
               className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"
             >
               <Users className="h-5 w-5 text-primary" />
             </motion.div>
             <div>
-              <p className="font-heading font-semibold text-sm">Join Our Community</p>
-              <p className="text-muted-foreground text-xs">Get instant course updates on WhatsApp.</p>
+              <p className="font-heading font-semibold text-sm">{home?.whatsapp_banner_title ?? "Join Our Community"}</p>
+              <p className="text-muted-foreground text-xs">{home?.whatsapp_banner_subtitle ?? "Get instant course updates on WhatsApp."}</p>
             </div>
           </div>
           <a
-            href="https://wa.me/447741247592"
+            href={home?.whatsapp_banner_url ?? "https://wa.me/447741247592"}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary font-medium text-sm hover:underline flex items-center gap-1 hover-scale"
@@ -302,12 +302,17 @@ export default function Index() {
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-4">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Learn with Silicon Edge</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.why_eyebrow ?? "Why Learn with Silicon Edge"}</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Build better skills, <span className="text-gradient">faster</span><span className="text-gold">.</span>
+              {(home?.why_title ?? "Build better skills, faster").split(/\s+/).map((word, idx, arr) => (
+                <span key={idx}>
+                  {idx === arr.length - 1 ? <span className="text-gradient">{word}</span> : `${word} `}
+                </span>
+              ))}
+              <span className="text-gold">.</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              We understand the challenges of breaking into or advancing in the tech industry. That's why Silicon Edge Consulting is built on a foundation of active empowerment, ensuring every student not only learns but thrives.
+              {home?.why_description ?? "We understand the challenges of breaking into or advancing in the tech industry."}
             </p>
           </motion.div>
 
@@ -323,7 +328,7 @@ export default function Index() {
               { icon: Award, title: "Built for Completion", desc: "Structured, tutor-led learning ensures course completion and no drop-outs." },
               { icon: Briefcase, title: "Skills That Get You Hired", desc: "Industry-aligned curriculum builds practical skills and real-life projects." },
               { icon: Zap, title: "Beyond Certification", desc: "Job training equips you for local and remote IT roles." },
-            ].map((prop) => (
+            ].map((prop, propIdx) => (
               <motion.div
                 key={prop.title}
                 variants={staggerItem}
@@ -333,8 +338,10 @@ export default function Index() {
                 {/* Hover glow */}
                 <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)]" />
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors relative z-10"
+                  animate={{ rotate: [0, -6, 6, 0], y: [0, -3, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: propIdx * 0.4 }}
+                  whileHover={{ scale: 1.15, rotate: 0 }}
+                  className="animate-icon-pulse w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors relative z-10"
                 >
                   <prop.icon className="h-6 w-6 text-primary" />
                 </motion.div>
@@ -351,11 +358,11 @@ export default function Index() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.categories_eyebrow ?? "Browse Categories"}</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
-                <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">The world's top courses</h2>
-                <p className="text-muted-foreground">We keep adding new online video courses with new additions published every month.</p>
+                <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">{home?.categories_title ?? "The world's top courses"}</h2>
+                <p className="text-muted-foreground">{home?.categories_description ?? "We keep adding new online video courses with new additions published every month."}</p>
               </div>
               <Link to="/courses" className="text-primary font-medium text-sm flex items-center hover:underline hover-scale">
                 View All <ChevronRight className="h-4 w-4 ml-1" />
