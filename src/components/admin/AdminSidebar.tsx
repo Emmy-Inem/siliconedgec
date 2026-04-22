@@ -34,6 +34,7 @@ const sections = [
     items: [
       { label: "Students", href: "/admin/students", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+      { label: "Registrations", href: "/admin/registrations", icon: ClipboardCheck },
       { label: "Quizzes", href: "/admin/quizzes", icon: ClipboardCheck },
       { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: ClipboardCheck },
       { label: "Q&A", href: "/admin/qna", icon: HelpCircle },
