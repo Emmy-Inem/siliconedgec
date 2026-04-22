@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, ArrowRight, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const SOCIAL_ICONS: Record<string, typeof Facebook> = {
   social_facebook: Facebook,
@@ -15,6 +17,19 @@ const SOCIAL_ICONS: Record<string, typeof Facebook> = {
 export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
   const [email, setEmail] = useState("");
   const { data: settings } = useSiteSettings();
+
+  const { data: cmsLinks = [] } = useQuery({
+    queryKey: ["footer-cms-pages"],
+    queryFn: async () => {
+      const { data } = await (supabase
+        .from("cms_pages" as any)
+        .select("title, slug")
+        .eq("status", "published")
+        .eq("show_in_footer", true)
+        .order("order_index"));
+      return (data as unknown as { title: string; slug: string }[]) ?? [];
+    },
+  });
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => settings?.[key as keyof typeof settings])
@@ -48,7 +63,11 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
               <li><Link to="/courses" className="hover:text-primary transition-colors">Courses</Link></li>
               <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
               <li><Link to="/for-businesses" className="hover:text-primary transition-colors">Support</Link></li>
-              <li><span className="cursor-default">FAQ</span></li>
+              {cmsLinks.map((p) => (
+                <li key={p.slug}>
+                  <Link to={`/p/${p.slug}`} className="hover:text-primary transition-colors">{p.title}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
