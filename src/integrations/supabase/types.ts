@@ -75,6 +75,7 @@ export type Database = {
       }
       business_leads: {
         Row: {
+          assigned_to: string | null
           company_name: string
           company_size: string | null
           contact_name: string
@@ -82,6 +83,7 @@ export type Database = {
           email: string
           id: string
           industry: string | null
+          internal_notes: string | null
           message: string | null
           phone: string | null
           status: string
@@ -89,6 +91,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_to?: string | null
           company_name: string
           company_size?: string | null
           contact_name: string
@@ -96,6 +99,7 @@ export type Database = {
           email: string
           id?: string
           industry?: string | null
+          internal_notes?: string | null
           message?: string | null
           phone?: string | null
           status?: string
@@ -103,6 +107,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_to?: string | null
           company_name?: string
           company_size?: string | null
           contact_name?: string
@@ -110,6 +115,7 @@ export type Database = {
           email?: string
           id?: string
           industry?: string | null
+          internal_notes?: string | null
           message?: string | null
           phone?: string | null
           status?: string
@@ -1032,6 +1038,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_classes: {
+        Row: {
+          course_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          instructor_name: string | null
+          meeting_provider: string
+          meeting_url: string
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructor_name?: string | null
+          meeting_provider?: string
+          meeting_url: string
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructor_name?: string | null
+          meeting_provider?: string
+          meeting_url?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       login_attempts: {
         Row: {
