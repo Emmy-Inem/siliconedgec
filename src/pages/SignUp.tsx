@@ -41,7 +41,7 @@ export default function SignUp() {
           body: { template: "welcome", to: data.user.email, data: [name || data.user.email.split("@")[0]] },
         }).catch(() => {});
       }
-      logUserActivity("signup", { email, name });
+      logUserActivity({ action: "signup", user_id: data.user?.id ?? null, metadata: { email, name } });
       toast({ title: "Account created!", description: "Check your email to confirm your account." });
       navigate("/sign-in");
     }

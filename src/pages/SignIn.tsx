@@ -43,7 +43,7 @@ export default function SignIn() {
         : error.message;
       toast({ title: "Sign in failed", description: msg, variant: "destructive" });
     } else {
-      logUserActivity("login", { email });
+      logUserActivity({ action: "login", metadata: { email } });
       navigate("/");
     }
   };
