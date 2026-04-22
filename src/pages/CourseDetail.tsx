@@ -121,6 +121,13 @@ export default function CourseDetail() {
           utm_term: utm.utm_term,
         },
       });
+      await logUserActivity({
+        user_id: user!.id,
+        action: "course_enroll",
+        entity_type: "course",
+        entity_id: id!,
+        metadata: { title: course?.title, price: course?.price ?? 0 },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["enrollment", id, user?.id] });
