@@ -11,6 +11,7 @@ import { useBookmarks } from "@/hooks/useBookmarks";
 import { useReviews } from "@/hooks/useReviews";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentModal } from "@/components/PaymentModal";
+import { RegistrationFormModal } from "@/components/RegistrationFormModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -40,6 +41,7 @@ export default function CourseDetail() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
@@ -413,6 +415,13 @@ export default function CourseDetail() {
                       <p className="text-xs text-center text-muted-foreground">
                         ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
                       </p>
+                    </div>
+                  ) : (course.price === 0 || course.title.toUpperCase().startsWith("FREE")) ? (
+                    <div className="space-y-2">
+                      <Button size="lg" className="w-full gap-2" onClick={() => setRegisterOpen(true)}>
+                        <CheckCircle2 className="h-4 w-4" /> Register for Free
+                      </Button>
+                      <p className="text-xs text-center text-muted-foreground">No payment required</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
