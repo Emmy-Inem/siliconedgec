@@ -1,5 +1,9 @@
-// Transactional email sender. Uses RESEND_API_KEY if configured;
-// otherwise logs the email and returns success (so flows aren't blocked).
+// Transactional email sender. Loads admin-managed templates (tpl_*) from
+// site_content, applies {{variables}}, and sends via Resend if configured.
+// If RESEND_API_KEY is missing, the call is logged and returns 200 so
+// product flows are never blocked.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -12,7 +16,31 @@ interface EmailPayload {
   from?: string;
 }
 
-const TEMPLATES = {
+// Hard fallback in case the admin hasn't customised a template yet.
+const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
+  tpl_welcome: {
+    subject: "Welcome to Silicon Edge!",
+    body: "Hi {{name}},\n\nWelcome aboard! Start exploring courses at {{site_url}}/courses.\n\n— The Silicon Edge Team",
+  },
+  tpl_enrollment: {
+    subject: "You're enrolled in {{course_title}}",
+    body: "Hi {{name}},\n\nYour enrollment is confirmed. Begin learning here: {{course_url}}.\n\nGood luck!",
+  },
+  tpl_certificate: {
+    subject: "🎓 Certificate ready: {{course_title}}",
+    body: "Congratulations {{name}}!\n\nYou've successfully completed {{course_title}}.\n\nVerify your certificate: {{verify_url}}.",
+  },
+  tpl_reset: {
+    subject: "Reset your password",
+    body: "Hi {{name}},\n\nClick the link to reset your password: {{reset_url}}.\n\nThis link expires in 1 hour.",
+  },
+  tpl_cart_recovery: {
+    subject: "Your cart is waiting",
+    body: "Hi {{name}},\n\nYou left items in your cart. Complete your purchase: {{cart_url}}.",
+  },
+};
+
+const LEGACY_TEMPLATES = {
   welcome: (name: string) => ({
     subject: "Welcome to Silicon Edge Consulting",
     html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
@@ -39,16 +67,72 @@ const TEMPLATES = {
   }),
 } as const;
 
+function applyVars(s: string, vars: Record<string, string>) {
+  let out = s;
+  for (const [k, v] of Object.entries(vars)) {
+    out = out.split(`{{${k}}}`).join(v ?? "");
+  }
+  return out;
+}
+
+function wrapHtml(subject: string, body: string) {
+  const renderedBody = body
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#a78bfa">${u}</a>`)
+    .replace(/\n/g, "<br/>");
+  return `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#0f172a;color:#fff;border-radius:14px;line-height:1.55;font-size:14px">
+    <div style="font-weight:600;font-size:13px;color:#a78bfa;letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;border-bottom:1px solid #1e293b;padding-bottom:12px">${subject}</div>
+    <div>${renderedBody}</div>
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #1e293b;font-size:11px;color:#64748b">Silicon Edge Consulting · Job-Ready Tech Training</div>
+  </div>`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const body = await req.json();
-    const { template, to, data } = body as { template?: keyof typeof TEMPLATES; to: string; data?: any } & EmailPayload;
+    const {
+      template_key,
+      variables,
+      template,
+      to,
+      data,
+    } = body as {
+      template_key?: string;
+      variables?: Record<string, string>;
+      template?: keyof typeof LEGACY_TEMPLATES;
+      to: string;
+      data?: any;
+    } & Partial<EmailPayload>;
 
     let payload: EmailPayload;
-    if (template && TEMPLATES[template]) {
-      const built = (TEMPLATES[template] as any)(...(data ?? []));
+
+    if (template_key) {
+      // New path: load admin-managed template from site_content (tpl_* keys)
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      );
+      const { data: rows } = await supabase
+        .from("site_content")
+        .select("key, value")
+        .in("key", [`${template_key}_subject`, `${template_key}_body`]);
+      const map = Object.fromEntries((rows ?? []).map((r: any) => [r.key, r.value as string]));
+      const fallback = FALLBACK_TEMPLATES[template_key] ?? { subject: "", body: "" };
+      const rawSubject = map[`${template_key}_subject`] || fallback.subject;
+      const rawBody = map[`${template_key}_body`] || fallback.body;
+      const vars = {
+        site_url: "https://siliconedgec.lovable.app",
+        ...(variables ?? {}),
+      };
+      const subject = applyVars(rawSubject, vars);
+      const renderedBody = applyVars(rawBody, vars);
+      payload = { to, subject, html: wrapHtml(subject, renderedBody) };
+    } else if (template && LEGACY_TEMPLATES[template]) {
+      const built = (LEGACY_TEMPLATES[template] as any)(...(data ?? []));
       payload = { to, subject: built.subject, html: built.html };
     } else {
       payload = body as EmailPayload;
