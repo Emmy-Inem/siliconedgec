@@ -103,6 +103,57 @@ const sectionReveal = {
 
 export default function Index() {
   const { data: home } = useHomeContent();
+  const { data: dbInstructors } = useQuery({
+    queryKey: ["home-instructors"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("instructors")
+        .select("id, name, role, avatar_url, rating, students_count, courses_count")
+        .order("created_at", { ascending: true })
+        .limit(8);
+      return data ?? [];
+    },
+  });
+  const { data: dbTestimonials } = useQuery({
+    queryKey: ["home-testimonials"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("testimonials")
+        .select("id, name, role, quote, avatar_url, rating, order_index")
+        .order("order_index", { ascending: true })
+        .limit(20);
+      return data ?? [];
+    },
+  });
+  const instructors = (dbInstructors && dbInstructors.length > 0)
+    ? dbInstructors.map((i, idx) => ({
+        id: i.id,
+        name: i.name,
+        role: i.role ?? "Instructor",
+        rating: Number(i.rating ?? 4.8),
+        students: i.students_count ?? 0,
+        courses: i.courses_count ?? 0,
+        image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
+      }))
+    : fallbackInstructorImages.map((image, idx) => ({
+        id: `placeholder-${idx}`,
+        name: ["Cloud Engineer", "DevOps Engineer", "Software Engineer", "AI/ML Specialist"][idx],
+        role: "Industry Mentor",
+        rating: 4.8,
+        students: 0,
+        courses: 0,
+        image,
+      }));
+  const testimonials = (dbTestimonials && dbTestimonials.length > 0)
+    ? dbTestimonials.map((t) => ({
+        id: t.id,
+        name: t.name,
+        role: t.role ?? "Student",
+        quote: t.quote,
+        avatar_url: t.avatar_url,
+        rating: t.rating ?? 5,
+      }))
+    : fallbackTestimonials;
   const typewriterWords = home?.typewriter_words ?? [
     "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
     "Web Development", "Cybersecurity", "Data Science", "DevOps",
