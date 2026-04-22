@@ -185,6 +185,50 @@ export default function AdminLeadsHub() {
 
   const isLoading = l1 || l2 || l3;
 
+  const uniqueEmails = useMemo(() => {
+    const seen = new Map<string, string>(); // email -> name
+    filtered.forEach((u) => {
+      const e = (u.email || "").trim().toLowerCase();
+      if (!e || e === "—" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return;
+      if (!seen.has(e)) seen.set(e, u.name || "");
+    });
+    return Array.from(seen.entries()).map(([email, name]) => ({ email, name }));
+  }, [filtered]);
+
+  const formattedEmails = useMemo(() => {
+    if (includeName) {
+      return uniqueEmails.map((u) => (u.name ? `${u.name} <${u.email}>` : u.email)).join(", ");
+    }
+    return uniqueEmails.map((u) => u.email).join(", ");
+  }, [uniqueEmails, includeName]);
+
+  const copyEmails = async () => {
+    await navigator.clipboard.writeText(formattedEmails);
+    toast({ title: "Copied", description: `${uniqueEmails.length} emails copied to clipboard.` });
+  };
+
+  const downloadEmails = () => {
+    const blob = new Blob([formattedEmails], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `leads-emails-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const openMailto = () => {
+    const batchSize = 90;
+    const first = uniqueEmails.slice(0, batchSize).map((u) => u.email).join(",");
+    window.location.href = `mailto:?bcc=${encodeURIComponent(first)}`;
+    if (uniqueEmails.length > batchSize) {
+      toast({
+        title: "Opened first batch",
+        description: `Loaded first ${batchSize} of ${uniqueEmails.length}. Use Copy or Download to get the rest.`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center justify-between flex-wrap gap-3">
