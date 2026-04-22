@@ -71,26 +71,42 @@ export default function Certificates() {
       />
       <Header />
 
-      <section className="bg-hero pt-28 pb-14 relative overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
+      <section className="bg-hero pt-28 pb-20 relative overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
         <div className="container mx-auto px-4 relative">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-3">Certificates</h1>
-              <p className="text-hero-muted text-lg max-w-xl">
-                Earn verified, industry-recognized certificates that prove your skills to employers.
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
+                <Award className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Verifiable · QR-Coded · LinkedIn-ready</span>
+              </div>
+              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-hero mb-4 leading-[1.05]">
+                Certificates that <span className="text-primary">open doors</span>.
+              </h1>
+              <p className="text-hero-muted text-base md:text-lg max-w-xl leading-relaxed">
+                Earn industry-recognized completion certificates with a unique verification ID employers can validate online — instantly downloadable as PDF.
               </p>
+              <div className="flex flex-wrap gap-3 mt-7">
+                <Button size="lg" asChild className="hover-scale">
+                  <Link to="/courses">Start a Course</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <a href="#sample">See a Sample</a>
+                </Button>
+              </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="hidden lg:block"
+              initial={{ opacity: 0, scale: 0.92, rotate: -2 }}
+              animate={{ opacity: 1, scale: 1, rotate: -3 }}
+              transition={{ duration: 0.7, delay: 0.2, type: "spring" }}
+              className="hidden lg:block relative"
             >
+              <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
               <img
                 src={certificateCelebration}
                 alt="Student celebrating certificate"
-                className="rounded-2xl border border-primary/10 shadow-xl shadow-primary/10 w-full max-w-md ml-auto"
+                className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-md ml-auto"
               />
             </motion.div>
           </div>
@@ -159,10 +175,13 @@ export default function Certificates() {
           )}
 
           {/* Sample Certificate Preview */}
-          <motion.div {...fadeUp} className="max-w-3xl mx-auto">
+          <motion.div {...fadeUp} id="sample" className="max-w-3xl mx-auto scroll-mt-24">
             <h2 className="font-heading text-2xl font-bold mb-6 text-center">
               {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
+            <p className="text-muted-foreground text-sm text-center mb-8 max-w-xl mx-auto">
+              Below is what your certificate will look like — fully branded, with a unique ID and verification link.
+            </p>
             <DownloadableCertificate
               studentName={userName}
               courseName="Cloud Engineering Crash Course"
@@ -172,12 +191,14 @@ export default function Certificates() {
             />
           </motion.div>
 
-          <div className="text-center mt-12">
-            <p className="text-muted-foreground mb-4">Ready to earn your certificate?</p>
+          <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
+            <Award className="h-10 w-10 text-primary mx-auto mb-4" />
+            <h3 className="font-heading text-2xl font-bold mb-2">Ready to earn yours?</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">Browse our catalog of cloud, AI, and DevOps courses — each one ends with a verifiable certificate.</p>
             <Button size="lg" asChild className="hover-scale">
               <Link to="/courses">Browse Courses</Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
