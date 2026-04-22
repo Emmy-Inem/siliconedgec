@@ -4,7 +4,10 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export const WhatsAppFAB = forwardRef<HTMLAnchorElement>(function WhatsAppFAB(_, ref) {
   const { data: settings } = useSiteSettings();
-  const number = settings?.whatsapp_number || "2348001234567";
+  const raw = settings?.whatsapp_number || "";
+  const number = raw.replace(/\D/g, "");
+  // Hide FAB if not configured (placeholder or empty)
+  if (!number || raw.toUpperCase().includes("UPDATE")) return null;
 
   return (
     <a

@@ -54,6 +54,8 @@ import AdminJobApplications from "./pages/admin/AdminJobApplications";
 import AdminChat from "./pages/admin/AdminChat";
 import AdminCustomScripts from "./pages/admin/AdminCustomScripts";
 import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
+import AdminRegistrations from "./pages/admin/AdminRegistrations";
+import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 
@@ -84,6 +86,7 @@ const App = () => (
               <Route path="/verify/:code" element={<VerifyCertificate />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/r/:slug" element={<RedirectInfluencer />} />
 
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route index element={<AdminOverview />} />
@@ -116,6 +119,7 @@ const App = () => (
                 <Route path="chat" element={<AdminChat />} />
                 <Route path="custom-scripts" element={<AdminCustomScripts />} />
                 <Route path="live-classes" element={<AdminLiveClasses />} />
+                <Route path="registrations" element={<AdminRegistrations />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 
