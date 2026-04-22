@@ -239,6 +239,36 @@ export default function AdminInfluencerMarketing() {
                   <Input type="datetime-local" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
                 </div>
               </div>
+              <div className="space-y-2 border-t border-border pt-4">
+                <Label className="flex items-center gap-1.5"><Link2 className="h-3.5 w-3.5" /> Link Destination</Label>
+                <Select value={form.landing_target} onValueChange={(v) => setForm({ ...form, landing_target: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="courses">Courses Catalog (/courses)</SelectItem>
+                    <SelectItem value="home">Home Page (/)</SelectItem>
+                    <SelectItem value="course">Specific Course</SelectItem>
+                    <SelectItem value="custom">Custom Page Path</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.landing_target === "course" && (
+                  <Select value={form.landing_course_id} onValueChange={(v) => setForm({ ...form, landing_course_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Pick a course..." /></SelectTrigger>
+                    <SelectContent>
+                      {courseList.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+                {form.landing_target === "custom" && (
+                  <Input
+                    value={form.landing_path}
+                    onChange={(e) => setForm({ ...form, landing_path: e.target.value })}
+                    placeholder="/pricing or /for-businesses"
+                  />
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  Final URL: <span className="font-mono text-primary">{`/r/${form.slug || "your-slug"}`}</span> → <span className="font-mono">{computeLandingPath(form)}</span>
+                </p>
+              </div>
               <Button className="w-full" onClick={() => createPromo.mutate()} disabled={!form.code || !form.influencer_name || createPromo.isPending}>
                 {createPromo.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create Promo Code
