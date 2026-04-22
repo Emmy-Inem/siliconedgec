@@ -105,6 +105,12 @@ const sectionReveal = {
 };
 
 export default function Index() {
+  const { data: home } = useHomeContent();
+  const typewriterWords = home?.typewriter_words ?? [
+    "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
+    "Web Development", "Cybersecurity", "Data Science", "DevOps",
+    "Product Design", "UI/UX Design",
+  ];
   const typedText = useTypewriter(typewriterWords);
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
