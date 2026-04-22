@@ -47,31 +47,31 @@ export function Header() {
           : "bg-transparent"
       )}
     >
-      <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2">
+      <div className="container mx-auto flex items-center justify-between gap-4 h-14 px-4">
+        <Link to="/" className="flex items-center shrink-0 mr-2">
           <img
             src={showLight ? logoLight : logoDark}
             alt="Silicon Edge Consulting"
-            className="h-8 w-auto"
+            className="h-9 w-auto max-w-none object-contain"
           />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-7 flex-1 justify-center min-w-0">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary story-link",
+                "text-[13px] font-medium transition-colors hover:text-primary whitespace-nowrap",
                 scrolled || !isHeroPage ? "text-foreground" : "text-hero-muted hover:text-hero"
               )}
             >
-              <span>{link.label}</span>
+              {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-1.5 shrink-0">
           {/* Cart Icon */}
           <Link
             to="/cart"
@@ -82,7 +82,7 @@ export function Header() {
                 : "text-hero-muted hover:text-hero hover:bg-navy-light"
             )}
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-[18px] w-[18px]" />
             {count > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4.5 w-4.5 min-w-[18px] flex items-center justify-center px-1">
                 {count}
@@ -94,38 +94,42 @@ export function Header() {
             <>
               {isAdmin && (
                 <Button variant="ghost" size="sm" asChild className={cn(
+                  "h-8 px-2.5 text-[13px]",
                   scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
                 )}>
-                  <Link to="/admin"><LayoutDashboard className="h-4 w-4 mr-1" /> Admin</Link>
+                  <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
                 </Button>
               )}
               <Button variant="ghost" size="sm" asChild className={cn(
+                "h-8 px-2.5 text-[13px]",
                 scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
               )}>
-                <Link to="/dashboard"><User className="h-4 w-4 mr-1" /> Dashboard</Link>
+                <Link to="/dashboard"><User className="h-3.5 w-3.5 mr-1" /> Dashboard</Link>
               </Button>
               <Button variant="ghost" size="sm" onClick={signOut} className={cn(
+                "h-8 px-2.5 text-[13px]",
                 scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
               )}>
-                <LogOut className="h-4 w-4 mr-1" /> Sign Out
+                <LogOut className="h-3.5 w-3.5" />
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className={cn(
+                "h-8 px-3 text-[13px]",
                 scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
               )}>
                 <Link to="/sign-in">Sign In</Link>
               </Button>
-              <Button size="sm" asChild className="hover-scale">
+              <Button size="sm" asChild className="hover-scale h-8 px-3 text-[13px]">
                 <Link to="/sign-up">Get Started</Link>
               </Button>
             </>
           )}
         </div>
 
-        {/* Mobile: cart + menu toggle */}
-        <div className="md:hidden flex items-center gap-2">
+        {/* Mobile/Tablet: cart + menu toggle */}
+        <div className="lg:hidden flex items-center gap-2">
           <Link to="/cart" className={cn(
             "relative p-2",
             scrolled || !isHeroPage ? "text-foreground" : "text-hero"
@@ -137,7 +141,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)}>
+          <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? (
               <X className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
             ) : (
@@ -148,7 +152,7 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden bg-card border-b border-border p-4 space-y-3 animate-fade-in">
+        <div className="lg:hidden bg-card border-b border-border p-4 space-y-3 animate-fade-in">
           {navLinks.map((link) => (
             <Link
               key={link.href}
