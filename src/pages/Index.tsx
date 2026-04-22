@@ -187,10 +187,12 @@ export default function Index() {
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg", alt: "Google Cloud" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-              ].map((logo) => (
+              ].map((logo, i) => (
                 <motion.div
                   key={logo.alt}
                   variants={staggerItem}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2 border border-border/30"
                 >
@@ -252,10 +254,12 @@ export default function Index() {
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg", alt: "Angular" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", alt: "JavaScript" },
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openal/openal-original.svg", alt: "AI" },
-              ].map((logo) => (
+              ].map((logo, i) => (
                 <motion.div
                   key={logo.alt}
                   variants={staggerItem}
+                  animate={{ y: [0, -7, 0] }}
+                  transition={{ duration: 3.5 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.5 + i * 0.25 }}
                   whileHover={{ scale: 1.2, y: -5 }}
                   className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2.5 border border-border/30"
                 >
