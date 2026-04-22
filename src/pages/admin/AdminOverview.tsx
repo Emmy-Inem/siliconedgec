@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BookOpen, Users, GraduationCap, MessageSquareQuote, CreditCard, UserCheck,
-  TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity
+  TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity, ClipboardCheck, Briefcase
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
