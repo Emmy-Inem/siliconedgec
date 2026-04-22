@@ -38,7 +38,11 @@ export default function SignUp() {
       // Fire welcome email (no-op if RESEND_API_KEY not configured)
       if (data.user?.email) {
         supabase.functions.invoke("send-email", {
-          body: { template: "welcome", to: data.user.email, data: [name || data.user.email.split("@")[0]] },
+          body: {
+            template_key: "tpl_welcome",
+            to: data.user.email,
+            variables: { name: name || data.user.email.split("@")[0] },
+          },
         }).catch(() => {});
       }
       logUserActivity({ action: "signup", user_id: data.user?.id ?? null, metadata: { email, name } });
