@@ -476,6 +476,11 @@ export default function AdminInfluencerMarketing() {
                     <p className="font-mono text-sm break-all text-primary font-semibold select-all">
                       {`${window.location.origin}/r/${detailCode.slug}`}
                     </p>
+                    {detailCode.landing_path && (
+                      <p className="font-mono text-[10px] text-muted-foreground mt-1">
+                        → lands on <span className="text-foreground">{detailCode.landing_path}</span>
+                      </p>
+                    )}
                   </div>
                   <Button
                     size="sm"
