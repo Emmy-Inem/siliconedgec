@@ -159,6 +159,10 @@ export default function AdminInfluencerMarketing() {
         max_uses: form.max_uses ? Number(form.max_uses) : null,
         expires_at: form.expires_at || null,
         landing_path: computeLandingPath(form),
+        utm_source: form.utm_source || null,
+        utm_medium: form.utm_medium || null,
+        utm_campaign: form.utm_campaign || null,
+        utm_content: form.utm_content || null,
       });
       if (error) throw error;
     },

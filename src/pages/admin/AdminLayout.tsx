@@ -14,11 +14,10 @@ export default function AdminLayout() {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
 
-  // Reset main scroll AND sidebar nav scroll on route change
+  // Reset main content scroll on route change. Do NOT scroll the sidebar —
+  // it should preserve the admin's place in the navigation.
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    const sidebarNav = document.querySelector<HTMLElement>("[data-admin-sidebar-nav]");
-    sidebarNav?.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
   // Route-level permission guard
