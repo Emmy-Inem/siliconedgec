@@ -1,29 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Briefcase, Mail, Phone, Users, Clock, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { Briefcase, Mail, Phone, Users, Clock, Eye, GripVertical, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
-const statusColors: Record<string, string> = {
-  new: "bg-blue-500/10 text-blue-600",
-  contacted: "bg-amber-500/10 text-amber-600",
-  qualified: "bg-purple-500/10 text-purple-600",
-  converted: "bg-green-500/10 text-green-600",
-  lost: "bg-red-500/10 text-red-600",
-};
+const STATUSES = [
+  { id: "new", label: "New", color: "border-t-blue-500" },
+  { id: "contacted", label: "Contacted", color: "border-t-amber-500" },
+  { id: "qualified", label: "Qualified", color: "border-t-purple-500" },
+  { id: "converted", label: "Converted", color: "border-t-green-500" },
+  { id: "lost", label: "Lost", color: "border-t-red-500" },
+] as const;
 
 export default function AdminBusinessLeads() {
   const queryClient = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [overCol, setOverCol] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ["admin-business-leads"],
@@ -39,112 +40,109 @@ export default function AdminBusinessLeads() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from("business_leads")
-        .update({ status })
-        .eq("id", id);
+      const { error } = await supabase.from("business_leads").update({ status }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-business-leads"] });
-      toast({ title: "Lead status updated" });
+      toast({ title: "Lead moved" });
     },
   });
 
-  const statuses = ["new", "contacted", "qualified", "converted", "lost"];
+  const updateNotes = useMutation({
+    mutationFn: async ({ id, internal_notes }: { id: string; internal_notes: string }) => {
+      const { error } = await supabase.from("business_leads").update({ internal_notes }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-business-leads"] });
+      toast({ title: "Notes saved" });
+    },
+  });
+
+  const onDragStart = (id: string) => setDraggedId(id);
+  const onDragOver = (e: React.DragEvent, status: string) => { e.preventDefault(); setOverCol(status); };
+  const onDrop = (status: string) => {
+    if (draggedId) {
+      const lead = leads?.find((l) => l.id === draggedId);
+      if (lead && lead.status !== status) updateStatus.mutate({ id: draggedId, status });
+    }
+    setDraggedId(null); setOverCol(null);
+  };
+
+  const openLead = (lead: any) => {
+    setSelectedLead(lead);
+    setNotes(lead.internal_notes ?? "");
+  };
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="flex items-center gap-3"
-      >
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
           <Briefcase className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-bold">Business Leads</h1>
+          <h1 className="font-heading text-2xl font-bold">Business Leads CRM</h1>
           <p className="text-sm text-muted-foreground">
-            Manage corporate training inquiries ({leads?.length ?? 0} total)
+            Drag leads between stages to update status ({leads?.length ?? 0} total)
           </p>
         </div>
       </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {statuses.map((s) => {
-          const count = leads?.filter((l) => l.status === s).length ?? 0;
-          return (
-            <div key={s} className="bg-card rounded-xl border border-border p-4 text-center">
-              <p className="text-2xl font-heading font-bold">{count}</p>
-              <p className="text-xs text-muted-foreground capitalize">{s}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Table */}
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading...</div>
-      ) : !leads?.length ? (
-        <div className="text-center py-12">
-          <Briefcase className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">No business leads yet</p>
-        </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Company</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Contact</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Team Size</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Date</th>
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                    <td className="px-4 py-3 font-medium">{lead.company_name}</td>
-                    <td className="px-4 py-3">
-                      <div>{lead.contact_name}</div>
-                      <div className="text-xs text-muted-foreground">{lead.email}</div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{lead.company_size || "—"}</td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={lead.status}
-                        onChange={(e) => updateStatus.mutate({ id: lead.id, status: e.target.value })}
-                        className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${statusColors[lead.status] ?? "bg-muted"}`}
-                      >
-                        {statuses.map((s) => (
-                          <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground text-xs">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-4">
+          {STATUSES.map((col) => {
+            const colLeads = leads?.filter((l) => l.status === col.id) ?? [];
+            return (
+              <div
+                key={col.id}
+                onDragOver={(e) => onDragOver(e, col.id)}
+                onDrop={() => onDrop(col.id)}
+                className={`bg-muted/30 rounded-xl p-3 min-h-[400px] border-t-4 ${col.color} ${overCol === col.id ? "bg-muted/60 ring-2 ring-primary/30" : ""}`}
+              >
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="font-heading font-semibold text-sm">{col.label}</h3>
+                  <Badge variant="secondary" className="text-xs">{colLeads.length}</Badge>
+                </div>
+                <div className="space-y-2">
+                  {colLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      draggable
+                      onDragStart={() => onDragStart(lead.id)}
+                      onClick={() => openLead(lead)}
+                      className="bg-card rounded-lg border border-border p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all"
+                    >
+                      <div className="flex items-start gap-2">
+                        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{lead.company_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
+                          <p className="text-xs text-muted-foreground/70 truncate mt-0.5">{lead.email}</p>
+                          {lead.company_size && (
+                            <Badge variant="outline" className="text-[10px] mt-2">{lead.company_size}</Badge>
+                          )}
+                          {lead.internal_notes && (
+                            <StickyNote className="h-3 w-3 text-amber-500 mt-1.5 inline" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {!colLeads.length && (
+                    <div className="text-center text-xs text-muted-foreground/40 py-6">Drop leads here</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Detail Dialog */}
       <Dialog open={!!selectedLead} onOpenChange={() => setSelectedLead(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading">{selectedLead?.company_name}</DialogTitle>
           </DialogHeader>
@@ -164,21 +162,24 @@ export default function AdminBusinessLeads() {
                   <span>{selectedLead.phone}</span>
                 </div>
               )}
-              {selectedLead.company_size && (
-                <div><strong>Team Size:</strong> {selectedLead.company_size}</div>
-              )}
-              {selectedLead.industry && (
-                <div><strong>Industry:</strong> {selectedLead.industry}</div>
-              )}
+              {selectedLead.company_size && <div><strong>Team Size:</strong> {selectedLead.company_size}</div>}
+              {selectedLead.industry && <div><strong>Industry:</strong> {selectedLead.industry}</div>}
               {selectedLead.training_needs && (
                 <div>
                   <strong>Training Needs:</strong>
                   <p className="mt-1 text-muted-foreground">{selectedLead.training_needs}</p>
                 </div>
               )}
-              <div className="flex items-center gap-2">
+              <div>
+                <strong className="block mb-1">Internal Notes</strong>
+                <Textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Track conversations, next steps…" />
+                <Button size="sm" className="mt-2" onClick={() => updateNotes.mutate({ id: selectedLead.id, internal_notes: notes })} disabled={updateNotes.isPending}>
+                  Save Notes
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{new Date(selectedLead.created_at).toLocaleString()}</span>
+                <span className="text-muted-foreground text-xs">{new Date(selectedLead.created_at).toLocaleString()}</span>
               </div>
             </div>
           )}
