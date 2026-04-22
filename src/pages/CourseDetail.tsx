@@ -532,6 +532,15 @@ export default function CourseDetail() {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
+      {course && (
+        <RegistrationFormModal
+          open={registerOpen}
+          onOpenChange={setRegisterOpen}
+          courseId={course.id}
+          courseTitle={course.title}
+          onSuccess={() => qc.invalidateQueries({ queryKey: ["enrollment", id] })}
+        />
+      )}
 
       <Footer />
       <WhatsAppFAB />
