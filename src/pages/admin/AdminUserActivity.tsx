@@ -6,6 +6,7 @@ import { Activity, LogIn, UserPlus, FileEdit, Search, ChevronRight, ArrowLeft, B
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ICONS: Record<string, typeof Activity> = {
   login: LogIn,
@@ -39,6 +40,10 @@ interface ProfileRow {
 export default function AdminUserActivity() {
   const [search, setSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  // Drilldown filters
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<string>("all"); // all | 24h | 7d | 30d
+  const [innerSearch, setInnerSearch] = useState("");
 
   const { data: profiles = [], isLoading: loadingProfiles } = useQuery({
     queryKey: ["all-user-profiles"],
@@ -95,10 +100,35 @@ export default function AdminUserActivity() {
   }, [profiles, search, stats]);
 
   const selectedUser = profiles.find((p) => p.user_id === selectedUserId);
-  const userActivities = useMemo(
+  const allUserActivities = useMemo(
     () => activities.filter((a) => a.user_id === selectedUserId),
     [activities, selectedUserId]
   );
+
+  const availableActions = useMemo(
+    () => Array.from(new Set(allUserActivities.map((a) => a.action))).sort(),
+    [allUserActivities]
+  );
+
+  const userActivities = useMemo(() => {
+    const cutoff = (() => {
+      const now = Date.now();
+      if (dateRange === "24h") return now - 24 * 60 * 60 * 1000;
+      if (dateRange === "7d") return now - 7 * 24 * 60 * 60 * 1000;
+      if (dateRange === "30d") return now - 30 * 24 * 60 * 60 * 1000;
+      return 0;
+    })();
+    const q = innerSearch.toLowerCase();
+    return allUserActivities.filter((a) => {
+      if (actionFilter !== "all" && a.action !== actionFilter) return false;
+      if (cutoff && new Date(a.created_at).getTime() < cutoff) return false;
+      if (q) {
+        const blob = `${a.action} ${a.entity_type ?? ""} ${a.entity_id ?? ""} ${JSON.stringify(a.metadata ?? {})}`.toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [allUserActivities, actionFilter, dateRange, innerSearch]);
 
   if (selectedUserId && selectedUser) {
     return (
@@ -117,11 +147,37 @@ export default function AdminUserActivity() {
               <p className="text-xs text-muted-foreground font-mono">{selectedUser.user_id}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="font-heading text-2xl font-bold">{userActivities.length}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">events</p>
+              <p className="font-heading text-2xl font-bold">{userActivities.length}<span className="text-sm text-muted-foreground font-normal">/{allUserActivities.length}</span></p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">events shown</p>
             </div>
           </div>
         </motion.div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="relative sm:col-span-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input className="pl-9" placeholder="Search events..." value={innerSearch} onChange={(e) => setInnerSearch(e.target.value)} />
+          </div>
+          <Select value={actionFilter} onValueChange={setActionFilter}>
+            <SelectTrigger><SelectValue placeholder="All actions" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All actions</SelectItem>
+              {availableActions.map((a) => (
+                <SelectItem key={a} value={a}>{a.replace(/_/g, " ")}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="24h">Last 24 hours</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           {userActivities.length === 0 ? (
