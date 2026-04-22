@@ -55,6 +55,8 @@ import AdminChat from "./pages/admin/AdminChat";
 import AdminCustomScripts from "./pages/admin/AdminCustomScripts";
 import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
 import AdminRegistrations from "./pages/admin/AdminRegistrations";
+import AdminSEO from "./pages/admin/AdminSEO";
+import AdminUserActivity from "./pages/admin/AdminUserActivity";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
@@ -120,6 +122,8 @@ const App = () => (
                 <Route path="custom-scripts" element={<AdminCustomScripts />} />
                 <Route path="live-classes" element={<AdminLiveClasses />} />
                 <Route path="registrations" element={<AdminRegistrations />} />
+                <Route path="seo" element={<AdminSEO />} />
+                <Route path="user-activity" element={<AdminUserActivity />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 

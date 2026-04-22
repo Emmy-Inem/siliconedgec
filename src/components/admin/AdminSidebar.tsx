@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video
+  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -78,6 +78,8 @@ const sections = [
     items: [
       { label: "Users & Roles", href: "/admin/users", icon: Users },
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
+      { label: "User Activity", href: "/admin/user-activity", icon: UserCog },
+      { label: "SEO Manager", href: "/admin/seo", icon: Search },
       { label: "Custom Scripts", href: "/admin/custom-scripts", icon: FileText },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
