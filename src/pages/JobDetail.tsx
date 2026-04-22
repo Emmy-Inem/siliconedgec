@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { motion } from "framer-motion";
+import { Upload, Loader2, FileText } from "lucide-react";
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,38 @@ export default function JobDetail() {
   const { toast } = useToast();
   const [showApply, setShowApply] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [resumeName, setResumeName] = useState<string>("");
   const [form, setForm] = useState({ full_name: "", email: user?.email || "", phone: "", cover_letter: "", resume_url: "" });
+
+  const handleResumeUpload = async (file: File) => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please sign in to upload a resume.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum size is 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("job-resumes").upload(path, file, {
+      upsert: false,
+      cacheControl: "3600",
+    });
+    if (error) {
+      setUploading(false);
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Generate a long-lived signed URL (7 days) so admins can review
+    const { data: signed } = await supabase.storage.from("job-resumes").createSignedUrl(path, 60 * 60 * 24 * 7);
+    setForm((f) => ({ ...f, resume_url: signed?.signedUrl ?? path }));
+    setResumeName(file.name);
+    setUploading(false);
+    toast({ title: "Resume uploaded" });
+  };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
   if (!job) return (
@@ -118,7 +150,38 @@ export default function JobDetail() {
                   <input required placeholder="Full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                   <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                   <input placeholder="Phone (optional)" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                  <input placeholder="Resume URL (Google Drive, LinkedIn, etc.)" value={form.resume_url} onChange={e => setForm({ ...form, resume_url: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">Resume (PDF, DOC, max 5 MB)</label>
+                    <input
+                      id="resume-file"
+                      type="file"
+                      accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleResumeUpload(e.target.files[0])}
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={uploading}
+                        onClick={() => document.getElementById("resume-file")?.click()}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-sm hover:border-primary/40"
+                      >
+                        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {uploading ? "Uploading…" : resumeName ? "Replace file" : "Upload resume"}
+                      </button>
+                      {resumeName && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground truncate">
+                          <FileText className="h-3 w-3" /> {resumeName}
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      placeholder="Or paste a link (Google Drive, LinkedIn…)"
+                      value={resumeName ? "" : form.resume_url}
+                      onChange={e => setForm({ ...form, resume_url: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                    />
+                  </div>
                   <textarea required placeholder="Why are you a great fit?" rows={5} value={form.cover_letter} onChange={e => setForm({ ...form, cover_letter: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                   <div className="flex gap-2 justify-end pt-2">
                     <Button type="button" variant="outline" onClick={() => setShowApply(false)}>Cancel</Button>

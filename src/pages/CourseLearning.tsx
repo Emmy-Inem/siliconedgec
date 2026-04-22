@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { LiveClassesTab } from "@/components/LiveClassesTab";
+import { LessonQuiz } from "@/components/LessonQuiz";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
@@ -288,6 +289,14 @@ export default function CourseLearning() {
                   </ul>
                 </div>
               )}
+
+              {/* Quiz for this lesson */}
+              <div className="pt-6 border-t border-border">
+                <LessonQuiz
+                  lessonId={currentLesson.id}
+                  onPass={() => markComplete.mutate(currentLesson.id)}
+                />
+              </div>
             </motion.div>
           ) : (
             <div className="text-center py-20">

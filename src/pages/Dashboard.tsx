@@ -14,6 +14,8 @@ import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, 
 import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
+import { ProfileSettings } from "@/components/ProfileSettings";
+import { Settings } from "lucide-react";
 
 interface EnrolledCourse {
   id: string;
@@ -196,6 +198,7 @@ export default function Dashboard() {
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Calendar ({liveClasses.length})</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
+                <TabsTrigger value="profile"><Settings className="h-3.5 w-3.5 mr-1" />Profile</TabsTrigger>
               </TabsList>
 
               <TabsContent value="courses">
@@ -383,6 +386,10 @@ export default function Dashboard() {
                     })}
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="profile">
+                <ProfileSettings />
               </TabsContent>
             </Tabs>
           )}

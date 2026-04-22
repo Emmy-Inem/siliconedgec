@@ -17,6 +17,7 @@ import Certificates from "./pages/Certificates";
 import Pricing from "./pages/Pricing";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -65,6 +66,8 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
+import { CookieBanner } from "./components/CookieBanner";
+import { HelmetProvider } from "react-helmet-async";
 import AdminLeadsHub from "./pages/admin/AdminLeadsHub";
 import CmsPagePublic from "./pages/CmsPage";
 import AdminOrders from "./pages/admin/AdminOrders";
@@ -81,6 +84,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <HelmetProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -99,6 +103,7 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
@@ -163,10 +168,12 @@ const App = () => (
             </Routes>
             <LiveChat />
             <CustomScripts />
+            <CookieBanner />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 
