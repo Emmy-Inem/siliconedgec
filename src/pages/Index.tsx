@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
+import { useHomeContent } from "@/hooks/useHomeContent";
 import logoLight from "@/assets/logo-light.png";
 import instructor1 from "@/assets/instructor-1.jpg";
 import instructor2 from "@/assets/instructor-2.jpg";
@@ -15,18 +16,6 @@ import instructor3 from "@/assets/instructor-3.jpg";
 import instructor4 from "@/assets/instructor-4.jpg";
 import courseBanner from "@/assets/course-banner.png";
 import { SEO } from "@/components/SEO";
-
-const typewriterWords = [
-  "Cloud Engineering",
-  "Software Engineering",
-  "Artificial Intelligence",
-  "Web Development",
-  "Cybersecurity",
-  "Data Science",
-  "DevOps",
-  "Product Design",
-  "UI/UX Design",
-];
 
 function useTypewriter(words: string[], speed = 80, pause = 2000) {
   const [text, setText] = useState("");
