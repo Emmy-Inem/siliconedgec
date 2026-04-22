@@ -67,6 +67,9 @@ import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import AdminLeadsHub from "./pages/admin/AdminLeadsHub";
 import CmsPagePublic from "./pages/CmsPage";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminCertificates from "./pages/admin/AdminCertificates";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 const queryClient = new QueryClient();
 
@@ -138,6 +141,9 @@ const App = () => (
                 <Route path="media" element={<AdminMedia />} />
                 <Route path="pages" element={<AdminPages />} />
                 <Route path="reviews" element={<AdminReviews />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="certificates" element={<AdminCertificates />} />
+                <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
 

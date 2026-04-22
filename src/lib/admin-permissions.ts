@@ -38,6 +38,9 @@ const ADMIN_ONLY_ROUTES = [
   "/admin/user-activity",
   "/admin/media",
   "/admin/leads-hub",
+  "/admin/orders",
+  "/admin/certificates",
+  "/admin/notifications",
 ];
 
 export function canAccessRoute(role: AdminRole, path: string): boolean {

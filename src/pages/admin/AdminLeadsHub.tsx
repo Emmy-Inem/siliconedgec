@@ -362,6 +362,44 @@ export default function AdminLeadsHub() {
           </div>
         )}
       </div>
+
+      <Dialog open={extractorOpen} onOpenChange={setExtractorOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2">
+              <AtSign className="h-5 w-5 text-primary" /> Email Extractor
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{uniqueEmails.length}</span> unique emails of {filtered.length} leads
+              </p>
+              <div className="flex items-center gap-2">
+                <Switch id="include-name" checked={includeName} onCheckedChange={setIncludeName} />
+                <Label htmlFor="include-name" className="text-xs cursor-pointer">Include name</Label>
+              </div>
+            </div>
+            <Textarea value={formattedEmails} readOnly rows={10} className="font-mono text-xs" />
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={copyEmails} disabled={uniqueEmails.length === 0}>
+                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+              </Button>
+              <Button size="sm" variant="outline" onClick={downloadEmails} disabled={uniqueEmails.length === 0}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download .txt
+              </Button>
+              <Button size="sm" variant="outline" onClick={openMailto} disabled={uniqueEmails.length === 0}>
+                <Mail className="h-3.5 w-3.5 mr-1.5" /> Open in mail client
+              </Button>
+            </div>
+            {uniqueEmails.length > 90 && (
+              <p className="text-[11px] text-muted-foreground">
+                Note: mailto links auto-chunk to 90 addresses per batch (browser URL limit). Use Copy or Download for larger lists.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
