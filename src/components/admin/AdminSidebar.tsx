@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
   FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -35,6 +35,7 @@ const sections = [
   {
     label: "Students & Leads",
     items: [
+      { label: "Leads & Enrollments Hub", href: "/admin/leads-hub", icon: Inbox },
       { label: "Students", href: "/admin/students", icon: Users },
       { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
       { label: "Webinar Registrations", href: "/admin/registrations", icon: ClipboardCheck },

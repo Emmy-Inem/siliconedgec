@@ -65,6 +65,8 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
+import AdminLeadsHub from "./pages/admin/AdminLeadsHub";
+import CmsPagePublic from "./pages/CmsPage";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,7 @@ const App = () => (
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
+              <Route path="/p/:slug" element={<CmsPagePublic />} />
 
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route index element={<AdminOverview />} />
@@ -121,6 +124,7 @@ const App = () => (
                 <Route path="qna" element={<AdminQnA />} />
                 <Route path="announcements" element={<AdminCourseAnnouncements />} />
                 <Route path="business-leads" element={<AdminBusinessLeads />} />
+                <Route path="leads-hub" element={<AdminLeadsHub />} />
                 <Route path="jobs" element={<AdminJobs />} />
                 <Route path="job-applications" element={<AdminJobApplications />} />
                 <Route path="chat" element={<AdminChat />} />
