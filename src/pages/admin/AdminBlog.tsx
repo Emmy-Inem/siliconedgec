@@ -59,7 +59,7 @@ export default function AdminBlog() {
     queryFn: async () => {
       const { data, error } = await (supabase.from("blog_posts" as any).select("*").order("created_at", { ascending: false }));
       if (error) throw error;
-      return data as Post[];
+      return (data as unknown) as Post[];
     },
   });
 
