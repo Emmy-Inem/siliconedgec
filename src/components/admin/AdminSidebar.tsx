@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
   FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck, Home as HomeIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -81,6 +81,7 @@ const sections = [
     items: [
       { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
       { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
+      { label: "Home Page Content", href: "/admin/home-content", icon: HomeIcon },
       { label: "Site Content", href: "/admin/content", icon: FileText },
       { label: "Blog Posts", href: "/admin/blog", icon: Newspaper },
       { label: "Pages", href: "/admin/pages", icon: FileEdit },
