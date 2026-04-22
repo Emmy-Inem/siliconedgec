@@ -122,7 +122,16 @@ const App = () => (
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
               <Route path="/p/:slug" element={<CmsPagePublic />} />
 
-              <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+              <Route
+                path="/admin"
+                element={
+                  <RequireAdmin>
+                    <Suspense fallback={<AdminFallback />}>
+                      <AdminLayout />
+                    </Suspense>
+                  </RequireAdmin>
+                }
+              >
                 <Route index element={<AdminOverview />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="courses" element={<AdminCourses />} />
