@@ -220,10 +220,10 @@ export default function Cart() {
                     size="lg"
                     className="w-full gap-2"
                     onClick={handleCheckout}
-                    disabled={enrolling}
+                    disabled={processing}
                   >
-                    {enrolling ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                    {enrolling ? "Processing..." : "Checkout"}
+                    {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                    {processing ? "Processing..." : "Checkout"}
                   </Button>
                 </div>
               </div>
@@ -231,17 +231,6 @@ export default function Cart() {
           )}
         </div>
       </section>
-
-      {paymentOpen && items.length > 0 && (
-        <PaymentModal
-          open={paymentOpen}
-          onOpenChange={setPaymentOpen}
-          courseId={items[0].course_id}
-          courseTitle={count === 1 ? `${count} course` : `${count} courses (paying one at a time)`}
-          price={total}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
-      )}
 
       <Footer />
       <WhatsAppFAB />
