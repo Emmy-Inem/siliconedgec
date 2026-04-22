@@ -50,7 +50,7 @@ const sections = [
     label: "Communication",
     items: [
       { label: "Announcements", href: "/admin/announcements", icon: Bell },
-      { label: "Notifications Composer", href: "/admin/notifications", icon: BellIcon },
+      { label: "Notifications Composer", href: "/admin/notifications", icon: BellRing },
       { label: "Email & Blasts", href: "/admin/email", icon: Mail },
       { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
       { label: "Live Classes", href: "/admin/live-classes", icon: Video },
