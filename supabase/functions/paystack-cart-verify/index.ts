@@ -71,6 +71,30 @@ Deno.serve(async (req) => {
     // Clear the user's cart for these courses
     await supabase.from("cart_items").delete().eq("user_id", userId).in("course_id", courseIds);
 
+    // Audit trail — one row per line item, attributed to the buying user (system verify)
+    try {
+      const total = orders.reduce((s: number, o: any) => s + Number(o.amount ?? 0), 0);
+      const rows = orders.map((o: any) => ({
+        admin_user_id: userId,
+        entity_type: "order",
+        entity_id: o.id,
+        action: "verify",
+        details: {
+          channel: "paystack",
+          checkout_type: "cart",
+          cart_reference: reference,
+          paystack_reference: psData.data.reference,
+          amount: Number(o.amount ?? 0),
+          cart_total: total,
+          currency: o.currency,
+          line_count: orders.length,
+          gateway_response: psData.data?.gateway_response,
+          ip: psData.data?.ip_address,
+        },
+      }));
+      await supabase.from("admin_activity_log").insert(rows);
+    } catch (e) { console.error("cart audit insert failed", e); }
+
     // Send enrollment confirmation email (best effort)
     try {
       const { data: { user: userRow } } = await supabase.auth.admin.getUserById(userId);
