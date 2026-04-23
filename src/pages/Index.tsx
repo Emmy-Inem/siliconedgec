@@ -287,9 +287,11 @@ export default function Index() {
                   {home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
-              </Button>
+              {!user && (
+                <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
+                  <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
+                </Button>
+              )}
             </motion.div>
 
             {/* Tech logos below CTA */}
