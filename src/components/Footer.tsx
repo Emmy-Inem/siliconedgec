@@ -1,16 +1,24 @@
 import { forwardRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, ArrowRight, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight, Facebook, Instagram, Linkedin, Youtube, Music2 } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const SOCIAL_ICONS: Record<string, typeof Facebook> = {
+// X (Twitter) inline SVG — Lucide doesn't ship the new X mark.
+const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M18.244 2H21l-6.52 7.45L22 22h-6.84l-4.78-6.24L4.8 22H2.04l6.97-7.96L2 2h6.96l4.32 5.71L18.244 2Zm-2.4 18h1.86L7.27 4H5.3l10.544 16Z" />
+  </svg>
+);
+
+const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   social_facebook: Facebook,
-  social_twitter: Twitter,
   social_instagram: Instagram,
   social_linkedin: Linkedin,
+  social_twitter: XIcon,
+  social_tiktok: Music2,
   social_youtube: Youtube,
 };
 
@@ -76,15 +84,15 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                {settings?.contact_address || "3rd floor, 86-90, Paul Street, London, EC2A 4NE"}
+                <span>{settings?.contact_address && settings.contact_address !== "UPDATE IN ADMIN SETTINGS" ? settings.contact_address : "3rd floor, 86-90, Paul Street, London, EC2A 4NE"}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                {settings?.contact_email || "info@siliconedgec.com"}
+                <a href={`mailto:${settings?.contact_email || "info@siliconedgec.com"}`} className="hover:text-primary transition-colors">{settings?.contact_email || "info@siliconedgec.com"}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                {settings?.contact_phone || "+447741247592"}
+                <a href={`tel:${(settings?.contact_phone && settings.contact_phone !== "UPDATE IN ADMIN SETTINGS") ? settings.contact_phone : "+447741247592"}`} className="hover:text-primary transition-colors">{(settings?.contact_phone && settings.contact_phone !== "UPDATE IN ADMIN SETTINGS") ? settings.contact_phone : "+447741247592"}</a>
               </li>
             </ul>
           </div>

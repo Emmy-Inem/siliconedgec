@@ -14,6 +14,7 @@ export interface SiteSettings {
   social_instagram: string;
   social_linkedin: string;
   social_youtube: string;
+  social_tiktok: string;
   footer_copyright: string;
   custom_head_script: string;
   custom_body_script: string;
@@ -32,6 +33,7 @@ const DEFAULTS: SiteSettings = {
   social_instagram: "",
   social_linkedin: "",
   social_youtube: "",
+  social_tiktok: "",
   footer_copyright: "",
   custom_head_script: "",
   custom_body_script: "",

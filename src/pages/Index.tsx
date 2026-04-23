@@ -9,6 +9,7 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoLight from "@/assets/logo-light.png";
@@ -103,6 +104,7 @@ const sectionReveal = {
 
 export default function Index() {
   const { data: home } = useHomeContent();
+  const { user } = useAuth();
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
     queryFn: async () => {
@@ -285,9 +287,11 @@ export default function Index() {
                   {home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
-              </Button>
+              {!user && (
+                <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
+                  <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
+                </Button>
+              )}
             </motion.div>
 
             {/* Tech logos below CTA */}
