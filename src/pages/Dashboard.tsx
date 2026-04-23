@@ -68,12 +68,13 @@ export default function Dashboard() {
   const [liveClasses, setLiveClasses] = useState<any[]>([]);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
+  const [webinarRegCourseIds, setWebinarRegCourseIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
-      const [enrollRes, profileRes, bookmarkRes, appsRes] = await Promise.all([
+      const [enrollRes, profileRes, bookmarkRes, appsRes, webinarRegRes] = await Promise.all([
         supabase
           .from("enrollments")
           .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours, price)")
@@ -90,6 +91,10 @@ export default function Dashboard() {
           .select("id, job_id, status, created_at, job:jobs(id, title, company, location)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
+        (supabase.from("course_registrations") as any)
+          .select("course_id")
+          .eq("user_id", user.id)
+          .eq("registration_type", "webinar"),
       ]);
 
       if (enrollRes.data) {
@@ -116,6 +121,9 @@ export default function Dashboard() {
             job: Array.isArray(a.job) ? a.job[0] : a.job,
           }))
         );
+      }
+      if (webinarRegRes?.data) {
+        setWebinarRegCourseIds(new Set((webinarRegRes.data as any[]).map((r) => r.course_id)));
       }
       // Load live classes for enrolled courses
       const enrolledIds = (enrollRes.data as any[] | null)?.map((e) => e.course_id) ?? [];
@@ -145,6 +153,7 @@ export default function Dashboard() {
   const isWebinar = (e: EnrolledCourse) =>
     (e.course?.price ?? 0) === 0 ||
     e.payment_status === "free" ||
+    webinarRegCourseIds.has(e.course_id) ||
     (e.course?.title ?? "").toUpperCase().startsWith("FREE");
   const webinars = enrollments.filter((e) => !e.is_completed && isWebinar(e));
   const inProgress = enrollments.filter((e) => !e.is_completed && !isWebinar(e));

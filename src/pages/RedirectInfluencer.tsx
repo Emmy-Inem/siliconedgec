@@ -18,15 +18,26 @@ export default function RedirectInfluencer() {
         .maybeSingle();
 
       if (data) {
-        // Store UTMs (saved per-promo, fall back to defaults)
-        const utm = {
-          utm_source: data.utm_source || data.influencer_name,
+        // Store UTMs in BOTH the legacy key and the unified key the rest of
+        // the app reads from (sec_utm_params via useUtmTracking).
+        const utmFlat = {
+          utm_source: (data.utm_source || data.influencer_name || "").toString(),
           utm_medium: data.utm_medium || "influencer",
           utm_campaign: data.utm_campaign || data.code,
           utm_content: data.utm_content || slug,
-          captured_at: new Date().toISOString(),
         };
-        localStorage.setItem("utm_attribution", JSON.stringify(utm));
+        localStorage.setItem(
+          "utm_attribution",
+          JSON.stringify({ ...utmFlat, captured_at: new Date().toISOString() }),
+        );
+        // Unified key with 30-day expiry (same shape useUtmTracking uses)
+        localStorage.setItem(
+          "sec_utm_params",
+          JSON.stringify({
+            value: utmFlat,
+            expiry: Date.now() + 30 * 24 * 60 * 60 * 1000,
+          }),
+        );
         sessionStorage.setItem("pending_promo", data.code);
       }
 

@@ -13,7 +13,6 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { trackLead } from "@/lib/track-lead";
-import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 
 export default function Cart() {
@@ -112,20 +111,9 @@ export default function Cart() {
       courseIds.push(item.course_id);
     }
 
-    // Track lead with UTM attribution
-    const utm = getStoredUtmParams();
+    // Track lead with UTM attribution (UTMs auto-attached by trackLead)
     for (const courseId of courseIds) {
-      await trackLead({
-        formType: "enrollment",
-        formData: {
-          courseId,
-          utm_source: utm.utm_source,
-          utm_medium: utm.utm_medium,
-          utm_campaign: utm.utm_campaign,
-          utm_content: utm.utm_content,
-          utm_term: utm.utm_term,
-        },
-      });
+      await trackLead({ formType: "enrollment", formData: { course_id: courseId } });
     }
 
     await clearCart();
