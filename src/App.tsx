@@ -24,6 +24,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import CourseLearning from "./pages/CourseLearning";
 import VerifyCertificate from "./pages/VerifyCertificate";
+import VerifyReceipt from "./pages/VerifyReceipt";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import RedirectInfluencer from "./pages/RedirectInfluencer";
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
+              <Route path="/verify-receipt/:reference" element={<VerifyReceipt />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
