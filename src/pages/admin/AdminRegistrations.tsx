@@ -23,6 +23,11 @@ type Reg = {
 };
 type Course = { id: string; title: string };
 type NoteRow = { id: string; note: string; created_at: string; author_id: string };
+type Referral = {
+  id: string; user_id: string; course_id: string; conversion_type: string;
+  utm_source: string | null; utm_medium: string | null; utm_campaign: string | null;
+  promo_codes: { code: string; influencer_name: string } | null;
+};
 
 const STATUSES = [
   { value: "new", label: "New", color: "bg-blue-500/15 text-blue-700 border-blue-500/30" },
@@ -38,6 +43,7 @@ export default function AdminRegistrations() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Reg[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCourse, setFilterCourse] = useState("all");
@@ -51,11 +57,13 @@ export default function AdminRegistrations() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: regs }, { data: cs }] = await Promise.all([
+    const [{ data: regs }, { data: cs }, { data: refs }] = await Promise.all([
       (supabase.from("course_registrations") as any).select("*").order("created_at", { ascending: false }),
       supabase.from("courses").select("id, title"),
+      (supabase.from("influencer_referrals") as any)
+        .select("id, user_id, course_id, conversion_type, utm_source, utm_medium, utm_campaign, promo_codes(code, influencer_name)"),
     ]);
-    setRows(regs ?? []); setCourses(cs ?? []); setLoading(false);
+    setRows(regs ?? []); setCourses(cs ?? []); setReferrals((refs as any) ?? []); setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
@@ -66,6 +74,10 @@ export default function AdminRegistrations() {
   useEffect(() => { if (editing) loadNotes(editing.id); else { setNotes([]); setNewNote(""); } }, [editing]);
 
   const courseTitle = (id: string) => courses.find((c) => c.id === id)?.title ?? "—";
+  const attributionFor = (r: Reg): Referral | null => {
+    if (!r.user_id) return null;
+    return referrals.find((x) => x.user_id === r.user_id && x.course_id === r.course_id) ?? null;
+  };
 
   const filtered = useMemo(() => rows.filter((r) => {
     if (filterCourse !== "all" && r.course_id !== filterCourse) return false;
