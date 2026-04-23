@@ -84,15 +84,15 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                {settings?.contact_address || "3rd floor, 86-90, Paul Street, London, EC2A 4NE"}
+                <span>{settings?.contact_address && settings.contact_address !== "UPDATE IN ADMIN SETTINGS" ? settings.contact_address : "3rd floor, 86-90, Paul Street, London, EC2A 4NE"}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                {settings?.contact_email || "info@siliconedgec.com"}
+                <a href={`mailto:${settings?.contact_email || "info@siliconedgec.com"}`} className="hover:text-primary transition-colors">{settings?.contact_email || "info@siliconedgec.com"}</a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                {settings?.contact_phone || "+447741247592"}
+                <a href={`tel:${(settings?.contact_phone && settings.contact_phone !== "UPDATE IN ADMIN SETTINGS") ? settings.contact_phone : "+447741247592"}`} className="hover:text-primary transition-colors">{(settings?.contact_phone && settings.contact_phone !== "UPDATE IN ADMIN SETTINGS") ? settings.contact_phone : "+447741247592"}</a>
               </li>
             </ul>
           </div>
