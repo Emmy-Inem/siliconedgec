@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Search, Loader2, MessageSquare, Trash2, Send } from "lucide-react";
+import { Search, Loader2, MessageSquare, Trash2, Send, HelpCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
@@ -68,9 +68,39 @@ export default function AdminQnA() {
   );
 
   return (
-    <div>
-      <h1 className="font-heading text-2xl font-bold mb-6">Q&A Moderation</h1>
-      <div className="relative mb-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-heading text-2xl font-bold">Q&A Moderation</h1>
+          <p className="text-sm text-muted-foreground mt-1">Answer student questions and remove spam</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">Total Questions</span>
+            <HelpCircle className="h-4 w-4 text-primary" />
+          </div>
+          <div className="text-2xl font-bold font-heading">{topLevel.length}</div>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">Replies</span>
+            <MessageCircle className="h-4 w-4 text-accent" />
+          </div>
+          <div className="text-2xl font-bold font-heading">{items.length - topLevel.length}</div>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">Unanswered</span>
+            <MessageSquare className="h-4 w-4 text-destructive" />
+          </div>
+          <div className="text-2xl font-bold font-heading">{topLevel.filter((q) => replies(q.id).length === 0).length}</div>
+        </div>
+      </div>
+
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input type="text" placeholder="Search questions..." value={search} onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
