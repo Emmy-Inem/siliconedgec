@@ -63,6 +63,7 @@ interface JobApplicationRow {
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const { data: siteSettings } = useSiteSettings();
+  const { data: publicAccess } = usePublicAccessMode();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [applications, setApplications] = useState<JobApplicationRow[]>([]);
@@ -148,7 +149,7 @@ export default function Dashboard() {
   };
 
   if (loading) return null;
-  if (!user) return <Navigate to="/sign-in" replace />;
+  if (!user && !publicAccess) return <Navigate to="/sign-in" replace />;
 
   const completed = enrollments.filter((e) => e.is_completed);
   const isWebinar = (e: EnrolledCourse) =>
