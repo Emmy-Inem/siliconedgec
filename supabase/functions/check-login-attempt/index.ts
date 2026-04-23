@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { email, success } = await req.json();
+    const { email, success, dry_run } = await req.json();
     if (typeof email !== "string" || typeof success !== "boolean") {
       return new Response(JSON.stringify({ error: "invalid input" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -32,8 +32,10 @@ Deno.serve(async (req) => {
       ipBlocked = !!data;
     } catch {}
 
-    // Log attempt
-    await supabase.from("login_attempts").insert({ email: cleanEmail, ip_address: ip, success, user_agent: ua });
+    // Log attempt (skip for dry-run pre-flight check)
+    if (!dry_run) {
+      await supabase.from("login_attempts").insert({ email: cleanEmail, ip_address: ip, success, user_agent: ua });
+    }
 
     return new Response(JSON.stringify({ locked: !!locked, ip_blocked: ipBlocked }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

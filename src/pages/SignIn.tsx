@@ -23,18 +23,36 @@ export default function SignIn() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    // Log attempt for brute-force protection (fire-and-forget)
-    supabase.functions.invoke("check-login-attempt", {
-      body: { email, success: !error },
-    }).then(({ data }) => {
-      if (data?.locked) {
+
+    // Pre-flight: check if this IP is blocked or under lockout BEFORE attempting auth
+    try {
+      const pre = await supabase.functions.invoke("check-login-attempt", {
+        body: { email, success: true, dry_run: true },
+      });
+      if (pre.data?.ip_blocked) {
+        setLoading(false);
+        toast({
+          title: "Access denied",
+          description: "Your network has been blocked. Contact support if this is a mistake.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (pre.data?.locked) {
+        setLoading(false);
         toast({
           title: "Too many failed attempts",
           description: "Please wait 15 minutes before trying again, or reset your password.",
           variant: "destructive",
         });
+        return;
       }
+    } catch {}
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Record outcome
+    supabase.functions.invoke("check-login-attempt", {
+      body: { email, success: !error },
     }).catch(() => {});
     setLoading(false);
     if (error) {

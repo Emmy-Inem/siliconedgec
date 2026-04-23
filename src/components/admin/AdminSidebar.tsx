@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
   CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
   FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck, Home as HomeIcon
+  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck, Home as HomeIcon, Monitor
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -93,6 +93,7 @@ const sections = [
     items: [
       { label: "Users & Roles", href: "/admin/users", icon: Users },
       { label: "Login Security", href: "/admin/login-security", icon: ShieldCheck },
+      { label: "Active Sessions", href: "/admin/sessions", icon: Monitor },
       { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
       { label: "User Activity", href: "/admin/user-activity", icon: UserCog },
       { label: "SEO Manager", href: "/admin/seo", icon: Search },
