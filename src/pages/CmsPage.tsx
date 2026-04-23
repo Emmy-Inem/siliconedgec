@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, FileText, Mail, Phone, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CmsPage {
   title: string;
   content: string | null;
   meta_description: string | null;
   status: string;
+  updated_at?: string;
 }
 
 export default function CmsPagePublic() {
@@ -22,7 +25,10 @@ export default function CmsPagePublic() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await (supabase.from("cms_pages" as any).select("title, content, meta_description, status").eq("slug", slug).eq("status", "published").maybeSingle());
+      setLoading(true);
+      setNotFound(false);
+      setPage(null);
+      const { data } = await (supabase.from("cms_pages" as any).select("title, content, meta_description, status, updated_at").eq("slug", slug).eq("status", "published").maybeSingle());
       if (!active) return;
       if (!data) setNotFound(true);
       else setPage(data as unknown as CmsPage);
@@ -31,29 +37,126 @@ export default function CmsPagePublic() {
     return () => { active = false; };
   }, [slug]);
 
+  const updatedLabel = page?.updated_at
+    ? new Date(page.updated_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <SEO title={page?.title ?? "Page"} description={page?.meta_description ?? undefined} />
       <Header />
-      <main className="min-h-[60vh] container mx-auto px-4 py-16 max-w-3xl">
+      <main className="flex-1">
         {loading ? (
-          <div className="flex justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+          <div className="flex justify-center items-center py-40">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         ) : notFound ? (
-          <div className="text-center py-24">
-            <h1 className="font-heading text-3xl font-bold mb-2">Page not found</h1>
-            <p className="text-muted-foreground mb-6">We couldn't find that page.</p>
-            <Link to="/" className="inline-flex items-center gap-2 text-primary hover:underline">
-              <ArrowLeft className="h-4 w-4" /> Back home
-            </Link>
+          <div className="container mx-auto px-4 py-32 text-center max-w-xl">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-6">
+              <FileText className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="font-heading text-3xl md:text-4xl font-bold mb-3">Page not found</h1>
+            <p className="text-muted-foreground mb-8">We couldn't find the page you're looking for. It may have been moved or unpublished.</p>
+            <Button asChild>
+              <Link to="/"><ArrowLeft className="h-4 w-4 mr-2" /> Back to home</Link>
+            </Button>
           </div>
         ) : page && (
-          <article className="prose prose-neutral dark:prose-invert max-w-none">
-            <h1 className="font-heading text-4xl font-bold mb-6">{page.title}</h1>
-            <div className="whitespace-pre-wrap text-base leading-relaxed">{page.content}</div>
-          </article>
+          <>
+            {/* Hero band */}
+            <section className="relative bg-hero overflow-hidden">
+              <div className="absolute inset-0 gradient-mesh" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.18),transparent_60%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.10),transparent_55%)]" />
+              <div className="container mx-auto px-4 pt-32 pb-16 md:pt-40 md:pb-24 relative">
+                <nav aria-label="Breadcrumb" className="mb-6 text-sm text-hero-muted">
+                  <Link to="/" className="hover:text-hero transition-colors">Home</Link>
+                  <span className="mx-2 opacity-50">/</span>
+                  <span className="text-hero">{page.title}</span>
+                </nav>
+                <p className="text-primary font-medium text-xs sm:text-sm tracking-[0.2em] uppercase mb-4">
+                  Silicon Edge Consulting
+                </p>
+                <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-hero leading-tight max-w-3xl">
+                  <span className="text-gradient">{page.title}</span>
+                  <span className="text-gold">.</span>
+                </h1>
+                {page.meta_description && (
+                  <p className="mt-6 text-hero-muted text-base sm:text-lg max-w-2xl leading-relaxed">
+                    {page.meta_description}
+                  </p>
+                )}
+                {updatedLabel && (
+                  <p className="mt-6 text-xs uppercase tracking-widest text-hero-muted/70">
+                    Last updated · {updatedLabel}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* Content */}
+            <section className="container mx-auto px-4 py-16 md:py-24">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 max-w-6xl mx-auto">
+                <article className="glass-card border border-border rounded-2xl p-6 sm:p-10 md:p-14 shadow-lg">
+                  <div className="prose prose-neutral dark:prose-invert max-w-none
+                                  prose-headings:font-heading
+                                  prose-h1:text-3xl prose-h1:md:text-4xl prose-h1:font-bold prose-h1:mb-6 prose-h1:mt-0
+                                  prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:font-bold prose-h2:mt-12 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-border
+                                  prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-3
+                                  prose-p:leading-relaxed prose-p:text-base
+                                  prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                                  prose-strong:text-foreground
+                                  prose-li:my-1
+                                  prose-ul:my-4 prose-ol:my-4
+                                  prose-hr:border-border">
+                    <ReactMarkdown>{page.content ?? ""}</ReactMarkdown>
+                  </div>
+                </article>
+
+                {/* Sidebar */}
+                <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+                  <div className="glass-card border border-border rounded-2xl p-6">
+                    <h3 className="font-heading font-semibold text-sm uppercase tracking-widest text-muted-foreground mb-4">
+                      Need to talk to us?
+                    </h3>
+                    <ul className="space-y-3 text-sm">
+                      <li className="flex items-start gap-3">
+                        <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span>3rd floor, 86–90 Paul Street, London, EC2A 4NE</span>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                        <a href="mailto:info@siliconedgec.com" className="hover:text-primary transition-colors break-all">info@siliconedgec.com</a>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                        <a href="tel:+447741247592" className="hover:text-primary transition-colors">+44 7741 247592</a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-2xl p-6 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
+                    <h3 className="font-heading font-semibold text-base mb-2">Ready to upskill?</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Browse live, instructor-led tech programs built for completion and real career outcomes.
+                    </p>
+                    <Button asChild size="sm" className="w-full">
+                      <Link to="/courses">Explore Courses</Link>
+                    </Button>
+                  </div>
+
+                  <div className="text-center">
+                    <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                      <ArrowLeft className="h-3.5 w-3.5" /> Back to home
+                    </Link>
+                  </div>
+                </aside>
+              </div>
+            </section>
+          </>
         )}
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
