@@ -9,6 +9,7 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoLight from "@/assets/logo-light.png";
@@ -103,6 +104,7 @@ const sectionReveal = {
 
 export default function Index() {
   const { data: home } = useHomeContent();
+  const { user } = useAuth();
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
     queryFn: async () => {
