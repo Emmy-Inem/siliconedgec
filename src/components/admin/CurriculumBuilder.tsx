@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList } from "lucide-react";
+import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Sparkles, FileText, Video, ListChecks } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 
@@ -159,7 +159,7 @@ export function CurriculumBuilder({ courseId }: Props) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="font-heading text-lg font-semibold">Curriculum</h2>
-          <p className="text-xs text-muted-foreground">Add modules, then lessons, quizzes, and assignments.</p>
+          <p className="text-xs text-muted-foreground">Build unlimited modules with lessons, quizzes, and assignments.</p>
         </div>
         <Button size="sm" onClick={() => { setEditingModule(null); setModuleTitle(""); setModuleDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-1" /> Add Module
@@ -219,14 +219,14 @@ export function CurriculumBuilder({ courseId }: Props) {
                   )}
 
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-border/60 mt-2">
-                    <Button size="sm" variant="outline" className="text-xs" onClick={() => openLessonDialog(mod.id, "video")}>
-                      <Plus className="h-3 w-3 mr-1" /> Lesson
+                    <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => openLessonDialog(mod.id, "video")}>
+                      <Video className="h-3 w-3" /> Lesson
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs" onClick={() => openLessonDialog(mod.id, "quiz")}>
-                      <Plus className="h-3 w-3 mr-1" /> Quiz
+                    <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => openLessonDialog(mod.id, "quiz")}>
+                      <FileQuestion className="h-3 w-3" /> Quiz
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs" onClick={() => openLessonDialog(mod.id, "assignment")}>
-                      <Plus className="h-3 w-3 mr-1" /> Assignment
+                    <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => openLessonDialog(mod.id, "assignment")}>
+                      <ClipboardList className="h-3 w-3" /> Assignment
                     </Button>
                     <div className="ml-auto flex gap-1">
                       <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setEditingModule(mod); setModuleTitle(mod.title); setModuleDialogOpen(true); }}>
