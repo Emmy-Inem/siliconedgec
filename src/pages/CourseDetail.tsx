@@ -428,16 +428,31 @@ export default function CourseDetail() {
                   </div>
 
                   {isEnrolled ? (
-                    <div className="space-y-2">
-                      <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
-                        <Link to="/dashboard">
-                          <CheckCircle2 className="h-4 w-4" /> Go to Dashboard
-                        </Link>
-                      </Button>
-                      <p className="text-xs text-center text-muted-foreground">
-                        ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
-                      </p>
-                    </div>
+                    (course.price === 0 || course.title.toUpperCase().startsWith("FREE")) ? (
+                      <div className="space-y-2">
+                        <Button
+                          size="lg"
+                          className="w-full gap-2 bg-green-600 hover:bg-green-600 text-white cursor-default"
+                          disabled
+                        >
+                          <CheckCircle2 className="h-4 w-4" /> Registered
+                        </Button>
+                        <Button size="sm" variant="link" className="w-full" asChild>
+                          <Link to="/dashboard">View in Dashboard →</Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
+                          <Link to="/dashboard">
+                            <CheckCircle2 className="h-4 w-4" /> Go to Dashboard
+                          </Link>
+                        </Button>
+                        <p className="text-xs text-center text-muted-foreground">
+                          ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
+                        </p>
+                      </div>
+                    )
                   ) : (course.price === 0 || course.title.toUpperCase().startsWith("FREE")) ? (
                     <div className="space-y-2">
                       <Button size="lg" className="w-full gap-2" onClick={() => setRegisterOpen(true)}>
