@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, Sparkles } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { QuizAIGenerator, AIQuestion } from "@/components/admin/QuizAIGenerator";
 
 interface Quiz {
   id: string;
@@ -79,6 +81,37 @@ export default function AdminQuizzes() {
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const saveQuizWithAI = useMutation({
+    mutationFn: async (questions: AIQuestion[]) => {
+      if (!form.title || !form.lesson_id) throw new Error("Provide a quiz title and lesson before saving AI questions");
+      const { data: quiz, error } = await supabase
+        .from("quizzes")
+        .insert({ title: form.title, lesson_id: form.lesson_id, passing_score: parseInt(form.passing_score) })
+        .select("id")
+        .single();
+      if (error) throw error;
+      const rows = questions
+        .filter((q) => q.question && q.options.length === 4 && q.correct_answer)
+        .map((q, i) => ({
+          quiz_id: quiz.id,
+          question_text: q.question,
+          options: q.options,
+          correct_answer: q.correct_answer,
+          order_index: i,
+        }));
+      if (rows.length > 0) {
+        const { error: qErr } = await supabase.from("quiz_questions").insert(rows);
+        if (qErr) throw qErr;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      setDialogOpen(false);
+      toast({ title: "AI quiz saved with questions" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const remove = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("quizzes").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); toast({ title: "Quiz deleted" }); },
@@ -136,9 +169,9 @@ export default function AdminQuizzes() {
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Quiz" : "Add Quiz"}</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <label className="text-sm font-medium block mb-1">Title</label>
               <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required className={inputClass} />
@@ -154,11 +187,42 @@ export default function AdminQuizzes() {
               <label className="text-sm font-medium block mb-1">Passing Score (%)</label>
               <input type="number" min="0" max="100" value={form.passing_score} onChange={(e) => setForm({ ...form, passing_score: e.target.value })} className={inputClass} />
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={save.isPending}>{save.isPending ? "Saving..." : "Save"}</Button>
-            </div>
-          </form>
+
+            {editing ? (
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
+                  {save.isPending ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            ) : (
+              <Tabs defaultValue="manual" className="pt-2 border-t border-border">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="manual">Manual</TabsTrigger>
+                  <TabsTrigger value="ai">
+                    <Sparkles className="h-3.5 w-3.5 mr-1" /> Generate with AI
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="manual" className="space-y-3 pt-3">
+                  <p className="text-xs text-muted-foreground">
+                    Save the quiz, then add questions one by one from the Q&A panel.
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
+                      {save.isPending ? "Saving..." : "Save Quiz"}
+                    </Button>
+                  </div>
+                </TabsContent>
+                <TabsContent value="ai" className="pt-3">
+                  <QuizAIGenerator
+                    defaultTopic={form.title}
+                    onAccept={(qs) => saveQuizWithAI.mutate(qs)}
+                  />
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
