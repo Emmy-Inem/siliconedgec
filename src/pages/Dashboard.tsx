@@ -142,13 +142,23 @@ export default function Dashboard() {
   if (!user) return <Navigate to="/sign-in" replace />;
 
   const completed = enrollments.filter((e) => e.is_completed);
-  const inProgress = enrollments.filter((e) => !e.is_completed);
+  const isWebinar = (e: EnrolledCourse) =>
+    (e.course?.price ?? 0) === 0 ||
+    e.payment_status === "free" ||
+    (e.course?.title ?? "").toUpperCase().startsWith("FREE");
+  const webinars = enrollments.filter((e) => !e.is_completed && isWebinar(e));
+  const inProgress = enrollments.filter((e) => !e.is_completed && !isWebinar(e));
   const avgProgress =
     enrollments.length > 0
       ? Math.round(enrollments.reduce((s, e) => s + (e.progress_percentage ?? 0), 0) / enrollments.length)
       : 0;
 
   const displayName = profile?.full_name || user.email?.split("@")[0] || "Student";
+  const whatsappUrl = (siteSettings as any)?.whatsapp_community_url || DEFAULT_WHATSAPP_COMMUNITY;
+  const nextLiveClassFor = (courseId: string) =>
+    liveClasses
+      .filter((lc) => lc.course_id === courseId && new Date(lc.scheduled_at) >= new Date())
+      .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
 
   return (
     <div className="min-h-screen bg-background">
