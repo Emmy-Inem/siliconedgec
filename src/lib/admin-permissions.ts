@@ -17,6 +17,10 @@ const MODERATOR_ROUTES = [
   "/admin/testimonials",
   "/admin/instructors",
   "/admin/live-classes",
+  "/admin/assessments",
+  "/admin/people",
+  "/admin/communication",
+  "/admin/content-hub",
 ];
 
 const ADMIN_ONLY_ROUTES = [
@@ -61,11 +65,9 @@ export function canAccessRoute(role: AdminRole, path: string): boolean {
 
 // Sidebar section labels that moderators can see
 const MODERATOR_SECTIONS = [
-  "Dashboard",
-  "Tutor LMS",
-  "Students & Leads",
-  "Communication",
-  "Content",
+  "Workspace",
+  "LMS",
+  "Engagement",
 ];
 
 export function getAccessibleSections(role: AdminRole) {

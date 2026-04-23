@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, BookOpen, Users, GraduationCap, MessageSquareQuote,
-  CreditCard, UserCheck, FileText, ArrowLeft, ChevronLeft, ChevronRight, Megaphone, BarChart3, Mail, Activity, Settings,
-  FolderTree, Tag, Route, HelpCircle, Bell, ClipboardCheck, Target, Menu, X, Briefcase, Video, Search, UserCog,
-  Star, Newspaper, Image as ImageIcon, FileEdit, Award, Inbox, BellRing, Receipt, ShoppingCart, Bookmark, Activity as ActivityIcon, Mail as MailIcon, ShieldCheck, Home as HomeIcon, Monitor
+  LayoutDashboard, BookOpen, Users, ArrowLeft, ChevronLeft, ChevronRight,
+  BarChart3, MessageSquare, ShoppingBag, Briefcase, FileText, Settings,
+  ClipboardCheck, Menu, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -15,90 +14,33 @@ import { getAccessibleSections } from "@/lib/admin-permissions";
 
 const sections = [
   {
-    label: "Dashboard",
+    label: "Workspace",
     items: [
       { label: "Overview", href: "/admin", icon: LayoutDashboard },
       { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
     ],
   },
   {
-    label: "Tutor LMS",
+    label: "LMS",
     items: [
-      { label: "Learning Paths", href: "/admin/paths", icon: Route },
-      { label: "Products (Courses)", href: "/admin/courses", icon: BookOpen },
-      { label: "Categories", href: "/admin/categories", icon: FolderTree },
-      { label: "Tags", href: "/admin/tags", icon: Tag },
-      { label: "Brands", href: "/admin/brands", icon: Award },
-      { label: "Reviews", href: "/admin/reviews", icon: Star },
-      { label: "Certificates", href: "/admin/certificates", icon: Award },
-      { label: "Course Health", href: "/admin/course-health", icon: ActivityIcon },
+      { label: "Courses", href: "/admin/courses", icon: BookOpen },
+      { label: "Assessments", href: "/admin/assessments", icon: ClipboardCheck },
+      { label: "People", href: "/admin/people", icon: Users },
     ],
   },
   {
-    label: "Students & Leads",
+    label: "Engagement",
     items: [
-      { label: "Leads & Enrollments Hub", href: "/admin/leads-hub", icon: Inbox },
-      { label: "Students", href: "/admin/students", icon: Users },
-      { label: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
-      { label: "Webinar Registrations", href: "/admin/registrations", icon: ClipboardCheck },
-      { label: "Business Leads", href: "/admin/business-leads", icon: Briefcase },
-      { label: "Wishlist Insights", href: "/admin/wishlist", icon: Bookmark },
-      { label: "Quizzes", href: "/admin/quizzes", icon: ClipboardCheck },
-      { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: ClipboardCheck },
-      { label: "Q&A", href: "/admin/qna", icon: HelpCircle },
+      { label: "Communication", href: "/admin/communication", icon: MessageSquare },
+      { label: "Commerce", href: "/admin/commerce", icon: ShoppingBag },
+      { label: "Jobs", href: "/admin/jobs-hub", icon: Briefcase },
     ],
   },
   {
-    label: "Communication",
+    label: "Platform",
     items: [
-      { label: "Announcements", href: "/admin/announcements", icon: Bell },
-      { label: "Notifications Composer", href: "/admin/notifications", icon: BellRing },
-      { label: "Email & Blasts", href: "/admin/email", icon: Mail },
-      { label: "Email Templates", href: "/admin/email-templates", icon: MailIcon },
-      { label: "Live Chat", href: "/admin/chat", icon: MessageSquareQuote },
-      { label: "Live Classes", href: "/admin/live-classes", icon: Video },
-    ],
-  },
-  {
-    label: "Commerce",
-    items: [
-      { label: "Orders & Payments", href: "/admin/orders", icon: Receipt },
-      { label: "Cart Abandonment", href: "/admin/cart-abandonment", icon: ShoppingCart },
-      { label: "Marketing Analytics", href: "/admin/marketing", icon: Target },
-      { label: "Influencer Marketing", href: "/admin/influencers-marketing", icon: Megaphone },
-      { label: "Pricing Plans", href: "/admin/pricing", icon: CreditCard },
-    ],
-  },
-  {
-    label: "Jobs",
-    items: [
-      { label: "Job Listings", href: "/admin/jobs", icon: Briefcase },
-      { label: "Applications", href: "/admin/job-applications", icon: Users },
-    ],
-  },
-  {
-    label: "Content",
-    items: [
-      { label: "Instructors", href: "/admin/instructors", icon: UserCheck },
-      { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
-      { label: "Home Page Content", href: "/admin/home-content", icon: HomeIcon },
-      { label: "Site Content", href: "/admin/content", icon: FileText },
-      { label: "Blog Posts", href: "/admin/blog", icon: Newspaper },
-      { label: "Pages", href: "/admin/pages", icon: FileEdit },
-      { label: "Media Library", href: "/admin/media", icon: ImageIcon },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { label: "Users & Roles", href: "/admin/users", icon: Users },
-      { label: "Login Security", href: "/admin/login-security", icon: ShieldCheck },
-      { label: "Active Sessions", href: "/admin/sessions", icon: Monitor },
-      { label: "Activity Log", href: "/admin/activity-log", icon: Activity },
-      { label: "User Activity", href: "/admin/user-activity", icon: UserCog },
-      { label: "SEO Manager", href: "/admin/seo", icon: Search },
-      { label: "Custom Scripts", href: "/admin/custom-scripts", icon: FileText },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
+      { label: "Content", href: "/admin/content-hub", icon: FileText },
+      { label: "System", href: "/admin/system", icon: Settings },
     ],
   },
 ];
