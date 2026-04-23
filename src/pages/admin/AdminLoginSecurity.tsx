@@ -276,6 +276,38 @@ export default function AdminLoginSecurity() {
         </CardContent>
       </Card>
 
+      {/* Public Access Mode toggle — lets visitors browse without signing in */}
+      <Card className={publicAccess ? "border-amber-500/40 bg-amber-500/5" : "border-border"}>
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Eye className={`h-5 w-5 mt-0.5 ${publicAccess ? "text-amber-500" : "text-muted-foreground"}`} />
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    Public Access Mode
+                    {publicAccess && <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-600 dark:text-amber-400">ACTIVE</Badge>}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    When ON, visitors can view Dashboard and course pages without signing in. Admin area always stays protected. Checkout still requires sign-in.
+                  </p>
+                </div>
+                <Switch
+                  checked={publicAccess}
+                  disabled={togglePublicAccess.isPending}
+                  onCheckedChange={(v) => togglePublicAccess.mutate(v)}
+                />
+              </div>
+              {publicAccess && (
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3 w-3" /> Remember to turn this OFF when public testing is done.
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
         <Stat icon={CheckCircle2} label="Successful" value={stats.successful} />
         <Stat icon={XCircle} label="Failed" value={stats.failed} accent="text-destructive" />
