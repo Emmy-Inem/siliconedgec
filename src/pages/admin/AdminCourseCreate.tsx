@@ -263,6 +263,30 @@ export default function AdminCourseCreate() {
     return true;
   };
 
+  // When advancing past Basics on a NEW course, auto-create a draft so the
+  // Curriculum step has a courseId to attach modules/lessons to.
+  const handleNext = async () => {
+    if (step === 0 && !isEditing) {
+      try {
+        const payload = buildPayload("draft");
+        const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
+        if (error) throw error;
+        if (form.tag_ids.length > 0) {
+          await supabase.from("course_tags").insert(form.tag_ids.map((tag_id) => ({ course_id: data.id, tag_id })));
+        }
+        await logAdminActivity("create", "course", data.id, { title: form.title });
+        toast({ title: "Draft saved", description: "You can now build the curriculum." });
+        navigate(`/admin/courses/${data.id}/edit`, { replace: true });
+        setStep(1);
+        return;
+      } catch (e: any) {
+        toast({ title: "Could not save draft", description: e.message, variant: "destructive" });
+        return;
+      }
+    }
+    setStep((s) => s + 1);
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
