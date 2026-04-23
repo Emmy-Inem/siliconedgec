@@ -99,6 +99,7 @@ export function LiveChat() {
   };
 
   if (!user) return null;
+  if (onAdminRoute) return null;
 
   return (
     <>

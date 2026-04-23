@@ -54,7 +54,7 @@ export default function AdminLayout() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="flex-1 overflow-auto p-3 sm:p-6 pb-20 md:pb-6"
+          className="flex-1 overflow-auto scrollbar-hover-only p-3 sm:p-6 pb-24 md:pb-6"
         >
           <Outlet />
         </motion.main>
