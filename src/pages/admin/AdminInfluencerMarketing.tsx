@@ -562,7 +562,7 @@ export default function AdminInfluencerMarketing() {
         <TabsContent value="leaderboard">
           <Card>
             <CardHeader>
-              <CardTitle className="font-heading text-lg">Top Influencers by Revenue</CardTitle>
+              <CardTitle className="font-heading text-lg">Top Influencers by Conversions</CardTitle>
             </CardHeader>
             <CardContent>
               {promoCodes.length === 0 ? (
@@ -570,7 +570,19 @@ export default function AdminInfluencerMarketing() {
               ) : (
                 <div className="space-y-3">
                   {[...promoCodes]
-                    .sort((a: any, b: any) => Number(b.revenue_generated) - Number(a.revenue_generated))
+                    .map((pc: any) => {
+                      const rs = referrals.filter((r: any) => r.promo_code_id === pc.id);
+                      return {
+                        ...pc,
+                        webinar_count: rs.filter((r: any) => r.conversion_type === "webinar_registration").length,
+                        paid_count: rs.filter((r: any) => r.conversion_type === "paid_enrollment").length,
+                        commission_total: rs.reduce((s: number, r: any) => s + Number(r.commission_earned || 0), 0),
+                      };
+                    })
+                    .sort((a: any, b: any) =>
+                      Number(b.revenue_generated) - Number(a.revenue_generated) ||
+                      (b.paid_count + b.webinar_count) - (a.paid_count + a.webinar_count)
+                    )
                     .slice(0, 10)
                     .map((pc: any, i: number) => (
                       <div key={pc.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
@@ -583,7 +595,9 @@ export default function AdminInfluencerMarketing() {
                         </div>
                         <div className="text-right">
                           <p className="font-heading font-bold text-sm">${Number(pc.revenue_generated).toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">{pc.usage_count} uses</p>
+                          <p className="text-xs text-muted-foreground">
+                            {pc.paid_count} paid · {pc.webinar_count} webinar
+                          </p>
                         </div>
                       </div>
                     ))}
