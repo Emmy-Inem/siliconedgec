@@ -53,6 +53,15 @@ export default function AdminOrders() {
     queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
   });
 
+  const { data: orderReferrals = [] } = useQuery({
+    queryKey: ["admin-orders-referrals"],
+    queryFn: async () => {
+      const { data } = await (supabase.from("influencer_referrals") as any)
+        .select("order_id, utm_source, utm_campaign, promo_codes(code, influencer_name)");
+      return data ?? [];
+    },
+  });
+
   // Audit trail — verify + refund events from admin_activity_log
   const { data: auditLog = [], isLoading: auditLoading } = useQuery({
     queryKey: ["admin-orders-audit"],
@@ -70,6 +79,7 @@ export default function AdminOrders() {
 
   const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
   const profileName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? "Guest";
+  const referralFor = (orderId: string) => orderReferrals.find((r: any) => r.order_id === orderId);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
