@@ -84,6 +84,7 @@ const AdminWishlistInsights = lazy(() => import("./pages/admin/AdminWishlistInsi
 const AdminCourseHealth = lazy(() => import("./pages/admin/AdminCourseHealth"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
+const AdminSessions = lazy(() => import("./pages/admin/AdminSessions"));
 
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
@@ -178,6 +179,7 @@ const App = () => (
                 <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="cart-abandonment" element={<AdminCartAbandonment />} />
                 <Route path="login-security" element={<AdminLoginSecurity />} />
+                <Route path="sessions" element={<AdminSessions />} />
                 <Route path="wishlist" element={<AdminWishlistInsights />} />
                 <Route path="course-health" element={<AdminCourseHealth />} />
                 <Route path="email-templates" element={<AdminEmailTemplates />} />

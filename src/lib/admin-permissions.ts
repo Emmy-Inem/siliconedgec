@@ -43,6 +43,7 @@ const ADMIN_ONLY_ROUTES = [
   "/admin/notifications",
   "/admin/cart-abandonment",
   "/admin/login-security",
+  "/admin/sessions",
   "/admin/wishlist",
   "/admin/course-health",
   "/admin/email-templates",
