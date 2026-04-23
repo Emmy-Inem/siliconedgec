@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -87,6 +87,17 @@ const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates
 const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
 const AdminSessions = lazy(() => import("./pages/admin/AdminSessions"));
 
+// Hub pages (consolidated tabbed views)
+const AdminAnalyticsHub = lazy(() => import("./pages/admin/hubs/AdminAnalyticsHub"));
+const AdminCoursesHub = lazy(() => import("./pages/admin/hubs/AdminCoursesHub"));
+const AdminPeopleHub = lazy(() => import("./pages/admin/hubs/AdminPeopleHub"));
+const AdminAssessmentsHub = lazy(() => import("./pages/admin/hubs/AdminAssessmentsHub"));
+const AdminCommunicationHub = lazy(() => import("./pages/admin/hubs/AdminCommunicationHub"));
+const AdminCommerceHub = lazy(() => import("./pages/admin/hubs/AdminCommerceHub"));
+const AdminJobsHub = lazy(() => import("./pages/admin/hubs/AdminJobsHub"));
+const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"));
+const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
+
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -137,55 +148,76 @@ const App = () => (
                 }
               >
                 <Route index element={<AdminOverview />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="courses" element={<AdminCourses />} />
+
+                {/* Hub routes (primary) */}
+                <Route path="analytics" element={<AdminAnalyticsHub />} />
+                <Route path="courses" element={<AdminCoursesHub />} />
+                <Route path="people" element={<AdminPeopleHub />} />
+                <Route path="assessments" element={<AdminAssessmentsHub />} />
+                <Route path="communication" element={<AdminCommunicationHub />} />
+                <Route path="commerce" element={<AdminCommerceHub />} />
+                <Route path="jobs-hub" element={<AdminJobsHub />} />
+                <Route path="content-hub" element={<AdminContentHub />} />
+                <Route path="system" element={<AdminSystemHub />} />
+
+                {/* Course builder & module editor (standalone wizard) */}
                 <Route path="courses/new" element={<AdminCourseCreate />} />
                 <Route path="courses/:courseId/edit" element={<AdminCourseCreate />} />
                 <Route path="courses/:courseId/modules" element={<AdminCourseModules />} />
-                <Route path="instructors" element={<AdminInstructors />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="enrollments" element={<AdminEnrollments />} />
-                <Route path="testimonials" element={<AdminTestimonials />} />
-                <Route path="pricing" element={<AdminPricing />} />
-                <Route path="content" element={<AdminSiteContent />} />
-                <Route path="influencers-marketing" element={<AdminInfluencerMarketing />} />
-                <Route path="marketing" element={<AdminMarketingAnalytics />} />
-                <Route path="email" element={<AdminEmail />} />
-                <Route path="activity-log" element={<AdminActivityLog />} />
-                <Route path="categories" element={<AdminCategories />} />
-                <Route path="tags" element={<AdminTags />} />
-                <Route path="paths" element={<AdminLearningPaths />} />
-                <Route path="students" element={<AdminStudents />} />
-                <Route path="quizzes" element={<AdminQuizzes />} />
-                <Route path="quiz-attempts" element={<AdminQuizAttempts />} />
-                <Route path="qna" element={<AdminQnA />} />
-                <Route path="announcements" element={<AdminCourseAnnouncements />} />
-                <Route path="business-leads" element={<AdminBusinessLeads />} />
-                <Route path="leads-hub" element={<AdminLeadsHub />} />
-                <Route path="jobs" element={<AdminJobs />} />
-                <Route path="job-applications" element={<AdminJobApplications />} />
-                <Route path="chat" element={<AdminChat />} />
-                <Route path="custom-scripts" element={<AdminCustomScripts />} />
-                <Route path="live-classes" element={<AdminLiveClasses />} />
-                <Route path="registrations" element={<AdminRegistrations />} />
-                <Route path="seo" element={<AdminSEO />} />
-                <Route path="user-activity" element={<AdminUserActivity />} />
-                <Route path="brands" element={<AdminBrands />} />
-                <Route path="blog" element={<AdminBlog />} />
-                <Route path="media" element={<AdminMedia />} />
-                <Route path="pages" element={<AdminPages />} />
-                <Route path="reviews" element={<AdminReviews />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="certificates" element={<AdminCertificates />} />
-                <Route path="notifications" element={<AdminNotifications />} />
-                <Route path="cart-abandonment" element={<AdminCartAbandonment />} />
-                <Route path="login-security" element={<AdminLoginSecurity />} />
-                <Route path="sessions" element={<AdminSessions />} />
-                <Route path="wishlist" element={<AdminWishlistInsights />} />
-                <Route path="course-health" element={<AdminCourseHealth />} />
-                <Route path="email-templates" element={<AdminEmailTemplates />} />
-                <Route path="home-content" element={<AdminHomeContent />} />
-                <Route path="settings" element={<AdminSettings />} />
+
+                {/* Legacy redirects → hub + tab */}
+                <Route path="categories" element={<Navigate to="/admin/courses?tab=categories" replace />} />
+                <Route path="tags" element={<Navigate to="/admin/courses?tab=tags" replace />} />
+                <Route path="brands" element={<Navigate to="/admin/courses?tab=brands" replace />} />
+                <Route path="paths" element={<Navigate to="/admin/courses?tab=paths" replace />} />
+                <Route path="reviews" element={<Navigate to="/admin/courses?tab=reviews" replace />} />
+                <Route path="certificates" element={<Navigate to="/admin/courses?tab=certificates" replace />} />
+                <Route path="instructors" element={<Navigate to="/admin/courses?tab=instructors" replace />} />
+
+                <Route path="leads-hub" element={<Navigate to="/admin/people?tab=leads-hub" replace />} />
+                <Route path="students" element={<Navigate to="/admin/people?tab=students" replace />} />
+                <Route path="enrollments" element={<Navigate to="/admin/people?tab=enrollments" replace />} />
+                <Route path="registrations" element={<Navigate to="/admin/people?tab=registrations" replace />} />
+                <Route path="business-leads" element={<Navigate to="/admin/people?tab=business-leads" replace />} />
+                <Route path="qna" element={<Navigate to="/admin/people?tab=qna" replace />} />
+
+                <Route path="quizzes" element={<Navigate to="/admin/assessments?tab=quizzes" replace />} />
+                <Route path="quiz-attempts" element={<Navigate to="/admin/assessments?tab=attempts" replace />} />
+
+                <Route path="announcements" element={<Navigate to="/admin/communication?tab=announcements" replace />} />
+                <Route path="notifications" element={<Navigate to="/admin/communication?tab=notifications" replace />} />
+                <Route path="live-classes" element={<Navigate to="/admin/communication?tab=live-classes" replace />} />
+                <Route path="chat" element={<Navigate to="/admin/communication?tab=chat" replace />} />
+                <Route path="email" element={<Navigate to="/admin/communication?tab=email" replace />} />
+                <Route path="email-templates" element={<Navigate to="/admin/communication?tab=email-templates" replace />} />
+
+                <Route path="orders" element={<Navigate to="/admin/commerce?tab=orders" replace />} />
+                <Route path="pricing" element={<Navigate to="/admin/commerce?tab=pricing" replace />} />
+                <Route path="cart-abandonment" element={<Navigate to="/admin/commerce?tab=cart-abandonment" replace />} />
+                <Route path="influencers-marketing" element={<Navigate to="/admin/commerce?tab=influencers" replace />} />
+                <Route path="marketing" element={<Navigate to="/admin/analytics?tab=marketing" replace />} />
+
+                <Route path="jobs" element={<Navigate to="/admin/jobs-hub?tab=listings" replace />} />
+                <Route path="job-applications" element={<Navigate to="/admin/jobs-hub?tab=applications" replace />} />
+
+                <Route path="home-content" element={<Navigate to="/admin/content-hub?tab=home" replace />} />
+                <Route path="content" element={<Navigate to="/admin/content-hub?tab=site" replace />} />
+                <Route path="pages" element={<Navigate to="/admin/content-hub?tab=pages" replace />} />
+                <Route path="blog" element={<Navigate to="/admin/content-hub?tab=blog" replace />} />
+                <Route path="testimonials" element={<Navigate to="/admin/content-hub?tab=testimonials" replace />} />
+                <Route path="media" element={<Navigate to="/admin/content-hub?tab=media" replace />} />
+
+                <Route path="users" element={<Navigate to="/admin/system?tab=users" replace />} />
+                <Route path="settings" element={<Navigate to="/admin/system?tab=settings" replace />} />
+                <Route path="login-security" element={<Navigate to="/admin/system?tab=login-security" replace />} />
+                <Route path="sessions" element={<Navigate to="/admin/system?tab=sessions" replace />} />
+                <Route path="activity-log" element={<Navigate to="/admin/system?tab=activity-log" replace />} />
+                <Route path="seo" element={<Navigate to="/admin/system?tab=seo" replace />} />
+                <Route path="custom-scripts" element={<Navigate to="/admin/system?tab=custom-scripts" replace />} />
+
+                <Route path="course-health" element={<Navigate to="/admin/analytics?tab=course-health" replace />} />
+                <Route path="user-activity" element={<Navigate to="/admin/analytics?tab=user-activity" replace />} />
+                <Route path="wishlist" element={<Navigate to="/admin/analytics?tab=wishlist" replace />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

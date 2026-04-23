@@ -26,7 +26,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="h-screen overflow-hidden flex w-full bg-background">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-card/80 backdrop-blur-sm shrink-0 sticky top-0 z-10">

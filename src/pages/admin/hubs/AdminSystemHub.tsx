@@ -1,0 +1,26 @@
+import { HubShell } from "./HubShell";
+import AdminUsers from "../AdminUsers";
+import AdminSettings from "../AdminSettings";
+import AdminLoginSecurity from "../AdminLoginSecurity";
+import AdminSessions from "../AdminSessions";
+import AdminActivityLog from "../AdminActivityLog";
+import AdminSEO from "../AdminSEO";
+import AdminCustomScripts from "../AdminCustomScripts";
+
+export default function AdminSystemHub() {
+  return (
+    <HubShell
+      title="System"
+      description="Users, security, SEO and platform settings"
+      tabs={[
+        { value: "users", label: "Users & Roles", content: <AdminUsers /> },
+        { value: "settings", label: "Settings", content: <AdminSettings /> },
+        { value: "login-security", label: "Login Security", content: <AdminLoginSecurity /> },
+        { value: "sessions", label: "Active Sessions", content: <AdminSessions /> },
+        { value: "activity-log", label: "Activity Log", content: <AdminActivityLog /> },
+        { value: "seo", label: "SEO", content: <AdminSEO /> },
+        { value: "custom-scripts", label: "Custom Scripts", content: <AdminCustomScripts /> },
+      ]}
+    />
+  );
+}
