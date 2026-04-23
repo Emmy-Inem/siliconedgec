@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -86,6 +86,17 @@ const AdminCourseHealth = lazy(() => import("./pages/admin/AdminCourseHealth"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
 const AdminSessions = lazy(() => import("./pages/admin/AdminSessions"));
+
+// Hub pages (consolidated tabbed views)
+const AdminAnalyticsHub = lazy(() => import("./pages/admin/hubs/AdminAnalyticsHub"));
+const AdminCoursesHub = lazy(() => import("./pages/admin/hubs/AdminCoursesHub"));
+const AdminPeopleHub = lazy(() => import("./pages/admin/hubs/AdminPeopleHub"));
+const AdminAssessmentsHub = lazy(() => import("./pages/admin/hubs/AdminAssessmentsHub"));
+const AdminCommunicationHub = lazy(() => import("./pages/admin/hubs/AdminCommunicationHub"));
+const AdminCommerceHub = lazy(() => import("./pages/admin/hubs/AdminCommerceHub"));
+const AdminJobsHub = lazy(() => import("./pages/admin/hubs/AdminJobsHub"));
+const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"));
+const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
 
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
