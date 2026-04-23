@@ -23,6 +23,11 @@ type Reg = {
 };
 type Course = { id: string; title: string };
 type NoteRow = { id: string; note: string; created_at: string; author_id: string };
+type Referral = {
+  id: string; user_id: string; course_id: string; conversion_type: string;
+  utm_source: string | null; utm_medium: string | null; utm_campaign: string | null;
+  promo_codes: { code: string; influencer_name: string } | null;
+};
 
 const STATUSES = [
   { value: "new", label: "New", color: "bg-blue-500/15 text-blue-700 border-blue-500/30" },
@@ -38,6 +43,7 @@ export default function AdminRegistrations() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Reg[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCourse, setFilterCourse] = useState("all");
@@ -51,11 +57,13 @@ export default function AdminRegistrations() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: regs }, { data: cs }] = await Promise.all([
+    const [{ data: regs }, { data: cs }, { data: refs }] = await Promise.all([
       (supabase.from("course_registrations") as any).select("*").order("created_at", { ascending: false }),
       supabase.from("courses").select("id, title"),
+      (supabase.from("influencer_referrals") as any)
+        .select("id, user_id, course_id, conversion_type, utm_source, utm_medium, utm_campaign, promo_codes(code, influencer_name)"),
     ]);
-    setRows(regs ?? []); setCourses(cs ?? []); setLoading(false);
+    setRows(regs ?? []); setCourses(cs ?? []); setReferrals((refs as any) ?? []); setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
@@ -66,6 +74,10 @@ export default function AdminRegistrations() {
   useEffect(() => { if (editing) loadNotes(editing.id); else { setNotes([]); setNewNote(""); } }, [editing]);
 
   const courseTitle = (id: string) => courses.find((c) => c.id === id)?.title ?? "—";
+  const attributionFor = (r: Reg): Referral | null => {
+    if (!r.user_id) return null;
+    return referrals.find((x) => x.user_id === r.user_id && x.course_id === r.course_id) ?? null;
+  };
 
   const filtered = useMemo(() => rows.filter((r) => {
     if (filterCourse !== "all" && r.course_id !== filterCourse) return false;
@@ -194,15 +206,16 @@ export default function AdminRegistrations() {
               <TableRow>
                 <TableHead className="w-10"><Checkbox checked={selected.size > 0 && selected.size === filtered.length} onCheckedChange={toggleAll} /></TableHead>
                 <TableHead>Name</TableHead><TableHead>Contact</TableHead><TableHead>Course</TableHead>
-                <TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Updated</TableHead>
+                <TableHead>Type</TableHead><TableHead>Source</TableHead><TableHead>Status</TableHead><TableHead>Updated</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No registrations match your filters.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No registrations match your filters.</TableCell></TableRow>
               ) : filtered.map((r) => {
                 const sm = statusMeta(r.status);
+                const attr = attributionFor(r);
                 return (
                   <TableRow key={r.id} className={selected.has(r.id) ? "bg-primary/5" : ""}>
                     <TableCell><Checkbox checked={selected.has(r.id)} onCheckedChange={() => toggleSelect(r.id)} /></TableCell>
@@ -216,6 +229,23 @@ export default function AdminRegistrations() {
                     </TableCell>
                     <TableCell className="text-xs max-w-[180px] truncate">{courseTitle(r.course_id)}</TableCell>
                     <TableCell><Badge variant="outline" className="capitalize">{r.registration_type}</Badge></TableCell>
+                    <TableCell>
+                      {attr ? (
+                        <div className="text-xs">
+                          <div className="font-medium text-primary">
+                            {attr.promo_codes?.influencer_name ?? attr.utm_source ?? "UTM"}
+                          </div>
+                          {attr.promo_codes?.code && (
+                            <div className="text-[10px] text-muted-foreground font-mono">{attr.promo_codes.code}</div>
+                          )}
+                          {!attr.promo_codes && attr.utm_campaign && (
+                            <div className="text-[10px] text-muted-foreground">{attr.utm_campaign}</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Direct</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Select value={r.status} onValueChange={(v) => updateStatus(r.id, v)}>
                         <SelectTrigger className={`h-8 w-36 text-xs border ${sm.color}`}><SelectValue /></SelectTrigger>

@@ -143,6 +143,8 @@ export default function AdminInfluencerMarketing() {
   const totalUses = promoCodes.reduce((s: number, p: any) => s + (p.usage_count || 0), 0);
   const activeCount = promoCodes.filter((p: any) => p.is_active).length;
   const totalCommission = referrals.reduce((s: number, r: any) => s + Number(r.commission_earned || 0), 0);
+  const webinarRegs = referrals.filter((r: any) => r.conversion_type === "webinar_registration").length;
+  const paidConvs = referrals.filter((r: any) => r.conversion_type === "paid_enrollment").length;
 
   // Mutations
   const createPromo = useMutation({
@@ -394,9 +396,10 @@ export default function AdminInfluencerMarketing() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard icon={Ticket} label="Active Codes" value={activeCount} />
-        <StatCard icon={Users} label="Total Uses" value={totalUses} />
+        <StatCard icon={Users} label="Webinar Regs" value={webinarRegs} />
+        <StatCard icon={Users} label="Paid Conversions" value={paidConvs} />
         <StatCard icon={DollarSign} label="Revenue Generated" value={`$${totalRevenue.toLocaleString()}`} />
         <StatCard icon={TrendingUp} label="Commission Owed" value={`$${totalCommission.toLocaleString()}`} />
       </div>
@@ -505,6 +508,7 @@ export default function AdminInfluencerMarketing() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Promo Code</TableHead>
                       <TableHead>Influencer</TableHead>
                       <TableHead>Course</TableHead>
@@ -518,8 +522,28 @@ export default function AdminInfluencerMarketing() {
                     {referrals.map((r: any) => (
                       <TableRow key={r.id}>
                         <TableCell className="text-sm">{format(new Date(r.created_at), "MMM d, yyyy")}</TableCell>
-                        <TableCell className="font-mono font-semibold text-primary text-sm">{r.promo_codes?.code}</TableCell>
-                        <TableCell className="text-sm">{r.promo_codes?.influencer_name}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              r.conversion_type === "paid_enrollment"
+                                ? "text-[10px] bg-green-100 text-green-700 border-green-200"
+                                : r.conversion_type === "webinar_registration"
+                                ? "text-[10px] bg-blue-100 text-blue-700 border-blue-200"
+                                : "text-[10px]"
+                            }
+                          >
+                            {r.conversion_type === "paid_enrollment"
+                              ? "Paid"
+                              : r.conversion_type === "webinar_registration"
+                              ? "Webinar"
+                              : "Free"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono font-semibold text-primary text-sm">
+                          {r.promo_codes?.code ?? <span className="text-muted-foreground">UTM only</span>}
+                        </TableCell>
+                        <TableCell className="text-sm">{r.promo_codes?.influencer_name ?? r.utm_source ?? "—"}</TableCell>
                         <TableCell className="text-sm max-w-[200px] truncate">{r.courses?.title}</TableCell>
                         <TableCell className="text-sm">${Number(r.original_price).toFixed(2)}</TableCell>
                         <TableCell className="text-sm text-destructive">-${Number(r.discount_applied).toFixed(2)}</TableCell>
@@ -538,7 +562,7 @@ export default function AdminInfluencerMarketing() {
         <TabsContent value="leaderboard">
           <Card>
             <CardHeader>
-              <CardTitle className="font-heading text-lg">Top Influencers by Revenue</CardTitle>
+              <CardTitle className="font-heading text-lg">Top Influencers by Conversions</CardTitle>
             </CardHeader>
             <CardContent>
               {promoCodes.length === 0 ? (
@@ -546,7 +570,19 @@ export default function AdminInfluencerMarketing() {
               ) : (
                 <div className="space-y-3">
                   {[...promoCodes]
-                    .sort((a: any, b: any) => Number(b.revenue_generated) - Number(a.revenue_generated))
+                    .map((pc: any) => {
+                      const rs = referrals.filter((r: any) => r.promo_code_id === pc.id);
+                      return {
+                        ...pc,
+                        webinar_count: rs.filter((r: any) => r.conversion_type === "webinar_registration").length,
+                        paid_count: rs.filter((r: any) => r.conversion_type === "paid_enrollment").length,
+                        commission_total: rs.reduce((s: number, r: any) => s + Number(r.commission_earned || 0), 0),
+                      };
+                    })
+                    .sort((a: any, b: any) =>
+                      Number(b.revenue_generated) - Number(a.revenue_generated) ||
+                      (b.paid_count + b.webinar_count) - (a.paid_count + a.webinar_count)
+                    )
                     .slice(0, 10)
                     .map((pc: any, i: number) => (
                       <div key={pc.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
@@ -559,7 +595,9 @@ export default function AdminInfluencerMarketing() {
                         </div>
                         <div className="text-right">
                           <p className="font-heading font-bold text-sm">${Number(pc.revenue_generated).toLocaleString()}</p>
-                          <p className="text-xs text-muted-foreground">{pc.usage_count} uses</p>
+                          <p className="text-xs text-muted-foreground">
+                            {pc.paid_count} paid · {pc.webinar_count} webinar
+                          </p>
                         </div>
                       </div>
                     ))}
