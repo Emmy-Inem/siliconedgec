@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,10 @@ import {
   Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { format } from "date-fns";
+
+// Canonical public URL — always use the published domain for shareable
+// influencer/UTM links so testers don't hit the preview-domain auth gate.
+const PUBLIC_SITE_URL = "https://siliconedgec.lovable.app";
 
 function generateCode(prefix = "PROMO") {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -355,15 +359,15 @@ export default function AdminInfluencerMarketing() {
                     content: form.utm_content,
                   };
                   const fullUrl = (form.utm_source || form.utm_campaign || form.utm_content)
-                    ? buildUtmUrl(window.location.origin, path, utm)
-                    : `${window.location.origin}${path}`;
+                    ? buildUtmUrl(PUBLIC_SITE_URL, path, utm)
+                    : `${PUBLIC_SITE_URL}${path}`;
                   return (
                     <div className="bg-primary/5 border border-primary/20 rounded-md p-2.5 space-y-1.5">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1">
                         <Eye className="h-3 w-3" /> Live Preview
                       </p>
                       <p className="text-[10px] text-muted-foreground">Short link:</p>
-                      <p className="font-mono text-xs break-all text-primary">{`${window.location.origin}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
+                      <p className="font-mono text-xs break-all text-primary">{`${PUBLIC_SITE_URL}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">Resolves to:</p>
                       <p className="font-mono text-[11px] break-all text-foreground">{fullUrl}</p>
                     </div>
@@ -613,6 +617,9 @@ export default function AdminInfluencerMarketing() {
         <DialogContent className="sm:max-w-xl p-0 gap-0 max-h-[90vh] flex flex-col">
           <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
             <DialogTitle className="font-heading">Promo Code Details</DialogTitle>
+            <DialogDescription className="sr-only">
+              View influencer promo code, short link, and UTM tracking link.
+            </DialogDescription>
           </DialogHeader>
           {detailCode && (
             <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
@@ -627,7 +634,7 @@ export default function AdminInfluencerMarketing() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Short Link (recommended)</p>
                   <div className="bg-primary/5 border border-primary/30 rounded-md p-2.5">
                     <p className="font-mono text-sm break-all text-primary font-semibold select-all">
-                      {`${window.location.origin}/r/${detailCode.slug}`}
+                      {`${PUBLIC_SITE_URL}/r/${detailCode.slug}`}
                     </p>
                     {detailCode.landing_path && (
                       <p className="font-mono text-[10px] text-muted-foreground mt-1">
@@ -639,7 +646,7 @@ export default function AdminInfluencerMarketing() {
                     size="sm"
                     className="w-full gap-2 text-xs"
                     onClick={() => {
-                      const url = `${window.location.origin}/r/${detailCode.slug}`;
+                      const url = `${PUBLIC_SITE_URL}/r/${detailCode.slug}`;
                       navigator.clipboard.writeText(url);
                       toast({ title: "Short link copied!", description: "Auto-applies promo + tracks attribution." });
                     }}
@@ -654,7 +661,7 @@ export default function AdminInfluencerMarketing() {
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Custom UTM Link (full URL)</p>
                 {(() => {
                   const path = detailCode.landing_path || "/courses";
-                  const utmUrl = buildUtmUrl(window.location.origin, path, {
+                  const utmUrl = buildUtmUrl(PUBLIC_SITE_URL, path, {
                     source: detailCode.influencer_name,
                     medium: "influencer",
                     campaign: detailCode.code,
@@ -730,11 +737,12 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-background rounded-md p-2.5 border border-border">
+const DetailRow = forwardRef<HTMLDivElement, { label: string; value: string }>(
+  ({ label, value }, ref) => (
+    <div ref={ref} className="bg-background rounded-md p-2.5 border border-border">
       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
       <p className="font-medium mt-0.5">{value}</p>
     </div>
-  );
-}
+  ),
+);
+DetailRow.displayName = "DetailRow";
