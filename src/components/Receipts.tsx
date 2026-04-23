@@ -61,12 +61,12 @@ export function Receipts() {
     const total = items.reduce((s, i) => s + Number(i.amount || 0), 0);
     downloadReceiptPdf({
       reference: ref,
-      paidAt: items[0].created_at,
       customerName: user?.email ?? "Customer",
       customerEmail: user?.email ?? "",
-      items: items.map((i) => ({ title: i.course_title ?? "Course", amount: Number(i.amount || 0) })),
+      lines: items.map((i) => ({ title: i.course_title ?? "Course", amount: Number(i.amount || 0) })),
       total,
       currency: items[0].currency,
+      date: new Date(items[0].created_at),
     });
   };
 
