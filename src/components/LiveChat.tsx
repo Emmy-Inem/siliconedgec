@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ interface Message {
 
 export function LiveChat() {
   const { user } = useAuth();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -23,6 +25,10 @@ export function LiveChat() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Hide chat widget on admin routes — it conflicts with the admin
+  // sidebar trigger (mobile) and clutters the workspace.
+  const onAdminRoute = location.pathname.startsWith("/admin");
 
   // Load or create conversation when opening
   useEffect(() => {
@@ -93,6 +99,7 @@ export function LiveChat() {
   };
 
   if (!user) return null;
+  if (onAdminRoute) return null;
 
   return (
     <>

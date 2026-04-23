@@ -64,10 +64,10 @@ export function AdminCrudTable<T extends { id: string }>({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading text-2xl font-bold">{title}</h1>
-        <Button onClick={onAdd} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> {addLabel}
+      <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
+        <h1 className="font-heading text-xl sm:text-2xl font-bold truncate min-w-0">{title}</h1>
+        <Button onClick={onAdd} size="sm" className="shrink-0">
+          <Plus className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">{addLabel}</span>
         </Button>
       </div>
 
@@ -88,16 +88,16 @@ export function AdminCrudTable<T extends { id: string }>({
         </div>
       ) : (
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-sm min-w-[480px]">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   {columns.map((col) => (
-                    <th key={col.key} className="text-left px-4 py-3 font-medium text-muted-foreground">
+                    <th key={col.key} className="text-left px-3 sm:px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
                       {col.label}
                     </th>
                   ))}
-                  <th className="text-right px-4 py-3 font-medium text-muted-foreground w-24">Actions</th>
+                  <th className="text-right px-3 sm:px-4 py-3 font-medium text-muted-foreground w-20 sm:w-24">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,11 +111,11 @@ export function AdminCrudTable<T extends { id: string }>({
                   paged.map((item) => (
                     <tr key={item.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                       {columns.map((col) => (
-                        <td key={col.key} className="px-4 py-3">
+                        <td key={col.key} className="px-3 sm:px-4 py-3">
                           {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key] ?? "")}
                         </td>
                       ))}
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-3 sm:px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {extraActions && extraActions(item)}
                           <button
@@ -141,8 +141,8 @@ export function AdminCrudTable<T extends { id: string }>({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/30">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 border-t border-border bg-muted/30">
+              <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
                 Showing {safePage * pageSize + 1}–{Math.min((safePage + 1) * pageSize, filtered.length)} of {filtered.length}
               </span>
               <div className="flex items-center gap-1">

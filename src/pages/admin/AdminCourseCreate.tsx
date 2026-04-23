@@ -13,9 +13,9 @@ import { logAdminActivity } from "@/lib/admin-logger";
 import { CurriculumBuilder } from "@/components/admin/CurriculumBuilder";
 
 const STEPS = [
-  { label: "Basics" },
-  { label: "Curriculum" },
-  { label: "Additional" },
+  { label: "Basics", description: "Title, category & cover" },
+  { label: "Curriculum", description: "Modules, lessons & quizzes" },
+  { label: "Additional", description: "Pricing, outcomes & publish" },
 ];
 
 const PRODUCT_TYPES = ["Simple Product", "Grouped Product", "External Product", "Variable Product"];
@@ -288,39 +288,90 @@ export default function AdminCourseCreate() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/courses")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="min-w-0">
-          <h1 className="font-heading text-2xl font-bold">{isEditing ? "Edit Course" : "Create New Course"}</h1>
-          <p className="text-sm text-muted-foreground">Basics → Curriculum → Additional</p>
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-20 -mx-3 sm:-mx-6 px-3 sm:px-6 py-3 bg-background/90 backdrop-blur border-b border-border flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/courses")} className="shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="min-w-0">
+            <h1 className="font-heading text-base sm:text-xl font-bold truncate">
+              {isEditing ? (form.title || "Edit Course") : "Create New Course"}
+            </h1>
+            <p className="text-[11px] sm:text-xs text-muted-foreground hidden sm:block">
+              Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => saveMutation.mutate("draft")}
+            disabled={saveMutation.isPending || !form.title}
+            className="h-8 px-2 sm:px-3"
+          >
+            <Save className="h-3.5 w-3.5 sm:mr-1" />
+            <span className="hidden sm:inline">Save Draft</span>
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => saveMutation.mutate("published")}
+            disabled={saveMutation.isPending || !form.title}
+            className="h-8 px-2 sm:px-3"
+          >
+            <Send className="h-3.5 w-3.5 sm:mr-1" />
+            <span className="hidden sm:inline">{form.status === "published" ? "Update" : "Publish"}</span>
+          </Button>
         </div>
       </div>
 
-      {/* Progress Steps */}
-      <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3">
-        {STEPS.map((s, i) => (
-          <button key={s.label} onClick={() => i <= step && setStep(i)} className="flex items-center gap-2 flex-1 min-w-fit">
-            <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-              i < step ? "bg-green-500 text-white" : i === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-            }`}>
-              {i < step ? <Check className="h-4 w-4" /> : i + 1}
-            </div>
-            <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
-              {s.label}
-            </span>
-            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 ${i < step ? "bg-green-500" : "bg-border"}`} />}
-          </button>
-        ))}
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4 sm:gap-6">
+        {/* Left: vertical step nav (desktop) / horizontal scroll (mobile) */}
+        <aside className="lg:sticky lg:top-20 lg:self-start">
+          <div className="bg-card rounded-2xl border border-border p-3 sm:p-4">
+            <p className="hidden lg:block text-[10px] uppercase tracking-widest text-muted-foreground mb-3 px-1">Course Builder</p>
+            <ul className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible scrollbar-thin -mx-1 px-1">
+              {STEPS.map((s, i) => {
+                const done = i < step;
+                const active = i === step;
+                const reachable = i <= step || isEditing;
+                return (
+                  <li key={s.label} className="shrink-0 lg:shrink">
+                    <button
+                      onClick={() => reachable && setStep(i)}
+                      disabled={!reachable}
+                      className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                        active
+                          ? "bg-primary/10 border border-primary/30"
+                          : reachable
+                            ? "hover:bg-muted/60 border border-transparent"
+                            : "opacity-50 cursor-not-allowed border border-transparent"
+                      }`}
+                    >
+                      <div className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        done ? "bg-green-500 text-white" : active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`text-sm font-medium leading-tight ${active ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
+                        <p className="hidden lg:block text-[10px] text-muted-foreground/80 leading-tight mt-0.5">{s.description}</p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </aside>
 
-      {/* Step Content */}
-      <AnimatePresence mode="wait">
-        <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-          className="bg-card rounded-2xl border border-border p-4 sm:p-6 space-y-5">
+        {/* Right: step content */}
+        <div className="min-w-0">
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
+            className="bg-card rounded-2xl border border-border p-4 sm:p-6 space-y-5">
 
           {/* ───────────── STEP 1 — BASICS ───────────── */}
           {step === 0 && (
@@ -599,29 +650,31 @@ export default function AdminCourseCreate() {
               </div>
             </>
           )}
-        </motion.div>
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
 
-      {/* Navigation */}
-      <div className="flex justify-between gap-2 flex-wrap">
-        <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Previous
-        </Button>
-        <div className="flex gap-2 flex-wrap">
-          {step === STEPS.length - 1 ? (
-            <>
-              <Button variant="outline" onClick={() => saveMutation.mutate("draft")} disabled={saveMutation.isPending}>
-                <Save className="h-4 w-4 mr-1" /> Save Draft
-              </Button>
-              <Button onClick={() => saveMutation.mutate("published")} disabled={saveMutation.isPending || !form.title}>
-                <Send className="h-4 w-4 mr-1" /> {saveMutation.isPending ? "Publishing..." : "Publish Course"}
-              </Button>
-            </>
-          ) : (
-            <Button onClick={handleNext} disabled={!canProceed()}>
-              Next <ArrowRight className="h-4 w-4 ml-1" />
+          {/* Step navigation */}
+          <div className="flex justify-between gap-2 flex-wrap mt-4">
+            <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Previous
             </Button>
-          )}
+            <div className="flex gap-2 flex-wrap">
+              {step === STEPS.length - 1 ? (
+                <>
+                  <Button variant="outline" onClick={() => saveMutation.mutate("draft")} disabled={saveMutation.isPending}>
+                    <Save className="h-4 w-4 mr-1" /> Save Draft
+                  </Button>
+                  <Button onClick={() => saveMutation.mutate("published")} disabled={saveMutation.isPending || !form.title}>
+                    <Send className="h-4 w-4 mr-1" /> {saveMutation.isPending ? "Publishing..." : "Publish Course"}
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleNext} disabled={!canProceed()}>
+                  Next <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -35,24 +35,26 @@ export function HubShell({ title, description, tabs, defaultTab }: Props) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <div>
-        <h1 className="font-heading text-2xl font-bold">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        <h1 className="font-heading text-xl sm:text-2xl font-bold">{title}</h1>
+        {description && <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>}
       </div>
       <Tabs value={initial} onValueChange={handleChange} className="w-full">
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
-          <TabsList className="h-auto inline-flex w-max justify-start gap-1 bg-muted/60 p-1">
-            {tabs.map((t) => (
-              <TabsTrigger
-                key={t.value}
-                value={t.value}
-                className="text-xs sm:text-sm whitespace-nowrap shrink-0"
-              >
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <div className="sticky top-0 z-10 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2 bg-background/85 backdrop-blur border-b border-border/60">
+          <div className="overflow-x-auto scrollbar-thin">
+            <TabsList className="h-auto inline-flex w-max justify-start gap-1 bg-muted/60 p-1">
+              {tabs.map((t) => (
+                <TabsTrigger
+                  key={t.value}
+                  value={t.value}
+                  className="text-xs sm:text-sm whitespace-nowrap shrink-0"
+                >
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </div>
         {tabs.map((t) => (
           <TabsContent key={t.value} value={t.value} className="mt-4">
