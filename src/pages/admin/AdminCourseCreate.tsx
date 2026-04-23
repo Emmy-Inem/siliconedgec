@@ -650,29 +650,31 @@ export default function AdminCourseCreate() {
               </div>
             </>
           )}
-        </motion.div>
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
 
-      {/* Navigation */}
-      <div className="flex justify-between gap-2 flex-wrap">
-        <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Previous
-        </Button>
-        <div className="flex gap-2 flex-wrap">
-          {step === STEPS.length - 1 ? (
-            <>
-              <Button variant="outline" onClick={() => saveMutation.mutate("draft")} disabled={saveMutation.isPending}>
-                <Save className="h-4 w-4 mr-1" /> Save Draft
-              </Button>
-              <Button onClick={() => saveMutation.mutate("published")} disabled={saveMutation.isPending || !form.title}>
-                <Send className="h-4 w-4 mr-1" /> {saveMutation.isPending ? "Publishing..." : "Publish Course"}
-              </Button>
-            </>
-          ) : (
-            <Button onClick={handleNext} disabled={!canProceed()}>
-              Next <ArrowRight className="h-4 w-4 ml-1" />
+          {/* Step navigation */}
+          <div className="flex justify-between gap-2 flex-wrap mt-4">
+            <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Previous
             </Button>
-          )}
+            <div className="flex gap-2 flex-wrap">
+              {step === STEPS.length - 1 ? (
+                <>
+                  <Button variant="outline" onClick={() => saveMutation.mutate("draft")} disabled={saveMutation.isPending}>
+                    <Save className="h-4 w-4 mr-1" /> Save Draft
+                  </Button>
+                  <Button onClick={() => saveMutation.mutate("published")} disabled={saveMutation.isPending || !form.title}>
+                    <Send className="h-4 w-4 mr-1" /> {saveMutation.isPending ? "Publishing..." : "Publish Course"}
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleNext} disabled={!canProceed()}>
+                  Next <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
