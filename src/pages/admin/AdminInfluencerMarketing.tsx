@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -737,11 +737,12 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-background rounded-md p-2.5 border border-border">
+const DetailRow = forwardRef<HTMLDivElement, { label: string; value: string }>(
+  ({ label, value }, ref) => (
+    <div ref={ref} className="bg-background rounded-md p-2.5 border border-border">
       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
       <p className="font-medium mt-0.5">{value}</p>
     </div>
-  );
-}
+  ),
+);
+DetailRow.displayName = "DetailRow";
