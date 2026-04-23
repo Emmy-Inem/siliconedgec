@@ -41,10 +41,14 @@ export function HubShell({ title, description, tabs, defaultTab }: Props) {
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       <Tabs value={initial} onValueChange={handleChange} className="w-full">
-        <div className="overflow-x-auto -mx-1 px-1">
-          <TabsList className="h-auto flex-wrap justify-start gap-1 bg-muted/60 p-1">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
+          <TabsList className="h-auto inline-flex w-max justify-start gap-1 bg-muted/60 p-1">
             {tabs.map((t) => (
-              <TabsTrigger key={t.value} value={t.value} className="text-xs sm:text-sm">
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="text-xs sm:text-sm whitespace-nowrap shrink-0"
+              >
                 {t.label}
               </TabsTrigger>
             ))}
