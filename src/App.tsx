@@ -10,6 +10,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { UtmTracker } from "@/components/UtmTracker";
+import { InfluencerSignupPrompt } from "@/components/InfluencerSignupPrompt";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
@@ -192,6 +193,7 @@ const App = () => (
             <LiveChat />
             <CustomScripts />
             <CookieBanner />
+            <InfluencerSignupPrompt />
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
