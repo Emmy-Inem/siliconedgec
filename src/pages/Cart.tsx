@@ -52,7 +52,10 @@ export default function Cart() {
           total: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
         });
         await refresh();
-        toast({ title: "Payment confirmed", description: "Your receipt is downloading." });
+        toast({
+          title: "Payment confirmed",
+          description: `Receipt downloading. Verify at /verify-receipt/${reference}`,
+        });
         navigate("/dashboard", { replace: true });
       } catch (e: any) {
         toast({ title: "Verification failed", description: e?.message ?? "Try again.", variant: "destructive" });
