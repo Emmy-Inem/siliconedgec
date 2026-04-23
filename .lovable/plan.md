@@ -1,71 +1,98 @@
 
 
-## Fix UTM Tracking After Signup/Login + Testimonial Visibility
+## Reorganize Admin Panel + AI Quiz Generation + Improved LMS Builder
 
-### Problems
-
-1. **UTM redirects are lost after auth.** When a visitor lands via `/r/emmanuel?course=ai-engineering`, `RedirectInfluencer` sends them to `/courses/ai-engineering`, but if they click "Create free account" in the signup prompt, they go to `/sign-up`, then after submission `SignUp` redirects to `/sign-in`, and `SignIn` redirects to `/`. The original course destination is gone.
-2. **Testimonial cards on `/pricing` are unreadable.** The "We build tech careers" section uses a dark `bg-hero` background, but `.glass-card` is `hsl(var(--card) / 0.6)` — in light mode `--card` is white, so cards become a washed-out pale grey, and `text-hero-muted` (already light) becomes invisible against it.
-
----
-
-### Fix 1 — Preserve intended destination through signup/login
-
-**a) `RedirectInfluencer.tsx`** — before navigating to the destination, also stash it:
-```ts
-sessionStorage.setItem("sec_post_auth_redirect", url.pathname + url.search);
-```
-
-**b) `InfluencerSignupPrompt.tsx`** — when the user clicks "Create free account" or "I already have an account", pass the stored destination as a `?redirect=` query param so it survives the auth pages:
-```tsx
-<Link to={`/sign-up?redirect=${encodeURIComponent(dest)}`}>…</Link>
-<Link to={`/sign-in?redirect=${encodeURIComponent(dest)}`}>…</Link>
-```
-Read `dest` from `sessionStorage.getItem("sec_post_auth_redirect")` (fallback to current location).
-
-**c) `SignUp.tsx`** — read `?redirect=` from the URL. After successful signup:
-- If a session is created immediately (auto-confirm on / OAuth), navigate to the redirect path.
-- Otherwise (email confirmation required), pass it forward: `navigate("/sign-in?redirect=" + encodeURIComponent(redirect))` and also set `emailRedirectTo: ${origin}${redirect}` so the email confirmation link returns the user to the course page.
-- For Google OAuth: `redirect_uri: ${origin}${redirect}`.
-
-**d) `SignIn.tsx`** — read `?redirect=` from URL (or fall back to `sessionStorage.getItem("sec_post_auth_redirect")`). Replace `navigate("/")` with `navigate(redirect || "/")`. Same for Google OAuth `redirect_uri`. Clear the sessionStorage key on success.
-
-**e) `AuthContext.tsx`** — on `SIGNED_IN` event, if `sec_post_auth_redirect` exists in sessionStorage AND we are currently on `/`, `/sign-in`, or `/sign-up`, navigate to the stored path and clear it. This catches the OAuth callback case where the user lands on `/` from Google's redirect.
-
-**f) UTM persistence is already 30-day localStorage** (`useUtmTracking` / `sec_utm_params`), so attribution itself survives signup. Only the *destination path* was being lost — that's what (a)–(e) fix.
+### Goals
+1. **Collapse 50+ sidebar buttons into ~9 grouped hubs** with internal tabs.
+2. **Sidebar gets its own independent scrolling** (doesn't move with main page).
+3. **AI-powered quiz generation** (Lovable AI Gateway) + manual mode in one builder.
+4. **Course builder rebuilt as a 3-step wizard** (Basics → Curriculum → Additional) like the screenshots: unlimited modules → unlimited lessons (video / text / quiz / assignment) → resources, with inline quiz attach.
 
 ---
 
-### Fix 2 — Make testimonial cards readable on dark `bg-hero`
+### 1. Sidebar consolidation
 
-In `src/pages/Pricing.tsx` testimonials section (lines ~281–316), replace `glass-card border-border` with an explicitly dark, semi-opaque card style that pairs with `bg-hero`:
+Reduce from ~55 leaf items in 8 sections to **9 hub pages + Overview**. Each hub uses internal `<Tabs>` to surface former pages as tabs — same data, no functionality lost.
 
-```tsx
-className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-4 hover:border-primary/40 hover:bg-white/[0.07] transition-all"
+| New sidebar entry | Tabs inside |
+|---|---|
+| Overview | (single page, unchanged) |
+| Analytics | Platform · Marketing · Course Health · User Activity · Wishlist Insights |
+| **Courses** | Courses · Categories · Tags · Brands · Learning Paths · Reviews · Certificates · Instructors |
+| **People** | Leads Hub · Students · Enrollments · Webinar Registrations · Business Leads · Q&A |
+| **Assessments** | Quizzes (with AI builder) · Quiz Attempts |
+| **Communication** | Announcements · Notifications · Live Classes · Live Chat · Email Blasts · Email Templates |
+| **Commerce** | Orders · Pricing Plans · Cart Abandonment · Influencer Marketing |
+| **Jobs** | Job Listings · Applications |
+| **Content** | Home Page · Site Content · Pages · Blog · Testimonials · Media Library |
+| **System** | Users & Roles · Settings · Login Security · Active Sessions · Activity Log · SEO · Custom Scripts |
+
+**Implementation**: keep the existing `Admin*.tsx` page components — just create thin "hub" pages (e.g. `AdminCoursesHub.tsx`) that render a `<Tabs>` shell and reuse the existing pages as tab content. Old routes (`/admin/categories`, `/admin/tags`, etc.) keep working as redirects to `/admin/courses?tab=categories` so search/external links don't break.
+
+### 2. Sidebar independent scroll
+
+Currently the sidebar is `flex flex-col` inside `min-h-screen`, but the main `<motion.main>` has `overflow-auto` while the page itself can also scroll on smaller viewports.
+
+**Fix in `AdminLayout.tsx`**:
+- Outer wrapper: `h-screen overflow-hidden` (instead of `min-h-screen`).
+- Sidebar `<aside>`: `h-screen sticky top-0 overflow-hidden` with the inner `<nav>` already `overflow-y-auto` — that internal nav becomes the only scrollable region of the sidebar.
+- Main column already has `overflow-auto` — confirmed independent.
+
+Result: sidebar stays put while main content scrolls; scrolling the sidebar list never moves the main page.
+
+### 3. AI + manual quiz builder
+
+New page **`AdminQuizBuilder.tsx`** (replaces `AdminQuizzes.tsx` content; old route redirects here):
+
+- Quiz list (existing) on the left.
+- "New Quiz" opens a two-mode dialog:
+  - **Manual** — current question editor (already works).
+  - **Generate with AI** — fields: source (paste text / pick lesson / pick course outline), number of questions (3–20), difficulty (easy / medium / hard), question type (MCQ for now). Calls a new edge function `generate-quiz` → Lovable AI Gateway (`google/gemini-2.5-flash`) with a JSON schema returning `[{question, options[4], correct_answer, explanation}]`. Results render in an editable preview list — user can tweak/delete/add before clicking **Save Quiz** which inserts into `quizzes` + `quiz_questions`.
+- Edge function: `supabase/functions/generate-quiz/index.ts`, uses `LOVABLE_API_KEY` (already provisioned), `verify_jwt = true`, admin-only (checks `has_role(uid, 'admin')` via service-role query).
+
+### 4. Improved course builder (modules + lessons)
+
+Upgrade `AdminCourseModules.tsx` (renamed conceptually to "Curriculum") and integrate it into the existing **3-step wizard** (`AdminCourseCreate.tsx` already handles step 1 Basics + step 3 Additional — we add step 2 Curriculum):
+
+```text
+[1 Basics] ── [2 Curriculum] ── [3 Additional]
 ```
 
-And bump quote contrast: change `text-hero-muted` on the quote to `text-hero/90`, keep name as `text-hero`, role as `text-hero-muted`. This guarantees light text on a properly dark translucent panel regardless of the global theme class.
+- **Step 2 Curriculum** (new tab in the wizard, mirrors Tutor LMS layout from screenshots):
+  - **Unlimited modules** ("+ Add Module"), drag-to-reorder via `@dnd-kit` (already supported by `GripVertical` icon).
+  - Inside each module: **unlimited lessons** with type buttons `+ Lesson` `+ Quiz` `+ Assignment` (each opens a typed dialog).
+  - Lesson types fully supported in DB today (`lessons.content_type`): video (URL or upload), text (rich content), quiz (links to quiz row), assignment (instructions + due date).
+  - Inline "Generate quiz with AI" button on a lesson auto-creates a quiz tied to that lesson using its title + description as prompt.
+  - Drag-to-reorder lessons within a module; persist `order_index` on drop.
+  - Resources panel per lesson (already works via `LessonResourcesManager`).
+
+- **Step 3 Additional**: keep existing fields, add the missing ones from the screenshot — *What Will I Learn?*, *Target Audience*, *Total Course Duration (hours/min)*, *Requirements / Instructions*. These are already stored in `courses` table (text columns); just surface them.
+
+- Auto-save on each step (already present) preserved.
 
 ---
 
-### Verification flow (after implementation)
+### Files
 
-1. Open `/r/emmanuel?course=<course-slug>` in an incognito window → lands on the course page → signup prompt appears.
-2. Click "Create free account" → URL becomes `/sign-up?redirect=%2Fcourses%2F<slug>...`.
-3. Complete signup (or Google) → user ends up back on the original course page, not `/`.
-4. Repeat for "I already have an account" → sign-in flow.
-5. Visit `/pricing` and confirm the two testimonial cards (Sarah K., David C.) show readable text.
+**New**
+- `src/pages/admin/hubs/AdminCoursesHub.tsx`, `AdminPeopleHub.tsx`, `AdminAssessmentsHub.tsx`, `AdminCommunicationHub.tsx`, `AdminCommerceHub.tsx`, `AdminContentHub.tsx`, `AdminSystemHub.tsx`, `AdminAnalyticsHub.tsx`, `AdminJobsHub.tsx` — each renders a `<Tabs>` shell loading the existing page components.
+- `src/components/admin/QuizAIGenerator.tsx` — AI generation panel + editable preview.
+- `supabase/functions/generate-quiz/index.ts` — Lovable AI call with JSON schema.
 
-### Files touched
+**Edited**
+- `src/components/admin/AdminSidebar.tsx` — replace section list with the 9 hubs + Overview; remove all leaf items.
+- `src/pages/admin/AdminLayout.tsx` — `h-screen overflow-hidden` wrapper for independent sidebar scroll.
+- `src/App.tsx` — add hub routes; keep legacy routes as `<Navigate replace>` redirects to `/admin/<hub>?tab=<slug>`.
+- `src/lib/admin-permissions.ts` — update route lists to new hubs.
+- `src/pages/admin/AdminCourseCreate.tsx` — add Curriculum as step 2 of the wizard.
+- `src/pages/admin/AdminCourseModules.tsx` — refactored as the curriculum step (kept as standalone too); add dnd reorder, quiz/assignment buttons, AI quiz button.
+- `src/pages/admin/AdminQuizzes.tsx` — add AI mode tab in the create dialog.
 
-- `src/pages/RedirectInfluencer.tsx` — stash post-auth destination
-- `src/components/InfluencerSignupPrompt.tsx` — pass `?redirect=` to auth links
-- `src/pages/SignUp.tsx` — honor `?redirect=` for navigation, OAuth, email confirm
-- `src/pages/SignIn.tsx` — honor `?redirect=` for navigation and OAuth
-- `src/contexts/AuthContext.tsx` — post-`SIGNED_IN` redirect fallback for OAuth
-- `src/pages/Pricing.tsx` — dark-friendly testimonial card styling
-
-### Other features check
-
-I'll spot-check after implementing: header/footer render, course catalog loads, cart works, admin routes still gated. No other changes planned unless issues surface during the fix.
+### Verification after build
+1. Sidebar shows ≤10 entries; clicking each opens a tabbed hub with all former pages reachable.
+2. Sidebar scrolls independently — scroll long sidebar with main content still pinned; scroll main page with sidebar still pinned.
+3. Course builder: create a course → step 2 → add 3 modules, mix of lesson + quiz + assignment in each → reorder → save.
+4. Quizzes: AI mode generates 5 questions from a pasted paragraph → edit one → save → appears in list.
+5. Old URLs (e.g. `/admin/categories`) auto-redirect to the Courses hub with the correct tab pre-selected.
+6. Moderator role still gated correctly via updated permissions list.
 
