@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -617,6 +617,9 @@ export default function AdminInfluencerMarketing() {
         <DialogContent className="sm:max-w-xl p-0 gap-0 max-h-[90vh] flex flex-col">
           <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
             <DialogTitle className="font-heading">Promo Code Details</DialogTitle>
+            <DialogDescription className="sr-only">
+              View influencer promo code, short link, and UTM tracking link.
+            </DialogDescription>
           </DialogHeader>
           {detailCode && (
             <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
@@ -631,7 +634,7 @@ export default function AdminInfluencerMarketing() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Short Link (recommended)</p>
                   <div className="bg-primary/5 border border-primary/30 rounded-md p-2.5">
                     <p className="font-mono text-sm break-all text-primary font-semibold select-all">
-                      {`${window.location.origin}/r/${detailCode.slug}`}
+                      {`${PUBLIC_SITE_URL}/r/${detailCode.slug}`}
                     </p>
                     {detailCode.landing_path && (
                       <p className="font-mono text-[10px] text-muted-foreground mt-1">
@@ -643,7 +646,7 @@ export default function AdminInfluencerMarketing() {
                     size="sm"
                     className="w-full gap-2 text-xs"
                     onClick={() => {
-                      const url = `${window.location.origin}/r/${detailCode.slug}`;
+                      const url = `${PUBLIC_SITE_URL}/r/${detailCode.slug}`;
                       navigator.clipboard.writeText(url);
                       toast({ title: "Short link copied!", description: "Auto-applies promo + tracks attribution." });
                     }}
@@ -658,7 +661,7 @@ export default function AdminInfluencerMarketing() {
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1"><Link2 className="h-3 w-3" /> Custom UTM Link (full URL)</p>
                 {(() => {
                   const path = detailCode.landing_path || "/courses";
-                  const utmUrl = buildUtmUrl(window.location.origin, path, {
+                  const utmUrl = buildUtmUrl(PUBLIC_SITE_URL, path, {
                     source: detailCode.influencer_name,
                     medium: "influencer",
                     campaign: detailCode.code,
