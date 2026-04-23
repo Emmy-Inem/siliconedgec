@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format-currency";
+import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 
 interface PromoResult {
   id: string;
@@ -99,11 +100,13 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const handlePay = async () => {
     setProcessing(true);
     try {
+      const utm = getStoredUtmParams();
       const { data, error } = await supabase.functions.invoke("paystack-initialize", {
         body: {
           course_id: courseId,
           promo_code_id: appliedPromo?.id ?? null,
           callback_url: `${window.location.origin}/courses/${courseId}?verify=1`,
+          utm,
         },
       });
       if (error) throw error;

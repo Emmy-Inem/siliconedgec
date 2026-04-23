@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { course_ids, callback_url } = await req.json();
+    const { course_ids, callback_url, utm } = await req.json();
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
         amount: Number(c.discount_price ?? c.price),
         currency,
         status: "pending",
-        metadata: { cart_reference: reference, course_title: c.title },
+        metadata: { cart_reference: reference, course_title: c.title, utm: utm ?? null },
       });
     }
 

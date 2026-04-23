@@ -820,36 +820,57 @@ export type Database = {
       influencer_referrals: {
         Row: {
           commission_earned: number
+          conversion_type: string
           course_id: string
           created_at: string
           discount_applied: number
           final_price: number
           id: string
+          order_id: string | null
           original_price: number
-          promo_code_id: string
+          promo_code_id: string | null
+          registration_id: string | null
           user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
           commission_earned?: number
+          conversion_type?: string
           course_id: string
           created_at?: string
           discount_applied?: number
           final_price?: number
           id?: string
+          order_id?: string | null
           original_price?: number
-          promo_code_id: string
+          promo_code_id?: string | null
+          registration_id?: string | null
           user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
           commission_earned?: number
+          conversion_type?: string
           course_id?: string
           created_at?: string
           discount_applied?: number
           final_price?: number
           id?: string
+          order_id?: string | null
           original_price?: number
-          promo_code_id?: string
+          promo_code_id?: string | null
+          registration_id?: string | null
           user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: [
           {
