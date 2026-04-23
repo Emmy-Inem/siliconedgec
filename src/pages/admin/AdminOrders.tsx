@@ -266,6 +266,7 @@ export default function AdminOrders() {
                       <TableHead>Customer</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Amount</TableHead>
+                      <TableHead>Source</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Action</TableHead>
@@ -274,6 +275,7 @@ export default function AdminOrders() {
                   <TableBody>
                     {filtered.map((o: any) => {
                       const kind = checkoutKindFor(o.reference);
+                      const attr: any = referralFor(o.id);
                       return (
                         <TableRow key={o.id}>
                           <TableCell className="font-mono text-xs">
@@ -291,6 +293,20 @@ export default function AdminOrders() {
                           <TableCell className="text-sm">{profileName(o.user_id)}</TableCell>
                           <TableCell className="text-sm max-w-[220px] truncate">{courseTitle(o.course_id)}</TableCell>
                           <TableCell className="font-medium">{formatNaira(Number(o.amount || 0))}</TableCell>
+                          <TableCell>
+                            {attr ? (
+                              <div className="text-xs">
+                                <div className="font-medium text-primary">
+                                  {attr.promo_codes?.influencer_name ?? attr.utm_source ?? "UTM"}
+                                </div>
+                                {attr.promo_codes?.code && (
+                                  <div className="text-[10px] text-muted-foreground font-mono">{attr.promo_codes.code}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Direct</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={["paid", "success", "completed"].includes(o.status) ? "default" : o.status === "refunded" ? "destructive" : "secondary"} className="capitalize text-[10px]">
                               {o.status}
