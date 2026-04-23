@@ -39,6 +39,12 @@ export default function RedirectInfluencer() {
           }),
         );
         sessionStorage.setItem("pending_promo", data.code);
+        // Flag for InfluencerSignupPrompt: surface a signup CTA on the
+        // destination page if the visitor isn't already authenticated.
+        sessionStorage.setItem(
+          "sec_show_signup_prompt",
+          JSON.stringify({ influencer: data.influencer_name, slug }),
+        );
       }
 
       const courseParam = params.get("course");
