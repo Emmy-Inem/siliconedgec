@@ -71,6 +71,59 @@ Deno.serve(async (req) => {
     // Clear the user's cart for these courses
     await supabase.from("cart_items").delete().eq("user_id", userId).in("course_id", courseIds);
 
+    // Influencer attribution per line item — based on order metadata UTM or explicit promo
+    for (const o of orders) {
+      try {
+        const orderUtm = (o.metadata && (o.metadata as any).utm) || {};
+        let promoIdForReferral: string | null = o.promo_code_id ?? null;
+        let promoForCommission: any = null;
+
+        if (promoIdForReferral) {
+          const { data } = await supabase.from("promo_codes")
+            .select("id, commission_percentage").eq("id", promoIdForReferral).maybeSingle();
+          promoForCommission = data;
+        } else if (orderUtm.utm_campaign || orderUtm.utm_source) {
+          let promoRow: any = null;
+          if (orderUtm.utm_campaign) {
+            const { data } = await supabase.from("promo_codes")
+              .select("id, commission_percentage")
+              .ilike("code", orderUtm.utm_campaign).eq("is_active", true).maybeSingle();
+            promoRow = data;
+          }
+          if (!promoRow && orderUtm.utm_source) {
+            const { data } = await supabase.from("promo_codes")
+              .select("id, commission_percentage")
+              .ilike("slug", orderUtm.utm_source).eq("is_active", true).maybeSingle();
+            promoRow = data;
+          }
+          if (promoRow) { promoIdForReferral = promoRow.id; promoForCommission = promoRow; }
+        }
+
+        if (promoIdForReferral || orderUtm.utm_source || orderUtm.utm_campaign) {
+          const commissionPct = Number(promoForCommission?.commission_percentage ?? 0);
+          const commission = (Number(o.amount) * commissionPct) / 100;
+          await supabase.from("influencer_referrals").upsert(
+            {
+              promo_code_id: promoIdForReferral,
+              user_id: o.user_id,
+              course_id: o.course_id,
+              conversion_type: "paid_enrollment",
+              order_id: o.id,
+              original_price: Number(o.amount) + Number(o.discount_amount ?? 0),
+              discount_applied: Number(o.discount_amount ?? 0),
+              final_price: Number(o.amount),
+              commission_earned: commission,
+              utm_source: orderUtm.utm_source ?? null,
+              utm_medium: orderUtm.utm_medium ?? null,
+              utm_campaign: orderUtm.utm_campaign ?? null,
+              utm_content: orderUtm.utm_content ?? null,
+            },
+            { onConflict: "user_id,course_id,conversion_type", ignoreDuplicates: false },
+          );
+        }
+      } catch (e) { console.error("cart influencer attribution failed", e); }
+    }
+
     // Audit trail — one row per line item, attributed to the buying user (system verify)
     try {
       const total = orders.reduce((s: number, o: any) => s + Number(o.amount ?? 0), 0);
