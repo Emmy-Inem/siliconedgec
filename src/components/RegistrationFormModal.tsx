@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, MessageCircle } from "lucide-react";
+import { Loader2, CheckCircle2, MessageCircle, LayoutDashboard } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { logUserActivity } from "@/lib/user-activity";
 import { trackLead } from "@/lib/track-lead";
+
+const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Name is required").max(100),
@@ -35,6 +38,7 @@ interface Props {
 
 export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitle, onSuccess }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { data: settings } = useSiteSettings();
   const [submitting, setSubmitting] = useState(false);
@@ -49,6 +53,16 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
     how_did_you_hear: "",
     motivation: "",
   });
+
+  // Re-sync email from auth when modal opens (in case the user signed in mid-flow).
+  useEffect(() => {
+    if (open && user?.email && !form.email) {
+      setForm((p) => ({ ...p, email: user.email ?? "" }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, user?.email]);
+
+  const whatsappUrl = (settings as any)?.whatsapp_community_url || DEFAULT_WHATSAPP_COMMUNITY;
 
   const update = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -68,13 +82,22 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
       });
       if (error) throw error;
 
-      // Auto-create enrollment so user can see it on dashboard
+      // Auto-create enrollment so user can see it on dashboard.
+      // Guard against duplicates so re-registration still shows the success state.
       if (user?.id) {
-        await supabase.from("enrollments").insert({
-          user_id: user.id,
-          course_id: courseId,
-          payment_status: "free",
-        });
+        const { data: existing } = await supabase
+          .from("enrollments")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("course_id", courseId)
+          .maybeSingle();
+        if (!existing) {
+          await supabase.from("enrollments").insert({
+            user_id: user.id,
+            course_id: courseId,
+            payment_status: "free",
+          });
+        }
       }
 
       // Track activity & lead source
@@ -90,7 +113,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
       ]);
 
       setDone(true);
-      toast({ title: "Registration confirmed", description: `You're registered for ${courseTitle}.` });
+      toast({ title: "You're in! 🎉", description: `Confirmed for ${courseTitle}. Check your email & WhatsApp.` });
       onSuccess?.();
       // Don't auto-close — let user click WhatsApp CTA
     } catch (e: any) {
@@ -104,16 +127,25 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading">Register for {courseTitle}</DialogTitle>
-          <DialogDescription>Fill in your details and we'll send the joining link to your email & WhatsApp.</DialogDescription>
+          <DialogTitle className="font-heading">
+            {done ? "You're in! 🎉" : `Register for ${courseTitle}`}
+          </DialogTitle>
+          <DialogDescription>
+            {done
+              ? "We've sent the joining link and reminder details to your email and WhatsApp."
+              : "Fill in your details and we'll send the joining link to your email & WhatsApp."}
+          </DialogDescription>
         </DialogHeader>
 
         {done ? (
           <div className="py-6 text-center space-y-4">
             <CheckCircle2 className="h-14 w-14 mx-auto text-primary" />
             <div className="space-y-1">
-              <p className="font-heading font-semibold text-lg">You're registered! 🎉</p>
-              <p className="text-sm text-muted-foreground">Check your email & WhatsApp for the joining link.</p>
+              <p className="font-heading font-semibold text-lg">You're confirmed for {courseTitle} 🎉</p>
+              <p className="text-sm text-muted-foreground">
+                We've sent the joining link and reminder details to your email and WhatsApp.
+                Add it to your calendar so you don't miss it.
+              </p>
             </div>
             <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
               <p className="text-sm font-medium">Join our WhatsApp community for updates, networking & support.</p>
@@ -122,13 +154,26 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
                 className="w-full gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white"
               >
                 <a
-                  href={(settings as any)?.whatsapp_community_url || "https://chat.whatsapp.com/"}
+                  href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <MessageCircle className="h-4 w-4" /> Join WhatsApp Community
                 </a>
               </Button>
+              {user && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    setDone(false);
+                    onOpenChange(false);
+                    navigate("/dashboard");
+                  }}
+                >
+                  <LayoutDashboard className="h-4 w-4" /> View in Dashboard
+                </Button>
+              )}
             </div>
             <Button variant="ghost" size="sm" onClick={() => { setDone(false); onOpenChange(false); }}>
               Close
