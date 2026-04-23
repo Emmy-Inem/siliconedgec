@@ -1,101 +1,71 @@
 
-Fix the free-webinar and influencer-attribution flow as one end-to-end patch so registration state, dashboard visibility, paid enrollments, and admin reporting all stay in sync.
 
-### 1) Make webinar registration identity-based and duplicate-safe
-- Require sign-in before a user can register for a free webinar so every registration has a real `user_id`.
-- Add a database uniqueness guard for authenticated webinar registrations:
-  - partial unique index on `course_registrations (user_id, course_id, registration_type)` where `user_id is not null`
-- Repair existing bad data before enforcing the index:
-  - dedupe repeated webinar registrations for the same authenticated user/course
-  - create missing `enrollments` rows with `payment_status = 'free'` for authenticated webinar registrations that currently have none
-- Update `RegistrationFormModal.tsx` to:
-  - check existing registration/enrollment before insert
-  - show an “Already registered” success state instead of re-submitting
-  - treat enrollment creation as required, not fire-and-forget; surface errors if it fails
-  - keep the WhatsApp + dashboard confirmation UI
+## Fix UTM Tracking After Signup/Login + Testimonial Visibility
 
-### 2) Fix the CTA state everywhere users see the webinar
-- In `CourseDetail.tsx`, stop relying only on `enrollments` for webinar state.
-- Introduce a dedicated “webinar registration status” lookup that checks both:
-  - `enrollments`
-  - `course_registrations`
-- Use that status to:
-  - show `Registered` instead of `Register for Free`
-  - prevent reopening a fresh registration flow for already-registered users
-  - send unauthenticated users to sign-in before registration
-- In `Dashboard.tsx`, build the webinar section from the same resolved registration status so existing registrants always see the webinar card even if an enrollment row was previously missed.
+### Problems
 
-### 3) Unify attribution so webinar registrations and paid enrollments both count for influencers
-- Keep `lead_sources` as the raw UTM/event log, but add a real conversion record for influencer outcomes.
-- Extend `influencer_referrals` to support more than paid promo purchases by adding fields such as:
-  - `conversion_type` (`webinar_registration`, `paid_enrollment`, `free_enrollment`)
-  - nullable link(s) to `order_id` / `registration_id`
-- Add a uniqueness rule so the same user/course/conversion is not counted twice.
-- Standardize attribution resolution:
-  - resolve influencer from current stored UTM values
-  - support short-link/promo flows and plain UTM-only flows
-  - use one storage source for UTM persistence instead of split behavior
-- Fix the current mismatch by standardizing the UTM helper usage across:
-  - `useUtmTracking.ts`
-  - `RedirectInfluencer.tsx`
-  - `trackLead.ts`
-  - checkout/registration flows
+1. **UTM redirects are lost after auth.** When a visitor lands via `/r/emmanuel?course=ai-engineering`, `RedirectInfluencer` sends them to `/courses/ai-engineering`, but if they click "Create free account" in the signup prompt, they go to `/sign-up`, then after submission `SignUp` redirects to `/sign-in`, and `SignIn` redirects to `/`. The original course destination is gone.
+2. **Testimonial cards on `/pricing` are unreadable.** The "We build tech careers" section uses a dark `bg-hero` background, but `.glass-card` is `hsl(var(--card) / 0.6)` — in light mode `--card` is white, so cards become a washed-out pale grey, and `text-hero-muted` (already light) becomes invisible against it.
 
-### 4) Make payment flows preserve and write attribution correctly
-- Update `PaymentModal.tsx` and `Cart.tsx` checkout calls to send current UTM data along with checkout initialization.
-- Update `paystack-initialize` and `paystack-cart-initialize` to persist attribution into order metadata and resolve a matching influencer even when no promo code was manually applied.
-- Update `paystack-verify` and `paystack-cart-verify` to:
-  - create or upsert the correct influencer conversion row
-  - mark it as `paid_enrollment`
-  - avoid duplicate referral writes on repeated verification calls
-- Keep paid enrollments, receipts, and audit logging intact.
+---
 
-### 5) Update admin views so attribution is visible in the right places
-- `AdminInfluencerMarketing.tsx`
-  - show separate counts for webinar registrations vs paid enrollments
-  - include attributed webinar registrations in the referral log
-  - make leaderboard metrics reflect real conversions, not only promo-code purchases
-- `AdminRegistrations.tsx`
-  - display attribution columns/badges (influencer / source / campaign) for webinar registrations
-- `AdminOrders.tsx`
-  - show attribution details for paid orders when present
-- `AdminLeadsHub.tsx`, `AdminMarketingAnalytics.tsx`, `AdminOverview.tsx`, `AdminAnalytics.tsx`
-  - use standardized conversion data so webinar registrations and paid enrollments reflect properly in totals and reports
+### Fix 1 — Preserve intended destination through signup/login
 
-### 6) Clean up the supporting code paths
-- Standardize `trackLead` payload shapes (`course_id` instead of mixed `courseId` / `course_id`) so downstream reporting can join data reliably.
-- Stop clearing pending influencer attribution too early; keep it until a successful registration or checkout consumes it.
-- Add defensive cache invalidation after webinar registration so course detail and dashboard update immediately.
+**a) `RedirectInfluencer.tsx`** — before navigating to the destination, also stash it:
+```ts
+sessionStorage.setItem("sec_post_auth_redirect", url.pathname + url.search);
+```
 
-### Files involved
-- Frontend:
-  - `src/components/RegistrationFormModal.tsx`
-  - `src/pages/CourseDetail.tsx`
-  - `src/pages/Dashboard.tsx`
-  - `src/lib/track-lead.ts`
-  - `src/hooks/useUtmTracking.ts`
-  - `src/pages/RedirectInfluencer.tsx`
-  - `src/components/PaymentModal.tsx`
-  - `src/pages/Cart.tsx`
-  - `src/pages/admin/AdminInfluencerMarketing.tsx`
-  - `src/pages/admin/AdminRegistrations.tsx`
-  - `src/pages/admin/AdminLeadsHub.tsx`
-  - `src/pages/admin/AdminMarketingAnalytics.tsx`
-  - `src/pages/admin/AdminOverview.tsx`
-  - `src/pages/admin/AdminAnalytics.tsx`
-- Backend:
-  - `supabase/functions/paystack-initialize/index.ts`
-  - `supabase/functions/paystack-cart-initialize/index.ts`
-  - `supabase/functions/paystack-verify/index.ts`
-  - `supabase/functions/paystack-cart-verify/index.ts`
-- Database:
-  - migration for uniqueness + influencer conversion fields + duplicate-safe indexes
-  - data repair for existing webinar registrations and missing enrollments
+**b) `InfluencerSignupPrompt.tsx`** — when the user clicks "Create free account" or "I already have an account", pass the stored destination as a `?redirect=` query param so it survives the auth pages:
+```tsx
+<Link to={`/sign-up?redirect=${encodeURIComponent(dest)}`}>…</Link>
+<Link to={`/sign-in?redirect=${encodeURIComponent(dest)}`}>…</Link>
+```
+Read `dest` from `sessionStorage.getItem("sec_post_auth_redirect")` (fallback to current location).
 
-### Ready-for-launch acceptance checks
-- A signed-in user cannot register the same free webinar twice.
-- After first registration, the course page shows `Registered` immediately.
-- The webinar appears in the dashboard for that user.
-- A webinar registration from an influencer UTM link increments that influencer’s registration count in admin.
-- A paid enrollment from an influencer UTM link increments that influencer’s paid conversion metrics in admin.
-- Re-running payment verification does not create duplicate influencer/referral records.
+**c) `SignUp.tsx`** — read `?redirect=` from the URL. After successful signup:
+- If a session is created immediately (auto-confirm on / OAuth), navigate to the redirect path.
+- Otherwise (email confirmation required), pass it forward: `navigate("/sign-in?redirect=" + encodeURIComponent(redirect))` and also set `emailRedirectTo: ${origin}${redirect}` so the email confirmation link returns the user to the course page.
+- For Google OAuth: `redirect_uri: ${origin}${redirect}`.
+
+**d) `SignIn.tsx`** — read `?redirect=` from URL (or fall back to `sessionStorage.getItem("sec_post_auth_redirect")`). Replace `navigate("/")` with `navigate(redirect || "/")`. Same for Google OAuth `redirect_uri`. Clear the sessionStorage key on success.
+
+**e) `AuthContext.tsx`** — on `SIGNED_IN` event, if `sec_post_auth_redirect` exists in sessionStorage AND we are currently on `/`, `/sign-in`, or `/sign-up`, navigate to the stored path and clear it. This catches the OAuth callback case where the user lands on `/` from Google's redirect.
+
+**f) UTM persistence is already 30-day localStorage** (`useUtmTracking` / `sec_utm_params`), so attribution itself survives signup. Only the *destination path* was being lost — that's what (a)–(e) fix.
+
+---
+
+### Fix 2 — Make testimonial cards readable on dark `bg-hero`
+
+In `src/pages/Pricing.tsx` testimonials section (lines ~281–316), replace `glass-card border-border` with an explicitly dark, semi-opaque card style that pairs with `bg-hero`:
+
+```tsx
+className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-4 hover:border-primary/40 hover:bg-white/[0.07] transition-all"
+```
+
+And bump quote contrast: change `text-hero-muted` on the quote to `text-hero/90`, keep name as `text-hero`, role as `text-hero-muted`. This guarantees light text on a properly dark translucent panel regardless of the global theme class.
+
+---
+
+### Verification flow (after implementation)
+
+1. Open `/r/emmanuel?course=<course-slug>` in an incognito window → lands on the course page → signup prompt appears.
+2. Click "Create free account" → URL becomes `/sign-up?redirect=%2Fcourses%2F<slug>...`.
+3. Complete signup (or Google) → user ends up back on the original course page, not `/`.
+4. Repeat for "I already have an account" → sign-in flow.
+5. Visit `/pricing` and confirm the two testimonial cards (Sarah K., David C.) show readable text.
+
+### Files touched
+
+- `src/pages/RedirectInfluencer.tsx` — stash post-auth destination
+- `src/components/InfluencerSignupPrompt.tsx` — pass `?redirect=` to auth links
+- `src/pages/SignUp.tsx` — honor `?redirect=` for navigation, OAuth, email confirm
+- `src/pages/SignIn.tsx` — honor `?redirect=` for navigation and OAuth
+- `src/contexts/AuthContext.tsx` — post-`SIGNED_IN` redirect fallback for OAuth
+- `src/pages/Pricing.tsx` — dark-friendly testimonial card styling
+
+### Other features check
+
+I'll spot-check after implementing: header/footer render, course catalog loads, cart works, admin routes still gated. No other changes planned unless issues surface during the fix.
+
