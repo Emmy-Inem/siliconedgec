@@ -264,28 +264,28 @@ export default function AdminCourseCreate() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/courses")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
+        <div className="min-w-0">
           <h1 className="font-heading text-2xl font-bold">{isEditing ? "Edit Course" : "Create New Course"}</h1>
-          <p className="text-sm text-muted-foreground">Multi-step course creation workflow</p>
+          <p className="text-sm text-muted-foreground">Basics → Curriculum → Additional</p>
         </div>
       </div>
 
       {/* Progress Steps */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3">
         {STEPS.map((s, i) => (
-          <button key={s.label} onClick={() => i <= step && setStep(i)} className="flex items-center gap-2 flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+          <button key={s.label} onClick={() => i <= step && setStep(i)} className="flex items-center gap-2 flex-1 min-w-fit">
+            <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
               i < step ? "bg-green-500 text-white" : i === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}>
               {i < step ? <Check className="h-4 w-4" /> : i + 1}
             </div>
-            <span className={`text-xs font-medium hidden sm:block ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
+            <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
               {s.label}
             </span>
             {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 ${i < step ? "bg-green-500" : "bg-border"}`} />}
