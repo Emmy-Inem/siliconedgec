@@ -10,12 +10,12 @@ import {
 } from "lucide-react";
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
+import { CurriculumBuilder } from "@/components/admin/CurriculumBuilder";
 
 const STEPS = [
-  { label: "Course Info", icon: "📝" },
-  { label: "Media & Pricing", icon: "💰" },
-  { label: "Inventory & Links", icon: "📦" },
-  { label: "Finalize", icon: "🚀" },
+  { label: "Basics" },
+  { label: "Curriculum" },
+  { label: "Additional" },
 ];
 
 const PRODUCT_TYPES = ["Simple Product", "Grouped Product", "External Product", "Variable Product"];
@@ -263,29 +263,53 @@ export default function AdminCourseCreate() {
     return true;
   };
 
+  // When advancing past Basics on a NEW course, auto-create a draft so the
+  // Curriculum step has a courseId to attach modules/lessons to.
+  const handleNext = async () => {
+    if (step === 0 && !isEditing) {
+      try {
+        const payload = buildPayload("draft");
+        const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
+        if (error) throw error;
+        if (form.tag_ids.length > 0) {
+          await supabase.from("course_tags").insert(form.tag_ids.map((tag_id) => ({ course_id: data.id, tag_id })));
+        }
+        await logAdminActivity("create", "course", data.id, { title: form.title });
+        toast({ title: "Draft saved", description: "You can now build the curriculum." });
+        navigate(`/admin/courses/${data.id}/edit`, { replace: true });
+        setStep(1);
+        return;
+      } catch (e: any) {
+        toast({ title: "Could not save draft", description: e.message, variant: "destructive" });
+        return;
+      }
+    }
+    setStep((s) => s + 1);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/courses")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
+        <div className="min-w-0">
           <h1 className="font-heading text-2xl font-bold">{isEditing ? "Edit Course" : "Create New Course"}</h1>
-          <p className="text-sm text-muted-foreground">Multi-step course creation workflow</p>
+          <p className="text-sm text-muted-foreground">Basics → Curriculum → Additional</p>
         </div>
       </div>
 
       {/* Progress Steps */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3">
         {STEPS.map((s, i) => (
-          <button key={s.label} onClick={() => i <= step && setStep(i)} className="flex items-center gap-2 flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+          <button key={s.label} onClick={() => i <= step && setStep(i)} className="flex items-center gap-2 flex-1 min-w-fit">
+            <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
               i < step ? "bg-green-500 text-white" : i === step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}>
               {i < step ? <Check className="h-4 w-4" /> : i + 1}
             </div>
-            <span className={`text-xs font-medium hidden sm:block ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
+            <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${i === step ? "text-foreground" : "text-muted-foreground"}`}>
               {s.label}
             </span>
             {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 ${i < step ? "bg-green-500" : "bg-border"}`} />}
@@ -296,34 +320,27 @@ export default function AdminCourseCreate() {
       {/* Step Content */}
       <AnimatePresence mode="wait">
         <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-          className="bg-card rounded-2xl border border-border p-6 space-y-5">
+          className="bg-card rounded-2xl border border-border p-4 sm:p-6 space-y-5">
 
+          {/* ───────────── STEP 1 — BASICS ───────────── */}
           {step === 0 && (
             <>
-              <h2 className="font-heading text-lg font-semibold">Course Information</h2>
+              <div>
+                <h2 className="font-heading text-lg font-semibold">Basics</h2>
+                <p className="text-xs text-muted-foreground">Title, description, category, and cover media.</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium block mb-1">Course Title *</label>
+                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className={inputClass} placeholder="e.g. Cloud Engineering Accelerator — 4-Week Hands-On Bootcamp" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium block mb-1">Description</label>
+                <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={5} className={inputClass} placeholder="Detailed course overview…" />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium block mb-1">Product Type</label>
-                  <select value={form.product_type} onChange={e => setForm({ ...form, product_type: e.target.value })} className={inputClass}>
-                    {PRODUCT_TYPES.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium block mb-1">Course Type</label>
-                  <select value={form.course_type} onChange={e => setForm({ ...form, course_type: e.target.value })} className={inputClass}>
-                    {COURSE_TYPES.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Product Title *</label>
-                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className={inputClass} placeholder="e.g. Cloud Engineering Masterclass" />
-              </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Product Description</label>
-                <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={4} className={inputClass} placeholder="Detailed course overview..." />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium block mb-1">Category</label>
                   <select
@@ -339,23 +356,28 @@ export default function AdminCourseCreate() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Difficulty</label>
+                  <label className="text-sm font-medium block mb-1">Difficulty Level</label>
                   <select value={form.difficulty} onChange={e => setForm({ ...form, difficulty: e.target.value })} className={inputClass}>
                     {DIFFICULTIES.map(d => <option key={d}>{d}</option>)}
                   </select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1">Duration (hours)</label>
-                  <input type="number" step="0.5" value={form.duration_hours} onChange={e => setForm({ ...form, duration_hours: Number(e.target.value) })} className={inputClass} />
+                  <label className="text-sm font-medium block mb-1">Course Type</label>
+                  <select value={form.course_type} onChange={e => setForm({ ...form, course_type: e.target.value })} className={inputClass}>
+                    {COURSE_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Product Type</label>
+                  <select value={form.product_type} onChange={e => setForm({ ...form, product_type: e.target.value })} className={inputClass}>
+                    {PRODUCT_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Instructor</label>
-                <select value={form.instructor_id ?? ""} onChange={e => setForm({ ...form, instructor_id: e.target.value || null })} className={inputClass}>
-                  <option value="">No instructor assigned</option>
-                  {instructors.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
-                </select>
-              </div>
+
               {/* Tags */}
               <div>
                 <label className="text-sm font-medium block mb-1">Tags</label>
@@ -380,24 +402,15 @@ export default function AdminCourseCreate() {
                   }}
                   className={inputClass}
                 >
-                  <option value="">Add a tag...</option>
+                  <option value="">Add a tag…</option>
                   {allTags.filter(t => !form.tag_ids.includes(t.id)).map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Learning Outcomes (one per line)</label>
-                <textarea value={form.learning_outcomes} onChange={e => setForm({ ...form, learning_outcomes: e.target.value })} rows={4} className={inputClass} placeholder="Master cloud architecture&#10;Deploy infrastructure..." />
-              </div>
-            </>
-          )}
 
-          {step === 1 && (
-            <>
-              <h2 className="font-heading text-lg font-semibold">Media & Pricing</h2>
-              {/* Thumbnail */}
-              <div>
+              {/* Featured Image */}
+              <div className="border-t border-border pt-5">
                 <label className="text-sm font-medium block mb-2">Course Cover Image</label>
                 <div className="flex items-center gap-4">
                   {form.thumbnail_url ? (
@@ -421,17 +434,78 @@ export default function AdminCourseCreate() {
                 </div>
               </div>
 
-              {/* Video URL */}
+              {/* Intro video */}
               <div>
-                <label className="text-sm font-medium block mb-1">Introductory Video URL</label>
+                <label className="text-sm font-medium block mb-1">Intro Video URL</label>
                 <div className="flex items-center gap-2">
                   <Video className="h-4 w-4 text-muted-foreground" />
                   <input value={form.intro_video_url} onChange={e => setForm({ ...form, intro_video_url: e.target.value })} className={inputClass} placeholder="https://youtube.com/..." />
                 </div>
               </div>
+            </>
+          )}
+
+          {/* ───────────── STEP 2 — CURRICULUM ───────────── */}
+          {step === 1 && (
+            <>
+              {courseId ? (
+                <CurriculumBuilder courseId={courseId} />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground text-sm">
+                  Save the course basics first to start building the curriculum.
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ───────────── STEP 3 — ADDITIONAL ───────────── */}
+          {step === 2 && (
+            <>
+              <div>
+                <h2 className="font-heading text-lg font-semibold">Additional</h2>
+                <p className="text-xs text-muted-foreground">Outcomes, audience, duration, pricing, and publish.</p>
+              </div>
+
+              {/* Overview */}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium block mb-1">What Will I Learn?</label>
+                  <textarea
+                    value={form.learning_outcomes}
+                    onChange={e => setForm({ ...form, learning_outcomes: e.target.value })}
+                    rows={4}
+                    className={inputClass}
+                    placeholder="Define the key takeaways from this course (one benefit per line)"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-1">Instructor</label>
+                  <select value={form.instructor_id ?? ""} onChange={e => setForm({ ...form, instructor_id: e.target.value || null })} className={inputClass}>
+                    <option value="">No instructor assigned</option>
+                    {instructors.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-1">Total Course Duration (hours)</label>
+                  <input type="number" step="0.5" value={form.duration_hours} onChange={e => setForm({ ...form, duration_hours: Number(e.target.value) })} className={inputClass} />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-1">Requirements / Instructions for Students</label>
+                  <textarea
+                    value={form.purchase_note}
+                    onChange={e => setForm({ ...form, purchase_note: e.target.value })}
+                    rows={3}
+                    className={inputClass}
+                    placeholder="Additional requirements or special instructions (one per line)"
+                  />
+                </div>
+              </div>
 
               {/* Pricing */}
-              <div className="border-t border-border pt-5 mt-5">
+              <div className="border-t border-border pt-5">
                 <h3 className="font-heading font-semibold text-sm mb-3">Pricing</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
@@ -456,7 +530,7 @@ export default function AdminCourseCreate() {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="text-sm font-medium block mb-1">Discount Start Date</label>
                     <input type="datetime-local" value={form.discount_start} onChange={e => setForm({ ...form, discount_start: e.target.value })} className={inputClass} />
@@ -467,31 +541,29 @@ export default function AdminCourseCreate() {
                   </div>
                 </div>
               </div>
-            </>
-          )}
 
-          {step === 2 && (
-            <>
-              <h2 className="font-heading text-lg font-semibold">Inventory & Product Links</h2>
-              {/* Inventory */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium block mb-1">Max Enrollment</label>
-                  <input type="number" value={form.max_enrollment ?? ""} onChange={e => setForm({ ...form, max_enrollment: e.target.value ? Number(e.target.value) : null })} className={inputClass} placeholder="Unlimited" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium block mb-1">Enrollment Opens</label>
-                  <input type="datetime-local" value={form.enrollment_start} onChange={e => setForm({ ...form, enrollment_start: e.target.value })} className={inputClass} />
-                </div>
-                <div>
-                  <label className="text-sm font-medium block mb-1">Enrollment Closes</label>
-                  <input type="datetime-local" value={form.enrollment_end} onChange={e => setForm({ ...form, enrollment_end: e.target.value })} className={inputClass} />
+              {/* Enrollment */}
+              <div className="border-t border-border pt-5">
+                <h3 className="font-heading font-semibold text-sm mb-3">Enrollment</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Max Enrollment</label>
+                    <input type="number" value={form.max_enrollment ?? ""} onChange={e => setForm({ ...form, max_enrollment: e.target.value ? Number(e.target.value) : null })} className={inputClass} placeholder="Unlimited" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Enrollment Opens</label>
+                    <input type="datetime-local" value={form.enrollment_start} onChange={e => setForm({ ...form, enrollment_start: e.target.value })} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Enrollment Closes</label>
+                    <input type="datetime-local" value={form.enrollment_end} onChange={e => setForm({ ...form, enrollment_end: e.target.value })} className={inputClass} />
+                  </div>
                 </div>
               </div>
 
-              {/* Upsells */}
-              <div className="border-t border-border pt-5 mt-5 space-y-4">
-                <h3 className="font-heading font-semibold text-sm">Product Links</h3>
+              {/* Product links */}
+              <div className="border-t border-border pt-5 space-y-4">
+                <h3 className="font-heading font-semibold text-sm">Related Courses</h3>
                 <div>
                   <label className="text-sm font-medium block mb-1">Upsell Courses</label>
                   <select multiple value={form.upsell_course_ids} onChange={e => setForm({ ...form, upsell_course_ids: Array.from(e.target.selectedOptions, o => o.value) })}
@@ -508,40 +580,21 @@ export default function AdminCourseCreate() {
                   </select>
                 </div>
               </div>
-            </>
-          )}
 
-          {step === 3 && (
-            <>
-              <h2 className="font-heading text-lg font-semibold">Finalize & Publish</h2>
-              <div>
-                <label className="text-sm font-medium block mb-1">Purchase Note</label>
-                <textarea value={form.purchase_note} onChange={e => setForm({ ...form, purchase_note: e.target.value })} rows={3} className={inputClass}
-                  placeholder="Message displayed to students after purchase..." />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={form.enable_reviews} onChange={e => setForm({ ...form, enable_reviews: e.target.checked })} id="reviews" className="rounded" />
-                <label htmlFor="reviews" className="text-sm">Enable Reviews</label>
-              </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Course Status</label>
-                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={inputClass}>
-                  <option value="draft">Draft</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="published">Published</option>
-                </select>
-              </div>
-
-              {/* Summary */}
-              <div className="border-t border-border pt-5 mt-5">
-                <h3 className="font-heading font-semibold text-sm mb-3">Course Summary</h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Title:</span> <span className="font-medium">{form.title || "—"}</span></div>
-                  <div><span className="text-muted-foreground">Category:</span> <span className="font-medium">{form.category}</span></div>
-                  <div><span className="text-muted-foreground">Price:</span> <span className="font-medium">{form.currency === "NGN" ? formatNaira(form.price) : `$${form.price}`}</span></div>
-                  <div><span className="text-muted-foreground">Difficulty:</span> <span className="font-medium">{form.difficulty}</span></div>
-                  <div><span className="text-muted-foreground">Type:</span> <span className="font-medium">{form.course_type}</span></div>
-                  <div><span className="text-muted-foreground">Duration:</span> <span className="font-medium">{form.duration_hours}h</span></div>
+              {/* Publish */}
+              <div className="border-t border-border pt-5 space-y-3">
+                <h3 className="font-heading font-semibold text-sm">Publishing</h3>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" checked={form.enable_reviews} onChange={e => setForm({ ...form, enable_reviews: e.target.checked })} id="reviews" className="rounded" />
+                  <label htmlFor="reviews" className="text-sm">Enable Reviews</label>
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Course Status</label>
+                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={inputClass}>
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="published">Published</option>
+                  </select>
                 </div>
               </div>
             </>
@@ -550,12 +603,12 @@ export default function AdminCourseCreate() {
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2 flex-wrap">
         <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Previous
         </Button>
-        <div className="flex gap-2">
-          {step === 3 ? (
+        <div className="flex gap-2 flex-wrap">
+          {step === STEPS.length - 1 ? (
             <>
               <Button variant="outline" onClick={() => saveMutation.mutate("draft")} disabled={saveMutation.isPending}>
                 <Save className="h-4 w-4 mr-1" /> Save Draft
@@ -565,7 +618,7 @@ export default function AdminCourseCreate() {
               </Button>
             </>
           ) : (
-            <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed()}>
+            <Button onClick={handleNext} disabled={!canProceed()}>
               Next <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           )}
