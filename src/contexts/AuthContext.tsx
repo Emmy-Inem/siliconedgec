@@ -65,11 +65,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
           checkAdminRole(session.user.id).finally(() => setLoading(false));
+          // After OAuth callback, the user often lands on "/" (default OAuth
+          // redirect_uri). If a post-auth destination was stashed by the
+          // influencer flow, honor it here.
+          if (event === "SIGNED_IN") {
+            try {
+              const dest = sessionStorage.getItem("sec_post_auth_redirect");
+              if (dest) {
+                const path = window.location.pathname;
+                if (path === "/" || path.startsWith("/sign-in") || path.startsWith("/sign-up")) {
+                  sessionStorage.removeItem("sec_post_auth_redirect");
+                  // Defer to next tick so React has finished updating auth state.
+                  setTimeout(() => {
+                    window.location.replace(dest);
+                  }, 50);
+                }
+              }
+            } catch {}
+          }
         } else {
           setAdminRole(null);
           setLoading(false);

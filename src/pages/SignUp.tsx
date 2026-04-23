@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,20 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = (() => {
+    const fromQuery = searchParams.get("redirect");
+    if (fromQuery) return fromQuery;
+    try {
+      return sessionStorage.getItem("sec_post_auth_redirect") || "";
+    } catch {
+      return "";
+    }
+  })();
+  const redirectQS = redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : "";
+  const emailRedirect = redirectTo
+    ? `${window.location.origin}${redirectTo}`
+    : window.location.origin;
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +42,7 @@ export default function SignUp() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: emailRedirect,
       },
     });
     setLoading(false);
@@ -46,14 +60,21 @@ export default function SignUp() {
         }).catch(() => {});
       }
       logUserActivity({ action: "signup", user_id: data.user?.id ?? null, metadata: { email, name } });
-      toast({ title: "Account created!", description: "Check your email to confirm your account." });
-      navigate("/sign-in");
+      // If a session was created immediately (auto-confirm or OAuth), honor the redirect now.
+      if (data.session) {
+        try { sessionStorage.removeItem("sec_post_auth_redirect"); } catch {}
+        toast({ title: "Welcome!", description: "Your account is ready." });
+        navigate(redirectTo || "/");
+      } else {
+        toast({ title: "Account created!", description: "Check your email to confirm your account." });
+        navigate(`/sign-in${redirectQS}`);
+      }
     }
   };
 
   const handleGoogleSignUp = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: emailRedirect,
     });
     if (error) {
       toast({ title: "Google sign up failed", description: String(error), variant: "destructive" });

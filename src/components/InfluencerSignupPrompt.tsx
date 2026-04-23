@@ -73,6 +73,17 @@ export function InfluencerSignupPrompt() {
 
   if (!payload) return null;
   const name = payload.influencer?.trim() || "a Silicon Edge partner";
+  // Destination to return to after auth — the page they landed on (or the
+  // value stashed by RedirectInfluencer).
+  let dest = "";
+  try {
+    dest =
+      sessionStorage.getItem("sec_post_auth_redirect") ||
+      location.pathname + location.search;
+  } catch {
+    dest = location.pathname + location.search;
+  }
+  const redirectQS = dest ? `?redirect=${encodeURIComponent(dest)}` : "";
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -91,7 +102,7 @@ export function InfluencerSignupPrompt() {
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button asChild className="w-full" onClick={() => handleClose(false)}>
-            <Link to="/sign-up">Create free account</Link>
+            <Link to={`/sign-up${redirectQS}`}>Create free account</Link>
           </Button>
           <Button
             asChild
@@ -99,7 +110,7 @@ export function InfluencerSignupPrompt() {
             className="w-full"
             onClick={() => handleClose(false)}
           >
-            <Link to="/sign-in">I already have an account</Link>
+            <Link to={`/sign-in${redirectQS}`}>I already have an account</Link>
           </Button>
           <button
             type="button"

@@ -283,7 +283,7 @@ export default function Pricing() {
                 key={t.name}
                 variants={staggerItem}
                 whileHover={{ y: -5 }}
-                className="glass-card rounded-xl border border-border p-6 space-y-4 hover:border-primary/20 hover:shadow-lg transition-all"
+                className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-4 hover:border-primary/40 hover:bg-white/[0.07] transition-all"
               >
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, j) => (
@@ -293,7 +293,7 @@ export default function Pricing() {
                     />
                   ))}
                 </div>
-                <p className="text-sm text-hero-muted leading-relaxed italic">
+                <p className="text-sm text-hero/90 leading-relaxed italic">
                   "{t.quote}"
                 </p>
                 <div className="flex items-center gap-3">
