@@ -432,7 +432,7 @@ export default function CourseDetail() {
                       <div className="space-y-2">
                         <Button
                           size="lg"
-                          className="w-full gap-2 bg-green-600 hover:bg-green-600 text-white cursor-default"
+                          className="w-full gap-2 cursor-default"
                           disabled
                         >
                           <CheckCircle2 className="h-4 w-4" /> Registered
