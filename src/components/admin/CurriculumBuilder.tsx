@@ -261,36 +261,84 @@ export function CurriculumBuilder({ courseId }: Props) {
       </Dialog>
 
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingLesson ? "Edit" : "Add"} {lessonForm.content_type === "quiz" ? "Quiz" : lessonForm.content_type === "assignment" ? "Assignment" : "Lesson"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); saveLesson.mutate(); }} className="space-y-4">
+            {/* Visual type picker */}
+            <div className="grid grid-cols-4 gap-1.5">
+              {[
+                { v: "video", label: "Video", icon: Video },
+                { v: "text", label: "Text", icon: FileText },
+                { v: "quiz", label: "Quiz", icon: FileQuestion },
+                { v: "assignment", label: "Task", icon: ClipboardList },
+              ].map(({ v, label, icon: Icon }) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setLessonForm({ ...lessonForm, content_type: v })}
+                  className={`flex flex-col items-center gap-1 py-2.5 rounded-lg border text-xs transition-colors ${
+                    lessonForm.content_type === v
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/40 text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div>
               <label className="text-sm font-medium block mb-1">Title</label>
               <input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} required className={inputClass} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium block mb-1">Duration</label>
                 <input value={lessonForm.duration} onChange={(e) => setLessonForm({ ...lessonForm, duration: e.target.value })} className={inputClass} placeholder="e.g. 45 min" />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1">Content Type</label>
-                <select value={lessonForm.content_type} onChange={(e) => setLessonForm({ ...lessonForm, content_type: e.target.value })} className={inputClass}>
-                  <option value="video">Video</option>
-                  <option value="text">Text</option>
-                  <option value="quiz">Quiz</option>
-                  <option value="assignment">Assignment</option>
-                </select>
+                <label className="text-sm font-medium block mb-1">Order</label>
+                <input
+                  value={editingLesson?.order_index !== undefined ? editingLesson.order_index + 1 : (lessonsByModule(lessonForm.module_id).length + 1)}
+                  readOnly
+                  className={`${inputClass} bg-muted/50 cursor-not-allowed`}
+                />
               </div>
             </div>
-            <div>
-              <label className="text-sm font-medium block mb-1">Content URL (optional)</label>
-              <input value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} className={inputClass} placeholder="https://..." />
-            </div>
+
+            {lessonForm.content_type === "video" && (
+              <div>
+                <label className="text-sm font-medium block mb-1">Video URL</label>
+                <input value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} className={inputClass} placeholder="YouTube, Vimeo, or hosted MP4" />
+              </div>
+            )}
+            {lessonForm.content_type === "text" && (
+              <div>
+                <label className="text-sm font-medium block mb-1">Lesson Content</label>
+                <textarea value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} rows={5} className={inputClass} placeholder="Paste markdown or rich text…" />
+              </div>
+            )}
+            {lessonForm.content_type === "quiz" && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <p className="font-medium">Tip: build the quiz questions next</p>
+                </div>
+                <p className="text-[11px] text-muted-foreground">After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to add questions manually or generate them with AI.</p>
+              </div>
+            )}
+            {lessonForm.content_type === "assignment" && (
+              <div>
+                <label className="text-sm font-medium block mb-1">Instructions</label>
+                <textarea value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} rows={4} className={inputClass} placeholder="Describe the task, deliverables, and grading criteria…" />
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setLessonDialogOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={saveLesson.isPending}>{saveLesson.isPending ? "Saving..." : "Save"}</Button>
