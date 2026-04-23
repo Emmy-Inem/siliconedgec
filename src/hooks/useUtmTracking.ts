@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
 const STORAGE_KEY = "sec_utm_params";
+const LEGACY_KEY = "utm_attribution"; // Older key written by RedirectInfluencer
 const COOKIE_DAYS = 30;
 
 export interface UtmParams {
@@ -36,8 +37,28 @@ function getWithExpiry(key: string): UtmParams | null {
   }
 }
 
+/**
+ * Read UTM params with legacy-key fallback. Older flows (RedirectInfluencer)
+ * wrote into "utm_attribution" with a different shape — merge those in too so
+ * influencer attribution survives across the app.
+ */
 export function getStoredUtmParams(): UtmParams {
-  return getWithExpiry(STORAGE_KEY) ?? {};
+  const fromNew = getWithExpiry(STORAGE_KEY) ?? {};
+  if (Object.keys(fromNew).length > 0) return fromNew;
+
+  // Legacy flat shape: { utm_source, utm_medium, ... captured_at }
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    const out: UtmParams = {};
+    UTM_KEYS.forEach((k) => {
+      if (parsed?.[k]) out[k] = String(parsed[k]);
+    });
+    return out;
+  } catch {
+    return {};
+  }
 }
 
 export function useUtmTracking() {
