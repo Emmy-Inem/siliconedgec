@@ -194,7 +194,7 @@ export default function Dashboard() {
             <div className="text-center py-20 text-muted-foreground">Loading your courses…</div>
           ) : (
             <Tabs defaultValue="courses" className="w-full">
-              <TabsList className="mb-6">
+              <TabsList className="mb-6 w-full sm:w-auto h-auto flex-wrap justify-start gap-1">
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Calendar ({liveClasses.length})</TabsTrigger>
