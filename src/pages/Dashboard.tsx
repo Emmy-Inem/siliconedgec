@@ -16,7 +16,10 @@ import { formatNaira } from "@/lib/format-currency";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
-import { Settings } from "lucide-react";
+import { Settings, MessageCircle, Sparkles } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+
+const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
 
 interface EnrolledCourse {
   id: string;
@@ -32,6 +35,7 @@ interface EnrolledCourse {
     category: string;
     difficulty: string;
     duration_hours: number;
+    price: number;
   };
 }
 
@@ -57,6 +61,7 @@ interface JobApplicationRow {
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
+  const { data: siteSettings } = useSiteSettings();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [applications, setApplications] = useState<JobApplicationRow[]>([]);
@@ -71,7 +76,7 @@ export default function Dashboard() {
       const [enrollRes, profileRes, bookmarkRes, appsRes] = await Promise.all([
         supabase
           .from("enrollments")
-          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours)")
+          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours, price)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
