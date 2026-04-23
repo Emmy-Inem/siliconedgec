@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle2, MessageCircle, LayoutDashboard } from "lucide-react";
+import { Loader2, CheckCircle2, MessageCircle, LayoutDashboard, LogIn } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { logUserActivity } from "@/lib/user-activity";
 import { trackLead } from "@/lib/track-lead";
+import { recordInfluencerConversion } from "@/lib/influencer-attribution";
 
 const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
 
@@ -43,6 +44,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
   const { data: settings } = useSiteSettings();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     email: user?.email ?? "",
@@ -67,6 +69,11 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
   const update = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
+    if (!user?.id) {
+      // Should not happen — the modal short-circuits to a sign-in prompt below.
+      navigate(`/sign-in?next=/courses/${courseId}`);
+      return;
+    }
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast({ title: "Check the form", description: parsed.error.issues[0].message, variant: "destructive" });
@@ -74,46 +81,85 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
     }
     setSubmitting(true);
     try {
-      const { error } = await (supabase.from("course_registrations") as any).insert({
-        course_id: courseId,
-        user_id: user?.id ?? null,
-        registration_type: "webinar",
-        ...parsed.data,
-      });
-      if (error) throw error;
+      // Pre-flight: is this user already registered for this webinar?
+      const { data: existingReg } = await (supabase.from("course_registrations") as any)
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .eq("registration_type", "webinar")
+        .maybeSingle();
 
-      // Auto-create enrollment so user can see it on dashboard.
-      // Guard against duplicates so re-registration still shows the success state.
-      if (user?.id) {
-        const { data: existing } = await supabase
-          .from("enrollments")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("course_id", courseId)
-          .maybeSingle();
-        if (!existing) {
-          await supabase.from("enrollments").insert({
-            user_id: user.id,
+      let registrationId: string | null = existingReg?.id ?? null;
+
+      if (existingReg) {
+        // Don't write a duplicate; just show the success state.
+        setAlreadyRegistered(true);
+      } else {
+        const { data: inserted, error } = await (supabase.from("course_registrations") as any)
+          .insert({
             course_id: courseId,
-            payment_status: "free",
-          });
+            user_id: user.id,
+            registration_type: "webinar",
+            ...parsed.data,
+          })
+          .select("id")
+          .single();
+        if (error) {
+          // Race condition: unique index already created a row — treat as success
+          if ((error as any)?.code === "23505") {
+            setAlreadyRegistered(true);
+          } else {
+            throw error;
+          }
+        } else {
+          registrationId = inserted?.id ?? null;
+        }
+      }
+
+      // Ensure an enrollment exists so the course shows on the dashboard.
+      const { data: existingEnroll } = await supabase
+        .from("enrollments")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .maybeSingle();
+      if (!existingEnroll) {
+        const { error: enrollErr } = await supabase.from("enrollments").insert({
+          user_id: user.id,
+          course_id: courseId,
+          payment_status: "free",
+        });
+        // Surface enrollment errors (other than unique-constraint races)
+        if (enrollErr && (enrollErr as any)?.code !== "23505") {
+          throw enrollErr;
         }
       }
 
       // Track activity & lead source
       await Promise.all([
         logUserActivity({
-          user_id: user?.id ?? null,
+          user_id: user.id,
           action: "webinar_registration",
           entity_type: "course",
           entity_id: courseId,
           metadata: { course_title: courseTitle, email: parsed.data.email },
         }),
         trackLead({ formType: "webinar_registration", formData: { course_id: courseId, ...parsed.data } }),
+        recordInfluencerConversion({
+          userId: user.id,
+          courseId,
+          conversionType: "webinar_registration",
+          registrationId,
+        }),
       ]);
 
       setDone(true);
-      toast({ title: "You're in! 🎉", description: `Confirmed for ${courseTitle}. Check your email & WhatsApp.` });
+      toast({
+        title: existingReg ? "You're already registered ✓" : "You're in! 🎉",
+        description: existingReg
+          ? `You're confirmed for ${courseTitle}. Joining link is in your email.`
+          : `Confirmed for ${courseTitle}. Check your email & WhatsApp.`,
+      });
       onSuccess?.();
       // Don't auto-close — let user click WhatsApp CTA
     } catch (e: any) {
@@ -128,20 +174,58 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading">
-            {done ? "You're in! 🎉" : `Register for ${courseTitle}`}
+            {done
+              ? alreadyRegistered ? "You're already registered ✓" : "You're in! 🎉"
+              : !user
+                ? "Sign in to register"
+                : `Register for ${courseTitle}`}
           </DialogTitle>
           <DialogDescription>
             {done
-              ? "We've sent the joining link and reminder details to your email and WhatsApp."
-              : "Fill in your details and we'll send the joining link to your email & WhatsApp."}
+              ? alreadyRegistered
+                ? "You're already on the list. Joining link is in your inbox & WhatsApp."
+                : "We've sent the joining link and reminder details to your email and WhatsApp."
+              : !user
+                ? "Free webinars require a quick sign-in so we can save your spot to your dashboard."
+                : "Fill in your details and we'll send the joining link to your email & WhatsApp."}
           </DialogDescription>
         </DialogHeader>
 
-        {done ? (
+        {!user ? (
+          <div className="py-6 text-center space-y-4">
+            <LogIn className="h-12 w-12 mx-auto text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Sign in (or create a free account) so we can save your spot and prevent duplicate registrations.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/sign-in?next=/courses/${courseId}`);
+                }}
+              >
+                Sign In
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/sign-up?next=/courses/${courseId}`);
+                }}
+              >
+                Create Account
+              </Button>
+            </div>
+          </div>
+        ) : done ? (
           <div className="py-6 text-center space-y-4">
             <CheckCircle2 className="h-14 w-14 mx-auto text-primary" />
             <div className="space-y-1">
-              <p className="font-heading font-semibold text-lg">You're confirmed for {courseTitle} 🎉</p>
+              <p className="font-heading font-semibold text-lg">
+                {alreadyRegistered ? `You're already confirmed for ${courseTitle}` : `You're confirmed for ${courseTitle} 🎉`}
+              </p>
               <p className="text-sm text-muted-foreground">
                 We've sent the joining link and reminder details to your email and WhatsApp.
                 Add it to your calendar so you don't miss it.
@@ -167,6 +251,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
                   className="w-full gap-2"
                   onClick={() => {
                     setDone(false);
+                    setAlreadyRegistered(false);
                     onOpenChange(false);
                     navigate("/dashboard");
                   }}
@@ -175,7 +260,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
                 </Button>
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => { setDone(false); onOpenChange(false); }}>
+            <Button variant="ghost" size="sm" onClick={() => { setDone(false); setAlreadyRegistered(false); onOpenChange(false); }}>
               Close
             </Button>
           </div>
