@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+// Canonical public URL — always use the published domain for shareable
+// influencer/UTM links so testers don't hit the preview-domain auth gate.
+const PUBLIC_SITE_URL = "https://siliconedgec.lovable.app";
+
 function generateCode(prefix = "PROMO") {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = prefix + "-";
@@ -355,15 +359,15 @@ export default function AdminInfluencerMarketing() {
                     content: form.utm_content,
                   };
                   const fullUrl = (form.utm_source || form.utm_campaign || form.utm_content)
-                    ? buildUtmUrl(window.location.origin, path, utm)
-                    : `${window.location.origin}${path}`;
+                    ? buildUtmUrl(PUBLIC_SITE_URL, path, utm)
+                    : `${PUBLIC_SITE_URL}${path}`;
                   return (
                     <div className="bg-primary/5 border border-primary/20 rounded-md p-2.5 space-y-1.5">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-primary flex items-center gap-1">
                         <Eye className="h-3 w-3" /> Live Preview
                       </p>
                       <p className="text-[10px] text-muted-foreground">Short link:</p>
-                      <p className="font-mono text-xs break-all text-primary">{`${window.location.origin}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
+                      <p className="font-mono text-xs break-all text-primary">{`${PUBLIC_SITE_URL}/r/${form.slug || slugify(form.influencer_name) || "your-slug"}`}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">Resolves to:</p>
                       <p className="font-mono text-[11px] break-all text-foreground">{fullUrl}</p>
                     </div>
