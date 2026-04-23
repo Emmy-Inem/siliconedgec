@@ -98,6 +98,22 @@ export default function CourseDetail() {
     enabled: !!user && !!id,
   });
 
+  // For free webinars, also check course_registrations so the CTA reflects
+  // "Registered" even if the enrollment row is somehow missing.
+  const { data: webinarReg } = useQuery({
+    queryKey: ["webinar-registration", id, user?.id],
+    queryFn: async () => {
+      const { data } = await (supabase.from("course_registrations") as any)
+        .select("id")
+        .eq("user_id", user!.id)
+        .eq("course_id", id!)
+        .eq("registration_type", "webinar")
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!id,
+  });
+
   const enroll = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("enrollments").insert({
@@ -108,18 +124,10 @@ export default function CourseDetail() {
       });
       if (error) throw error;
 
-      // Track lead with UTM attribution
-      const utm = getStoredUtmParams();
+      // Track lead with UTM attribution (standardized: course_id only, UTMs auto-attached)
       await trackLead({
         formType: "enrollment",
-        formData: {
-          courseId: id,
-          utm_source: utm.utm_source,
-          utm_medium: utm.utm_medium,
-          utm_campaign: utm.utm_campaign,
-          utm_content: utm.utm_content,
-          utm_term: utm.utm_term,
-        },
+        formData: { course_id: id },
       });
       await logUserActivity({
         user_id: user!.id,
@@ -179,7 +187,8 @@ export default function CourseDetail() {
   }
 
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
-  const isEnrolled = !!enrollment;
+  const isFreeWebinar = course.price === 0 || course.title.toUpperCase().startsWith("FREE");
+  const isEnrolled = !!enrollment || (isFreeWebinar && !!webinarReg);
   const bookmarked = isBookmarked(id!);
   const inCart = isInCart(id!);
   const originalPrice = Math.round(course.price * 1.2);
@@ -428,7 +437,7 @@ export default function CourseDetail() {
                   </div>
 
                   {isEnrolled ? (
-                    (course.price === 0 || course.title.toUpperCase().startsWith("FREE")) ? (
+                    isFreeWebinar ? (
                       <div className="space-y-2">
                         <Button
                           size="lg"
@@ -449,13 +458,23 @@ export default function CourseDetail() {
                           </Link>
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
-                          ✓ You're enrolled — {enrollment.progress_percentage ?? 0}% complete
+                          ✓ You're enrolled — {enrollment?.progress_percentage ?? 0}% complete
                         </p>
                       </div>
                     )
-                  ) : (course.price === 0 || course.title.toUpperCase().startsWith("FREE")) ? (
+                  ) : isFreeWebinar ? (
                     <div className="space-y-2">
-                      <Button size="lg" className="w-full gap-2" onClick={() => setRegisterOpen(true)}>
+                      <Button
+                        size="lg"
+                        className="w-full gap-2"
+                        onClick={() => {
+                          if (!user) {
+                            navigate(`/sign-in?next=/courses/${id}`);
+                            return;
+                          }
+                          setRegisterOpen(true);
+                        }}
+                      >
                         <CheckCircle2 className="h-4 w-4" /> Register for Free
                       </Button>
                       <p className="text-xs text-center text-muted-foreground">No payment required</p>
@@ -575,7 +594,10 @@ export default function CourseDetail() {
           onOpenChange={setRegisterOpen}
           courseId={course.id}
           courseTitle={course.title}
-          onSuccess={() => qc.invalidateQueries({ queryKey: ["enrollment", id] })}
+          onSuccess={() => {
+            qc.invalidateQueries({ queryKey: ["enrollment", id] });
+            qc.invalidateQueries({ queryKey: ["webinar-registration", id] });
+          }}
         />
       )}
 
