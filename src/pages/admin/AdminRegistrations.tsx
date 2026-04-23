@@ -206,15 +206,16 @@ export default function AdminRegistrations() {
               <TableRow>
                 <TableHead className="w-10"><Checkbox checked={selected.size > 0 && selected.size === filtered.length} onCheckedChange={toggleAll} /></TableHead>
                 <TableHead>Name</TableHead><TableHead>Contact</TableHead><TableHead>Course</TableHead>
-                <TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Updated</TableHead>
+                <TableHead>Type</TableHead><TableHead>Source</TableHead><TableHead>Status</TableHead><TableHead>Updated</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No registrations match your filters.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No registrations match your filters.</TableCell></TableRow>
               ) : filtered.map((r) => {
                 const sm = statusMeta(r.status);
+                const attr = attributionFor(r);
                 return (
                   <TableRow key={r.id} className={selected.has(r.id) ? "bg-primary/5" : ""}>
                     <TableCell><Checkbox checked={selected.has(r.id)} onCheckedChange={() => toggleSelect(r.id)} /></TableCell>
@@ -228,6 +229,23 @@ export default function AdminRegistrations() {
                     </TableCell>
                     <TableCell className="text-xs max-w-[180px] truncate">{courseTitle(r.course_id)}</TableCell>
                     <TableCell><Badge variant="outline" className="capitalize">{r.registration_type}</Badge></TableCell>
+                    <TableCell>
+                      {attr ? (
+                        <div className="text-xs">
+                          <div className="font-medium text-primary">
+                            {attr.promo_codes?.influencer_name ?? attr.utm_source ?? "UTM"}
+                          </div>
+                          {attr.promo_codes?.code && (
+                            <div className="text-[10px] text-muted-foreground font-mono">{attr.promo_codes.code}</div>
+                          )}
+                          {!attr.promo_codes && attr.utm_campaign && (
+                            <div className="text-[10px] text-muted-foreground">{attr.utm_campaign}</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Direct</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Select value={r.status} onValueChange={(v) => updateStatus(r.id, v)}>
                         <SelectTrigger className={`h-8 w-36 text-xs border ${sm.color}`}><SelectValue /></SelectTrigger>
