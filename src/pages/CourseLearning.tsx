@@ -11,10 +11,12 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { LiveClassesTab } from "@/components/LiveClassesTab";
 import { LessonQuiz } from "@/components/LessonQuiz";
+import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { data: publicAccess } = usePublicAccessMode();
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
 
@@ -139,7 +141,7 @@ export default function CourseLearning() {
     },
   });
 
-  if (!user) return <Navigate to="/sign-in" replace />;
+  if (!user && !publicAccess) return <Navigate to="/sign-in" replace />;
   if (enrollLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!enrollment) return (
     <div className="min-h-screen bg-background">

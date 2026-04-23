@@ -14,10 +14,12 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
+import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 
 export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
   const { user } = useAuth();
+  const { data: publicAccess } = usePublicAccessMode();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
@@ -66,7 +68,12 @@ export default function Cart() {
   }, [user]);
 
   const handleCheckout = () => {
-    if (!user) { navigate("/sign-in"); return; }
+    if (!user && !publicAccess) { navigate("/sign-in"); return; }
+    if (!user && publicAccess) {
+      toast({ title: "Sign in to checkout", description: "Public access lets you browse — sign in to complete a purchase." });
+      navigate("/sign-in");
+      return;
+    }
     if (total === 0) { handleFreeEnroll(); return; }
     handlePaidCheckout();
   };

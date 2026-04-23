@@ -19,6 +19,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAdminActivity } from "@/lib/admin-logger";
+import { Switch } from "@/components/ui/switch";
+import { PUBLIC_ACCESS_KEY, usePublicAccessMode } from "@/hooks/usePublicAccessMode";
+import { Eye } from "lucide-react";
 
 type Range = "1d" | "7d" | "30d" | "all";
 const RANGE_DAYS: Record<Range, number> = { "1d": 1, "7d": 7, "30d": 30, "all": 9999 };
@@ -27,6 +30,41 @@ export default function AdminLoginSecurity() {
   const { toast } = useToast();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { data: publicAccess = false } = usePublicAccessMode();
+
+  const togglePublicAccess = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { data: existing } = await supabase
+        .from("site_content")
+        .select("id")
+        .eq("key", PUBLIC_ACCESS_KEY)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabase
+          .from("site_content")
+          .update({ value: enabled ? "true" : "false" })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("site_content")
+          .insert({ key: PUBLIC_ACCESS_KEY, value: enabled ? "true" : "false", content_type: "setting" });
+        if (error) throw error;
+      }
+      await logAdminActivity(enabled ? "enable_public_access" : "disable_public_access", "security");
+    },
+    onSuccess: (_, enabled) => {
+      qc.invalidateQueries({ queryKey: ["public-access-mode"] });
+      toast({
+        title: enabled ? "Public access ON" : "Public access OFF",
+        description: enabled
+          ? "Visitors can now browse Dashboard and course pages without signing in."
+          : "Sign-in is required again for protected pages.",
+      });
+    },
+    onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
+  });
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "failed" | "success">("failed");
   const [range, setRange] = useState<Range>("7d");
@@ -233,6 +271,38 @@ export default function AdminLoginSecurity() {
                 <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Manual IP blocklist with expiry support</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Email signups require verification</li>
               </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Public Access Mode toggle — lets visitors browse without signing in */}
+      <Card className={publicAccess ? "border-amber-500/40 bg-amber-500/5" : "border-border"}>
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Eye className={`h-5 w-5 mt-0.5 ${publicAccess ? "text-amber-500" : "text-muted-foreground"}`} />
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    Public Access Mode
+                    {publicAccess && <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-600 dark:text-amber-400">ACTIVE</Badge>}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    When ON, visitors can view Dashboard and course pages without signing in. Admin area always stays protected. Checkout still requires sign-in.
+                  </p>
+                </div>
+                <Switch
+                  checked={publicAccess}
+                  disabled={togglePublicAccess.isPending}
+                  onCheckedChange={(v) => togglePublicAccess.mutate(v)}
+                />
+              </div>
+              {publicAccess && (
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2 flex items-center gap-1.5">
+                  <AlertTriangle className="h-3 w-3" /> Remember to turn this OFF when public testing is done.
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
