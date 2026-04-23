@@ -60,6 +60,14 @@ export default function RedirectInfluencer() {
         url.searchParams.set("utm_campaign", (data.utm_campaign || data.code || "").toLowerCase());
         if (data.utm_content || slug) url.searchParams.set("utm_content", data.utm_content || slug);
       }
+      // Stash intended destination so the auth flow can return the user here
+      // after sign-up / sign-in / OAuth callback.
+      try {
+        sessionStorage.setItem(
+          "sec_post_auth_redirect",
+          url.pathname + url.search,
+        );
+      } catch {}
       navigate(url.pathname + url.search, { replace: true });
     };
     run();

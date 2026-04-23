@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,16 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = (() => {
+    const fromQuery = searchParams.get("redirect");
+    if (fromQuery) return fromQuery;
+    try {
+      return sessionStorage.getItem("sec_post_auth_redirect") || "/";
+    } catch {
+      return "/";
+    }
+  })();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,13 +72,17 @@ export default function SignIn() {
       toast({ title: "Sign in failed", description: msg, variant: "destructive" });
     } else {
       logUserActivity({ action: "login", metadata: { email } });
-      navigate("/");
+      try { sessionStorage.removeItem("sec_post_auth_redirect"); } catch {}
+      navigate(redirectTo || "/");
     }
   };
 
   const handleGoogleSignIn = async () => {
+    const target = redirectTo && redirectTo !== "/"
+      ? `${window.location.origin}${redirectTo}`
+      : window.location.origin;
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: target,
     });
     if (error) {
       toast({ title: "Google sign in failed", description: String(error), variant: "destructive" });
