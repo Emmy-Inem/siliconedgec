@@ -10,12 +10,12 @@ import {
 } from "lucide-react";
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
+import { CurriculumBuilder } from "@/components/admin/CurriculumBuilder";
 
 const STEPS = [
-  { label: "Course Info", icon: "📝" },
-  { label: "Media & Pricing", icon: "💰" },
-  { label: "Inventory & Links", icon: "📦" },
-  { label: "Finalize", icon: "🚀" },
+  { label: "Basics" },
+  { label: "Curriculum" },
+  { label: "Additional" },
 ];
 
 const PRODUCT_TYPES = ["Simple Product", "Grouped Product", "External Product", "Variable Product"];
