@@ -390,6 +390,10 @@ export default function Dashboard() {
                 )}
               </TabsContent>
 
+              <TabsContent value="receipts">
+                <Receipts />
+              </TabsContent>
+
               <TabsContent value="profile">
                 <ProfileSettings />
               </TabsContent>
