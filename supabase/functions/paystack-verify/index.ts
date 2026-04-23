@@ -71,6 +71,26 @@ Deno.serve(async (req) => {
       { onConflict: "user_id,course_id" },
     );
 
+    // Audit trail entry — system-attributed verification
+    try {
+      await supabase.from("admin_activity_log").insert({
+        admin_user_id: order.user_id,
+        entity_type: "order",
+        entity_id: order.id,
+        action: "verify",
+        details: {
+          channel: "paystack",
+          checkout_type: "single",
+          reference,
+          paystack_reference: psData.data.reference,
+          amount: Number(order.amount ?? 0),
+          currency: order.currency,
+          gateway_response: psData.data?.gateway_response,
+          ip: psData.data?.ip_address,
+        },
+      });
+    } catch (e) { console.error("audit insert failed", e); }
+
     // Fire enrollment confirmation email (best effort)
     try {
       const [{ data: courseRow }, { data: profileRow }, { data: { user: userRow } }] = await Promise.all([
