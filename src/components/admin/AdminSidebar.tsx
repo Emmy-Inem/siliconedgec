@@ -49,7 +49,7 @@ function SidebarContent({ collapsed, onNavigate, filteredSections }: { collapsed
   const location = useLocation();
 
   return (
-    <nav data-admin-sidebar-nav className="flex-1 overflow-y-auto p-3 space-y-5">
+    <nav data-admin-sidebar-nav className="flex-1 overflow-y-auto scrollbar-hover-only p-3 space-y-5">
       {filteredSections.map((section) => (
         <div key={section.label}>
           <AnimatePresence>
