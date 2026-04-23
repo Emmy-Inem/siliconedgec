@@ -37,6 +37,20 @@ export interface DbCourse {
   modules: DbModule[];
 }
 
+// Webinars (free / titles starting with "FREE") sort first, then newest.
+export function isWebinarCourse(c: Pick<DbCourse, "price" | "title">): boolean {
+  return (c.price ?? 0) === 0 || (c.title ?? "").toUpperCase().startsWith("FREE");
+}
+
+function sortWebinarsFirst(list: DbCourse[]): DbCourse[] {
+  return [...list].sort((a, b) => {
+    const aw = isWebinarCourse(a) ? 1 : 0;
+    const bw = isWebinarCourse(b) ? 1 : 0;
+    if (aw !== bw) return bw - aw; // webinars first
+    return 0; // preserve existing created_at desc order
+  });
+}
+
 // Lightweight fetch for listing pages — no modules/lessons
 async function fetchCourses(): Promise<DbCourse[]> {
   const { data: courses, error } = await supabase
@@ -48,11 +62,12 @@ async function fetchCourses(): Promise<DbCourse[]> {
   if (error) throw error;
   if (!courses || courses.length === 0) return [];
 
-  return courses.map((c: any) => ({
+  const mapped = courses.map((c: any) => ({
     ...c,
     instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
     modules: [],
   }));
+  return sortWebinarsFirst(mapped);
 }
 
 // Full fetch with modules/lessons for detail page
