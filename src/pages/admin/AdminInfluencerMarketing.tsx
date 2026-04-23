@@ -143,6 +143,8 @@ export default function AdminInfluencerMarketing() {
   const totalUses = promoCodes.reduce((s: number, p: any) => s + (p.usage_count || 0), 0);
   const activeCount = promoCodes.filter((p: any) => p.is_active).length;
   const totalCommission = referrals.reduce((s: number, r: any) => s + Number(r.commission_earned || 0), 0);
+  const webinarRegs = referrals.filter((r: any) => r.conversion_type === "webinar_registration").length;
+  const paidConvs = referrals.filter((r: any) => r.conversion_type === "paid_enrollment").length;
 
   // Mutations
   const createPromo = useMutation({
