@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_ips: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          ip_address: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author_id: string | null
@@ -1950,6 +1977,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clear_login_lockout: { Args: { _key: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1957,6 +1985,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ip_blocked: { Args: { _ip: string }; Returns: boolean }
       is_login_locked: {
         Args: { _email: string; _ip: string }
         Returns: boolean
