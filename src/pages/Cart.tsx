@@ -74,10 +74,13 @@ export default function Cart() {
   const handlePaidCheckout = async () => {
     setProcessing(true);
     try {
+      const { getStoredUtmParams } = await import("@/hooks/useUtmTracking");
+      const utm = getStoredUtmParams();
       const { data, error } = await supabase.functions.invoke("paystack-cart-initialize", {
         body: {
           course_ids: items.map((i) => i.course_id),
           callback_url: `${window.location.origin}/cart`,
+          utm,
         },
       });
       if (error) throw error;
