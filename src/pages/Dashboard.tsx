@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 import { ProfileSettings } from "@/components/ProfileSettings";
+import { Receipts } from "@/components/Receipts";
 import { Settings } from "lucide-react";
 
 interface EnrolledCourse {
@@ -198,6 +199,7 @@ export default function Dashboard() {
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Calendar ({liveClasses.length})</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
+                <TabsTrigger value="receipts">Receipts</TabsTrigger>
                 <TabsTrigger value="profile"><Settings className="h-3.5 w-3.5 mr-1" />Profile</TabsTrigger>
               </TabsList>
 
