@@ -55,7 +55,7 @@ export default function VerifyReceipt() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Verify Receipt — Silicon Edge Consulting" description="Verify the authenticity of a Silicon Edge Consulting payment receipt." noIndex />
+      <SEO title="Verify Receipt — Silicon Edge Consulting" description="Verify the authenticity of a Silicon Edge Consulting payment receipt." />
       <Header />
       <main className="container mx-auto px-4 py-12 md:py-20 max-w-3xl">
         <Button variant="ghost" size="sm" asChild className="mb-6">
