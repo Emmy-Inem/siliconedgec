@@ -171,7 +171,7 @@ export function AdminSidebar() {
         </AnimatePresence>
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed bottom-4 left-4 z-30 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center md:hidden"
+          className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center md:hidden ring-2 ring-background"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
