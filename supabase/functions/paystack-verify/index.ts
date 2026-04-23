@@ -121,12 +121,18 @@ Deno.serve(async (req) => {
     }
 
     // Update promo code usage if applicable
-    if (order.promo_code_id) {
+    // Resolve attribution: explicit promo code on order OR UTM stored in order metadata
+    const orderUtm = (order.metadata && (order.metadata as any).utm) || {};
+    let promoIdForReferral: string | null = order.promo_code_id ?? null;
+    let promoForCommission: any = null;
+
+    if (promoIdForReferral) {
       const { data: promo } = await supabase
         .from("promo_codes")
         .select("usage_count, revenue_generated, commission_percentage")
-        .eq("id", order.promo_code_id)
+        .eq("id", promoIdForReferral)
         .single();
+      promoForCommission = promo;
       if (promo) {
         const commission = (Number(order.amount) * Number(promo.commission_percentage ?? 0)) / 100;
         await supabase
@@ -135,18 +141,57 @@ Deno.serve(async (req) => {
             usage_count: (promo.usage_count ?? 0) + 1,
             revenue_generated: Number(promo.revenue_generated ?? 0) + Number(order.amount),
           })
-          .eq("id", order.promo_code_id);
+          .eq("id", promoIdForReferral);
+      }
+    } else if (orderUtm.utm_campaign || orderUtm.utm_source) {
+      // Try to resolve a promo from UTM (campaign === code, then slug === source)
+      let promoRow: any = null;
+      if (orderUtm.utm_campaign) {
+        const { data } = await supabase
+          .from("promo_codes")
+          .select("id, usage_count, revenue_generated, commission_percentage")
+          .ilike("code", orderUtm.utm_campaign)
+          .eq("is_active", true)
+          .maybeSingle();
+        promoRow = data;
+      }
+      if (!promoRow && orderUtm.utm_source) {
+        const { data } = await supabase
+          .from("promo_codes")
+          .select("id, usage_count, revenue_generated, commission_percentage")
+          .ilike("slug", orderUtm.utm_source)
+          .eq("is_active", true)
+          .maybeSingle();
+        promoRow = data;
+      }
+      if (promoRow) {
+        promoIdForReferral = promoRow.id;
+        promoForCommission = promoRow;
+      }
+    }
 
-        await supabase.from("influencer_referrals").insert({
-          promo_code_id: order.promo_code_id,
+    // Always upsert an influencer_referrals row when we have ANY attribution
+    if (promoIdForReferral || orderUtm.utm_source || orderUtm.utm_campaign) {
+      const commissionPct = Number(promoForCommission?.commission_percentage ?? 0);
+      const commission = (Number(order.amount) * commissionPct) / 100;
+      await supabase.from("influencer_referrals").upsert(
+        {
+          promo_code_id: promoIdForReferral,
           user_id: order.user_id,
           course_id: order.course_id,
+          conversion_type: "paid_enrollment",
+          order_id: order.id,
           original_price: Number(order.amount) + Number(order.discount_amount ?? 0),
           discount_applied: Number(order.discount_amount ?? 0),
           final_price: Number(order.amount),
           commission_earned: commission,
-        });
-      }
+          utm_source: orderUtm.utm_source ?? null,
+          utm_medium: orderUtm.utm_medium ?? null,
+          utm_campaign: orderUtm.utm_campaign ?? null,
+          utm_content: orderUtm.utm_content ?? null,
+        },
+        { onConflict: "user_id,course_id,conversion_type", ignoreDuplicates: false },
+      );
     }
 
     return new Response(JSON.stringify({ verified: true, course_id: order.course_id }), {
