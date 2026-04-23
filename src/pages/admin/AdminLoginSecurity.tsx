@@ -19,6 +19,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAdminActivity } from "@/lib/admin-logger";
+import { Switch } from "@/components/ui/switch";
+import { PUBLIC_ACCESS_KEY, usePublicAccessMode } from "@/hooks/usePublicAccessMode";
+import { Eye } from "lucide-react";
 
 type Range = "1d" | "7d" | "30d" | "all";
 const RANGE_DAYS: Record<Range, number> = { "1d": 1, "7d": 7, "30d": 30, "all": 9999 };
@@ -27,6 +30,41 @@ export default function AdminLoginSecurity() {
   const { toast } = useToast();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { data: publicAccess = false } = usePublicAccessMode();
+
+  const togglePublicAccess = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { data: existing } = await supabase
+        .from("site_content")
+        .select("id")
+        .eq("key", PUBLIC_ACCESS_KEY)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabase
+          .from("site_content")
+          .update({ value: enabled ? "true" : "false" })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("site_content")
+          .insert({ key: PUBLIC_ACCESS_KEY, value: enabled ? "true" : "false", content_type: "setting" });
+        if (error) throw error;
+      }
+      await logAdminActivity(enabled ? "enable_public_access" : "disable_public_access", "security");
+    },
+    onSuccess: (_, enabled) => {
+      qc.invalidateQueries({ queryKey: ["public-access-mode"] });
+      toast({
+        title: enabled ? "Public access ON" : "Public access OFF",
+        description: enabled
+          ? "Visitors can now browse Dashboard and course pages without signing in."
+          : "Sign-in is required again for protected pages.",
+      });
+    },
+    onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
+  });
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "failed" | "success">("failed");
   const [range, setRange] = useState<Range>("7d");
