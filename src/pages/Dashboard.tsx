@@ -228,6 +228,57 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="space-y-10">
+                    {webinars.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                          <h2 className="font-heading text-xl font-bold">Upcoming Webinars</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {webinars.map((enroll, i) => {
+                            const next = nextLiveClassFor(enroll.course_id);
+                            return (
+                              <motion.div key={enroll.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
+                                <Card className="overflow-hidden border-primary/30 hover:shadow-lg transition-shadow">
+                                  {enroll.course?.thumbnail_url && (
+                                    <img src={enroll.course.thumbnail_url} alt={enroll.course.title} className="w-full h-40 object-cover" />
+                                  )}
+                                  <CardHeader className="pb-2">
+                                    <Badge className="bg-primary/10 text-primary border-0 text-xs w-fit mb-1">
+                                      <Sparkles className="h-3 w-3 mr-1" /> Free webinar
+                                    </Badge>
+                                    <CardTitle className="text-base leading-snug">{enroll.course?.title}</CardTitle>
+                                  </CardHeader>
+                                  <CardContent className="space-y-3">
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                      <Calendar className="h-3.5 w-3.5" />
+                                      {next
+                                        ? new Date(next.scheduled_at).toLocaleString("en-US", {
+                                            weekday: "short",
+                                            month: "short",
+                                            day: "numeric",
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                          })
+                                        : "Schedule TBA — we'll notify you"}
+                                    </p>
+                                    <Button size="sm" className="w-full gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white" asChild>
+                                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                                        <MessageCircle className="h-3.5 w-3.5" /> Join WhatsApp Community
+                                      </a>
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="w-full" asChild>
+                                      <Link to={`/courses/${enroll.course_id}`}>Open Course</Link>
+                                    </Button>
+                                  </CardContent>
+                                </Card>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {inProgress.length > 0 && (
                       <div>
                         <h2 className="font-heading text-xl font-bold mb-4">In Progress</h2>
