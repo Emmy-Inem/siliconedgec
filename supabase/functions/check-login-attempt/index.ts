@@ -25,10 +25,17 @@ Deno.serve(async (req) => {
     // First check if locked
     const { data: locked } = await supabase.rpc("is_login_locked", { _email: cleanEmail, _ip: ip });
 
+    // Check if IP is on the blocklist
+    let ipBlocked = false;
+    try {
+      const { data } = await (supabase.rpc as any)("is_ip_blocked", { _ip: ip });
+      ipBlocked = !!data;
+    } catch {}
+
     // Log attempt
     await supabase.from("login_attempts").insert({ email: cleanEmail, ip_address: ip, success, user_agent: ua });
 
-    return new Response(JSON.stringify({ locked: !!locked }), {
+    return new Response(JSON.stringify({ locked: !!locked, ip_blocked: ipBlocked }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

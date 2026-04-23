@@ -123,6 +123,19 @@ export default function CourseLearning() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lesson-progress"] });
       toast({ title: "Lesson marked as complete!" });
+      // Audit user activity for completion analytics
+      try {
+        const lesson = allLessons.find((l) => l.id === selectedLessonId);
+        import("@/lib/user-activity").then(({ logUserActivity }) =>
+          logUserActivity({
+            user_id: user?.id ?? null,
+            action: "lesson_complete",
+            entity_type: "lesson",
+            entity_id: selectedLessonId ?? undefined,
+            metadata: { course_id: id, title: lesson?.title },
+          })
+        );
+      } catch {}
     },
   });
 
