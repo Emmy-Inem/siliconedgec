@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Copy, Trash2, TrendingUp, Users, DollarSign, Ticket,
-  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2
+  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2, MousePointerClick
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -131,6 +131,19 @@ export default function AdminInfluencerMarketing() {
       return data ?? [];
     },
   });
+
+  // Per-promo click counts (page visits with matching utm_campaign or utm_source=slug)
+  const { data: clickCounts = {} } = useQuery({
+    queryKey: ["admin-promo-click-counts"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("influencer_click_counts");
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      (data ?? []).forEach((r: any) => { map[r.promo_code_id] = Number(r.clicks ?? 0); });
+      return map;
+    },
+  });
+  const totalClicks = Object.values(clickCounts).reduce((s: number, n: number) => s + n, 0);
 
   const computeLandingPath = (f: typeof form): string => {
     if (f.landing_target === "home") return "/";
@@ -406,8 +419,9 @@ export default function AdminInfluencerMarketing() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <StatCard icon={Ticket} label="Active Codes" value={activeCount} />
+        <StatCard icon={MousePointerClick} label="Link Clicks" value={totalClicks} />
         <StatCard icon={Users} label="Webinar Regs" value={webinarRegs} />
         <StatCard icon={Users} label="Paid Conversions" value={paidConvs} />
         <StatCard icon={DollarSign} label="Revenue Generated" value={`$${totalRevenue.toLocaleString()}`} />
@@ -438,6 +452,9 @@ export default function AdminInfluencerMarketing() {
                       <TableHead>Influencer</TableHead>
                       <TableHead>Discount</TableHead>
                       <TableHead>Commission</TableHead>
+                      <TableHead className="text-center">Clicks</TableHead>
+                      <TableHead className="text-center">Webinar</TableHead>
+                      <TableHead className="text-center">Paid</TableHead>
                       <TableHead className="text-center">Uses</TableHead>
                       <TableHead>Revenue</TableHead>
                       <TableHead>Status</TableHead>
@@ -448,6 +465,10 @@ export default function AdminInfluencerMarketing() {
                     {promoCodes.map((pc: any) => {
                       const expired = pc.expires_at && new Date(pc.expires_at) < new Date();
                       const maxed = pc.max_uses && pc.usage_count >= pc.max_uses;
+                      const rs = referrals.filter((r: any) => r.promo_code_id === pc.id);
+                      const wCount = rs.filter((r: any) => r.conversion_type === "webinar_registration").length;
+                      const pCount = rs.filter((r: any) => r.conversion_type === "paid_enrollment").length;
+                      const clicks = clickCounts[pc.id] ?? 0;
                       return (
                         <TableRow key={pc.id}>
                           <TableCell>
@@ -465,6 +486,9 @@ export default function AdminInfluencerMarketing() {
                             {pc.discount_type === "percentage" ? `${pc.discount_value}%` : `$${pc.discount_value}`}
                           </TableCell>
                           <TableCell>{pc.commission_percentage}%</TableCell>
+                          <TableCell className="text-center font-medium">{clicks}</TableCell>
+                          <TableCell className="text-center">{wCount}</TableCell>
+                          <TableCell className="text-center">{pCount}</TableCell>
                           <TableCell className="text-center">
                             {pc.usage_count}{pc.max_uses ? `/${pc.max_uses}` : ""}
                           </TableCell>
@@ -587,11 +611,13 @@ export default function AdminInfluencerMarketing() {
                         webinar_count: rs.filter((r: any) => r.conversion_type === "webinar_registration").length,
                         paid_count: rs.filter((r: any) => r.conversion_type === "paid_enrollment").length,
                         commission_total: rs.reduce((s: number, r: any) => s + Number(r.commission_earned || 0), 0),
+                        clicks: clickCounts[pc.id] ?? 0,
                       };
                     })
                     .sort((a: any, b: any) =>
                       Number(b.revenue_generated) - Number(a.revenue_generated) ||
-                      (b.paid_count + b.webinar_count) - (a.paid_count + a.webinar_count)
+                      (b.paid_count + b.webinar_count) - (a.paid_count + a.webinar_count) ||
+                      b.clicks - a.clicks
                     )
                     .slice(0, 10)
                     .map((pc: any, i: number) => (
@@ -606,7 +632,7 @@ export default function AdminInfluencerMarketing() {
                         <div className="text-right">
                           <p className="font-heading font-bold text-sm">${Number(pc.revenue_generated).toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">
-                            {pc.paid_count} paid · {pc.webinar_count} webinar
+                            {pc.clicks} clicks · {pc.webinar_count} webinar · {pc.paid_count} paid
                           </p>
                         </div>
                       </div>

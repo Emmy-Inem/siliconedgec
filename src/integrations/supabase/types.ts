@@ -2009,6 +2009,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      influencer_click_counts: {
+        Args: never
+        Returns: {
+          clicks: number
+          promo_code_id: string
+        }[]
+      }
       is_ip_blocked: { Args: { _ip: string }; Returns: boolean }
       is_login_locked: {
         Args: { _email: string; _ip: string }

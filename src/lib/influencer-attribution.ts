@@ -68,10 +68,10 @@ export async function recordInfluencerConversion(opts: {
     if (promo) promoId = promo.id;
   }
 
-  // Only record if there is *some* attribution (promo OR UTM source)
-  if (!promoId && !utm.utm_source && !utm.utm_campaign) return;
+  // Only record if there is *some* attribution (promo OR UTM source/campaign/content)
+  if (!promoId && !utm.utm_source && !utm.utm_campaign && !utm.utm_content) return;
 
-  await (supabase.from("influencer_referrals") as any).upsert(
+  const { error } = await (supabase.from("influencer_referrals") as any).upsert(
     {
       user_id: opts.userId,
       course_id: opts.courseId,
@@ -90,4 +90,9 @@ export async function recordInfluencerConversion(opts: {
     },
     { onConflict: "user_id,course_id,conversion_type", ignoreDuplicates: true },
   );
+  if (error) {
+    // Surface to console so you can see attribution failures during testing,
+    // but never block the registration/checkout flow.
+    console.warn("[influencer-attribution] failed to record referral", error);
+  }
 }
