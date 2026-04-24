@@ -309,7 +309,7 @@ export default function AdminCourseCreate() {
             <p className="text-[11px] sm:text-xs text-muted-foreground hidden sm:flex items-center gap-2">
               <span>Step {step + 1} of {STEPS.length} · {STEPS[step].label}</span>
               {autoSaving && <span className="text-primary inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Auto-saving…</span>}
-              {!autoSaving && lastSavedAt && <span className="text-green-600">✓ Saved {lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+              {!autoSaving && lastSavedAt && <span className="text-primary">✓ Saved {lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
             </p>
           </div>
         </div>
