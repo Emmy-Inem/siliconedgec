@@ -657,6 +657,7 @@ export type Database = {
           title: string
           updated_at: string
           upsell_course_ids: string[] | null
+          whats_included: string[] | null
         }
         Insert: {
           category: string
@@ -691,6 +692,7 @@ export type Database = {
           title: string
           updated_at?: string
           upsell_course_ids?: string[] | null
+          whats_included?: string[] | null
         }
         Update: {
           category?: string
@@ -725,6 +727,7 @@ export type Database = {
           title?: string
           updated_at?: string
           upsell_course_ids?: string[] | null
+          whats_included?: string[] | null
         }
         Relationships: [
           {
