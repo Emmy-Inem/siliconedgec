@@ -46,6 +46,7 @@ export default function AdminCourseCreate() {
     difficulty: "Beginner",
     duration_hours: 10,
     learning_outcomes: "",
+    whats_included: "",
     // Step 2
     thumbnail_url: null as string | null,
     intro_video_url: "",
@@ -93,6 +94,7 @@ export default function AdminCourseCreate() {
         difficulty: existingCourse.difficulty,
         duration_hours: Number(existingCourse.duration_hours),
         learning_outcomes: (existingCourse.learning_outcomes ?? []).join("\n"),
+        whats_included: ((existingCourse as any).whats_included ?? []).join("\n"),
         thumbnail_url: existingCourse.thumbnail_url ?? null,
         intro_video_url: (existingCourse as any).intro_video_url ?? "",
         price: Number(existingCourse.price),
@@ -190,6 +192,7 @@ export default function AdminCourseCreate() {
     difficulty: form.difficulty,
     duration_hours: form.duration_hours,
     learning_outcomes: form.learning_outcomes.split("\n").map(s => s.trim()).filter(Boolean),
+    whats_included: form.whats_included.split("\n").map(s => s.trim()).filter(Boolean),
     thumbnail_url: form.thumbnail_url,
     price: form.price,
     is_published: (statusOverride || form.status) === "published",
