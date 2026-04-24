@@ -506,6 +506,16 @@ export default function CourseDetail() {
                 {/* What's Included */}
                 <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                   <h3 className="font-heading font-semibold text-base">What's included</h3>
+                  {((course as any).whats_included?.length ?? 0) > 0 ? (
+                    <ul className="space-y-3 text-sm text-muted-foreground">
+                      {((course as any).whats_included as string[]).map((item, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-center gap-3">
                       <Clock className="h-4 w-4 text-primary flex-shrink-0" />
@@ -528,6 +538,7 @@ export default function CourseDetail() {
                       Lifetime access
                     </li>
                   </ul>
+                  )}
                 </div>
 
                 {/* Instructor Card */}
