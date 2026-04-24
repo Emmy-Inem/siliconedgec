@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Copy, Trash2, TrendingUp, Users, DollarSign, Ticket,
-  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2
+  Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2, MousePointerClick
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -131,6 +131,19 @@ export default function AdminInfluencerMarketing() {
       return data ?? [];
     },
   });
+
+  // Per-promo click counts (page visits with matching utm_campaign or utm_source=slug)
+  const { data: clickCounts = {} } = useQuery({
+    queryKey: ["admin-promo-click-counts"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("influencer_click_counts");
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      (data ?? []).forEach((r: any) => { map[r.promo_code_id] = Number(r.clicks ?? 0); });
+      return map;
+    },
+  });
+  const totalClicks = Object.values(clickCounts).reduce((s: number, n: number) => s + n, 0);
 
   const computeLandingPath = (f: typeof form): string => {
     if (f.landing_target === "home") return "/";
@@ -406,8 +419,9 @@ export default function AdminInfluencerMarketing() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <StatCard icon={Ticket} label="Active Codes" value={activeCount} />
+        <StatCard icon={MousePointerClick} label="Link Clicks" value={totalClicks} />
         <StatCard icon={Users} label="Webinar Regs" value={webinarRegs} />
         <StatCard icon={Users} label="Paid Conversions" value={paidConvs} />
         <StatCard icon={DollarSign} label="Revenue Generated" value={`$${totalRevenue.toLocaleString()}`} />
