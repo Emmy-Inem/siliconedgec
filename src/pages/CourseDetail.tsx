@@ -566,8 +566,8 @@ export default function CourseDetail() {
                         <p className="text-xs text-muted-foreground">Reviews</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full text-xs">
-                      View Details
+                    <Button asChild variant="outline" size="sm" className="w-full text-xs">
+                      <Link to={`/instructors/${course.instructor.id}`}>View Details</Link>
                     </Button>
                   </div>
                 )}
