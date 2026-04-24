@@ -1,0 +1,1 @@
+ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS whats_included TEXT[] DEFAULT '{}'::text[];

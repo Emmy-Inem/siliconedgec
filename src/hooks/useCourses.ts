@@ -27,6 +27,7 @@ export interface DbCourse {
   rating: number | null;
   students_enrolled: number | null;
   learning_outcomes: string[] | null;
+  whats_included: string[] | null;
   is_published: boolean | null;
   instructor: {
     id: string;

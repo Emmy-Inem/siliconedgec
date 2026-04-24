@@ -34,6 +34,7 @@ import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
 import { HelmetProvider } from "react-helmet-async";
 import CmsPagePublic from "./pages/CmsPage";
+import InstructorDetail from "./pages/InstructorDetail";
 
 // Code-split admin pages — they only load when an admin route is visited
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -136,6 +137,7 @@ const App = () => (
               <Route path="/jobs/:id" element={<JobDetail />} />
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
               <Route path="/p/:slug" element={<CmsPagePublic />} />
+              <Route path="/instructors/:id" element={<InstructorDetail />} />
 
               <Route
                 path="/admin"
