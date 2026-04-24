@@ -34,6 +34,8 @@ export default function AdminCourseCreate() {
   const [step, setStep] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
 
   const [form, setForm] = useState({
     // Step 1
@@ -248,18 +250,20 @@ export default function AdminCourseCreate() {
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
-  // Auto-save draft every 30s
+  // Auto-save draft 3s after the last edit (only when we already have a courseId)
   useEffect(() => {
-    if (!form.title) return;
+    if (!form.title || !courseId) return;
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    const timer = setTimeout(() => {
-      if (isEditing && form.title) {
-        supabase.from("courses").update(buildPayload()).eq("id", courseId!).then(() => {});
-      }
-    }, 30000);
+    const timer = setTimeout(async () => {
+      setAutoSaving(true);
+      const { error } = await supabase.from("courses").update(buildPayload()).eq("id", courseId);
+      setAutoSaving(false);
+      if (!error) setLastSavedAt(new Date());
+    }, 3000);
     setAutoSaveTimer(timer);
     return () => { if (timer) clearTimeout(timer); };
-  }, [form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, courseId]);
 
   const canProceed = () => {
     if (step === 0) return form.title.trim().length > 0;
@@ -302,8 +306,10 @@ export default function AdminCourseCreate() {
             <h1 className="font-heading text-base sm:text-xl font-bold truncate">
               {isEditing ? (form.title || "Edit Course") : "Create New Course"}
             </h1>
-            <p className="text-[11px] sm:text-xs text-muted-foreground hidden sm:block">
-              Step {step + 1} of {STEPS.length} · {STEPS[step].label}
+            <p className="text-[11px] sm:text-xs text-muted-foreground hidden sm:flex items-center gap-2">
+              <span>Step {step + 1} of {STEPS.length} · {STEPS[step].label}</span>
+              {autoSaving && <span className="text-primary inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Auto-saving…</span>}
+              {!autoSaving && lastSavedAt && <span className="text-green-600">✓ Saved {lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
             </p>
           </div>
         </div>
@@ -531,6 +537,18 @@ export default function AdminCourseCreate() {
                     className={inputClass}
                     placeholder="Define the key takeaways from this course (one benefit per line)"
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-1">What's Included</label>
+                  <textarea
+                    value={form.whats_included}
+                    onChange={e => setForm({ ...form, whats_included: e.target.value })}
+                    rows={5}
+                    className={inputClass}
+                    placeholder={"List what students get with this course (one item per line)\nExamples:\nCertificate of completion\nLifetime access\nDownloadable resources\nLive Q&A sessions"}
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-1">Shown on the course page sidebar. Leave empty to use defaults.</p>
                 </div>
 
                 <div>
