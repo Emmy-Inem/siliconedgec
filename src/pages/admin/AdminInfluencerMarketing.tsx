@@ -225,11 +225,17 @@ export default function AdminInfluencerMarketing() {
                 <div className="space-y-2">
                   <Label>Promo Code</Label>
                   <div className="flex gap-2">
-                    <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} />
-                    <Button size="icon" variant="outline" onClick={() => setForm({ ...form, code: generateCode() })}>
+                    <Input
+                      value={form.code}
+                      onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase().replace(/\s+/g, "") })}
+                      placeholder="WELCOME10 or any custom code"
+                      maxLength={40}
+                    />
+                    <Button size="icon" variant="outline" onClick={() => setForm({ ...form, code: generateCode() })} title="Generate random code">
                       <RefreshCw className="h-4 w-4" />
                     </Button>
                   </div>
+                  <p className="text-[10px] text-muted-foreground">Type any custom code (e.g. <span className="font-mono">SUMMER25</span>) or click <RefreshCw className="inline h-2.5 w-2.5" /> for a random one.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Influencer Name</Label>
