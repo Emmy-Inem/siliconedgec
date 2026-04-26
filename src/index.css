@@ -283,4 +283,3 @@
     .conic-border[data-active="true"]::before { animation: conic-spin 4s linear infinite; }
   }
 }
-}
