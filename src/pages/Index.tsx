@@ -501,6 +501,51 @@ export default function Index() {
         </div>
       </section>
 
+      {/* How it works — 4 step roadmap */}
+      <section className="py-20 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.04),transparent_70%)]" />
+        <div className="container mx-auto px-4 relative">
+          <motion.div {...sectionReveal} className="text-center mb-16">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">How it works</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">A four-step path designed by hiring managers, not just educators.</p>
+          </motion.div>
+
+          <div className="relative">
+            <div className="hidden lg:block absolute top-12 left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
+            >
+              {[
+                { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort space." },
+                { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Join real, instructor-led classes with Q&A. Recordings keep you on track." },
+                { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work reviewed by mentors actively working in tech." },
+                { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
+              ].map((step) => (
+                <motion.div key={step.n} variants={staggerItem} className="relative">
+                  <div className="relative z-10 bg-card rounded-2xl border border-border/60 p-6 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-1 ring-primary/20">
+                        <step.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <span className="font-heading text-3xl font-bold text-gradient leading-none">{step.n}</span>
+                    </div>
+                    <h3 className="font-heading font-semibold text-base mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* World-class Instructors */}
       <section className="py-20">
         <div className="container mx-auto px-4">
