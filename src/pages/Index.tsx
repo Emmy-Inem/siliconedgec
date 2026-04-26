@@ -351,7 +351,20 @@ export default function Index() {
     },
   });
 
-  const instructors = (dbInstructors && dbInstructors.length > 0)
+  /* admin overrides take precedence; otherwise live counts */
+  const parseOverride = (v?: string) => {
+    if (!v) return null;
+    const n = parseInt(v.replace(/[^0-9]/g, ""), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const displayStats = {
+    students: parseOverride(home?.stat_students) ?? stats?.students ?? 2000,
+    courses: parseOverride(home?.stat_courses) ?? stats?.courses ?? 24,
+    instructors: parseOverride(home?.stat_instructors) ?? stats?.instructors ?? 30,
+    countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 18,
+  };
+
+  const baseInstructors = (dbInstructors && dbInstructors.length > 0)
     ? dbInstructors.map((i, idx) => ({
         id: i.id,
         name: i.name,
@@ -370,6 +383,13 @@ export default function Index() {
         courses: 0,
         image,
       }));
+
+  /* admin can override the 4 hero collage images by URL */
+  const heroOverrides = [home?.hero_image_1, home?.hero_image_2, home?.hero_image_3, home?.hero_image_4];
+  const instructors = baseInstructors.map((inst, idx) => {
+    const override = heroOverrides[idx];
+    return override && override.trim().length > 0 ? { ...inst, image: override } : inst;
+  });
 
   const testimonials = (dbTestimonials && dbTestimonials.length > 0)
     ? dbTestimonials.map((t) => ({
