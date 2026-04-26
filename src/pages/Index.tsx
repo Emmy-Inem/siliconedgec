@@ -991,12 +991,12 @@ export default function Index() {
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div {...sectionReveal}>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet your mentors</p>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.mentors_eyebrow ?? "Meet your mentors"}</p>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6 text-balance">
-                Guidance from people who've already done it<span className="text-gold">.</span>
+                {home?.mentors_title ?? "Guidance from people who've already done it."}
               </h2>
               <p className="text-hero-muted leading-relaxed mb-8 max-w-lg">
-                Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.
+                {home?.mentors_description ?? "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth."}
               </p>
               <div className="space-y-5">
                 {[
