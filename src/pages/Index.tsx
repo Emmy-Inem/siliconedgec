@@ -1097,9 +1097,13 @@ export default function Index() {
       <section className="py-20 md:py-24">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Loved by ambitious learners</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span>
+              {home?.testimonials_title ? (
+                <span className="text-gradient">{home.testimonials_title}</span>
+              ) : (
+                <>Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span></>
+              )}
             </h2>
           </motion.div>
 
