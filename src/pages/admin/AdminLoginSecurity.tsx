@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Shield, Search, Loader2, AlertTriangle, CheckCircle2, XCircle, Lock, Globe,
   Download, TrendingUp, Activity, Clock, ShieldAlert, Ban, Trash2, Plus, KeyRound,
-  Unlock, ExternalLink,
+  Unlock, ExternalLink, DatabaseBackup, CloudUpload, FileArchive,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
