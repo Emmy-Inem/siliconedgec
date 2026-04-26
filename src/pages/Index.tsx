@@ -337,27 +337,38 @@ function TestimonialCard({ t }: { t: Tm }) {
 }
 
 function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
-  /* split into 3 columns (2 on tablet, 1 on mobile via CSS hide) */
+  /* Ensure we have enough cards per column for a smooth scroll.
+     If <9 unique testimonials, repeat the pool until we hit a healthy minimum. */
+  const pool: Tm[] = [...testimonials];
+  while (pool.length > 0 && pool.length < 9) {
+    pool.push(...testimonials.map((t, i) => ({ ...t, id: `${t.id}-r${pool.length + i}` })));
+  }
+
+  /* split into 3 columns */
   const cols: Tm[][] = [[], [], []];
-  testimonials.forEach((t, i) => cols[i % 3].push(t));
-  /* duplicate each column so the loop is seamless */
-  /* slow vertical scroll */
-  const speeds = ["55s", "70s", "62s"];
+  pool.forEach((t, i) => cols[i % 3].push(t));
+
+  /* slow vertical scroll – different speeds + alternating direction for visual rhythm */
+  const speeds = ["60s", "75s", "68s"];
   const directions = ["normal", "reverse", "normal"] as const;
 
   return (
-    <div className="relative h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
+    <div className="relative h-[480px] sm:h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
         {cols.map((col, idx) => (
-          <div key={idx} className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden md:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}>
+          <div
+            key={idx}
+            className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden sm:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}
+          >
             <div
-              className="marquee-track flex flex-col gap-5"
+              className="flex flex-col gap-5"
               style={{
                 animation: `marquee-vertical ${speeds[idx]} linear infinite`,
                 animationDirection: directions[idx],
                 willChange: "transform",
               }}
             >
+              {/* duplicate so the loop is seamless */}
               {[...col, ...col].map((t, k) => (
                 <TestimonialCard key={`${t.id}-${k}`} t={t} />
               ))}
