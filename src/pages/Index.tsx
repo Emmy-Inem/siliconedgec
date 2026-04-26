@@ -829,7 +829,7 @@ export default function Index() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.categories_eyebrow ?? "Browse Categories"}</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
                 <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">{home?.categories_title ?? "Courses worth your time"}</h2>
