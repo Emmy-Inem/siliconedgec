@@ -17,7 +17,6 @@ const plans = [
     name: "Beginner Courses",
     tagline: "Launch your tech journey.",
     tier: "All core features, including:",
-    price: "₦100,000",
     features: [
       "Access One Course",
       "Student Dashboard",
@@ -26,13 +25,14 @@ const plans = [
       "Support",
     ],
     highlight: false,
-    cta: "Get Started",
+    cta: "Find Beginner Courses",
+    accent: "gold",
+    href: "/courses?level=beginner",
   },
   {
     name: "Intermediate Courses",
     tagline: "Build in-demand skills.",
     tier: "Everything in Starter, plus:",
-    price: "₦600,000",
     features: [
       "Access One Course",
       "Offline Content",
@@ -41,13 +41,14 @@ const plans = [
       "Career Support",
     ],
     highlight: true,
-    cta: "Start Learning",
+    cta: "Find Intermediate Courses",
+    accent: "primary",
+    href: "/courses?level=intermediate",
   },
   {
     name: "Advanced Courses",
     tagline: "Master advanced tech.",
     tier: "Everything in Individual, plus:",
-    price: "₦800,000",
     features: [
       "Access One Course",
       "Advanced Specialization",
@@ -56,7 +57,9 @@ const plans = [
       "Career Support",
     ],
     highlight: false,
-    cta: "Go Advanced",
+    cta: "Find Advanced Courses",
+    accent: "teal",
+    href: "/courses?level=advanced",
   },
 ];
 
@@ -176,66 +179,91 @@ export default function Pricing() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
           >
-            {plans.map((plan) => (
-              <motion.div
-                key={plan.name}
-                variants={staggerItem}
-                whileHover={{
-                  y: -10,
-                  transition: { type: "spring", stiffness: 300 },
-                }}
-                className={`rounded-2xl border p-8 transition-all relative overflow-hidden group ${
-                  plan.highlight
-                    ? "bg-card border-primary shadow-xl shadow-primary/10"
-                    : "bg-card border-border hover:border-primary/30"
-                }`}
-              >
-                {/* Hover glow */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.06),transparent_70%)]" />
+            {plans.map((plan) => {
+              const accentBar =
+                plan.accent === "gold"
+                  ? "bg-gold"
+                  : plan.accent === "teal"
+                  ? "bg-teal-500"
+                  : "bg-primary";
+              const btnText =
+                plan.accent === "gold"
+                  ? "text-gold"
+                  : plan.accent === "teal"
+                  ? "text-teal-600"
+                  : "text-primary-foreground";
+              const btnBorder =
+                plan.accent === "gold"
+                  ? "border-gold/40 hover:border-gold"
+                  : plan.accent === "teal"
+                  ? "border-teal-400/50 hover:border-teal-500"
+                  : "border-transparent";
+              const btnBg = plan.highlight
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                : `bg-card hover:bg-accent ${btnText} ${btnBorder}`;
+              return (
+                <motion.div
+                  key={plan.name}
+                  variants={staggerItem}
+                  whileHover={{
+                    y: -8,
+                    transition: { type: "spring", stiffness: 300 },
+                  }}
+                  className={`rounded-2xl border bg-card transition-all relative overflow-hidden group flex flex-col ${
+                    plan.highlight
+                      ? "border-primary/30 shadow-xl shadow-primary/10"
+                      : "border-border hover:border-primary/30"
+                  }`}
+                >
+                  {/* Top accent bar */}
+                  <div className={`h-2.5 w-full ${accentBar}`} />
 
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                )}
+                  {plan.highlight && (
+                    <div className="absolute top-5 right-5 bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-1 rounded-full tracking-wide uppercase">
+                      Most Popular
+                    </div>
+                  )}
 
-                <div className="relative z-10">
-                  <h3 className="font-heading font-bold text-xl mb-1">
-                    {plan.name}
-                  </h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    {plan.tagline}
-                  </p>
-                  <div className="mb-2">
-                    <span className="font-heading text-4xl font-bold">
-                      {plan.price}
-                    </span>
+                  {/* Header */}
+                  <div className="p-8 pb-6">
+                    <h3 className="font-heading font-bold text-2xl mb-2 text-foreground">
+                      {plan.name}
+                    </h3>
+                    <p className="text-muted-foreground text-base mb-6">
+                      {plan.tagline}
+                    </p>
+                    <Button
+                      asChild
+                      className={`w-full h-12 border-2 font-semibold text-base ${btnBg}`}
+                    >
+                      <Link to={plan.href}>{plan.cta}</Link>
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-6 font-medium">
-                    {plan.tier}
-                  </p>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full ${plan.highlight ? "shimmer-btn" : ""}`}
-                    variant={plan.highlight ? "default" : "outline"}
-                    asChild
-                  >
-                    <Link to="/sign-up">
-                      {plan.cta} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Divider */}
+                  <div className="border-t border-border mx-8" />
+
+                  {/* Features */}
+                  <div className="p-8 pt-6 flex-1">
+                    <p className="font-heading font-semibold text-base mb-5 text-foreground">
+                      {plan.tier}
+                    </p>
+                    <ul className="space-y-3.5">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-center gap-3 text-sm">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-500/10">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          </span>
+                          <span className="text-foreground">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           {/* B2B CTA */}

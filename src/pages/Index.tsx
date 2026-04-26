@@ -341,7 +341,8 @@ function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
   const cols: Tm[][] = [[], [], []];
   testimonials.forEach((t, i) => cols[i % 3].push(t));
   /* duplicate each column so the loop is seamless */
-  const speeds = ["28s", "36s", "32s"];
+  /* slow vertical scroll */
+  const speeds = ["55s", "70s", "62s"];
   const directions = ["normal", "reverse", "normal"] as const;
 
   return (
@@ -1195,7 +1196,7 @@ export default function Index() {
               {home?.cta_title ? (
                 <span className="text-gradient">{home.cta_title}</span>
               ) : (
-                <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start shipping</span><span className="text-gold">.</span></>
+              <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start learning</span><span className="text-gold">.</span></>
               )}
             </h2>
             <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">

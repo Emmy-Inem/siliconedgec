@@ -112,7 +112,7 @@ const DEFAULTS: HomeContent = {
   faq_title: "Everything you need to know.",
   faq_subtitle: "Still curious? Reach out — real humans reply.",
   cta_eyebrow: "Your edge starts now",
-  cta_title: "Stop scrolling. Start shipping.",
+  cta_title: "Stop scrolling. Start learning.",
   cta_subtitle:
     "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere.",
   cta_primary: "Browse courses",
