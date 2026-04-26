@@ -1119,8 +1119,9 @@ export default function Index() {
         </div>
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          animate={reduce ? {} : { opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "opacity" }}
         />
         <div className="container mx-auto px-4 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
