@@ -27,6 +27,29 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     ],
   },
   {
+    id: "hero_images",
+    title: "Hero Collage Images",
+    description: "Four pictures used in the floating instructor collage on the right of the hero. Paste image URLs (use the Media Library to host) — leave blank to fall back to the live instructor photos.",
+    fields: [
+      { key: "home_hero_image_1", label: "Image 1 URL", type: "input", help: "Top-left tile", defaultVal: "" },
+      { key: "home_hero_image_2", label: "Image 2 URL", type: "input", help: "Top-right tile", defaultVal: "" },
+      { key: "home_hero_image_3", label: "Image 3 URL", type: "input", help: "Bottom-left tile", defaultVal: "" },
+      { key: "home_hero_image_4", label: "Image 4 URL", type: "input", help: "Bottom-right tile", defaultVal: "" },
+      { key: "home_mentor_image", label: "Mentor section image URL", type: "input", help: "Big portrait in the 'Meet your mentors' block", defaultVal: "" },
+    ],
+  },
+  {
+    id: "stats",
+    title: "Homepage Stats",
+    description: "Numbers shown in the four stat cards under the hero. Leave blank to use live counts from the database.",
+    fields: [
+      { key: "home_stat_students", label: "Students worldwide", type: "input", help: "Numbers only, e.g. 2500", defaultVal: "" },
+      { key: "home_stat_courses", label: "Live courses", type: "input", help: "Numbers only", defaultVal: "" },
+      { key: "home_stat_instructors", label: "Industry mentors", type: "input", help: "Numbers only", defaultVal: "" },
+      { key: "home_stat_countries", label: "Countries reached", type: "input", help: "Numbers only", defaultVal: "" },
+    ],
+  },
+  {
     id: "why",
     title: "Why Learn With Us",
     description: "Section explaining your value proposition.",
