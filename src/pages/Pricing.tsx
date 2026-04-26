@@ -136,7 +136,7 @@ export default function Pricing() {
       <Header />
 
       {/* Hero */}
-      <section className="bg-hero relative overflow-hidden pt-28 pb-16">
+      <section className="bg-hero relative overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16">
         <div className="absolute inset-0 gradient-mesh" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.14),transparent_60%)]" />
         <div className="container mx-auto px-4 relative">
@@ -149,12 +149,12 @@ export default function Pricing() {
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
               Pricing
             </p>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
+            <h1 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
               Simple Pricing That Scales With Your{" "}
               <span className="text-gradient">Ambition</span>
               <span className="text-gold">.</span>
             </h1>
-            <p className="text-hero-muted text-lg max-w-xl mx-auto leading-relaxed">
+            <p className="text-hero-muted text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
               Invest in Yourself. Invest in Your Team. Unlock Unmatched Tech
               Expertise.
             </p>
