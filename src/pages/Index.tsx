@@ -670,7 +670,7 @@ export default function Index() {
       <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7 relative">
         <div className="container mx-auto px-4">
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
-            Our alumni now work at
+            {home?.alumni_label ?? "Our alumni now work at"}
           </p>
           <div className="relative overflow-hidden mask-fade-x">
             <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
