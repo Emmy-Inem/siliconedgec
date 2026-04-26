@@ -1033,43 +1033,8 @@ export default function Index() {
             ))}
           </motion.div>
 
-          {/* masonry */}
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: (i % 6) * 0.06, type: "spring", stiffness: 80 }}
-                whileHover={{ y: -4 }}
-                className="break-inside-avoid mb-5 glass-card rounded-2xl border border-border/60 p-6 hover:border-primary/30 transition-all relative"
-              >
-                <Quote className="absolute top-4 right-4 h-6 w-6 text-primary/15" />
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  {t.avatar_url ? (
-                    <img src={t.avatar_url} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-heading font-bold text-primary text-xs">
-                        {t.name.split(" ").map((n) => n[0]).join("")}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-heading font-semibold text-sm">{t.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* vertical scrolling columns */}
+          <VerticalTestimonialMarquee testimonials={testimonials} />
         </div>
       </section>
 
