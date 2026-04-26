@@ -1135,11 +1135,11 @@ export default function Index() {
       <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4 max-w-3xl">
           <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Frequently asked</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.faq_eyebrow ?? "Frequently asked"}</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
-              Everything you need to know<span className="text-gold">.</span>
+              {home?.faq_title ?? "Everything you need to know."}
             </h2>
-            <p className="text-muted-foreground">Still curious? Reach out — real humans reply.</p>
+            <p className="text-muted-foreground">{home?.faq_subtitle ?? "Still curious? Reach out — real humans reply."}</p>
           </motion.div>
 
           <Accordion type="single" collapsible className="space-y-3">
