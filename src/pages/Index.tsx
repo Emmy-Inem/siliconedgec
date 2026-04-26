@@ -336,6 +336,46 @@ export default function Index() {
         </motion.div>
       </section>
 
+      {/* Alumni placement strip — trust */}
+      <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7">
+        <div className="container mx-auto px-4">
+          <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
+            Our alumni now work at
+          </p>
+          <div className="relative overflow-hidden">
+            <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
+              {[
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+              ].concat([
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+              ]).map((logo, i) => (
+                <img
+                  key={`${logo.alt}-${i}`}
+                  src={logo.src}
+                  alt={logo.alt}
+                  className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Why Learn with Silicon Edge */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
