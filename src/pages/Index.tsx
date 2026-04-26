@@ -3,7 +3,6 @@ import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, 
 import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote, Mouse } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
@@ -309,7 +308,7 @@ type Tm = { id: string; name: string; role: string; quote: string; avatar_url: s
 
 function TestimonialCard({ t }: { t: Tm }) {
   return (
-    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative">
+    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative w-[300px] sm:w-[340px] shrink-0">
       <Quote className="absolute top-3 right-3 h-5 w-5 text-primary/15" />
       <div className="flex gap-0.5 mb-2.5">
         {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
@@ -337,43 +336,23 @@ function TestimonialCard({ t }: { t: Tm }) {
 }
 
 function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
-  /* Ensure we have enough cards per column for a smooth scroll.
-     If <9 unique testimonials, repeat the pool until we hit a healthy minimum. */
+  /* Ensure we have enough cards for a seamless loop. */
   const pool: Tm[] = [...testimonials];
-  while (pool.length > 0 && pool.length < 9) {
+  while (pool.length > 0 && pool.length < 8) {
     pool.push(...testimonials.map((t, i) => ({ ...t, id: `${t.id}-r${pool.length + i}` })));
   }
 
-  /* split into 3 columns */
-  const cols: Tm[][] = [[], [], []];
-  pool.forEach((t, i) => cols[i % 3].push(t));
-
-  /* slow vertical scroll – different speeds + alternating direction for visual rhythm */
-  const speeds = ["60s", "75s", "68s"];
-  const directions = ["normal", "reverse", "normal"] as const;
-
   return (
-    <div className="relative h-[480px] sm:h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
-        {cols.map((col, idx) => (
-          <div
-            key={idx}
-            className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden sm:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}
-          >
-            <div
-              className="marquee-track flex flex-col gap-5"
-              style={{
-                animation: `marquee-vertical ${speeds[idx]} linear infinite`,
-                animationDirection: directions[idx],
-                willChange: "transform",
-              }}
-            >
-              {/* duplicate so the loop is seamless */}
-              {[...col, ...col].map((t, k) => (
-                <TestimonialCard key={`${t.id}-${k}`} t={t} />
-              ))}
-            </div>
-          </div>
+    <div className="relative overflow-hidden mask-fade-x marquee-pause">
+      <div
+        className="marquee-track flex gap-5 w-max"
+        style={{
+          animation: `marquee 80s linear infinite`,
+          willChange: "transform",
+        }}
+      >
+        {[...pool, ...pool].map((t, k) => (
+          <TestimonialCard key={`${t.id}-${k}`} t={t} />
         ))}
       </div>
     </div>
@@ -621,14 +600,14 @@ export default function Index() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
+                className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
               >
-                <div className="flex -space-x-2">
+                <div className="flex -space-x-1.5 sm:-space-x-2">
                   {heroAvatars.slice(0, 4).map((a, i) => (
-                    <img key={i} src={a} alt="" loading="lazy" className="w-7 h-7 rounded-full ring-2 ring-white/40 object-cover" />
+                    <img key={i} src={a} alt="" loading="lazy" className="w-5 h-5 sm:w-7 sm:h-7 rounded-full ring-2 ring-white/40 object-cover" />
                   ))}
                 </div>
-                <span className="text-sm font-medium text-white">
+                <span className="text-[11px] sm:text-sm font-medium text-white whitespace-nowrap">
                   Join <span className="text-gold font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
                 </span>
               </motion.div>
@@ -1147,43 +1126,6 @@ export default function Index() {
 
           {/* vertical scrolling columns */}
           <VerticalTestimonialMarquee testimonials={testimonials} />
-        </div>
-      </section>
-
-      {/* ───────────────── FAQ ───────────────── */}
-      <section className="py-20 bg-muted/20">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.faq_eyebrow ?? "Frequently asked"}</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
-              {home?.faq_title ?? "Everything you need to know."}
-            </h2>
-            <p className="text-muted-foreground">{home?.faq_subtitle ?? "Still curious? Reach out — real humans reply."}</p>
-          </motion.div>
-
-          <Accordion type="single" collapsible className="space-y-3">
-            {[
-              { q: "Is this for absolute beginners?", a: "Yes. Most students start from zero. We pace foundational concepts before pushing into advanced, hands-on work." },
-              { q: "Do I need a degree to enroll?", a: "No. We care about commitment, not credentials. Many top alumni were career switchers with no prior tech background." },
-              { q: "What if I miss a live class?", a: "Every session is recorded and yours for life. Replay at your pace and ask questions in the cohort channel." },
-              { q: "Will you actually help me get a job?", a: "Yes. CV reviews, mock interviews, portfolio polish, and warm intros to our hiring partners are part of every track." },
-              { q: "How do payments work?", a: "Pay in full or split into installments. Cards, Paystack, and bank transfer are supported. Promo codes apply at checkout." },
-              { q: "Can my employer sponsor me?", a: "Absolutely. Visit our Business page for invoiced corporate plans and team training options." },
-            ].map((item, i) => (
-              <AccordionItem
-                key={i}
-                value={`item-${i}`}
-                className="border border-border/60 rounded-2xl bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
-              >
-                <AccordionTrigger className="font-heading text-left text-base hover:no-underline py-4">
-                  {item.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                  {item.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
         </div>
       </section>
 
