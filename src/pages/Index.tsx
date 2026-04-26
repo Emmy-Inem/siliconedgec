@@ -730,6 +730,43 @@ export default function Index() {
         </div>
       </section>
 
+      {/* FAQ — handle objections */}
+      <section className="py-20 bg-muted/20">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...sectionReveal} className="text-center mb-10">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Frequently asked</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
+              Everything you need to know<span className="text-gold">.</span>
+            </h2>
+            <p className="text-muted-foreground">Still curious? Reach out — real humans reply.</p>
+          </motion.div>
+
+          <Accordion type="single" collapsible className="space-y-3">
+            {[
+              { q: "Is this for absolute beginners?", a: "Yes. Most of our students start from zero. We pace foundational concepts before pushing into advanced, hands-on work." },
+              { q: "Do I need a degree to enroll?", a: "No. We care about commitment, not credentials. Many of our top alumni were career switchers with no prior tech background." },
+              { q: "What if I miss a live class?", a: "Every session is recorded and available for life. Replay at your own pace and ask questions in the cohort channel." },
+              { q: "Will you actually help me get a job?", a: "Yes. CV reviews, mock interviews, portfolio polish, and warm intros to our hiring partners are part of every track." },
+              { q: "How do payments work?", a: "Pay in full or split into installments. Cards, Paystack, and bank transfer are supported. Promo codes apply at checkout." },
+              { q: "Can my employer sponsor me?", a: "Absolutely. Visit our Business page for invoiced corporate plans and team training options." },
+            ].map((item, i) => (
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="border border-border/60 rounded-xl bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
+              >
+                <AccordionTrigger className="font-heading text-left text-base hover:no-underline py-4">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="bg-hero py-20 relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh opacity-40" />
