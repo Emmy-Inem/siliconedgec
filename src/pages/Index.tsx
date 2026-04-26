@@ -180,18 +180,20 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
 
 function ChatBubbleTile() {
   const messages = [
-    { who: "Tutor", text: "Great commit — let's review the IAM policy.", side: "left" as const },
-    { who: "You",   text: "Should I use a role or a user for Lambda?", side: "right" as const },
-    { who: "Tutor", text: "Always a role. I'll demo it live in 5min.", side: "left" as const },
+    { who: "Mentor", text: "Today: deploy a fault-tolerant VPC across 3 AZs on AWS.", side: "left" as const },
+    { who: "You",    text: "Should the NAT gateway be per-AZ or shared?", side: "right" as const },
+    { who: "Mentor", text: "Per-AZ. Shared NAT = single point of failure + cross-AZ data charges.", side: "left" as const },
+    { who: "You",    text: "Got it. Pushing my Terraform module now 🚀", side: "right" as const },
+    { who: "Mentor", text: "Nice. I'll review the IAM least-privilege policies in 5min live.", side: "left" as const },
   ];
   const [i, setI] = useState(0);
-  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2400); return () => clearInterval(t); }, []);
+  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2800); return () => clearInterval(t); }, []);
   return (
-    <div className="space-y-2 mt-5 min-h-[120px]">
+    <div className="space-y-2 mt-5 min-h-[180px]">
       <AnimatePresence mode="popLayout">
-        {messages.slice(0, i + 1).map((m, k) => (
+        {messages.slice(Math.max(0, i - 2), i + 1).map((m, k) => (
           <motion.div
-            key={k + "-" + i}
+            key={`${m.text}-${k}-${i}`}
             layout
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
