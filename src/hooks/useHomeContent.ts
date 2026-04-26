@@ -25,6 +25,32 @@ export interface HomeContent {
   stat_courses: string;
   stat_instructors: string;
   stat_countries: string;
+  alumni_label: string;
+  how_eyebrow: string;
+  how_title: string;
+  how_step1_title: string;
+  how_step1_desc: string;
+  how_step2_title: string;
+  how_step2_desc: string;
+  how_step3_title: string;
+  how_step3_desc: string;
+  how_step4_title: string;
+  how_step4_desc: string;
+  instructors_eyebrow: string;
+  instructors_title: string;
+  mentors_eyebrow: string;
+  mentors_title: string;
+  mentors_description: string;
+  testimonials_eyebrow: string;
+  testimonials_title: string;
+  faq_eyebrow: string;
+  faq_title: string;
+  faq_subtitle: string;
+  cta_eyebrow: string;
+  cta_title: string;
+  cta_subtitle: string;
+  cta_primary: string;
+  cta_secondary: string;
 }
 
 const DEFAULTS: HomeContent = {
@@ -63,6 +89,34 @@ const DEFAULTS: HomeContent = {
   stat_courses: "",
   stat_instructors: "",
   stat_countries: "",
+  alumni_label: "Our alumni now work at",
+  how_eyebrow: "How it works",
+  how_title: "From curious to hired.",
+  how_step1_title: "Apply & enroll",
+  how_step1_desc: "Pick your track. Pay flexibly. Get instant access to your cohort.",
+  how_step2_title: "Learn live, weekly",
+  how_step2_desc: "Real instructor-led classes with Q&A. Recordings keep you on track.",
+  how_step3_title: "Build real projects",
+  how_step3_desc: "Ship portfolio-grade work, reviewed by mentors actively working in tech.",
+  how_step4_title: "Get job-ready",
+  how_step4_desc: "CV reviews, mock interviews, and intros to our hiring partner network.",
+  instructors_eyebrow: "World-class instructors",
+  instructors_title: "Taught by people actively shipping in tech.",
+  mentors_eyebrow: "Meet your mentors",
+  mentors_title: "Guidance from people who've already done it.",
+  mentors_description:
+    "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.",
+  testimonials_eyebrow: "Loved by ambitious learners",
+  testimonials_title: "Don't take our word for it.",
+  faq_eyebrow: "Frequently asked",
+  faq_title: "Everything you need to know.",
+  faq_subtitle: "Still curious? Reach out — real humans reply.",
+  cta_eyebrow: "Your edge starts now",
+  cta_title: "Stop scrolling. Start shipping.",
+  cta_subtitle:
+    "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere.",
+  cta_primary: "Browse courses",
+  cta_secondary: "Talk to admissions",
 };
 
 export const HOME_CONTENT_KEYS = [
@@ -89,6 +143,32 @@ export const HOME_CONTENT_KEYS = [
   "home_stat_courses",
   "home_stat_instructors",
   "home_stat_countries",
+  "home_alumni_label",
+  "home_how_eyebrow",
+  "home_how_title",
+  "home_how_step1_title",
+  "home_how_step1_desc",
+  "home_how_step2_title",
+  "home_how_step2_desc",
+  "home_how_step3_title",
+  "home_how_step3_desc",
+  "home_how_step4_title",
+  "home_how_step4_desc",
+  "home_instructors_eyebrow",
+  "home_instructors_title",
+  "home_mentors_eyebrow",
+  "home_mentors_title",
+  "home_mentors_description",
+  "home_testimonials_eyebrow",
+  "home_testimonials_title",
+  "home_faq_eyebrow",
+  "home_faq_title",
+  "home_faq_subtitle",
+  "home_cta_eyebrow",
+  "home_cta_title",
+  "home_cta_subtitle",
+  "home_cta_primary",
+  "home_cta_secondary",
 ] as const;
 
 export function useHomeContent() {
@@ -147,6 +227,32 @@ export function useHomeContent() {
         stat_courses: map.get("home_stat_courses") ?? "",
         stat_instructors: map.get("home_stat_instructors") ?? "",
         stat_countries: map.get("home_stat_countries") ?? "",
+        alumni_label: get("home_alumni_label", DEFAULTS.alumni_label),
+        how_eyebrow: get("home_how_eyebrow", DEFAULTS.how_eyebrow),
+        how_title: get("home_how_title", DEFAULTS.how_title),
+        how_step1_title: get("home_how_step1_title", DEFAULTS.how_step1_title),
+        how_step1_desc: get("home_how_step1_desc", DEFAULTS.how_step1_desc),
+        how_step2_title: get("home_how_step2_title", DEFAULTS.how_step2_title),
+        how_step2_desc: get("home_how_step2_desc", DEFAULTS.how_step2_desc),
+        how_step3_title: get("home_how_step3_title", DEFAULTS.how_step3_title),
+        how_step3_desc: get("home_how_step3_desc", DEFAULTS.how_step3_desc),
+        how_step4_title: get("home_how_step4_title", DEFAULTS.how_step4_title),
+        how_step4_desc: get("home_how_step4_desc", DEFAULTS.how_step4_desc),
+        instructors_eyebrow: get("home_instructors_eyebrow", DEFAULTS.instructors_eyebrow),
+        instructors_title: get("home_instructors_title", DEFAULTS.instructors_title),
+        mentors_eyebrow: get("home_mentors_eyebrow", DEFAULTS.mentors_eyebrow),
+        mentors_title: get("home_mentors_title", DEFAULTS.mentors_title),
+        mentors_description: get("home_mentors_description", DEFAULTS.mentors_description),
+        testimonials_eyebrow: get("home_testimonials_eyebrow", DEFAULTS.testimonials_eyebrow),
+        testimonials_title: get("home_testimonials_title", DEFAULTS.testimonials_title),
+        faq_eyebrow: get("home_faq_eyebrow", DEFAULTS.faq_eyebrow),
+        faq_title: get("home_faq_title", DEFAULTS.faq_title),
+        faq_subtitle: get("home_faq_subtitle", DEFAULTS.faq_subtitle),
+        cta_eyebrow: get("home_cta_eyebrow", DEFAULTS.cta_eyebrow),
+        cta_title: get("home_cta_title", DEFAULTS.cta_title),
+        cta_subtitle: get("home_cta_subtitle", DEFAULTS.cta_subtitle),
+        cta_primary: get("home_cta_primary", DEFAULTS.cta_primary),
+        cta_secondary: get("home_cta_secondary", DEFAULTS.cta_secondary),
       };
     },
   });
