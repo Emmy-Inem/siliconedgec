@@ -323,33 +323,6 @@ export default function Index() {
         </motion.div>
       </section>
 
-      {/* WhatsApp Community Banner */}
-      <section className="bg-primary/5 border-y border-primary/10 py-6">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-              className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"
-            >
-              <Users className="h-5 w-5 text-primary" />
-            </motion.div>
-            <div>
-              <p className="font-heading font-semibold text-sm">{home?.whatsapp_banner_title ?? "Join Our Community"}</p>
-              <p className="text-muted-foreground text-xs">{home?.whatsapp_banner_subtitle ?? "Get instant course updates on WhatsApp."}</p>
-            </div>
-          </div>
-          <a
-            href={home?.whatsapp_banner_url ?? "https://wa.me/447741247592"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary font-medium text-sm hover:underline flex items-center gap-1 hover-scale"
-          >
-            Join WhatsApp Group <ArrowRight className="h-3.5 w-3.5" />
-          </a>
-        </div>
-      </section>
-
       {/* Why Learn with Silicon Edge */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4">
