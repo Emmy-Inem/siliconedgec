@@ -17,6 +17,8 @@ const plans = [
     name: "Beginner Courses",
     tagline: "Launch your tech journey.",
     tier: "All core features, including:",
+    price: "₦100,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Student Dashboard",
@@ -33,6 +35,8 @@ const plans = [
     name: "Intermediate Courses",
     tagline: "Build in-demand skills.",
     tier: "Everything in Starter, plus:",
+    price: "₦600,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Offline Content",
@@ -49,6 +53,8 @@ const plans = [
     name: "Advanced Courses",
     tagline: "Master advanced tech.",
     tier: "Everything in Individual, plus:",
+    price: "₦800,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Advanced Specialization",
