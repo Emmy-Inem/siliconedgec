@@ -659,6 +659,32 @@ export default function Index() {
 
       {/* Testimonials */}
       <section className="py-20 overflow-hidden">
+        {/* Trust badges row */}
+        <div className="container mx-auto px-4 mb-16">
+          <motion.div
+            {...sectionReveal}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
+          >
+            {[
+              { icon: BadgeCheck, label: "Verified Certificates" },
+              { icon: Shield, label: "7-Day Money-Back" },
+              { icon: GraduationCap, label: "Industry Mentors" },
+              { icon: PlayCircle, label: "Live + Recorded" },
+              { icon: Lock, label: "Secure Payments" },
+            ].map((b) => (
+              <div
+                key={b.label}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur hover:border-primary/30 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <b.icon className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium leading-tight">{b.label}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-14">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Testimonials</p>
