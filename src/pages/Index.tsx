@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { ArrowRight, BookOpen, Users, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, MessageSquareQuote, PlayCircle, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
@@ -272,10 +273,22 @@ export default function Index() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed"
+              className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-6 leading-relaxed"
             >
               {home?.hero_subtitle ?? "Live Online Courses. Hands-On Projects. Real Certifications."}
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-8"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Live cohort starting next week · Limited seats
+            </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -321,6 +334,46 @@ export default function Index() {
             </motion.div>
           </motion.div>
         </motion.div>
+      </section>
+
+      {/* Alumni placement strip — trust */}
+      <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7">
+        <div className="container mx-auto px-4">
+          <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
+            Our alumni now work at
+          </p>
+          <div className="relative overflow-hidden">
+            <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
+              {[
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+              ].concat([
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
+                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
+                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+              ]).map((logo, i) => (
+                <img
+                  key={`${logo.alt}-${i}`}
+                  src={logo.src}
+                  alt={logo.alt}
+                  className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Why Learn with Silicon Edge */}
@@ -448,6 +501,51 @@ export default function Index() {
         </div>
       </section>
 
+      {/* How it works — 4 step roadmap */}
+      <section className="py-20 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.04),transparent_70%)]" />
+        <div className="container mx-auto px-4 relative">
+          <motion.div {...sectionReveal} className="text-center mb-16">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">How it works</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">A four-step path designed by hiring managers, not just educators.</p>
+          </motion.div>
+
+          <div className="relative">
+            <div className="hidden lg:block absolute top-12 left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-80px" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
+            >
+              {[
+                { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort space." },
+                { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Join real, instructor-led classes with Q&A. Recordings keep you on track." },
+                { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work reviewed by mentors actively working in tech." },
+                { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
+              ].map((step) => (
+                <motion.div key={step.n} variants={staggerItem} className="relative">
+                  <div className="relative z-10 bg-card rounded-2xl border border-border/60 p-6 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-1 ring-primary/20">
+                        <step.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <span className="font-heading text-3xl font-bold text-gradient leading-none">{step.n}</span>
+                    </div>
+                    <h3 className="font-heading font-semibold text-base mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* World-class Instructors */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -561,6 +659,32 @@ export default function Index() {
 
       {/* Testimonials */}
       <section className="py-20 overflow-hidden">
+        {/* Trust badges row */}
+        <div className="container mx-auto px-4 mb-16">
+          <motion.div
+            {...sectionReveal}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
+          >
+            {[
+              { icon: BadgeCheck, label: "Verified Certificates" },
+              { icon: Shield, label: "7-Day Money-Back" },
+              { icon: GraduationCap, label: "Industry Mentors" },
+              { icon: PlayCircle, label: "Live + Recorded" },
+              { icon: Lock, label: "Secure Payments" },
+            ].map((b) => (
+              <div
+                key={b.label}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur hover:border-primary/30 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <b.icon className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium leading-tight">{b.label}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-14">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Testimonials</p>
@@ -603,6 +727,43 @@ export default function Index() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ — handle objections */}
+      <section className="py-20 bg-muted/20">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...sectionReveal} className="text-center mb-10">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Frequently asked</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
+              Everything you need to know<span className="text-gold">.</span>
+            </h2>
+            <p className="text-muted-foreground">Still curious? Reach out — real humans reply.</p>
+          </motion.div>
+
+          <Accordion type="single" collapsible className="space-y-3">
+            {[
+              { q: "Is this for absolute beginners?", a: "Yes. Most of our students start from zero. We pace foundational concepts before pushing into advanced, hands-on work." },
+              { q: "Do I need a degree to enroll?", a: "No. We care about commitment, not credentials. Many of our top alumni were career switchers with no prior tech background." },
+              { q: "What if I miss a live class?", a: "Every session is recorded and available for life. Replay at your own pace and ask questions in the cohort channel." },
+              { q: "Will you actually help me get a job?", a: "Yes. CV reviews, mock interviews, portfolio polish, and warm intros to our hiring partners are part of every track." },
+              { q: "How do payments work?", a: "Pay in full or split into installments. Cards, Paystack, and bank transfer are supported. Promo codes apply at checkout." },
+              { q: "Can my employer sponsor me?", a: "Absolutely. Visit our Business page for invoiced corporate plans and team training options." },
+            ].map((item, i) => (
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="border border-border/60 rounded-xl bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
+              >
+                <AccordionTrigger className="font-heading text-left text-base hover:no-underline py-4">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 

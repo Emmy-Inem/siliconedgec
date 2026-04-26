@@ -1861,6 +1861,48 @@ export type Database = {
           },
         ]
       }
+      site_backups: {
+        Row: {
+          created_at: string
+          drive_file_id: string | null
+          drive_file_url: string | null
+          drive_folder_id: string | null
+          error: string | null
+          id: string
+          row_count: number | null
+          size_bytes: number | null
+          status: string
+          table_count: number | null
+          triggered_by: string
+        }
+        Insert: {
+          created_at?: string
+          drive_file_id?: string | null
+          drive_file_url?: string | null
+          drive_folder_id?: string | null
+          error?: string | null
+          id?: string
+          row_count?: number | null
+          size_bytes?: number | null
+          status?: string
+          table_count?: number | null
+          triggered_by?: string
+        }
+        Update: {
+          created_at?: string
+          drive_file_id?: string | null
+          drive_file_url?: string | null
+          drive_folder_id?: string | null
+          error?: string | null
+          id?: string
+          row_count?: number | null
+          size_bytes?: number | null
+          status?: string
+          table_count?: number | null
+          triggered_by?: string
+        }
+        Relationships: []
+      }
       site_content: {
         Row: {
           content_type: string | null

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Shield, Search, Loader2, AlertTriangle, CheckCircle2, XCircle, Lock, Globe,
   Download, TrendingUp, Activity, Clock, ShieldAlert, Ban, Trash2, Plus, KeyRound,
-  Unlock, ExternalLink,
+  Unlock, ExternalLink, DatabaseBackup, CloudUpload, FileArchive,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -582,6 +582,8 @@ export default function AdminLoginSecurity() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BackupsCard />
     </div>
   );
 }
@@ -597,6 +599,163 @@ function Stat({ icon: Icon, label, value, accent = "text-primary" }: { icon: any
           <p className="text-xs text-muted-foreground">{label}</p>
           <p className="font-heading text-lg font-bold truncate">{value}</p>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BackupsCard() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const { data: backups = [], isLoading } = useQuery({
+    queryKey: ["site-backups"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_backups" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return ((data ?? []) as unknown) as Array<{
+        id: string; created_at: string; status: string; size_bytes: number | null;
+        drive_file_url: string | null; table_count: number | null; row_count: number | null;
+        triggered_by: string; error: string | null;
+      }>;
+    },
+  });
+
+  const runBackup = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("backup-to-drive", {
+        body: { triggered_by: "manual" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      toast({ title: "Backup complete", description: "Snapshot uploaded to Google Drive." });
+      qc.invalidateQueries({ queryKey: ["site-backups"] });
+    },
+    onError: (e: Error) => toast({ title: "Backup failed", description: e.message, variant: "destructive" }),
+  });
+
+  const last = backups[0];
+  const nextRun = (() => {
+    const now = new Date();
+    const days = (7 - now.getUTCDay()) % 7 || 7;
+    const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + days, 2, 0, 0));
+    return next;
+  })();
+
+  const fmtSize = (b: number | null) => {
+    if (!b) return "—";
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+    return `${(b / 1024 / 1024).toFixed(2)} MB`;
+  };
+
+  return (
+    <Card className="mt-6">
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <DatabaseBackup className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-heading font-semibold text-lg">Backups</h3>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Weekly database snapshots are saved to Google Drive (Sundays · 02:00 UTC).
+                Trigger an extra backup any time. Code is versioned by Lovable; this covers your data.
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => runBackup.mutate()} disabled={runBackup.isPending} className="shrink-0">
+            {runBackup.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CloudUpload className="h-4 w-4 mr-2" />}
+            Backup now
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+          <div className="p-3 rounded-lg border bg-muted/30">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Last backup</p>
+            <p className="font-medium text-sm mt-1">
+              {last ? new Date(last.created_at).toLocaleString() : "Never"}
+            </p>
+            {last && (
+              <Badge variant="outline" className={`mt-1 text-[10px] ${last.status === "completed" ? "border-emerald-500/40 text-emerald-600" : last.status === "failed" ? "border-destructive/40 text-destructive" : "border-amber-500/40 text-amber-600"}`}>
+                {last.status}
+              </Badge>
+            )}
+          </div>
+          <div className="p-3 rounded-lg border bg-muted/30">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Next scheduled</p>
+            <p className="font-medium text-sm mt-1">{nextRun.toLocaleString()}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Weekly · automatic</p>
+          </div>
+          <div className="p-3 rounded-lg border bg-muted/30">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Storage</p>
+            <p className="font-medium text-sm mt-1">Google Drive</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Folder: Silicon Edge Backups</p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>When</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden sm:table-cell">Tables</TableHead>
+                  <TableHead className="hidden sm:table-cell">Rows</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead className="hidden md:table-cell">Source</TableHead>
+                  <TableHead className="text-right">File</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8"><Loader2 className="h-4 w-4 animate-spin inline" /></TableCell></TableRow>
+                ) : backups.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                    No backups yet. Click <strong>Backup now</strong> to create the first one.
+                  </TableCell></TableRow>
+                ) : backups.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(b.created_at).toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-[10px] ${b.status === "completed" ? "border-emerald-500/40 text-emerald-600" : b.status === "failed" ? "border-destructive/40 text-destructive" : "border-amber-500/40 text-amber-600"}`}>
+                        {b.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-xs">{b.table_count ?? "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-xs">{b.row_count?.toLocaleString() ?? "—"}</TableCell>
+                    <TableCell className="text-xs">{fmtSize(b.size_bytes)}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs capitalize">{b.triggered_by}</TableCell>
+                    <TableCell className="text-right">
+                      {b.drive_file_url ? (
+                        <a href={b.drive_file_url} target="_blank" rel="noreferrer"
+                          className="text-primary text-xs inline-flex items-center gap-1 hover:underline">
+                          <FileArchive className="h-3 w-3" /> Drive
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground mt-3 flex items-start gap-1.5">
+          <AlertTriangle className="h-3 w-3 mt-0.5 text-amber-500 shrink-0" />
+          Snapshots include database rows for app tables. Authentication users, uploaded files,
+          and edge function code are not in the snapshot — code is restorable via Lovable's chat history.
+        </p>
       </CardContent>
     </Card>
   );
