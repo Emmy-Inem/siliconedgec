@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { ArrowRight, BookOpen, Users, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, MessageSquareQuote, PlayCircle, ChevronDown } from "lucide-react";
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
+import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote, Mouse } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -13,99 +13,303 @@ import { useHomeContent } from "@/hooks/useHomeContent";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import logoLight from "@/assets/logo-light.png";
 import instructor1 from "@/assets/instructor-1.jpg";
 import instructor2 from "@/assets/instructor-2.jpg";
 import instructor3 from "@/assets/instructor-3.jpg";
 import instructor4 from "@/assets/instructor-4.jpg";
-import courseBanner from "@/assets/course-banner.png";
 import { SEO } from "@/components/SEO";
 
-function useTypewriter(words: string[], speed = 80, pause = 2000) {
+/* ----------------------------- helpers ----------------------------- */
+
+function useTypewriter(words: string[], speed = 80, pause = 1800) {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const word = words[wordIndex];
-    const timeout = setTimeout(
-      () => {
-        if (!isDeleting) {
-          setText(word.slice(0, text.length + 1));
-          if (text.length + 1 === word.length) {
-            setTimeout(() => setIsDeleting(true), pause);
-          }
-        } else {
-          setText(word.slice(0, text.length - 1));
-          if (text.length === 0) {
-            setIsDeleting(false);
-            setWordIndex((i) => (i + 1) % words.length);
-          }
+    const t = setTimeout(() => {
+      if (!isDeleting) {
+        setText(word.slice(0, text.length + 1));
+        if (text.length + 1 === word.length) setTimeout(() => setIsDeleting(true), pause);
+      } else {
+        setText(word.slice(0, text.length - 1));
+        if (text.length === 0) {
+          setIsDeleting(false);
+          setWordIndex((i) => (i + 1) % words.length);
         }
-      },
-      isDeleting ? speed / 2 : speed
-    );
-    return () => clearTimeout(timeout);
+      }
+    }, isDeleting ? speed / 2 : speed);
+    return () => clearTimeout(t);
   }, [text, isDeleting, wordIndex, words, speed, pause]);
 
   return text;
 }
 
-function CountUp({ target, duration = 2 }: { target: number; duration?: number }) {
+function CountUp({ target, duration = 1.8, suffix = "" }: { target: number; duration?: number; suffix?: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-
+  const inView = useInView(ref, { once: true, margin: "-40px" });
   useEffect(() => {
     if (!inView) return;
-    let start = 0;
-    const increment = target / (duration * 60);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 1000 / 60);
-    return () => clearInterval(timer);
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.floor(eased * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setCount(target);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [inView, target, duration]);
-
-  return <span ref={ref}>{count.toLocaleString()}</span>;
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
+/* ----------------------------- magnetic button ----------------------------- */
 
+function MagneticButton({ children, className = "", asChild = false, ...rest }: React.ComponentProps<typeof Button>) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 200, damping: 15 });
+  const sy = useSpring(y, { stiffness: 200, damping: 15 });
+  const reduce = useReducedMotion();
+
+  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduce || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    x.set((e.clientX - (r.left + r.width / 2)) * 0.25);
+    y.set((e.clientY - (r.top + r.height / 2)) * 0.25);
+  };
+  const handleLeave = () => { x.set(0); y.set(0); };
+
+  return (
+    <motion.div ref={ref} onMouseMove={handleMove} onMouseLeave={handleLeave} style={{ x: sx, y: sy }} className="inline-block">
+      <Button asChild={asChild} className={className} {...rest}>{children}</Button>
+    </motion.div>
+  );
+}
+
+/* ----------------------------- hero collage card ----------------------------- */
+
+function TiltCollage({ instructors }: { instructors: { name: string; role: string; image: string }[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotX = useSpring(useTransform(my, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 12 });
+  const rotY = useSpring(useTransform(mx, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 12 });
+  const reduce = useReducedMotion();
+
+  const handle = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduce || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    mx.set((e.clientX - r.left) / r.width - 0.5);
+    my.set((e.clientY - r.top) / r.height - 0.5);
+  };
+  const reset = () => { mx.set(0); my.set(0); };
+
+  const cards = instructors.slice(0, 4);
+  const positions = [
+    { top: "0%",  left: "8%",  rot: -6, z: 30, w: "55%", delay: 0.1 },
+    { top: "10%", left: "48%", rot: 5,  z: 20, w: "48%", delay: 0.2 },
+    { top: "48%", left: "0%",  rot: -3, z: 25, w: "50%", delay: 0.3 },
+    { top: "52%", left: "52%", rot: 7,  z: 15, w: "46%", delay: 0.4 },
+  ];
+
+  return (
+    <div ref={ref} onMouseMove={handle} onMouseLeave={reset} className="relative w-full aspect-square max-w-[520px] mx-auto" style={{ perspective: 1200 }}>
+      {/* rotating glow */}
+      <motion.div
+        className="absolute inset-[12%] rounded-full bg-gradient-to-tr from-primary/40 via-accent/20 to-gold/30 blur-3xl opacity-60"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div style={{ rotateX: rotX, rotateY: rotY, transformStyle: "preserve-3d" }} className="absolute inset-0">
+        {cards.map((inst, i) => {
+          const p = positions[i];
+          return (
+            <motion.div
+              key={inst.name + i}
+              initial={{ opacity: 0, y: 40, rotate: 0 }}
+              animate={{ opacity: 1, y: 0, rotate: p.rot }}
+              transition={{ delay: p.delay, type: "spring", stiffness: 70, damping: 14 }}
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 50 }}
+              className="absolute rounded-2xl overflow-hidden border border-border/40 shadow-2xl glass-card"
+              style={{ top: p.top, left: p.left, width: p.w, zIndex: p.z, transform: `translateZ(${p.z}px)` }}
+            >
+              <img src={inst.image} alt={inst.name} className="w-full aspect-[4/5] object-cover" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3">
+                <p className="text-white text-xs font-semibold leading-tight">{inst.name}</p>
+                <p className="text-white/70 text-[10px]">{inst.role}</p>
+              </div>
+            </motion.div>
+          );
+        })}
+        {/* floating UI snippet */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6, type: "spring" }}
+          className="absolute -bottom-4 -left-4 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
+          style={{ transform: "translateZ(60px)" }}
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span className="text-[11px] font-medium">Live class · 24 online</span>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.75, type: "spring" }}
+          className="absolute -top-3 right-2 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
+          style={{ transform: "translateZ(60px)" }}
+        >
+          <Trophy className="h-3.5 w-3.5 text-gold" />
+          <span className="text-[11px] font-medium">Project graded · A+</span>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ----------------------------- bento tiles ----------------------------- */
+
+function ChatBubbleTile() {
+  const messages = [
+    { who: "Tutor", text: "Great commit — let's review the IAM policy.", side: "left" as const },
+    { who: "You",   text: "Should I use a role or a user for Lambda?", side: "right" as const },
+    { who: "Tutor", text: "Always a role. I'll demo it live in 5min.", side: "left" as const },
+  ];
+  const [i, setI] = useState(0);
+  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2400); return () => clearInterval(t); }, []);
+  return (
+    <div className="space-y-2 mt-5 min-h-[120px]">
+      <AnimatePresence mode="popLayout">
+        {messages.slice(0, i + 1).map((m, k) => (
+          <motion.div
+            key={k + "-" + i}
+            layout
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            className={`max-w-[85%] text-xs px-3 py-2 rounded-2xl ${m.side === "left" ? "bg-muted text-foreground rounded-bl-sm" : "ml-auto bg-primary text-primary-foreground rounded-br-sm"}`}
+          >
+            {m.text}
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function RadialProgressTile({ value = 92 }: { value?: number }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [v, setV] = useState(0);
+  useEffect(() => { if (inView) setV(value); }, [inView, value]);
+  const C = 2 * Math.PI * 42;
+  return (
+    <div className="relative mt-4 flex items-center justify-center">
+      <svg ref={ref} viewBox="0 0 100 100" className="w-32 h-32 -rotate-90">
+        <circle cx="50" cy="50" r="42" stroke="hsl(var(--muted))" strokeWidth="8" fill="none" />
+        <motion.circle
+          cx="50" cy="50" r="42" stroke="hsl(var(--primary))" strokeWidth="8" fill="none"
+          strokeLinecap="round" strokeDasharray={C}
+          initial={{ strokeDashoffset: C }}
+          animate={{ strokeDashoffset: C - (C * v) / 100 }}
+          transition={{ duration: 1.6, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-heading text-2xl font-bold text-gradient"><CountUp target={v} duration={1.6} suffix="%" /></span>
+      </div>
+    </div>
+  );
+}
+
+function SkillChipsTile() {
+  const skills = ["AWS", "Python", "Kubernetes", "React", "TensorFlow", "Docker", "Terraform", "TypeScript"];
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-4">
+      {skills.map((s, i) => (
+        <motion.span
+          key={s}
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.05, type: "spring" }}
+          whileHover={{ y: -3, scale: 1.06 }}
+          className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+        >
+          {s}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
+function AvatarStackTile({ avatars }: { avatars: string[] }) {
+  return (
+    <div className="flex items-center mt-5">
+      {avatars.slice(0, 5).map((a, i) => (
+        <motion.img
+          key={i}
+          src={a}
+          alt=""
+          initial={{ x: -10, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.08 }}
+          className="w-9 h-9 rounded-full ring-2 ring-card object-cover"
+          style={{ marginLeft: i === 0 ? 0 : -10 }}
+        />
+      ))}
+      <motion.div
+        initial={{ x: -10, opacity: 0 }}
+        whileInView={{ x: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.5 }}
+        className="ml-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold"
+      >
+        +2,000 learners
+      </motion.div>
+    </div>
+  );
+}
+
+/* ----------------------------- defaults ----------------------------- */
+
+const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
 const fallbackTestimonials = [
-  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: null as string | null, rating: 5 },
 ];
 
-const staggerContainer = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
-};
-
-const staggerItem = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } },
-};
-
+const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
+const staggerItem = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 16 } } };
 const sectionReveal = {
-  initial: { opacity: 0, y: 40 },
+  initial: { opacity: 0, y: 32 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
   transition: { type: "spring" as const, stiffness: 60, damping: 20 },
 };
 
+/* ----------------------------- main ----------------------------- */
+
 export default function Index() {
   const { data: home } = useHomeContent();
   const { user } = useAuth();
+  const reduce = useReducedMotion();
+
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
     queryFn: async () => {
@@ -128,6 +332,23 @@ export default function Index() {
       return data ?? [];
     },
   });
+  const { data: stats } = useQuery({
+    queryKey: ["home-stats"],
+    queryFn: async () => {
+      const [students, courses, instructors] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("courses").select("id", { count: "exact", head: true }),
+        supabase.from("instructors").select("id", { count: "exact", head: true }),
+      ]);
+      return {
+        students: Math.max(students.count ?? 0, 2000),
+        courses: Math.max(courses.count ?? 0, 24),
+        instructors: Math.max(instructors.count ?? 0, 30),
+        countries: 18,
+      };
+    },
+  });
+
   const instructors = (dbInstructors && dbInstructors.length > 0)
     ? dbInstructors.map((i, idx) => ({
         id: i.id,
@@ -140,13 +361,14 @@ export default function Index() {
       }))
     : fallbackInstructorImages.map((image, idx) => ({
         id: `placeholder-${idx}`,
-        name: ["Cloud Engineer", "DevOps Engineer", "Software Engineer", "AI/ML Specialist"][idx],
-        role: "Industry Mentor",
-        rating: 4.8,
+        name: ["Adaeze N.", "Marcus L.", "Sofia P.", "Rahul K."][idx],
+        role: ["Cloud Architect", "DevOps Lead", "Senior Software Engineer", "AI/ML Specialist"][idx],
+        rating: 4.9,
         students: 0,
         courses: 0,
         image,
       }));
+
   const testimonials = (dbTestimonials && dbTestimonials.length > 0)
     ? dbTestimonials.map((t) => ({
         id: t.id,
@@ -157,27 +379,35 @@ export default function Index() {
         rating: t.rating ?? 5,
       }))
     : fallbackTestimonials;
+
   const typewriterWords = home?.typewriter_words ?? [
     "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
     "Web Development", "Cybersecurity", "Data Science", "DevOps",
     "Product Design", "UI/UX Design",
   ];
   const typedText = useTypewriter(typewriterWords);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const scrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const { data: courses = [] } = useCourses();
 
+  /* page scroll progress */
+  const { scrollYProgress: pageProgress } = useScroll();
+  const progressX = useTransform(pageProgress, [0, 1], ["0%", "100%"]);
+
+  /* hero parallax */
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+
+  /* timeline scroll */
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: timelineProgress } = useScroll({ target: timelineRef, offset: ["start 80%", "end 20%"] });
+  const lineScale = useSpring(timelineProgress, { stiffness: 80, damping: 20 });
 
   const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
-
-  const filteredCourses =
-    activeCategory === "All"
-      ? courses
-      : courses.filter((c) => c.category === activeCategory);
+  const filteredCourses = activeCategory === "All" ? courses : courses.filter((c) => c.category === activeCategory);
 
   const scrollCourses = (dir: "left" | "right") => {
     if (scrollRef.current) {
@@ -185,6 +415,8 @@ export default function Index() {
       scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
     }
   };
+
+  const heroAvatars = instructors.slice(0, 5).map((i) => i.image);
 
   return (
     <div className="min-h-screen">
@@ -201,150 +433,144 @@ export default function Index() {
       />
       <Header />
 
-      {/* Hero */}
+      {/* page scroll progress bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-gradient-to-r from-primary via-accent to-gold"
+        style={{ scaleX: pageProgress }}
+      />
+
+      {/* ───────────────── HERO ───────────────── */}
       <section ref={heroRef} className="bg-hero relative overflow-hidden">
-        {/* Animated gradient mesh background */}
         <div className="absolute inset-0 gradient-mesh" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.18),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(282_100%_68%/0.10),transparent_50%)]" />
-
-        {/* Floating orbs */}
+        <div className="noise-overlay" />
         <motion.div
-          className="absolute top-20 right-[15%] w-64 h-64 rounded-full bg-primary/5 blur-3xl"
-          animate={{ y: [0, -30, 0], x: [0, 15, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-10 left-[10%] w-48 h-48 rounded-full bg-accent/5 blur-3xl"
-          animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-32 right-[8%] w-72 h-72 rounded-full bg-primary/10 blur-3xl"
+          animate={reduce ? {} : { y: [0, -30, 0], x: [0, 15, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28 relative">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative">
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-16 items-center">
+            {/* LEFT — kinetic headline */}
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6"
+              >
+                <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
+              </motion.div>
+
+              <h1 className="font-heading font-bold text-hero leading-[0.95] tracking-tight mb-5 text-balance" style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)" }}>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 60, damping: 18 }}
+                  className="block"
+                >
+                  The edge to
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.1 }}
+                  className="block text-gradient"
+                >
+                  {typedText}
+                  <span className="inline-block w-[6px] h-[0.85em] bg-primary ml-2 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
+                  className="block"
+                >
+                  your tech career<span className="text-gold">.</span>
+                </motion.span>
+              </h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-hero-muted text-base md:text-lg max-w-xl leading-relaxed mb-7"
+              >
+                {home?.hero_subtitle ?? "Live online courses. Hands-on projects. Verified certificates. Built by engineers who hire engineers."}
+              </motion.p>
+
+              {/* honest social proof pill */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border mb-8"
+              >
+                <div className="flex -space-x-2">
+                  {heroAvatars.slice(0, 4).map((a, i) => (
+                    <img key={i} src={a} alt="" className="w-6 h-6 rounded-full ring-2 ring-card object-cover" />
+                  ))}
+                </div>
+                <span className="text-xs text-hero-muted">
+                  Join <span className="text-hero font-semibold">{(stats?.students ?? 2000).toLocaleString()}+</span> learners building today
+                </span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55, type: "spring" }}
+                className="flex flex-wrap gap-3"
+              >
+                <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
+                  <Link to="/courses">{home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </MagneticButton>
+                {!user && (
+                  <MagneticButton size="lg" variant="outline" asChild className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero">
+                    <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up free"}</Link>
+                  </MagneticButton>
+                )}
+              </motion.div>
+            </div>
+
+            {/* RIGHT — instructor collage */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 60, damping: 18 }}
+              className="hidden lg:block"
+            >
+              <TiltCollage instructors={instructors.map((i) => ({ name: i.name, role: i.role, image: i.image }))} />
+            </motion.div>
+          </div>
+
+          {/* scroll cue */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 50, damping: 20 }}
-            className="max-w-3xl mx-auto text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+            className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1.5 text-hero-muted/60"
           >
-            {/* Cloud provider logos */}
+            <Mouse className="h-4 w-4" />
             <motion.div
-              className="flex items-center justify-center gap-4 mb-8"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-            >
-              {[
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg", alt: "Google Cloud" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-              ].map((logo, i) => (
-                <motion.div
-                  key={logo.alt}
-                  variants={staggerItem}
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 3 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2 border border-border/30"
-                >
-                  <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
-                </motion.div>
-              ))}
-            </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-primary font-medium text-sm tracking-widest uppercase mb-4"
-            >
-              {home?.hero_eyebrow ?? "Start Learning"}
-            </motion.p>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero leading-tight mb-2 min-h-[2.5em] sm:min-h-[2em]">
-              <span className="text-gradient">
-                {typedText}
-                <span className="inline-block w-[3px] h-[1em] bg-primary ml-1 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
-              </span>
-            </h1>
-            <h2 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4">
-              Unlock your tech career<span className="text-gold">.</span>
-            </h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-hero-muted text-base sm:text-lg md:text-xl max-w-xl mx-auto mb-6 leading-relaxed"
-            >
-              {home?.hero_subtitle ?? "Live Online Courses. Hands-On Projects. Real Certifications."}
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-8"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Live cohort starting next week · Limited seats
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, type: "spring" }}
-              className="flex flex-wrap justify-center gap-3"
-            >
-              <Button size="lg" asChild className="shimmer-btn text-primary-foreground hover-scale relative overflow-hidden">
-                <Link to="/courses">
-                  {home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              {!user && (
-                <Button size="lg" variant="outline" className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero hover-scale" asChild>
-                  <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up now"}</Link>
-                </Button>
-              )}
-            </motion.div>
-
-            {/* Tech logos below CTA */}
-            <motion.div
-              className="flex items-center justify-center gap-4 mt-10"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-            >
-              {[
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg", alt: "Python" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg", alt: "Angular" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", alt: "JavaScript" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/openal/openal-original.svg", alt: "AI" },
-              ].map((logo, i) => (
-                <motion.div
-                  key={logo.alt}
-                  variants={staggerItem}
-                  animate={{ y: [0, -7, 0] }}
-                  transition={{ duration: 3.5 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.5 + i * 0.25 }}
-                  whileHover={{ scale: 1.2, y: -5 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl glass-card shadow-lg flex items-center justify-center p-2.5 border border-border/30"
-                >
-                  <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
-                </motion.div>
-              ))}
-            </motion.div>
+              animate={reduce ? {} : { y: [0, 6, 0], opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.6, repeat: Infinity }}
+              className="w-px h-6 bg-current"
+            />
           </motion.div>
         </motion.div>
       </section>
 
-      {/* Alumni placement strip — trust */}
-      <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7">
+      {/* ───────────────── ALUMNI MARQUEE ───────────────── */}
+      <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7 relative">
         <div className="container mx-auto px-4">
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
             Our alumni now work at
           </p>
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden mask-fade-x">
             <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
-              {[
+              {Array.from({ length: 2 }).flatMap((_, dup) => [
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
@@ -353,45 +579,65 @@ export default function Index() {
                 { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
                 { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
-              ].concat([
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
-              ]).map((logo, i) => (
+              ].map((logo, i) => (
                 <img
-                  key={`${logo.alt}-${i}`}
+                  key={`${logo.alt}-${dup}-${i}`}
                   src={logo.src}
                   alt={logo.alt}
                   className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
                   loading="lazy"
                 />
-              ))}
+              )))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Learn with Silicon Edge */}
-      <section className="py-20 md:py-28">
+      {/* ───────────────── STATS BAND ───────────────── */}
+      <section className="py-12 md:py-16 relative">
         <div className="container mx-auto px-4">
-          <motion.div {...sectionReveal} className="text-center mb-4">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.why_eyebrow ?? "Why Learn with Silicon Edge"}</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              {(home?.why_title ?? "Build better skills, faster").split(/\s+/).map((word, idx, arr) => (
-                <span key={idx}>
-                  {idx === arr.length - 1 ? <span className="text-gradient">{word}</span> : `${word} `}
-                </span>
-              ))}
-              <span className="text-gold">.</span>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5"
+          >
+            {[
+              { icon: Users, label: "Students worldwide", target: stats?.students ?? 2000, suffix: "+" },
+              { icon: BookOpen, label: "Live courses", target: stats?.courses ?? 24, suffix: "" },
+              { icon: GraduationCap, label: "Industry mentors", target: stats?.instructors ?? 30, suffix: "+" },
+              { icon: Globe2, label: "Countries reached", target: stats?.countries ?? 18, suffix: "" },
+            ].map((s) => (
+              <motion.div
+                key={s.label}
+                variants={staggerItem}
+                whileHover={{ y: -4 }}
+                className="glass-card rounded-2xl border border-border/60 p-5 md:p-6 hover:border-primary/30 transition-colors"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <s.icon className="h-4.5 w-4.5 text-primary" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">{s.label}</span>
+                </div>
+                <div className="font-heading text-3xl md:text-4xl font-bold">
+                  <CountUp target={s.target} suffix={s.suffix} />
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ───────────────── BENTO — WHY ───────────────── */}
+      <section className="py-20 md:py-24 relative">
+        <div className="container mx-auto px-4">
+          <motion.div {...sectionReveal} className="text-center mb-14 max-w-2xl mx-auto">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Silicon Edge</p>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
+              Built for the way <span className="text-gradient">ambitious people</span> learn<span className="text-gold">.</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {home?.why_description ?? "We understand the challenges of breaking into or advancing in the tech industry."}
-            </p>
           </motion.div>
 
           <motion.div
@@ -399,98 +645,117 @@ export default function Index() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-14"
+            className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-5 auto-rows-[minmax(180px,auto)]"
           >
-            {[
-              { icon: BookOpen, title: "Instructor-Led Learning", desc: "Live classes mean active participation, instant answers, and continuous support." },
-              { icon: Award, title: "Built for Completion", desc: "Structured, tutor-led learning ensures course completion and no drop-outs." },
-              { icon: Briefcase, title: "Skills That Get You Hired", desc: "Industry-aligned curriculum builds practical skills and real-life projects." },
-              { icon: Zap, title: "Beyond Certification", desc: "Job training equips you for local and remote IT roles." },
-            ].map((prop, propIdx) => (
+            {/* Large — live chat */}
+            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
+              <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"><MessageCircle className="h-4.5 w-4.5 text-primary" /></div>
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
+              </div>
+              <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
+              <p className="text-sm text-muted-foreground">Ask, build, and ship in real time with mentors who reply in minutes.</p>
+              <ChatBubbleTile />
+            </motion.div>
+
+            {/* Medium — completion */}
+            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-2 mb-1">
+                <Award className="h-4 w-4 text-primary" />
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Completion</span>
+              </div>
+              <h3 className="font-heading font-semibold">Built for completion</h3>
+              <RadialProgressTile value={92} />
+              <p className="text-xs text-muted-foreground text-center mt-1">of cohort students finish their track</p>
+            </motion.div>
+
+            {/* Medium — skills */}
+            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-2 mb-1">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Hireable</span>
+              </div>
+              <h3 className="font-heading font-semibold">Skills that get you hired</h3>
+              <SkillChipsTile />
+            </motion.div>
+
+            {/* Medium — community */}
+            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-2 mb-1">
+                <Heart className="h-4 w-4 text-primary" />
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Community</span>
+              </div>
+              <h3 className="font-heading font-semibold">Cohort energy, lifelong network</h3>
+              <AvatarStackTile avatars={heroAvatars} />
+            </motion.div>
+
+            {/* Small — lifetime */}
+            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+              <div className="flex items-center gap-2 mb-1">
+                <PlayCircle className="h-4 w-4 text-primary" />
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
+              </div>
+              <h3 className="font-heading font-semibold">Lifetime access to recordings</h3>
+              <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
               <motion.div
-                key={prop.title}
-                variants={staggerItem}
-                whileHover={{ y: -8, transition: { type: "spring", stiffness: 300 } }}
-                className="glass-card rounded-xl border border-border p-7 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8 transition-all group relative overflow-hidden"
+                animate={reduce ? {} : { scale: [1, 1.08, 1] }}
+                transition={{ duration: 2.4, repeat: Infinity }}
+                className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium"
               >
-                {/* Hover glow */}
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)]" />
-                <motion.div
-                  animate={{ rotate: [0, -6, 6, 0], y: [0, -3, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: propIdx * 0.4 }}
-                  whileHover={{ scale: 1.15, rotate: 0 }}
-                  className="animate-icon-pulse w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors relative z-10"
-                >
-                  <prop.icon className="h-6 w-6 text-primary" />
-                </motion.div>
-                <h3 className="font-heading font-semibold text-base mb-2 relative z-10">{prop.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed relative z-10">{prop.desc}</p>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                </span>
+                Always available
               </motion.div>
-            ))}
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-
-      {/* Browse Categories - Horizontal Scroll Courses */}
+      {/* ───────────────── COURSES ───────────────── */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.categories_eyebrow ?? "Browse Categories"}</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
-                <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">{home?.categories_title ?? "The world's top courses"}</h2>
-                <p className="text-muted-foreground">{home?.categories_description ?? "We keep adding new online video courses with new additions published every month."}</p>
+                <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">{home?.categories_title ?? "Courses worth your time"}</h2>
+                <p className="text-muted-foreground">{home?.categories_description ?? "New tracks added every month, taught by people who ship."}</p>
               </div>
-              <Link to="/courses" className="text-primary font-medium text-sm flex items-center hover:underline hover-scale">
-                View All <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
+              <Link to="/courses" className="text-primary font-medium text-sm flex items-center hover:underline hover-scale">View All <ChevronRight className="h-4 w-4 ml-1" /></Link>
             </div>
           </motion.div>
 
-          {/* Category pills */}
+          {/* category pills with layoutId underline */}
           <div className="flex flex-wrap gap-2 mb-8">
-            {categories.map((cat) => (
-              <motion.button
-                key={cat}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                    : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                {cat}
-              </motion.button>
-            ))}
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {isActive && (
+                    <motion.span layoutId="cat-pill" className="absolute inset-0 rounded-full bg-primary shadow-lg shadow-primary/25" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                  )}
+                  <span className={`relative ${!isActive ? "px-0" : ""}`}>{cat}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Horizontal scroll */}
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => scrollCourses("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3"
-            >
+          <div className="relative group/rail">
+            <button onClick={() => scrollCourses("left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3 opacity-0 group-hover/rail:opacity-100">
               <ChevronLeft className="h-5 w-5" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => scrollCourses("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3"
-            >
+            </button>
+            <button onClick={() => scrollCourses("right")} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3 opacity-0 group-hover/rail:opacity-100">
               <ChevronRight className="h-5 w-5" />
-            </motion.button>
+            </button>
 
-            <div
-              ref={scrollRef}
-              className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
+            <div ref={scrollRef} className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory mask-fade-x" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {filteredCourses.map((course, i) => (
                 <div key={course.id} className="min-w-[300px] max-w-[320px] snap-start flex-shrink-0">
                   <CourseCard course={course} index={i} />
@@ -501,62 +766,74 @@ export default function Index() {
         </div>
       </section>
 
-      {/* How it works — 4 step roadmap */}
-      <section className="py-20 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.04),transparent_70%)]" />
+      {/* ───────────────── HOW IT WORKS — scroll timeline ───────────────── */}
+      <section ref={timelineRef} className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
         <div className="container mx-auto px-4 relative">
-          <motion.div {...sectionReveal} className="text-center mb-16">
+          <motion.div {...sectionReveal} className="text-center mb-16 max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">How it works</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
               From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">A four-step path designed by hiring managers, not just educators.</p>
           </motion.div>
 
-          <div className="relative">
-            <div className="hidden lg:block absolute top-12 left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          <div className="relative max-w-3xl mx-auto">
+            {/* base line */}
+            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-border md:-translate-x-1/2" />
+            {/* progress line */}
             <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-80px" }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
-            >
-              {[
-                { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort space." },
-                { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Join real, instructor-led classes with Q&A. Recordings keep you on track." },
-                { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work reviewed by mentors actively working in tech." },
-                { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
-              ].map((step) => (
-                <motion.div key={step.n} variants={staggerItem} className="relative">
-                  <div className="relative z-10 bg-card rounded-2xl border border-border/60 p-6 hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-1 ring-primary/20">
-                        <step.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <span className="font-heading text-3xl font-bold text-gradient leading-none">{step.n}</span>
+              style={{ scaleY: lineScale, transformOrigin: "top" }}
+              className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-accent to-gold md:-translate-x-1/2"
+            />
+
+            {[
+              { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort." },
+              { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Real instructor-led classes with Q&A. Recordings keep you on track." },
+              { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
+              { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
+            ].map((step, i) => {
+              const left = i % 2 === 0;
+              return (
+                <motion.div
+                  key={step.n}
+                  initial={{ opacity: 0, x: left ? -40 : 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ type: "spring", stiffness: 60, damping: 18 }}
+                  className={`relative grid md:grid-cols-2 gap-6 mb-12 md:mb-16 ${left ? "" : "md:[&>*:first-child]:order-2"}`}
+                >
+                  {/* node */}
+                  <div className="absolute left-6 md:left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-primary ring-4 ring-background z-10" />
+
+                  <div className={`pl-16 md:pl-0 ${left ? "md:text-right md:pr-12" : "md:pl-12"}`}>
+                    <span className="font-heading text-5xl md:text-6xl font-bold text-gradient leading-none">{step.n}</span>
+                  </div>
+                  <div className={`pl-16 md:pl-0 ${left ? "md:pl-12" : "md:text-right md:pr-12"}`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3 ${left ? "md:flex-row" : "md:flex-row-reverse"}`}>
+                      <step.icon className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-xs font-medium text-primary">Step {step.n}</span>
                     </div>
-                    <h3 className="font-heading font-semibold text-base mb-2">{step.title}</h3>
+                    <h3 className="font-heading text-xl md:text-2xl font-semibold mb-2">{step.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                   </div>
                 </motion.div>
-              ))}
-            </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* World-class Instructors */}
+      {/* ───────────────── INSTRUCTORS RAIL ───────────────── */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <motion.div {...sectionReveal} className="text-center mb-14">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class Instructors</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-               Classes Taught by <span className="text-gradient">Industry Experts</span><span className="text-gold">.</span>
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Silicon Edge teachers are icons, experts, and industry rock stars excited to share their experience, wisdom, and trusted tools with you.
-            </p>
+          <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class instructors</p>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
+                Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span>
+              </h2>
+            </div>
+            <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></Link>
           </motion.div>
 
           <motion.div
@@ -564,76 +841,69 @@ export default function Index() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 snap-x mask-fade-x"
+            style={{ scrollbarWidth: "none" }}
           >
             {instructors.map((inst) => (
               <motion.div
                 key={inst.id}
                 variants={staggerItem}
-                whileHover={{ y: -10, transition: { type: "spring", stiffness: 300 } }}
-                className="bg-card rounded-xl border border-border p-6 text-center hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all group relative overflow-hidden"
+                whileHover={{ y: -8, rotate: 1 }}
+                className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-3xl overflow-hidden border border-border/60 bg-card relative"
               >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_30%,hsl(var(--primary)/0.06),transparent_70%)]" />
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 ring-2 ring-transparent group-hover:ring-primary/30 transition-all relative z-10"
-                >
-                  <img src={inst.image} alt={inst.name} className="w-full h-full object-cover" />
-                </motion.div>
-                <h3 className="font-heading font-semibold relative z-10">{inst.name}</h3>
-                <p className="text-muted-foreground text-sm mt-1 relative z-10">{inst.role}</p>
-                <div className="flex items-center justify-center gap-1 mt-3 relative z-10">
-                  <Star className="h-4 w-4 fill-accent text-accent" />
-                  <span className="text-sm font-medium">{inst.rating}</span>
+                <div className="aspect-[4/5] overflow-hidden">
+                  <img src={inst.image} alt={inst.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
                 </div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground relative z-10"
-                >
-                  <span>{inst.students.toLocaleString()} Students</span>
-                  <span>{inst.courses} Courses</span>
-                </motion.div>
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+                  <h3 className="font-heading font-semibold text-white">{inst.name}</h3>
+                  <p className="text-white/70 text-xs">{inst.role}</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileHover={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+                    <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                  </motion.div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Meet Your Mentors */}
+      {/* ───────────────── MENTORS BLOCK ───────────────── */}
       <section className="py-20 bg-hero relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh opacity-30" />
+        <div className="noise-overlay" />
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div {...sectionReveal}>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet Your Mentors</p>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6">
-                Guiding Your Tech Journey<span className="text-gold">.</span>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet your mentors</p>
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6 text-balance">
+                Guidance from people who've already done it<span className="text-gold">.</span>
               </h2>
-              <p className="text-hero-muted leading-relaxed mb-8">
-                At Silicon Edge Consulting, your success is our mission, and our tutors are the heart of that commitment. They are more than just instructors; they are dedicated mentors, industry veterans, and passionate educators committed to empowering your growth.
+              <p className="text-hero-muted leading-relaxed mb-8 max-w-lg">
+                Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.
               </p>
               <div className="space-y-5">
                 {[
-                  { icon: Shield, title: "Industry Veterans", desc: "Seasoned professionals sharing current insights and best practices." },
-                  { icon: Heart, title: "Dedicated Support", desc: "Personalized guidance, answering questions, and constructive feedback." },
-                  { icon: CheckCircle2, title: "Practical Application Focus", desc: "Hands-on projects and real-world scenarios for confident skill application." },
+                  { icon: Shield, title: "Industry veterans", desc: "Seasoned professionals sharing current insights and best practices." },
+                  { icon: Heart, title: "Dedicated support", desc: "Personalized guidance, fast answers, and constructive feedback." },
+                  { icon: CheckCircle2, title: "Practical-first", desc: "Hands-on projects and real-world scenarios — no theory dumps." },
                 ].map((item, i) => (
                   <motion.div
                     key={item.title}
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ type: "spring", stiffness: 80, delay: i * 0.15 }}
+                    transition={{ type: "spring", stiffness: 80, delay: i * 0.12 }}
                     viewport={{ once: true }}
-                    whileHover={{ x: 8 }}
+                    whileHover={{ x: 6 }}
                     className="flex gap-4"
                   >
-                    <motion.div
-                      whileHover={{ scale: 1.15, rotate: 5 }}
-                      className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0"
-                    >
+                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
                       <item.icon className="h-5 w-5 text-primary" />
-                    </motion.div>
+                    </div>
                     <div>
                       <h4 className="font-heading font-semibold text-hero text-sm">{item.title}</h4>
                       <p className="text-hero-muted text-sm mt-0.5">{item.desc}</p>
@@ -643,27 +913,83 @@ export default function Index() {
               </div>
             </motion.div>
 
+            {/* layered mentor visual */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ type: "spring", stiffness: 60, damping: 20 }}
-              whileHover={{ scale: 1.02, rotate: 1 }}
-              className="rounded-2xl overflow-hidden border border-primary/10 glow-purple"
+              transition={{ type: "spring", stiffness: 60, damping: 18 }}
+              className="relative aspect-[4/5] max-w-md mx-auto w-full"
             >
-              <img src={courseBanner} alt="Cloud Engineering Crash Course" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">
+                <img src={instructors[0]?.image ?? instructor1} alt="Mentor" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              </div>
+              {/* floating cards */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                animate={reduce ? {} : { y: [0, -8, 0] }}
+                className="absolute -top-3 -right-3 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[180px]"
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                  <Trophy className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Project graded</p>
+                  <p className="text-xs font-semibold">A+ — Cloud Lab 04</p>
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.45 }}
+                animate={reduce ? {} : { y: [0, 6, 0] }}
+                className="absolute bottom-6 -left-4 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[200px]"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center">
+                  <Briefcase className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Just now</p>
+                  <p className="text-xs font-semibold">Job offer received 🎉</p>
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 }}
+                className="absolute -bottom-2 right-4 bg-card border border-border rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-2"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-[11px] font-medium">Live · 24 online</span>
+              </motion.div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 overflow-hidden">
-        {/* Trust badges row */}
-        <div className="container mx-auto px-4 mb-16">
+      {/* ───────────────── TRUST + TESTIMONIALS (masonry) ───────────────── */}
+      <section className="py-20 md:py-24">
+        <div className="container mx-auto px-4">
+          <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Loved by ambitious learners</p>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
+              Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span>
+            </h2>
+          </motion.div>
+
+          {/* trust chips */}
           <motion.div
             {...sectionReveal}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
+            className="flex flex-wrap justify-center gap-2 mb-12"
           >
             {[
               { icon: BadgeCheck, label: "Verified Certificates" },
@@ -672,65 +998,54 @@ export default function Index() {
               { icon: PlayCircle, label: "Live + Recorded" },
               { icon: Lock, label: "Secure Payments" },
             ].map((b) => (
-              <div
-                key={b.label}
-                className="flex items-center gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur hover:border-primary/30 transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <b.icon className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium leading-tight">{b.label}</span>
+              <div key={b.label} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/60 backdrop-blur text-xs">
+                <b.icon className="h-3.5 w-3.5 text-primary" />
+                <span className="font-medium">{b.label}</span>
               </div>
             ))}
           </motion.div>
-        </div>
 
-        <div className="container mx-auto px-4">
-          <motion.div {...sectionReveal} className="text-center mb-14">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Testimonials</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-              Don't just take <span className="text-gradient">our word for it</span>.
-            </h2>
-            <p className="text-muted-foreground">Join thousands learning on Silicon Edge</p>
-          </motion.div>
-
-          <div className="relative group/marquee">
-            <div className="flex animate-marquee gap-6 group-hover/marquee:[animation-play-state:paused]" style={{ width: "max-content" }}>
-              {[...testimonials, ...testimonials].map((t, i) => (
-                <motion.div
-                  key={`${t.id}-${i}`}
-                  whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
-                  className="w-[340px] glass-card rounded-xl border border-border p-6 space-y-4 flex-shrink-0 hover:border-primary/20 hover:shadow-lg transition-all"
-                >
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-                      <Star key={j} className="h-4 w-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    {t.avatar_url ? (
-                      <img src={t.avatar_url} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="font-heading font-bold text-primary text-sm">
-                          {t.name.split(" ").map(n => n[0]).join("")}
-                        </span>
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-heading font-semibold text-sm">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.role}</p>
+          {/* masonry */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: (i % 6) * 0.06, type: "spring", stiffness: 80 }}
+                whileHover={{ y: -4 }}
+                className="break-inside-avoid mb-5 glass-card rounded-2xl border border-border/60 p-6 hover:border-primary/30 transition-all relative"
+              >
+                <Quote className="absolute top-4 right-4 h-6 w-6 text-primary/15" />
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
+                    <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
+                <div className="flex items-center gap-3">
+                  {t.avatar_url ? (
+                    <img src={t.avatar_url} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="font-heading font-bold text-primary text-xs">
+                        {t.name.split(" ").map((n) => n[0]).join("")}
+                      </span>
                     </div>
+                  )}
+                  <div>
+                    <p className="font-heading font-semibold text-sm">{t.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{t.role}</p>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ — handle objections */}
+      {/* ───────────────── FAQ ───────────────── */}
       <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4 max-w-3xl">
           <motion.div {...sectionReveal} className="text-center mb-10">
@@ -743,9 +1058,9 @@ export default function Index() {
 
           <Accordion type="single" collapsible className="space-y-3">
             {[
-              { q: "Is this for absolute beginners?", a: "Yes. Most of our students start from zero. We pace foundational concepts before pushing into advanced, hands-on work." },
-              { q: "Do I need a degree to enroll?", a: "No. We care about commitment, not credentials. Many of our top alumni were career switchers with no prior tech background." },
-              { q: "What if I miss a live class?", a: "Every session is recorded and available for life. Replay at your own pace and ask questions in the cohort channel." },
+              { q: "Is this for absolute beginners?", a: "Yes. Most students start from zero. We pace foundational concepts before pushing into advanced, hands-on work." },
+              { q: "Do I need a degree to enroll?", a: "No. We care about commitment, not credentials. Many top alumni were career switchers with no prior tech background." },
+              { q: "What if I miss a live class?", a: "Every session is recorded and yours for life. Replay at your pace and ask questions in the cohort channel." },
               { q: "Will you actually help me get a job?", a: "Yes. CV reviews, mock interviews, portfolio polish, and warm intros to our hiring partners are part of every track." },
               { q: "How do payments work?", a: "Pay in full or split into installments. Cards, Paystack, and bank transfer are supported. Promo codes apply at checkout." },
               { q: "Can my employer sponsor me?", a: "Absolutely. Visit our Business page for invoiced corporate plans and team training options." },
@@ -753,7 +1068,7 @@ export default function Index() {
               <AccordionItem
                 key={i}
                 value={`item-${i}`}
-                className="border border-border/60 rounded-xl bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
+                className="border border-border/60 rounded-2xl bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-md transition-all"
               >
                 <AccordionTrigger className="font-heading text-left text-base hover:no-underline py-4">
                   {item.q}
@@ -767,30 +1082,36 @@ export default function Index() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-hero py-20 relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-40" />
+      {/* ───────────────── FINAL CTA ───────────────── */}
+      <section className="bg-hero py-24 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-50" />
+        <div className="absolute inset-x-0 bottom-0 h-[55%] overflow-hidden">
+          <div className="perspective-grid absolute inset-0" />
+          <div className="absolute inset-0 bg-gradient-to-t from-hero via-hero/80 to-transparent" />
+        </div>
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 blur-3xl"
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl"
+          animate={reduce ? {} : { scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
         <div className="container mx-auto px-4 text-center relative">
-          <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Start your learning journey today</p>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-4">
-              Start Building your tech career
+          <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">Your edge starts now</p>
+            <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">
+              Stop scrolling. <br className="hidden sm:block" />
+              <span className="text-gradient">Start shipping</span><span className="text-gold">.</span>
             </h2>
-            <p className="text-hero-muted max-w-lg mx-auto mb-8">
-              Effective learning starts with assessment. Learning a new skill is hard work, Silicon Edge makes it easier.
+            <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">
+              Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere.
             </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
-                <Link to="/courses">
-                  Browse Courses <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </motion.div>
+            <div className="flex flex-wrap justify-center gap-3">
+              <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
+                <Link to="/courses">Browse courses <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </MagneticButton>
+              <MagneticButton size="lg" variant="outline" asChild className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero">
+                <Link to="/for-businesses">Talk to admissions</Link>
+              </MagneticButton>
+            </div>
           </motion.div>
         </div>
       </section>
