@@ -534,8 +534,8 @@ export default function Index() {
                     <img key={i} src={a} alt="" className="w-6 h-6 rounded-full ring-2 ring-card object-cover" />
                   ))}
                 </div>
-                <span className="text-xs text-hero-muted">
-                  Join <span className="text-hero font-semibold">{(stats?.students ?? 2000).toLocaleString()}+</span> learners building today
+                <span className="text-sm font-medium text-white">
+                  Join <span className="text-gold font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
                 </span>
               </motion.div>
 
