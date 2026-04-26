@@ -260,13 +260,13 @@ export default function Pricing() {
         <div className="absolute inset-0 gradient-mesh opacity-30" />
         <div className="container mx-auto px-4 relative">
           <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-accent font-medium text-sm tracking-widest uppercase mb-3">
+            <p className="text-gold font-semibold text-sm tracking-widest uppercase mb-3 drop-shadow-[0_2px_8px_rgba(177,59,255,0.35)]">
               We build tech Careers
             </p>
-            <h2 className="font-heading text-2xl md:text-3xl font-bold text-hero mb-3">
+            <h2 className="font-heading text-2xl md:text-4xl font-bold text-white mb-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
               Our average call quality rating is 4.4 out of 5.
             </h2>
-            <p className="text-hero-muted text-base">
+            <p className="text-white/80 text-base">
               That leads to happy tweets like these:
             </p>
           </motion.div>
@@ -283,22 +283,22 @@ export default function Pricing() {
                 key={t.name}
                 variants={staggerItem}
                 whileHover={{ y: -5 }}
-                className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-4 hover:border-primary/40 hover:bg-white/[0.07] transition-all"
+                className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-md p-6 space-y-4 hover:border-primary/60 hover:bg-white/[0.14] transition-all shadow-xl shadow-black/20"
               >
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star
                       key={j}
-                      className="h-4 w-4 fill-accent text-accent"
+                      className="h-4 w-4 fill-gold text-gold"
                     />
                   ))}
                 </div>
-                <p className="text-sm text-hero/90 leading-relaxed italic">
+                <p className="text-sm text-white leading-relaxed italic">
                   "{t.quote}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="font-heading font-bold text-primary text-sm">
+                  <div className="w-10 h-10 rounded-full bg-primary/30 ring-1 ring-white/30 flex items-center justify-center">
+                    <span className="font-heading font-bold text-white text-sm">
                       {t.name
                         .split(" ")
                         .map((n) => n[0])
@@ -306,10 +306,10 @@ export default function Pricing() {
                     </span>
                   </div>
                   <div>
-                    <p className="font-heading font-semibold text-sm text-hero">
+                    <p className="font-heading font-semibold text-sm text-white">
                       {t.name}
                     </p>
-                    <p className="text-xs text-hero-muted">{t.role}</p>
+                    <p className="text-xs text-white/70">{t.role}</p>
                   </div>
                 </div>
               </motion.div>

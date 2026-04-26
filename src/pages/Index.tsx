@@ -180,18 +180,20 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
 
 function ChatBubbleTile() {
   const messages = [
-    { who: "Tutor", text: "Great commit — let's review the IAM policy.", side: "left" as const },
-    { who: "You",   text: "Should I use a role or a user for Lambda?", side: "right" as const },
-    { who: "Tutor", text: "Always a role. I'll demo it live in 5min.", side: "left" as const },
+    { who: "Mentor", text: "Today: deploy a fault-tolerant VPC across 3 AZs on AWS.", side: "left" as const },
+    { who: "You",    text: "Should the NAT gateway be per-AZ or shared?", side: "right" as const },
+    { who: "Mentor", text: "Per-AZ. Shared NAT = single point of failure + cross-AZ data charges.", side: "left" as const },
+    { who: "You",    text: "Got it. Pushing my Terraform module now 🚀", side: "right" as const },
+    { who: "Mentor", text: "Nice. I'll review the IAM least-privilege policies in 5min live.", side: "left" as const },
   ];
   const [i, setI] = useState(0);
-  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2400); return () => clearInterval(t); }, []);
+  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2800); return () => clearInterval(t); }, []);
   return (
-    <div className="space-y-2 mt-5 min-h-[120px]">
+    <div className="space-y-2 mt-5 min-h-[180px]">
       <AnimatePresence mode="popLayout">
-        {messages.slice(0, i + 1).map((m, k) => (
+        {messages.slice(Math.max(0, i - 2), i + 1).map((m, k) => (
           <motion.div
-            key={k + "-" + i}
+            key={`${m.text}-${k}-${i}`}
             layout
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -285,6 +287,72 @@ function AvatarStackTile({ avatars }: { avatars: string[] }) {
 /* ----------------------------- defaults ----------------------------- */
 
 const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
+
+/* ----------------------------- vertical testimonial marquee ----------------------------- */
+
+type Tm = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
+
+function TestimonialCard({ t }: { t: Tm }) {
+  return (
+    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative">
+      <Quote className="absolute top-3 right-3 h-5 w-5 text-primary/15" />
+      <div className="flex gap-0.5 mb-2.5">
+        {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
+          <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
+        ))}
+      </div>
+      <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
+      <div className="flex items-center gap-3">
+        {t.avatar_url ? (
+          <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-9 h-9 rounded-full object-cover" />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="font-heading font-bold text-primary text-xs">
+              {t.name.split(" ").map((n) => n[0]).join("")}
+            </span>
+          </div>
+        )}
+        <div>
+          <p className="font-heading font-semibold text-sm">{t.name}</p>
+          <p className="text-[11px] text-muted-foreground">{t.role}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
+  /* split into 3 columns (2 on tablet, 1 on mobile via CSS hide) */
+  const cols: Tm[][] = [[], [], []];
+  testimonials.forEach((t, i) => cols[i % 3].push(t));
+  /* duplicate each column so the loop is seamless */
+  const speeds = ["28s", "36s", "32s"];
+  const directions = ["normal", "reverse", "normal"] as const;
+
+  return (
+    <div className="relative h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
+        {cols.map((col, idx) => (
+          <div key={idx} className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden md:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}>
+            <div
+              className="marquee-track flex flex-col gap-5"
+              style={{
+                animation: `marquee-vertical ${speeds[idx]} linear infinite`,
+                animationDirection: directions[idx],
+                willChange: "transform",
+              }}
+            >
+              {[...col, ...col].map((t, k) => (
+                <TestimonialCard key={`${t.id}-${k}`} t={t} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const fallbackTestimonials = [
   { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: null as string | null, rating: 5 },
   { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: null as string | null, rating: 5 },
@@ -349,7 +417,20 @@ export default function Index() {
     },
   });
 
-  const instructors = (dbInstructors && dbInstructors.length > 0)
+  /* admin overrides take precedence; otherwise live counts */
+  const parseOverride = (v?: string) => {
+    if (!v) return null;
+    const n = parseInt(v.replace(/[^0-9]/g, ""), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const displayStats = {
+    students: parseOverride(home?.stat_students) ?? stats?.students ?? 2000,
+    courses: parseOverride(home?.stat_courses) ?? stats?.courses ?? 24,
+    instructors: parseOverride(home?.stat_instructors) ?? stats?.instructors ?? 30,
+    countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 18,
+  };
+
+  const baseInstructors = (dbInstructors && dbInstructors.length > 0)
     ? dbInstructors.map((i, idx) => ({
         id: i.id,
         name: i.name,
@@ -368,6 +449,13 @@ export default function Index() {
         courses: 0,
         image,
       }));
+
+  /* admin can override the 4 hero collage images by URL */
+  const heroOverrides = [home?.hero_image_1, home?.hero_image_2, home?.hero_image_3, home?.hero_image_4];
+  const instructors = baseInstructors.map((inst, idx) => {
+    const override = heroOverrides[idx];
+    return override && override.trim().length > 0 ? { ...inst, image: override } : inst;
+  });
 
   const testimonials = (dbTestimonials && dbTestimonials.length > 0)
     ? dbTestimonials.map((t) => ({
@@ -446,8 +534,9 @@ export default function Index() {
         <div className="noise-overlay" />
         <motion.div
           className="absolute top-32 right-[8%] w-72 h-72 rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { y: [0, -30, 0], x: [0, 15, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          animate={reduce ? {} : { y: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "transform" }}
         />
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative">
@@ -505,15 +594,15 @@ export default function Index() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border mb-8"
+                className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
               >
                 <div className="flex -space-x-2">
                   {heroAvatars.slice(0, 4).map((a, i) => (
-                    <img key={i} src={a} alt="" className="w-6 h-6 rounded-full ring-2 ring-card object-cover" />
+                    <img key={i} src={a} alt="" loading="lazy" className="w-7 h-7 rounded-full ring-2 ring-white/40 object-cover" />
                   ))}
                 </div>
-                <span className="text-xs text-hero-muted">
-                  Join <span className="text-hero font-semibold">{(stats?.students ?? 2000).toLocaleString()}+</span> learners building today
+                <span className="text-sm font-medium text-white">
+                  Join <span className="text-gold font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
                 </span>
               </motion.div>
 
@@ -604,10 +693,10 @@ export default function Index() {
             className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5"
           >
             {[
-              { icon: Users, label: "Students worldwide", target: stats?.students ?? 2000, suffix: "+" },
-              { icon: BookOpen, label: "Live courses", target: stats?.courses ?? 24, suffix: "" },
-              { icon: GraduationCap, label: "Industry mentors", target: stats?.instructors ?? 30, suffix: "+" },
-              { icon: Globe2, label: "Countries reached", target: stats?.countries ?? 18, suffix: "" },
+              { icon: Users, label: "Students worldwide", target: displayStats.students, suffix: "+" },
+              { icon: BookOpen, label: "Live courses", target: displayStats.courses, suffix: "" },
+              { icon: GraduationCap, label: "Industry mentors", target: displayStats.instructors, suffix: "+" },
+              { icon: Globe2, label: "Countries reached", target: displayStats.countries, suffix: "" },
             ].map((s) => (
               <motion.div
                 key={s.label}
@@ -922,7 +1011,12 @@ export default function Index() {
               className="relative aspect-[4/5] max-w-md mx-auto w-full"
             >
               <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">
-                <img src={instructors[0]?.image ?? instructor1} alt="Mentor" className="w-full h-full object-cover" />
+                <img
+                  src={(home?.mentor_image && home.mentor_image.trim().length > 0) ? home.mentor_image : (instructors[0]?.image ?? instructor1)}
+                  alt="Mentor"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
               {/* floating cards */}
@@ -1005,43 +1099,8 @@ export default function Index() {
             ))}
           </motion.div>
 
-          {/* masonry */}
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-5 [column-fill:_balance]">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: (i % 6) * 0.06, type: "spring", stiffness: 80 }}
-                whileHover={{ y: -4 }}
-                className="break-inside-avoid mb-5 glass-card rounded-2xl border border-border/60 p-6 hover:border-primary/30 transition-all relative"
-              >
-                <Quote className="absolute top-4 right-4 h-6 w-6 text-primary/15" />
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  {t.avatar_url ? (
-                    <img src={t.avatar_url} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="font-heading font-bold text-primary text-xs">
-                        {t.name.split(" ").map((n) => n[0]).join("")}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-heading font-semibold text-sm">{t.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* vertical scrolling columns */}
+          <VerticalTestimonialMarquee testimonials={testimonials} />
         </div>
       </section>
 
@@ -1091,8 +1150,9 @@ export default function Index() {
         </div>
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          animate={reduce ? {} : { opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "opacity" }}
         />
         <div className="container mx-auto px-4 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">

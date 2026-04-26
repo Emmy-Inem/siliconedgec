@@ -117,6 +117,10 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "marquee-vertical": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
         "pulse-glow": {
           "0%, 100%": { boxShadow: "0 0 20px -5px hsl(var(--primary) / 0.3)" },
           "50%": { boxShadow: "0 0 30px -3px hsl(var(--primary) / 0.5)" },
@@ -148,6 +152,7 @@ export default {
         "typewriter-blink": "typewriter-blink 1s step-end infinite",
         "float": "float 3s ease-in-out infinite",
         "marquee": "marquee 30s linear infinite",
+        "marquee-vertical": "marquee-vertical 40s linear infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
         "gradient-shift": "gradient-shift 6s ease infinite",

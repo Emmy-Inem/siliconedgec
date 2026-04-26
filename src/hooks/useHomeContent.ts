@@ -16,6 +16,15 @@ export interface HomeContent {
   whatsapp_banner_title: string;
   whatsapp_banner_subtitle: string;
   whatsapp_banner_url: string;
+  hero_image_1: string;
+  hero_image_2: string;
+  hero_image_3: string;
+  hero_image_4: string;
+  mentor_image: string;
+  stat_students: string;
+  stat_courses: string;
+  stat_instructors: string;
+  stat_countries: string;
 }
 
 const DEFAULTS: HomeContent = {
@@ -45,6 +54,15 @@ const DEFAULTS: HomeContent = {
   whatsapp_banner_title: "Join Our Community",
   whatsapp_banner_subtitle: "Get instant course updates on WhatsApp.",
   whatsapp_banner_url: "https://wa.me/447741247592",
+  hero_image_1: "",
+  hero_image_2: "",
+  hero_image_3: "",
+  hero_image_4: "",
+  mentor_image: "",
+  stat_students: "",
+  stat_courses: "",
+  stat_instructors: "",
+  stat_countries: "",
 };
 
 export const HOME_CONTENT_KEYS = [
@@ -62,6 +80,15 @@ export const HOME_CONTENT_KEYS = [
   "home_whatsapp_banner_title",
   "home_whatsapp_banner_subtitle",
   "home_whatsapp_banner_url",
+  "home_hero_image_1",
+  "home_hero_image_2",
+  "home_hero_image_3",
+  "home_hero_image_4",
+  "home_mentor_image",
+  "home_stat_students",
+  "home_stat_courses",
+  "home_stat_instructors",
+  "home_stat_countries",
 ] as const;
 
 export function useHomeContent() {
@@ -111,6 +138,15 @@ export function useHomeContent() {
           "home_whatsapp_banner_url",
           DEFAULTS.whatsapp_banner_url,
         ),
+        hero_image_1: map.get("home_hero_image_1") ?? "",
+        hero_image_2: map.get("home_hero_image_2") ?? "",
+        hero_image_3: map.get("home_hero_image_3") ?? "",
+        hero_image_4: map.get("home_hero_image_4") ?? "",
+        mentor_image: map.get("home_mentor_image") ?? "",
+        stat_students: map.get("home_stat_students") ?? "",
+        stat_courses: map.get("home_stat_courses") ?? "",
+        stat_instructors: map.get("home_stat_instructors") ?? "",
+        stat_countries: map.get("home_stat_countries") ?? "",
       };
     },
   });
