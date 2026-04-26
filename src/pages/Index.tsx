@@ -1183,20 +1183,23 @@ export default function Index() {
         />
         <div className="container mx-auto px-4 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">Your edge starts now</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Your edge starts now"}</p>
             <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">
-              Stop scrolling. <br className="hidden sm:block" />
-              <span className="text-gradient">Start shipping</span><span className="text-gold">.</span>
+              {home?.cta_title ? (
+                <span className="text-gradient">{home.cta_title}</span>
+              ) : (
+                <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start shipping</span><span className="text-gold">.</span></>
+              )}
             </h2>
             <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">
-              Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere.
+              {home?.cta_subtitle ?? "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere."}
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
-                <Link to="/courses">Browse courses <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/courses">{home?.cta_primary ?? "Browse courses"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </MagneticButton>
               <MagneticButton size="lg" variant="outline" asChild className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero">
-                <Link to="/for-businesses">Talk to admissions</Link>
+                <Link to="/for-businesses">{home?.cta_secondary ?? "Talk to admissions"}</Link>
               </MagneticButton>
             </div>
           </motion.div>
