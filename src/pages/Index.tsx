@@ -936,9 +936,13 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class instructors</p>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
-                Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span>
+                {home?.instructors_title ? (
+                  <span className="text-gradient">{home.instructors_title}</span>
+                ) : (
+                  <>Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span></>
+                )}
               </h2>
             </div>
             <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></Link>
