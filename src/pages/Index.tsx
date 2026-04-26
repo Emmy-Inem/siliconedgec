@@ -626,10 +626,10 @@ export default function Index() {
             className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5"
           >
             {[
-              { icon: Users, label: "Students worldwide", target: stats?.students ?? 2000, suffix: "+" },
-              { icon: BookOpen, label: "Live courses", target: stats?.courses ?? 24, suffix: "" },
-              { icon: GraduationCap, label: "Industry mentors", target: stats?.instructors ?? 30, suffix: "+" },
-              { icon: Globe2, label: "Countries reached", target: stats?.countries ?? 18, suffix: "" },
+              { icon: Users, label: "Students worldwide", target: displayStats.students, suffix: "+" },
+              { icon: BookOpen, label: "Live courses", target: displayStats.courses, suffix: "" },
+              { icon: GraduationCap, label: "Industry mentors", target: displayStats.instructors, suffix: "+" },
+              { icon: Globe2, label: "Countries reached", target: displayStats.countries, suffix: "" },
             ].map((s) => (
               <motion.div
                 key={s.label}
@@ -944,7 +944,12 @@ export default function Index() {
               className="relative aspect-[4/5] max-w-md mx-auto w-full"
             >
               <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">
-                <img src={instructors[0]?.image ?? instructor1} alt="Mentor" className="w-full h-full object-cover" />
+                <img
+                  src={(home?.mentor_image && home.mentor_image.trim().length > 0) ? home.mentor_image : (instructors[0]?.image ?? instructor1)}
+                  alt="Mentor"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
               {/* floating cards */}
