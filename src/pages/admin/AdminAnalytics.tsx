@@ -136,7 +136,7 @@ export default function AdminAnalytics() {
     { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Completion Rate", value: data?.completionRate ?? 0, suffix: "%", icon: TrendingUp, gradient: "from-amber-500/15 to-yellow-500/5", accent: "text-amber-500" },
     { label: "Avg Progress", value: data?.avgProgress ?? 0, suffix: "%", icon: BarChart3, gradient: "from-blue-500/15 to-cyan-500/5", accent: "text-blue-500" },
-    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-purple-500/15 to-fuchsia-500/5", accent: "text-purple-500" },
+    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "$", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
   ];
 

@@ -308,7 +308,7 @@ export default function AdminMarketingAnalytics() {
           { label: "Total Leads", value: filtered.length, icon: TrendingUp, accent: "text-primary", change: percentChange },
           { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500" },
           { label: "Conversions", value: totalConversions, icon: MousePointerClick, accent: "text-green-500" },
-          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-purple-500" },
+          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary" },
           { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500" },
           { label: "Campaigns", value: campaignData.length, icon: Megaphone, accent: "text-pink-500" },
         ].map((kpi, i) => (
@@ -632,7 +632,7 @@ export default function AdminMarketingAnalytics() {
             <div className="flex flex-col items-center gap-2">
               {[
                 { label: "Page Visits", value: totalVisits, color: "bg-blue-500" },
-                { label: "Leads Generated", value: totalConversions, color: "bg-purple-500" },
+                { label: "Leads Generated", value: totalConversions, color: "bg-primary" },
                 { label: "Enrollments", value: enrollments.length, color: "bg-green-500" },
               ].map((step, i) => {
                 const maxVal = Math.max(totalVisits, 1);
@@ -816,7 +816,7 @@ export default function AdminMarketingAnalytics() {
                 <motion.div key={lead.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                   className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                    lead.form_type === "page_visit" ? "bg-blue-500" : lead.form_type === "enrollment" ? "bg-green-500" : "bg-purple-500"
+                    lead.form_type === "page_visit" ? "bg-blue-500" : lead.form_type === "enrollment" ? "bg-green-500" : "bg-primary"
                   }`}>
                     {lead.form_type === "page_visit" ? <Eye className="h-3.5 w-3.5" /> : <MousePointerClick className="h-3.5 w-3.5" />}
                   </div>

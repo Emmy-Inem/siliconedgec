@@ -32,7 +32,7 @@ type Referral = {
 const STATUSES = [
   { value: "new", label: "New", color: "bg-blue-500/15 text-blue-700 border-blue-500/30" },
   { value: "contacted", label: "Contacted", color: "bg-amber-500/15 text-amber-700 border-amber-500/30" },
-  { value: "follow-up", label: "Follow-up Needed", color: "bg-purple-500/15 text-purple-700 border-purple-500/30" },
+  { value: "follow-up", label: "Follow-up Needed", color: "bg-primary/15 text-primary border-primary/30" },
   { value: "converted", label: "Converted", color: "bg-green-500/15 text-green-700 border-green-500/30" },
   { value: "lost", label: "Lost", color: "bg-red-500/15 text-red-700 border-red-500/30" },
 ];

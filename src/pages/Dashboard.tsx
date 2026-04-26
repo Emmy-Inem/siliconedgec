@@ -430,7 +430,7 @@ export default function Dashboard() {
                       const statusColor: Record<string, string> = {
                         submitted: "bg-blue-500/10 text-blue-600",
                         reviewing: "bg-amber-500/10 text-amber-600",
-                        interview: "bg-purple-500/10 text-purple-600",
+                        interview: "bg-primary/10 text-primary",
                         accepted: "bg-green-500/10 text-green-600",
                         rejected: "bg-red-500/10 text-red-600",
                       };

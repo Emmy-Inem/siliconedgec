@@ -14,7 +14,7 @@ import {
 const STATUSES = [
   { id: "new", label: "New", color: "border-t-blue-500" },
   { id: "contacted", label: "Contacted", color: "border-t-amber-500" },
-  { id: "qualified", label: "Qualified", color: "border-t-purple-500" },
+  { id: "qualified", label: "Qualified", color: "border-t-primary" },
   { id: "converted", label: "Converted", color: "border-t-green-500" },
   { id: "lost", label: "Lost", color: "border-t-red-500" },
 ] as const;
