@@ -616,7 +616,7 @@ function BackupsCard() {
         .order("created_at", { ascending: false })
         .limit(12);
       if (error) throw error;
-      return (data ?? []) as Array<{
+      return ((data ?? []) as unknown) as Array<{
         id: string; created_at: string; status: string; size_bytes: number | null;
         drive_file_url: string | null; table_count: number | null; row_count: number | null;
         triggered_by: string; error: string | null;
