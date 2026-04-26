@@ -21,27 +21,42 @@ import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
 
-function useTypewriter(words: string[], speed = 80, pause = 1800) {
+function useTypewriter(words: string[], typeSpeed = 90, deleteSpeed = 45, pause = 1500) {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
 
   useEffect(() => {
-    const word = words[wordIndex];
-    const t = setTimeout(() => {
-      if (!isDeleting) {
-        setText(word.slice(0, text.length + 1));
-        if (text.length + 1 === word.length) setTimeout(() => setIsDeleting(true), pause);
-      } else {
-        setText(word.slice(0, text.length - 1));
-        if (text.length === 0) {
-          setIsDeleting(false);
-          setWordIndex((i) => (i + 1) % words.length);
-        }
+    if (!words || words.length === 0) return;
+    const word = words[wordIndex % words.length] ?? "";
+
+    if (phase === "pausing") {
+      const t = setTimeout(() => setPhase("deleting"), pause);
+      return () => clearTimeout(t);
+    }
+
+    if (phase === "typing") {
+      if (text === word) {
+        setPhase("pausing");
+        return;
       }
-    }, isDeleting ? speed / 2 : speed);
+      const t = setTimeout(() => {
+        setText(word.slice(0, text.length + 1));
+      }, typeSpeed);
+      return () => clearTimeout(t);
+    }
+
+    // deleting
+    if (text === "") {
+      setWordIndex((i) => (i + 1) % words.length);
+      setPhase("typing");
+      return;
+    }
+    const t = setTimeout(() => {
+      setText(word.slice(0, text.length - 1));
+    }, deleteSpeed);
     return () => clearTimeout(t);
-  }, [text, isDeleting, wordIndex, words, speed, pause]);
+  }, [text, wordIndex, phase, words, typeSpeed, deleteSpeed, pause]);
 
   return text;
 }
