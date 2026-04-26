@@ -361,7 +361,7 @@ function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
             className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden sm:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}
           >
             <div
-              className="flex flex-col gap-5"
+              className="marquee-track flex flex-col gap-5"
               style={{
                 animation: `marquee-vertical ${speeds[idx]} linear infinite`,
                 animationDirection: directions[idx],
