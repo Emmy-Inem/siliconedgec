@@ -117,11 +117,6 @@ Deno.serve(async (req) => {
     triggeredBy = "cron";
   }
 
-  try {
-    const body = await req.json().catch(() => ({}));
-    if (body?.triggered_by) triggeredBy = String(body.triggered_by);
-  } catch (_) { /* ignore */ }
-
   const { data: backupRow, error: insertErr } = await admin
     .from("site_backups")
     .insert({ status: "running", triggered_by: triggeredBy })
