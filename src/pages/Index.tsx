@@ -287,6 +287,72 @@ function AvatarStackTile({ avatars }: { avatars: string[] }) {
 /* ----------------------------- defaults ----------------------------- */
 
 const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
+
+/* ----------------------------- vertical testimonial marquee ----------------------------- */
+
+type Tm = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
+
+function TestimonialCard({ t }: { t: Tm }) {
+  return (
+    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative">
+      <Quote className="absolute top-3 right-3 h-5 w-5 text-primary/15" />
+      <div className="flex gap-0.5 mb-2.5">
+        {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
+          <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
+        ))}
+      </div>
+      <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
+      <div className="flex items-center gap-3">
+        {t.avatar_url ? (
+          <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-9 h-9 rounded-full object-cover" />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="font-heading font-bold text-primary text-xs">
+              {t.name.split(" ").map((n) => n[0]).join("")}
+            </span>
+          </div>
+        )}
+        <div>
+          <p className="font-heading font-semibold text-sm">{t.name}</p>
+          <p className="text-[11px] text-muted-foreground">{t.role}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
+  /* split into 3 columns (2 on tablet, 1 on mobile via CSS hide) */
+  const cols: Tm[][] = [[], [], []];
+  testimonials.forEach((t, i) => cols[i % 3].push(t));
+  /* duplicate each column so the loop is seamless */
+  const speeds = ["28s", "36s", "32s"];
+  const directions = ["normal", "reverse", "normal"] as const;
+
+  return (
+    <div className="relative h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
+        {cols.map((col, idx) => (
+          <div key={idx} className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden md:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}>
+            <div
+              className="marquee-track flex flex-col gap-5"
+              style={{
+                animation: `marquee-vertical ${speeds[idx]} linear infinite`,
+                animationDirection: directions[idx],
+                willChange: "transform",
+              }}
+            >
+              {[...col, ...col].map((t, k) => (
+                <TestimonialCard key={`${t.id}-${k}`} t={t} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const fallbackTestimonials = [
   { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: null as string | null, rating: 5 },
   { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: null as string | null, rating: 5 },
