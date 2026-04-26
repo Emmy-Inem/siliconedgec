@@ -1,120 +1,69 @@
-## Scope
+## Premium Homepage Revamp
 
-Five connected changes:
+Replace the current symmetric/centered layout with a dynamic, asymmetric, motion-rich experience inspired by Linear, Stripe, and Apple. Remove fabricated info ("Live cohort starting next week"). Every section earns its place with movement, depth, and creative typography.
 
-1. Replace the favicon with the uploaded purple logo.
-2. Rebrand every purple in the site to **#b13bff** (HSL `276 100% 62%`).
-3. Add a **Backups** section in Admin → System → Login & Security, with weekly automated backups saved to Google Drive.
-4. Remove the **"Join our WhatsApp Community"** banner from the homepage (FAB on other pages stays unless told otherwise).
-5. Revamp the homepage to look more premium, creative, professional, and trustworthy.
+### Section-by-section redesign
 
----
+**1. Hero — Asymmetric split with kinetic typography**
+- Two-column layout (60/40 on desktop, stacked on mobile). Left: oversized kinetic headline. Right: animated 3D-tilt instructor collage.
+- **Headline**: huge clamp(3rem, 8vw, 7rem) display type. Static line "The edge to" + rotating gradient word (typewriter kept, but bolder). Second line "your tech career." with the gold dot.
+- **Replace fake "Live cohort" pill** with a real, honest trust pill: animated avatar stack ("Join 2,000+ learners building today") that links to /courses.
+- **Right collage**: 4 floating instructor cards with parallax mouse-tilt (framer-motion `useMotionValue` + `useTransform` on mouseX/Y), each at different scales/rotations, with a soft purple glow ring rotating slowly behind them. Replaces the cloud-logo + tech-logo strips that currently sandwich the CTA.
+- **Below-fold scroll cue**: animated mouse/chevron with vertical pulse.
+- Background: existing gradient mesh + a subtle animated noise grain SVG overlay + slow-drifting orb (keep but reduce to one).
 
-## 1. Favicon
+**2. Logo marquee — Refined**
+- Keep the alumni marquee but: add edge fade masks (left/right), reduce logo size, double-row variant on desktop with one row reversing direction. Adds visual rhythm without clutter.
 
-- Copy `user-uploads://Untitled_design_20260426_111136_0000.png` → `public/favicon.png`.
-- Delete `public/favicon.ico` (browsers default to `/favicon.ico` and would override).
-- Update `index.html`: `<link rel="icon" href="/favicon.png" type="image/png">` and add `apple-touch-icon` for mobile.
+**3. Stats counter band — NEW**
+- A thin full-bleed band right after the marquee with 4 animated counters (Students, Courses, Instructors, Countries). Pulled from real DB counts where possible; otherwise honest defaults. Each counter sits in a glass pill with a tiny line-chart sparkline animating in.
 
-## 2. Purple → #b13bff (one source of truth, then sweep hardcoded values)
+**4. "Why Silicon Edge" — Bento grid replacement**
+- Replace the 4 equal cards with an **asymmetric bento layout** (5 tiles, mixed sizes):
+  - Large feature tile: "Live, instructor-led" with mock chat-bubble animation cycling messages.
+  - Medium tile: "Built for completion" with animated radial progress ring (0→92%).
+  - Medium tile: "Hireable skills" with rotating skill chips.
+  - Small tile: "Lifetime access" with playing video icon pulse.
+  - Small tile: "Community" with an animated avatar group.
+- All tiles share `glass-card` style, hover-lift, and a magnetic cursor-follow effect on the large one.
 
-`#b13bff` ≈ HSL `276 100% 62%`. Update design tokens in `src/index.css`:
+**5. Categories + Course rail — Polished**
+- Keep horizontal scroll but: add edge fade gradients, replace the round chevron buttons with cleaner pill buttons that only appear on hover, and add an animated underline beneath the active category pill (framer-motion `layoutId`).
 
+**6. How it works — Vertical scroll-driven timeline (replace 4-column row)**
+- Sticky-scroll timeline: as the user scrolls, a vertical progress line fills (`useScroll` + `scaleY`), each step animates in alternately left/right with a number that morphs in. Feels cinematic vs. the current static 4-up grid.
 
-| Token                                                     | Current       | New            |
-| --------------------------------------------------------- | ------------- | -------------- |
-| `--primary` (light)                                       | `262 83% 58%` | `276 100% 62%` |
-| `--accent` (light)                                        | `262 90% 65%` | `282 100% 68%` |
-| `--ring` / `--sidebar-primary` / `--sidebar-ring` (light) | `262 83% 58%` | `276 100% 62%` |
-| `--secondary-foreground` / `--sidebar-accent-foreground`  | `262 47% 20%` | `276 60% 22%`  |
-| `--purple-glow`                                           | `262 90% 68%` | `282 100% 70%` |
-| Dark variants of all of the above                         | `262 …%`      | `276/282 …%`   |
+**7. Instructors — Marquee-style hover reveal (replace static 4-up)**
+- Horizontal scrolling card row (drag-to-scroll on mobile). Each card greyscales by default; on hover/focus, color returns, the card tilts 3°, and a hidden tagline slides up. Tap "View all instructors" → /instructors page.
 
+**8. Mentors block — Keep but enhance**
+- Keep the side-by-side layout. Replace the static `courseBanner` image with a layered composition: instructor portrait + floating UI card snippets (mock "Live class · 24 online", "Project graded · A+", "Job offer received"). Adds storytelling depth.
 
-Then sweep hardcoded purples (Tailwind classes + raw hex/HSL strings) in:
+**9. Trust badges + Testimonials — Merge & redesign**
+- Merge into a single "Loved by ambitious learners" section: trust badges become a thin chip row below a **masonry grid of testimonials** (3 columns, varied heights), not a marquee. Click any testimonial to expand. Marquee is overused; masonry feels editorial and premium.
 
-- `src/pages/Index.tsx` (radial-gradient hsl(262 …))
-- `src/pages/Pricing.tsx` (radial-gradient hsl(262 …))
-- `src/pages/Certificates.tsx` (`#7c3aed` corner accents and signature color → `#b13bff`)
-- `src/pages/admin/AdminEmailTemplates.tsx` (`#a855f7` CTA → `#b13bff`)
-- `src/pages/admin/AdminAnalytics.tsx`, `AdminOverview.tsx`, `AdminMarketingAnalytics.tsx` (chart strokes/fills `hsl(262, 83%, 58%)` → `hsl(276, 100%, 62%)`)
-- `src/pages/admin/AdminRegistrations.tsx`, `AdminBusinessLeads.tsx`, `AdminLeadsHub.tsx`, `Dashboard.tsx` (`bg-purple-500/*`, `text-purple-*`, `border-purple-500/*` Tailwind utilities → `bg-primary/*`, `text-primary`, `border-primary/*` so they pick up the new brand color automatically)
+**10. FAQ — Keep with polish**
+- Add an icon next to each question, accordion chevron rotates 180° smoothly, expanded item gets a subtle gradient border using conic-gradient animation.
 
-Since 99% of UI uses `hsl(var(--primary))`/`bg-primary`, the token change alone propagates the rebrand to every page. The sweep above catches the remaining hardcoded escapes.
+**11. Final CTA — Big finale**
+- Full-bleed dark section with animated SVG grid floor (perspective grid receding to horizon, lines pulsing). Headline "Your edge starts now." Single primary CTA + "Talk to admissions" secondary link.
 
-## 3. Backups (Admin → System → Login & Security)
+### Cross-cutting motion & polish
+- Add a global **scroll progress bar** at top (1px primary gradient).
+- Add a **noise grain SVG** overlay utility class for premium texture.
+- Add **magnetic button** behavior to all primary CTAs (cursor pulls button slightly).
+- Replace any remaining `rounded-xl` on hero/feature surfaces with `rounded-2xl` for softer premium feel.
+- Use `prefers-reduced-motion` guard to disable heavy animations for accessibility.
 
-Add a new **"Backups"** card at the bottom of `AdminLoginSecurity.tsx`:
+### Technical notes
+- All changes confined to `src/pages/Index.tsx` plus minor utilities in `src/index.css` (noise overlay, scroll-progress, perspective-grid keyframes, magnetic helper).
+- Reuse existing framer-motion, Accordion, CourseCard. No new dependencies.
+- Fetch real counts via Supabase (`profiles`, `courses`, `instructors` count queries) with fallback values; never hardcode misleading copy.
+- Remove the dishonest "Live cohort starting next week · Limited seats" pill.
+- Honor `useReducedMotion()` from framer-motion to skip parallax/tilt for users who prefer reduced motion.
 
-- Status row: "Last backup: &nbsp;", "Next backup: &nbsp;", green/red dot.
-- "Run backup now" button (calls edge function on demand).
-- Toggle: "Weekly automatic backups" (default ON, runs every Sunday 02:00 UTC via cron).
-- List of recent backups (last 12) with: timestamp, size, "Open in Drive" link, "Restore instructions" (download JSON).
+### Files to modify
+- `src/pages/Index.tsx` — full rewrite of section composition
+- `src/index.css` — add `.noise-overlay`, `.perspective-grid`, `.magnetic-btn` helpers and `scroll-progress` keyframes
 
-### How the backup works
-
-- New edge function `supabase/functions/backup-to-drive/index.ts`:
-  - Runs `pg_dump`-style export by selecting from every public table (snapshot all rows as JSON), bundles them into one file `siliconedge-backup-YYYY-MM-DD.json.gz`.
-  - Uploads to Google Drive via the `google_drive` connector gateway into a `Silicon Edge Backups` folder (created if missing).
-  - Inserts a row in a new `site_backups` table: `{ id, created_at, drive_file_id, drive_file_url, size_bytes, status, error }`.
-- New table `site_backups` (admin-only RLS via `has_role('admin')`).
-- New cron via `pg_cron` + `pg_net`: weekly call to the edge function on Sunday 02:00 UTC.
-- Connector requirement: this requires a **Google Drive connection** linked to the project. The plan will trigger `standard_connectors--connect` for `google_drive` during implementation; if the user declines, the manual "Run backup now" button still works once they connect later.
-
-### Honest limitation
-
-This backs up **database rows**, not auth users, storage files, or edge function code. We will surface that clearly in the UI ("Database snapshot only — Lovable's git history covers code; storage files are not included in v1"). Restoring requires running a provided edge function with the backup JSON — we'll add a **"Restore from backup"** action that re-imports a selected backup (admin confirmation required).
-
-## 4. Remove WhatsApp Community banner
-
-Delete the entire `{/* WhatsApp Community Banner */}` section in `src/pages/Index.tsx` (lines 326–351). The floating WhatsApp FAB on other pages and the admin-managed `whatsapp_banner_*` site settings stay intact (just unused on home).
-
-## 5. Homepage revamp — premium, creative, trustworthy
-
-Goals: instant credibility, modern motion, social proof above the fold, less generic SaaS, more "elite training brand."
-
-### Section-by-section changes (`src/pages/Index.tsx`)
-
-1. **Hero (replaces current)**
-  - Two-column on desktop (60/40): left = headline + CTA + trust row; right = animated 3D-tilt collage (instructor photos + mini course-card + live "Class starting in 12m" pill + animated certificate preview). On mobile, stacks.
-  - New trust row directly under CTA: "Trusted by alumni at" + monochrome logo strip (Google, Microsoft, AWS, Meta, Andela, Flutterwave). Replaces the floating tech-icon row.
-  - Live stat ticker chip: "● 1,247 students learning right now" (animated pulse).
-  - Keep typewriter but tighten: 3 words max, smaller min-height to remove the empty-space gap.
-2. **Logo marquee strip** (new, full-width, dark band) — partner/employer logos, infinite marquee using existing `marquee` keyframe.
-3. **Outcomes / Why** — convert current 3-card grid into a **bento layout** (1 large + 4 small tiles) with subtle gradient borders, glass-card surfaces, and lucide icons inside gradient orbs. Each tile shows a metric (e.g., "92% job placement", "₦4.2M avg salary jump", "1:8 mentor ratio").
-4. **Featured courses carousel** — keep the horizontal scroller but add: category pill filters with active-state glow, "View all" link, and a faux-3D depth effect on hover (perspective + translateZ).
-5. **How it works** (new) — 4-step numbered timeline with icons (Apply → Learn live → Build projects → Get hired). Vertical on mobile, horizontal connector line on desktop.
-6. **Instructors** — upgrade cards: portrait photo, name + role, mini-rating, "View profile" CTA, and a hover lift with glow ring. Pull from DB.
-7. **Live testimonials wall** — masonry layout (2–3 cols) with star ratings, avatar, role, optional company logo. Add a featured "Video testimonial" card (placeholder play button) for hero social proof.
-8. **Trust strip** (new, between testimonials and CTA): 5 horizontal badges — "Verified Certificates · ISO-style", "Money-back guarantee (7 days)", "Industry mentors", "Live + recorded", "Job-ready projects". Lucide icons, subtle glass cards.
-9. **FAQ accordion** (new) — 6 common pre-purchase questions to handle objections (Is this for beginners? Do I need a degree? What if I miss a class? Do you help with jobs? etc.). Uses existing `accordion` shadcn component.
-10. **Final CTA banner** — gradient background using new `--primary`/`--accent`, big headline + dual CTA + "No credit card required" microcopy.
-
-### Visual polish (cross-section)
-
-- Replace generic `bg-primary/5` accents with `bg-gradient-to-br from-primary/8 via-transparent to-accent/8`.
-- Add `noise` SVG overlay (very low opacity) to hero + final CTA for premium texture.
-- Standardize card radius (`rounded-2xl`), use `glass-card` consistently.
-- All section headings: small uppercase eyebrow + headline + 1-line subhead pattern (already used in some sections — apply everywhere).
-
-### Animation discipline
-
-- One scroll-reveal pattern (existing `sectionReveal`) used everywhere — no new ad-hoc variants.
-- Respect `prefers-reduced-motion` (already partially honored in CSS — extend to framer-motion via `useReducedMotion`).
-
----
-
-## Files touched
-
-- `index.html`, `public/favicon.png` (new), `public/favicon.ico` (deleted)
-- `src/index.css` (token rebrand)
-- `src/pages/Index.tsx` (WhatsApp removal + full revamp)
-- `src/pages/Pricing.tsx`, `src/pages/Certificates.tsx`, `src/pages/Dashboard.tsx`
-- `src/pages/admin/AdminEmailTemplates.tsx`, `AdminAnalytics.tsx`, `AdminOverview.tsx`, `AdminMarketingAnalytics.tsx`, `AdminRegistrations.tsx`, `AdminBusinessLeads.tsx`, `AdminLeadsHub.tsx`
-- `src/pages/admin/AdminLoginSecurity.tsx` (Backups card)
-- `supabase/functions/backup-to-drive/index.ts` (new)
-- New migration: `site_backups` table + RLS + weekly `pg_cron` schedule
-
-## What I need from you (during implementation)
-
-- I'll trigger the Google Drive connector picker — pick the Drive account where backups should land (or let me know if you'd rather skip Drive and store backups in Lovable Cloud storage instead). This is the google drive folder that i want the weekly backup to: [https://drive.google.com/drive/folders/1UnS7V-Keds6fEHr0YO1dnzuo-5Lqok59?usp=sharing](https://drive.google.com/drive/folders/1UnS7V-Keds6fEHr0YO1dnzuo-5Lqok59?usp=sharing) 
+No DB schema changes, no new edge functions, no new packages.
