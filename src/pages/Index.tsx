@@ -308,7 +308,7 @@ type Tm = { id: string; name: string; role: string; quote: string; avatar_url: s
 
 function TestimonialCard({ t }: { t: Tm }) {
   return (
-    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative">
+    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative w-[300px] sm:w-[340px] shrink-0">
       <Quote className="absolute top-3 right-3 h-5 w-5 text-primary/15" />
       <div className="flex gap-0.5 mb-2.5">
         {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
@@ -336,43 +336,23 @@ function TestimonialCard({ t }: { t: Tm }) {
 }
 
 function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
-  /* Ensure we have enough cards per column for a smooth scroll.
-     If <9 unique testimonials, repeat the pool until we hit a healthy minimum. */
+  /* Ensure we have enough cards for a seamless loop. */
   const pool: Tm[] = [...testimonials];
-  while (pool.length > 0 && pool.length < 9) {
+  while (pool.length > 0 && pool.length < 8) {
     pool.push(...testimonials.map((t, i) => ({ ...t, id: `${t.id}-r${pool.length + i}` })));
   }
 
-  /* split into 3 columns */
-  const cols: Tm[][] = [[], [], []];
-  pool.forEach((t, i) => cols[i % 3].push(t));
-
-  /* slow vertical scroll – different speeds + alternating direction for visual rhythm */
-  const speeds = ["60s", "75s", "68s"];
-  const directions = ["normal", "reverse", "normal"] as const;
-
   return (
-    <div className="relative h-[480px] sm:h-[560px] md:h-[620px] overflow-hidden mask-fade-y">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 h-full">
-        {cols.map((col, idx) => (
-          <div
-            key={idx}
-            className={`marquee-pause overflow-hidden ${idx === 1 ? "hidden sm:block" : ""} ${idx === 2 ? "hidden lg:block" : ""}`}
-          >
-            <div
-              className="marquee-track flex flex-col gap-5"
-              style={{
-                animation: `marquee-vertical ${speeds[idx]} linear infinite`,
-                animationDirection: directions[idx],
-                willChange: "transform",
-              }}
-            >
-              {/* duplicate so the loop is seamless */}
-              {[...col, ...col].map((t, k) => (
-                <TestimonialCard key={`${t.id}-${k}`} t={t} />
-              ))}
-            </div>
-          </div>
+    <div className="relative overflow-hidden mask-fade-x marquee-pause">
+      <div
+        className="marquee-track flex gap-5 w-max"
+        style={{
+          animation: `marquee 80s linear infinite`,
+          willChange: "transform",
+        }}
+      >
+        {[...pool, ...pool].map((t, k) => (
+          <TestimonialCard key={`${t.id}-${k}`} t={t} />
         ))}
       </div>
     </div>
