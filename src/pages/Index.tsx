@@ -620,14 +620,14 @@ export default function Index() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
+                className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
               >
-                <div className="flex -space-x-2">
+                <div className="flex -space-x-1.5 sm:-space-x-2">
                   {heroAvatars.slice(0, 4).map((a, i) => (
-                    <img key={i} src={a} alt="" loading="lazy" className="w-7 h-7 rounded-full ring-2 ring-white/40 object-cover" />
+                    <img key={i} src={a} alt="" loading="lazy" className="w-5 h-5 sm:w-7 sm:h-7 rounded-full ring-2 ring-white/40 object-cover" />
                   ))}
                 </div>
-                <span className="text-sm font-medium text-white">
+                <span className="text-[11px] sm:text-sm font-medium text-white whitespace-nowrap">
                   Join <span className="text-gold font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
                 </span>
               </motion.div>
