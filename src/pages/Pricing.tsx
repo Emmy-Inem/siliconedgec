@@ -17,6 +17,8 @@ const plans = [
     name: "Beginner Courses",
     tagline: "Launch your tech journey.",
     tier: "All core features, including:",
+    price: "₦100,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Student Dashboard",
@@ -33,6 +35,8 @@ const plans = [
     name: "Intermediate Courses",
     tagline: "Build in-demand skills.",
     tier: "Everything in Starter, plus:",
+    price: "₦600,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Offline Content",
@@ -49,6 +53,8 @@ const plans = [
     name: "Advanced Courses",
     tagline: "Master advanced tech.",
     tier: "Everything in Individual, plus:",
+    price: "₦800,000",
+    priceNote: "starting from",
     features: [
       "Access One Course",
       "Advanced Specialization",
@@ -130,7 +136,7 @@ export default function Pricing() {
       <Header />
 
       {/* Hero */}
-      <section className="bg-hero relative overflow-hidden pt-28 pb-16">
+      <section className="bg-hero relative overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16">
         <div className="absolute inset-0 gradient-mesh" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.14),transparent_60%)]" />
         <div className="container mx-auto px-4 relative">
@@ -143,12 +149,12 @@ export default function Pricing() {
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">
               Pricing
             </p>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
+            <h1 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
               Simple Pricing That Scales With Your{" "}
               <span className="text-gradient">Ambition</span>
               <span className="text-gold">.</span>
             </h1>
-            <p className="text-hero-muted text-lg max-w-xl mx-auto leading-relaxed">
+            <p className="text-hero-muted text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
               Invest in Yourself. Invest in Your Team. Unlock Unmatched Tech
               Expertise.
             </p>
@@ -172,14 +178,14 @@ export default function Pricing() {
       </section>
 
       {/* Plans */}
-      <section className="py-20">
+      <section className="py-12 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto"
           >
             {plans.map((plan) => {
               const accentBar =
@@ -227,30 +233,41 @@ export default function Pricing() {
                   )}
 
                   {/* Header */}
-                  <div className="p-8 pb-6">
-                    <h3 className="font-heading font-bold text-2xl mb-2 text-foreground">
+                  <div className="p-6 sm:p-8 pb-5 sm:pb-6">
+                    <h3 className="font-heading font-bold text-xl sm:text-2xl mb-2 text-foreground">
                       {plan.name}
                     </h3>
-                    <p className="text-muted-foreground text-base mb-6">
+                    <p className="text-muted-foreground text-sm sm:text-base mb-4">
                       {plan.tagline}
                     </p>
+                    {/* Price */}
+                    <div className="mb-6">
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                        {plan.priceNote}
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
+                          {plan.price}
+                        </span>
+                      </div>
+                    </div>
                     <Button
                       asChild
-                      className={`w-full h-12 border-2 font-semibold text-base ${btnBg}`}
+                      className={`w-full h-11 sm:h-12 border-2 font-semibold text-sm sm:text-base ${btnBg}`}
                     >
                       <Link to={plan.href}>{plan.cta}</Link>
                     </Button>
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-border mx-8" />
+                  <div className="border-t border-border mx-6 sm:mx-8" />
 
                   {/* Features */}
-                  <div className="p-8 pt-6 flex-1">
-                    <p className="font-heading font-semibold text-base mb-5 text-foreground">
+                  <div className="p-6 sm:p-8 pt-5 sm:pt-6 flex-1">
+                    <p className="font-heading font-semibold text-sm sm:text-base mb-4 sm:mb-5 text-foreground">
                       {plan.tier}
                     </p>
-                    <ul className="space-y-3.5">
+                    <ul className="space-y-3 sm:space-y-3.5">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-center gap-3 text-sm">
                           <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-500/10">
