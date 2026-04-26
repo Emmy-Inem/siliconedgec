@@ -21,27 +21,42 @@ import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
 
-function useTypewriter(words: string[], speed = 80, pause = 1800) {
+function useTypewriter(words: string[], typeSpeed = 90, deleteSpeed = 45, pause = 1500) {
   const [text, setText] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
 
   useEffect(() => {
-    const word = words[wordIndex];
-    const t = setTimeout(() => {
-      if (!isDeleting) {
-        setText(word.slice(0, text.length + 1));
-        if (text.length + 1 === word.length) setTimeout(() => setIsDeleting(true), pause);
-      } else {
-        setText(word.slice(0, text.length - 1));
-        if (text.length === 0) {
-          setIsDeleting(false);
-          setWordIndex((i) => (i + 1) % words.length);
-        }
+    if (!words || words.length === 0) return;
+    const word = words[wordIndex % words.length] ?? "";
+
+    if (phase === "pausing") {
+      const t = setTimeout(() => setPhase("deleting"), pause);
+      return () => clearTimeout(t);
+    }
+
+    if (phase === "typing") {
+      if (text === word) {
+        setPhase("pausing");
+        return;
       }
-    }, isDeleting ? speed / 2 : speed);
+      const t = setTimeout(() => {
+        setText(word.slice(0, text.length + 1));
+      }, typeSpeed);
+      return () => clearTimeout(t);
+    }
+
+    // deleting
+    if (text === "") {
+      setWordIndex((i) => (i + 1) % words.length);
+      setPhase("typing");
+      return;
+    }
+    const t = setTimeout(() => {
+      setText(word.slice(0, text.length - 1));
+    }, deleteSpeed);
     return () => clearTimeout(t);
-  }, [text, isDeleting, wordIndex, words, speed, pause]);
+  }, [text, wordIndex, phase, words, typeSpeed, deleteSpeed, pause]);
 
   return text;
 }
@@ -655,7 +670,7 @@ export default function Index() {
       <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7 relative">
         <div className="container mx-auto px-4">
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
-            Our alumni now work at
+            {home?.alumni_label ?? "Our alumni now work at"}
           </p>
           <div className="relative overflow-hidden mask-fade-x">
             <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
@@ -723,10 +738,17 @@ export default function Index() {
       <section className="py-20 md:py-24 relative">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-14 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Silicon Edge</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.why_eyebrow ?? "Why Silicon Edge"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              Built for the way <span className="text-gradient">ambitious people</span> learn<span className="text-gold">.</span>
+              {home?.why_title ? (
+                <span className="text-gradient">{home.why_title}</span>
+              ) : (
+                <>Built for the way <span className="text-gradient">ambitious people</span> learn<span className="text-gold">.</span></>
+              )}
             </h2>
+            {home?.why_description && (
+              <p className="text-muted-foreground mt-4 text-base leading-relaxed">{home.why_description}</p>
+            )}
           </motion.div>
 
           <motion.div
@@ -807,7 +829,7 @@ export default function Index() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal}>
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Browse Categories</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.categories_eyebrow ?? "Browse Categories"}</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
                 <h2 className="font-heading text-3xl md:text-4xl font-bold mb-2">{home?.categories_title ?? "Courses worth your time"}</h2>
@@ -860,9 +882,13 @@ export default function Index() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
         <div className="container mx-auto px-4 relative">
           <motion.div {...sectionReveal} className="text-center mb-16 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">How it works</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.how_eyebrow ?? "How it works"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span>
+              {home?.how_title ? (
+                <span className="text-gradient">{home.how_title}</span>
+              ) : (
+                <>From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span></>
+              )}
             </h2>
           </motion.div>
 
@@ -876,10 +902,10 @@ export default function Index() {
             />
 
             {[
-              { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort." },
-              { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Real instructor-led classes with Q&A. Recordings keep you on track." },
-              { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
-              { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
+              { n: "01", icon: Sparkles, title: home?.how_step1_title ?? "Apply & enroll",        desc: home?.how_step1_desc ?? "Pick your track. Pay flexibly. Get instant access to your cohort." },
+              { n: "02", icon: Clock4,   title: home?.how_step2_title ?? "Learn live, weekly",    desc: home?.how_step2_desc ?? "Real instructor-led classes with Q&A. Recordings keep you on track." },
+              { n: "03", icon: Rocket,   title: home?.how_step3_title ?? "Build real projects",   desc: home?.how_step3_desc ?? "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
+              { n: "04", icon: Trophy,   title: home?.how_step4_title ?? "Get job-ready",         desc: home?.how_step4_desc ?? "CV reviews, mock interviews, and intros to our hiring partner network." },
             ].map((step, i) => {
               const left = i % 2 === 0;
               return (
@@ -917,9 +943,13 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">World-class instructors</p>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
-                Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span>
+                {home?.instructors_title ? (
+                  <span className="text-gradient">{home.instructors_title}</span>
+                ) : (
+                  <>Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span></>
+                )}
               </h2>
             </div>
             <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></Link>
@@ -968,12 +998,12 @@ export default function Index() {
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div {...sectionReveal}>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Meet your mentors</p>
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.mentors_eyebrow ?? "Meet your mentors"}</p>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-6 text-balance">
-                Guidance from people who've already done it<span className="text-gold">.</span>
+                {home?.mentors_title ?? "Guidance from people who've already done it."}
               </h2>
               <p className="text-hero-muted leading-relaxed mb-8 max-w-lg">
-                Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.
+                {home?.mentors_description ?? "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth."}
               </p>
               <div className="space-y-5">
                 {[
@@ -1074,9 +1104,13 @@ export default function Index() {
       <section className="py-20 md:py-24">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Loved by ambitious learners</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span>
+              {home?.testimonials_title ? (
+                <span className="text-gradient">{home.testimonials_title}</span>
+              ) : (
+                <>Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span></>
+              )}
             </h2>
           </motion.div>
 
@@ -1108,11 +1142,11 @@ export default function Index() {
       <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4 max-w-3xl">
           <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Frequently asked</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.faq_eyebrow ?? "Frequently asked"}</p>
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">
-              Everything you need to know<span className="text-gold">.</span>
+              {home?.faq_title ?? "Everything you need to know."}
             </h2>
-            <p className="text-muted-foreground">Still curious? Reach out — real humans reply.</p>
+            <p className="text-muted-foreground">{home?.faq_subtitle ?? "Still curious? Reach out — real humans reply."}</p>
           </motion.div>
 
           <Accordion type="single" collapsible className="space-y-3">
@@ -1156,20 +1190,23 @@ export default function Index() {
         />
         <div className="container mx-auto px-4 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">Your edge starts now</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Your edge starts now"}</p>
             <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">
-              Stop scrolling. <br className="hidden sm:block" />
-              <span className="text-gradient">Start shipping</span><span className="text-gold">.</span>
+              {home?.cta_title ? (
+                <span className="text-gradient">{home.cta_title}</span>
+              ) : (
+                <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start shipping</span><span className="text-gold">.</span></>
+              )}
             </h2>
             <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">
-              Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere.
+              {home?.cta_subtitle ?? "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere."}
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
-                <Link to="/courses">Browse courses <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/courses">{home?.cta_primary ?? "Browse courses"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </MagneticButton>
               <MagneticButton size="lg" variant="outline" asChild className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero">
-                <Link to="/for-businesses">Talk to admissions</Link>
+                <Link to="/for-businesses">{home?.cta_secondary ?? "Talk to admissions"}</Link>
               </MagneticButton>
             </div>
           </motion.div>
