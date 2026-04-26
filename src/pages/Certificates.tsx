@@ -336,16 +336,16 @@ function CertificateForPDF({
     <div style={{ width: 900, background: "#fff", padding: 0, fontFamily: "'Space Grotesk', sans-serif" }}>
       <div style={{ border: "3px solid #d4a017", borderRadius: 16, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
+          <div style={{ position: "absolute", top: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
         </div>
         <div style={{ position: "absolute", top: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
+          <div style={{ position: "absolute", top: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
         </div>
         <div style={{ position: "absolute", bottom: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
+          <div style={{ position: "absolute", bottom: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
         </div>
         <div style={{ position: "absolute", bottom: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#7c3aed" }} />
+          <div style={{ position: "absolute", bottom: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
         </div>
 
         <div style={{ padding: "50px 60px", textAlign: "center" }}>
@@ -355,7 +355,7 @@ function CertificateForPDF({
             <p style={{ fontSize: 11, letterSpacing: "0.35em", textTransform: "uppercase", fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Certificate of Completion</p>
           </div>
           <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>This is to certify that</p>
-          <p style={{ fontSize: 34, fontWeight: 700, color: "#7c3aed", margin: "0 0 16px" }}>{studentName}</p>
+          <p style={{ fontSize: 34, fontWeight: 700, color: "#b13bff", margin: "0 0 16px" }}>{studentName}</p>
           <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>has successfully completed</p>
           <p style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: "0 0 30px" }}>{courseName}</p>
           <div style={{ width: "100%", height: 1, background: "#d4a017", marginBottom: 24 }} />

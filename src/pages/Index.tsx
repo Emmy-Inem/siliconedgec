@@ -204,8 +204,8 @@ export default function Index() {
       <section ref={heroRef} className="bg-hero relative overflow-hidden">
         {/* Animated gradient mesh background */}
         <div className="absolute inset-0 gradient-mesh" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.15),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(262_83%_58%/0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.18),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(282_100%_68%/0.10),transparent_50%)]" />
 
         {/* Floating orbs */}
         <motion.div

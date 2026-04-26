@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const COLORS = [
-  "hsl(262, 83%, 58%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
+  "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
   "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)", "hsl(280, 65%, 60%)",
   "hsl(330, 80%, 55%)", "hsl(200, 80%, 55%)",
 ];
@@ -352,8 +352,8 @@ export default function AdminMarketingAnalytics() {
                   <AreaChart data={timelineData}>
                     <defs>
                       <linearGradient id="gradVisits" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gradConv" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
@@ -365,7 +365,7 @@ export default function AdminMarketingAnalytics() {
                     <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Area type="monotone" dataKey="visits" stroke="hsl(262, 83%, 58%)" fill="url(#gradVisits)" strokeWidth={2} name="Visits" />
+                    <Area type="monotone" dataKey="visits" stroke="hsl(276, 100%, 62%)" fill="url(#gradVisits)" strokeWidth={2} name="Visits" />
                     <Area type="monotone" dataKey="conversions" stroke="hsl(142, 71%, 45%)" fill="url(#gradConv)" strokeWidth={2} name="Conversions" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -439,7 +439,7 @@ export default function AdminMarketingAnalytics() {
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={100} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} />
                       <Legend wrapperStyle={{ fontSize: 10 }} />
-                      <Bar dataKey="visits" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} name="Visits" />
+                      <Bar dataKey="visits" fill="hsl(276, 100%, 62%)" radius={[0, 4, 4, 0]} name="Visits" />
                       <Bar dataKey="conversions" fill="hsl(142, 71%, 45%)" radius={[0, 4, 4, 0]} name="Conversions" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -612,7 +612,7 @@ export default function AdminMarketingAnalytics() {
                       <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Line type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="enrollments" stroke="hsl(276, 100%, 62%)" strokeWidth={2} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (

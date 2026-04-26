@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { useEffect, useState } from "react";
 
 const CHART_COLORS = [
-  "hsl(262, 83%, 58%)",
+  "hsl(276, 100%, 62%)",
   "hsl(197, 100%, 47%)",
   "hsl(142, 71%, 45%)",
   "hsl(38, 92%, 50%)",
@@ -241,14 +241,14 @@ export default function AdminOverview() {
               <AreaChart data={stats?.monthlyEnrollments ?? []}>
                 <defs>
                   <linearGradient id="overviewEnrGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 32px -8px hsl(var(--primary) / 0.15)" }} />
-                <Area type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" fill="url(#overviewEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(262, 83%, 58%)", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
+                <Area type="monotone" dataKey="enrollments" stroke="hsl(276, 100%, 62%)" fill="url(#overviewEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(276, 100%, 62%)", strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

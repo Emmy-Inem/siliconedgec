@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 
 const COLORS = [
-  "hsl(262, 83%, 58%)",
+  "hsl(276, 100%, 62%)",
   "hsl(197, 100%, 47%)",
   "hsl(142, 71%, 45%)",
   "hsl(38, 92%, 50%)",
@@ -218,8 +218,8 @@ export default function AdminAnalytics() {
               <AreaChart data={data?.monthlyData ?? []}>
                 <defs>
                   <linearGradient id="analyticsEnrGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="analyticsUsrGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
@@ -229,13 +229,13 @@ export default function AdminAnalytics() {
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Area type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" fill="url(#analyticsEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(262, 83%, 58%)", strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="enrollments" stroke="hsl(276, 100%, 62%)" fill="url(#analyticsEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(276, 100%, 62%)", strokeWidth: 0 }} />
                 <Area type="monotone" dataKey="users" stroke="hsl(142, 71%, 45%)" fill="url(#analyticsUsrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(142, 71%, 45%)", strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
           <div className="flex gap-4 mt-2">
-            {[{ color: "hsl(262, 83%, 58%)", label: "Enrollments" }, { color: "hsl(142, 71%, 45%)", label: "New Users" }].map(l => (
+            {[{ color: "hsl(276, 100%, 62%)", label: "Enrollments" }, { color: "hsl(142, 71%, 45%)", label: "New Users" }].map(l => (
               <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} /> {l.label}
               </span>

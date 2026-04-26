@@ -129,7 +129,7 @@ export default function Pricing() {
       {/* Hero */}
       <section className="bg-hero relative overflow-hidden pt-28 pb-16">
         <div className="absolute inset-0 gradient-mesh" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_90%_68%/0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.14),transparent_60%)]" />
         <div className="container mx-auto px-4 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
