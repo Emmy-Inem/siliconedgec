@@ -224,4 +224,63 @@
     background-color: hsl(var(--muted-foreground) / 0.3);
     border-radius: 9999px;
   }
+
+  /* Premium homepage utilities */
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+  .perspective-grid {
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: perspective(600px) rotateX(60deg);
+    transform-origin: center top;
+  }
+  @keyframes grid-drift {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 0 48px, 48px 0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .perspective-grid { animation: grid-drift 6s linear infinite; }
+  }
+  .text-balance { text-wrap: balance; }
+}
+
+@layer utilities {
+  .conic-border {
+    position: relative;
+  }
+  .conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--angle, 0deg), hsl(var(--primary) / 0.6), hsl(var(--accent) / 0.4), hsl(var(--gold) / 0.4), hsl(var(--primary) / 0.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes conic-spin { to { --angle: 360deg; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .conic-border[data-active="true"]::before { animation: conic-spin 4s linear infinite; }
+  }
+}
 }
