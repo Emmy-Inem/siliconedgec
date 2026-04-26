@@ -32,7 +32,7 @@ type UnifiedLead = {
 const SOURCE_META = {
   registration: { label: "Webinar Registration", color: "bg-blue-500/15 text-blue-700 border-blue-500/30", Icon: ClipboardCheck, link: "/admin/registrations" },
   enrollment: { label: "Course Enrollment", color: "bg-green-500/15 text-green-700 border-green-500/30", Icon: GraduationCap, link: "/admin/enrollments" },
-  business: { label: "Business Lead", color: "bg-purple-500/15 text-purple-700 border-purple-500/30", Icon: Briefcase, link: "/admin/business-leads" },
+  business: { label: "Business Lead", color: "bg-primary/15 text-primary border-primary/30", Icon: Briefcase, link: "/admin/business-leads" },
 } as const;
 
 export default function AdminLeadsHub() {

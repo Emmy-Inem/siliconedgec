@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const COLORS = [
-  "hsl(262, 83%, 58%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
+  "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
   "hsl(38, 92%, 50%)", "hsl(0, 84%, 60%)", "hsl(280, 65%, 60%)",
   "hsl(330, 80%, 55%)", "hsl(200, 80%, 55%)",
 ];
@@ -308,7 +308,7 @@ export default function AdminMarketingAnalytics() {
           { label: "Total Leads", value: filtered.length, icon: TrendingUp, accent: "text-primary", change: percentChange },
           { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500" },
           { label: "Conversions", value: totalConversions, icon: MousePointerClick, accent: "text-green-500" },
-          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-purple-500" },
+          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary" },
           { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500" },
           { label: "Campaigns", value: campaignData.length, icon: Megaphone, accent: "text-pink-500" },
         ].map((kpi, i) => (
@@ -352,8 +352,8 @@ export default function AdminMarketingAnalytics() {
                   <AreaChart data={timelineData}>
                     <defs>
                       <linearGradient id="gradVisits" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gradConv" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
@@ -365,7 +365,7 @@ export default function AdminMarketingAnalytics() {
                     <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Area type="monotone" dataKey="visits" stroke="hsl(262, 83%, 58%)" fill="url(#gradVisits)" strokeWidth={2} name="Visits" />
+                    <Area type="monotone" dataKey="visits" stroke="hsl(276, 100%, 62%)" fill="url(#gradVisits)" strokeWidth={2} name="Visits" />
                     <Area type="monotone" dataKey="conversions" stroke="hsl(142, 71%, 45%)" fill="url(#gradConv)" strokeWidth={2} name="Conversions" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -439,7 +439,7 @@ export default function AdminMarketingAnalytics() {
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 9 }} width={100} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} />
                       <Legend wrapperStyle={{ fontSize: 10 }} />
-                      <Bar dataKey="visits" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} name="Visits" />
+                      <Bar dataKey="visits" fill="hsl(276, 100%, 62%)" radius={[0, 4, 4, 0]} name="Visits" />
                       <Bar dataKey="conversions" fill="hsl(142, 71%, 45%)" radius={[0, 4, 4, 0]} name="Conversions" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -612,7 +612,7 @@ export default function AdminMarketingAnalytics() {
                       <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Line type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="enrollments" stroke="hsl(276, 100%, 62%)" strokeWidth={2} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
@@ -632,7 +632,7 @@ export default function AdminMarketingAnalytics() {
             <div className="flex flex-col items-center gap-2">
               {[
                 { label: "Page Visits", value: totalVisits, color: "bg-blue-500" },
-                { label: "Leads Generated", value: totalConversions, color: "bg-purple-500" },
+                { label: "Leads Generated", value: totalConversions, color: "bg-primary" },
                 { label: "Enrollments", value: enrollments.length, color: "bg-green-500" },
               ].map((step, i) => {
                 const maxVal = Math.max(totalVisits, 1);
@@ -816,7 +816,7 @@ export default function AdminMarketingAnalytics() {
                 <motion.div key={lead.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                   className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                    lead.form_type === "page_visit" ? "bg-blue-500" : lead.form_type === "enrollment" ? "bg-green-500" : "bg-purple-500"
+                    lead.form_type === "page_visit" ? "bg-blue-500" : lead.form_type === "enrollment" ? "bg-green-500" : "bg-primary"
                   }`}>
                     {lead.form_type === "page_visit" ? <Eye className="h-3.5 w-3.5" /> : <MousePointerClick className="h-3.5 w-3.5" />}
                   </div>

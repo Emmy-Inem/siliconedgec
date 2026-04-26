@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 
 const COLORS = [
-  "hsl(262, 83%, 58%)",
+  "hsl(276, 100%, 62%)",
   "hsl(197, 100%, 47%)",
   "hsl(142, 71%, 45%)",
   "hsl(38, 92%, 50%)",
@@ -136,7 +136,7 @@ export default function AdminAnalytics() {
     { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Completion Rate", value: data?.completionRate ?? 0, suffix: "%", icon: TrendingUp, gradient: "from-amber-500/15 to-yellow-500/5", accent: "text-amber-500" },
     { label: "Avg Progress", value: data?.avgProgress ?? 0, suffix: "%", icon: BarChart3, gradient: "from-blue-500/15 to-cyan-500/5", accent: "text-blue-500" },
-    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-purple-500/15 to-fuchsia-500/5", accent: "text-purple-500" },
+    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "$", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
   ];
 
@@ -218,8 +218,8 @@ export default function AdminAnalytics() {
               <AreaChart data={data?.monthlyData ?? []}>
                 <defs>
                   <linearGradient id="analyticsEnrGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(276, 100%, 62%)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="analyticsUsrGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
@@ -229,13 +229,13 @@ export default function AdminAnalytics() {
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Area type="monotone" dataKey="enrollments" stroke="hsl(262, 83%, 58%)" fill="url(#analyticsEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(262, 83%, 58%)", strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="enrollments" stroke="hsl(276, 100%, 62%)" fill="url(#analyticsEnrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(276, 100%, 62%)", strokeWidth: 0 }} />
                 <Area type="monotone" dataKey="users" stroke="hsl(142, 71%, 45%)" fill="url(#analyticsUsrGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(142, 71%, 45%)", strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
           <div className="flex gap-4 mt-2">
-            {[{ color: "hsl(262, 83%, 58%)", label: "Enrollments" }, { color: "hsl(142, 71%, 45%)", label: "New Users" }].map(l => (
+            {[{ color: "hsl(276, 100%, 62%)", label: "Enrollments" }, { color: "hsl(142, 71%, 45%)", label: "New Users" }].map(l => (
               <span key={l.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} /> {l.label}
               </span>

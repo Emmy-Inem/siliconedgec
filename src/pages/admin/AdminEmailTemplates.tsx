@@ -50,7 +50,7 @@ function buildPreviewHtml(subject: string, body: string) {
     body{margin:0;padding:24px;background:#f3f4f6;font-family:system-ui,-apple-system,sans-serif;}
     .card{max-width:560px;margin:0 auto;padding:28px;background:#0f172a;color:#fff;border-radius:14px;line-height:1.55;font-size:14px;}
     .subj{font-weight:600;font-size:13px;color:#a78bfa;letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;border-bottom:1px solid #1e293b;padding-bottom:12px;}
-    .cta{display:inline-block;margin-top:18px;padding:10px 20px;background:#a855f7;color:#fff!important;text-decoration:none;border-radius:8px;font-weight:600;font-size:13px;}
+    .cta{display:inline-block;margin-top:18px;padding:10px 20px;background:#b13bff;color:#fff!important;text-decoration:none;border-radius:8px;font-weight:600;font-size:13px;}
     .footer{margin-top:24px;padding-top:14px;border-top:1px solid #1e293b;font-size:11px;color:#64748b;}
   </style></head><body>
     <div class="card">
