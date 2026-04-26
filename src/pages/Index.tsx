@@ -468,8 +468,9 @@ export default function Index() {
         <div className="noise-overlay" />
         <motion.div
           className="absolute top-32 right-[8%] w-72 h-72 rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { y: [0, -30, 0], x: [0, 15, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          animate={reduce ? {} : { y: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "transform" }}
         />
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative">
