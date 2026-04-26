@@ -875,9 +875,13 @@ export default function Index() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
         <div className="container mx-auto px-4 relative">
           <motion.div {...sectionReveal} className="text-center mb-16 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">How it works</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.how_eyebrow ?? "How it works"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span>
+              {home?.how_title ? (
+                <span className="text-gradient">{home.how_title}</span>
+              ) : (
+                <>From <span className="text-gradient">curious</span> to <span className="text-gradient">hired</span><span className="text-gold">.</span></>
+              )}
             </h2>
           </motion.div>
 
@@ -891,10 +895,10 @@ export default function Index() {
             />
 
             {[
-              { n: "01", icon: Sparkles, title: "Apply & enroll", desc: "Pick your track. Pay flexibly. Get instant access to your cohort." },
-              { n: "02", icon: Clock4, title: "Learn live, weekly", desc: "Real instructor-led classes with Q&A. Recordings keep you on track." },
-              { n: "03", icon: Rocket, title: "Build real projects", desc: "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
-              { n: "04", icon: Trophy, title: "Get job-ready", desc: "CV reviews, mock interviews, and intros to our hiring partner network." },
+              { n: "01", icon: Sparkles, title: home?.how_step1_title ?? "Apply & enroll",        desc: home?.how_step1_desc ?? "Pick your track. Pay flexibly. Get instant access to your cohort." },
+              { n: "02", icon: Clock4,   title: home?.how_step2_title ?? "Learn live, weekly",    desc: home?.how_step2_desc ?? "Real instructor-led classes with Q&A. Recordings keep you on track." },
+              { n: "03", icon: Rocket,   title: home?.how_step3_title ?? "Build real projects",   desc: home?.how_step3_desc ?? "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
+              { n: "04", icon: Trophy,   title: home?.how_step4_title ?? "Get job-ready",         desc: home?.how_step4_desc ?? "CV reviews, mock interviews, and intros to our hiring partner network." },
             ].map((step, i) => {
               const left = i % 2 === 0;
               return (
