@@ -738,10 +738,17 @@ export default function Index() {
       <section className="py-20 md:py-24 relative">
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="text-center mb-14 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">Why Silicon Edge</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.why_eyebrow ?? "Why Silicon Edge"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              Built for the way <span className="text-gradient">ambitious people</span> learn<span className="text-gold">.</span>
+              {home?.why_title ? (
+                <span className="text-gradient">{home.why_title}</span>
+              ) : (
+                <>Built for the way <span className="text-gradient">ambitious people</span> learn<span className="text-gold">.</span></>
+              )}
             </h2>
+            {home?.why_description && (
+              <p className="text-muted-foreground mt-4 text-base leading-relaxed">{home.why_description}</p>
+            )}
           </motion.div>
 
           <motion.div
