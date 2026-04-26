@@ -527,11 +527,11 @@ export default function Index() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border mb-8"
+                className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
               >
                 <div className="flex -space-x-2">
                   {heroAvatars.slice(0, 4).map((a, i) => (
-                    <img key={i} src={a} alt="" className="w-6 h-6 rounded-full ring-2 ring-card object-cover" />
+                    <img key={i} src={a} alt="" loading="lazy" className="w-7 h-7 rounded-full ring-2 ring-white/40 object-cover" />
                   ))}
                 </div>
                 <span className="text-sm font-medium text-white">
