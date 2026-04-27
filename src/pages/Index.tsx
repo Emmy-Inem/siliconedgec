@@ -220,51 +220,79 @@ const HERO_TECH_LOGOS: TechLogo[] = [
 /** Two slow orbital marquee rows of tech logos (top drifts right, bottom drifts left).
  * Frames the hero headline without crowding it; logos are always in motion. */
 function FloatingTechLogos() {
-  // Split logos roughly in half for two distinct rows.
-  const topRow = HERO_TECH_LOGOS.slice(0, 6);
-  const bottomRow = HERO_TECH_LOGOS.slice(6);
+  // Scattered, gently floating logo cards positioned around the hero headline.
+  // Each card has fixed coordinates so the layout feels intentional and premium,
+  // not random. Smaller / decorative cards are hidden on mobile to keep it clean.
+  type Pos = {
+    top: string;
+    left: string;
+    size: number;        // px
+    rot: number;         // initial rotation
+    delay: number;       // float anim delay
+    mobile?: boolean;    // show on mobile too
+  };
 
-  const Logo = ({ logo }: { logo: TechLogo }) => (
-    <div
-      className="shrink-0 rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14"
-      title={logo.name}
-    >
-      <img
-        src={logo.src}
-        alt={logo.name}
-        loading="lazy"
-        className="max-w-full max-h-full object-contain"
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).style.display = "none";
-        }}
-      />
-    </div>
-  );
+  const positions: Pos[] = [
+    { top: "10%", left: "6%",  size: 56, rot: -8,  delay: 0,    mobile: true },
+    { top: "22%", left: "86%", size: 60, rot:  6,  delay: 0.4,  mobile: true },
+    { top: "60%", left: "4%",  size: 52, rot:  4,  delay: 0.8,  mobile: true },
+    { top: "70%", left: "88%", size: 56, rot: -6,  delay: 1.2,  mobile: true },
+    { top: "4%",  left: "44%", size: 48, rot:  3,  delay: 0.2 },
+    { top: "32%", left: "16%", size: 50, rot: -4,  delay: 0.6 },
+    { top: "30%", left: "78%", size: 50, rot:  5,  delay: 1.0 },
+    { top: "78%", left: "20%", size: 54, rot:  7,  delay: 0.3 },
+    { top: "82%", left: "70%", size: 50, rot: -5,  delay: 0.9 },
+    { top: "50%", left: "92%", size: 44, rot:  4,  delay: 1.4 },
+    { top: "55%", left: "2%",  size: 44, rot: -7,  delay: 1.6 },
+    { top: "16%", left: "70%", size: 48, rot: -3,  delay: 0.5 },
+  ];
 
-  const Row = ({ items, reverse = false }: { items: TechLogo[]; reverse?: boolean }) => (
-    <div className="relative overflow-hidden mask-fade-x">
-      <div
-        className="flex gap-5 sm:gap-7 items-center w-max animate-marquee"
-        style={{
-          animationDuration: "40s",
-          animationDirection: reverse ? "reverse" : "normal",
-          willChange: "transform",
-        }}
-      >
-        {[...items, ...items, ...items].map((logo, i) => (
-          <Logo key={`${logo.name}-${i}`} logo={logo} />
-        ))}
-      </div>
-    </div>
-  );
+  const items = HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => ({
+    logo,
+    pos: positions[i],
+  }));
 
   return (
-    <div
-      className="pointer-events-none absolute inset-x-0 top-0 bottom-0 flex flex-col justify-between py-8 sm:py-12"
-      aria-hidden="true"
-    >
-      <Row items={topRow} />
-      <Row items={bottomRow} reverse />
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      {items.map(({ logo, pos }, i) => (
+        <motion.div
+          key={logo.name}
+          initial={{ opacity: 0, scale: 0.6, rotate: pos.rot }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            y: [0, -10, 0],
+            rotate: [pos.rot, pos.rot + 3, pos.rot],
+          }}
+          transition={{
+            opacity: { duration: 0.6, delay: 0.2 + i * 0.04 },
+            scale: { duration: 0.6, delay: 0.2 + i * 0.04, type: "spring", stiffness: 120, damping: 14 },
+            y: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
+            rotate: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
+          }}
+          style={{
+            top: pos.top,
+            left: pos.left,
+            width: pos.size,
+            height: pos.size,
+            willChange: "transform",
+          }}
+          className={`absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 flex items-center justify-center ${
+            pos.mobile ? "" : "hidden md:flex"
+          }`}
+          title={logo.name}
+        >
+          <img
+            src={logo.src}
+            alt={logo.name}
+            loading="lazy"
+            className="max-w-full max-h-full object-contain"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </motion.div>
+      ))}
     </div>
   );
 }
