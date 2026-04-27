@@ -609,15 +609,13 @@ export default function Index() {
 
       {/* ───────────────── HERO (light, premium) ───────────────── */}
       <section ref={heroRef} className="relative overflow-hidden bg-white">
-        {/* soft purple hue background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.10),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.08),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--primary)/0.04)_0%,transparent_40%,transparent_60%,hsl(var(--primary)/0.05)_100%)]" />
+        {/* soft purple hue background — top-only, very subtle */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
         {/* faint dot grid */}
         <div
-          className="absolute inset-0 opacity-[0.35]"
+          className="absolute inset-0 opacity-[0.25]"
           style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
@@ -629,7 +627,7 @@ export default function Index() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative"
+          className="container mx-auto px-4 pt-24 pb-14 md:pt-36 md:pb-28 relative"
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
@@ -642,21 +640,19 @@ export default function Index() {
               <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
             </motion.div>
 
-            {/* center brand mark — like the reference */}
+            {/* center brand mark — favicon */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 90, damping: 14 }}
               className="mx-auto mb-6 w-14 h-14 rounded-2xl bg-white border border-primary/15 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.4)] flex items-center justify-center"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="font-heading font-bold text-primary-foreground text-sm">SE</span>
-              </div>
+              <img src="/favicon.png" alt="Silicon Edge Consulting" className="w-9 h-9 object-contain" />
             </motion.div>
 
             <h1
               className="font-heading font-bold text-foreground leading-[1.02] tracking-tight mb-5 text-balance"
-              style={{ fontSize: "clamp(2.25rem, 6.4vw, 4.75rem)" }}
+              style={{ fontSize: "clamp(1.85rem, 7.5vw, 4.75rem)" }}
             >
               <motion.span
                 initial={{ opacity: 0, y: 24 }}
