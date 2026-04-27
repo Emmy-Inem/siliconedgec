@@ -1,69 +1,101 @@
-## Premium Homepage Revamp
+## Goal
 
-Replace the current symmetric/centered layout with a dynamic, asymmetric, motion-rich experience inspired by Linear, Stripe, and Apple. Remove fabricated info ("Live cohort starting next week"). Every section earns its place with movement, depth, and creative typography.
+Polish the homepage hero (cleaner, more like the quso.ai reference), tighten the header, localize course pricing by visitor country, gate certificate downloads behind course completion, replace AI-generated imagery with professional stock photos, and wire community/lifetime CTAs to real destinations.
 
-### Section-by-section redesign
+---
 
-**1. Hero — Asymmetric split with kinetic typography**
-- Two-column layout (60/40 on desktop, stacked on mobile). Left: oversized kinetic headline. Right: animated 3D-tilt instructor collage.
-- **Headline**: huge clamp(3rem, 8vw, 7rem) display type. Static line "The edge to" + rotating gradient word (typewriter kept, but bolder). Second line "your tech career." with the gold dot.
-- **Replace fake "Live cohort" pill** with a real, honest trust pill: animated avatar stack ("Join 2,000+ learners building today") that links to /courses.
-- **Right collage**: 4 floating instructor cards with parallax mouse-tilt (framer-motion `useMotionValue` + `useTransform` on mouseX/Y), each at different scales/rotations, with a soft purple glow ring rotating slowly behind them. Replaces the cloud-logo + tech-logo strips that currently sandwich the CTA.
-- **Below-fold scroll cue**: animated mouse/chevron with vertical pulse.
-- Background: existing gradient mesh + a subtle animated noise grain SVG overlay + slow-drifting orb (keep but reduce to one).
+## 1. Hero section refresh (Index.tsx)
 
-**2. Logo marquee — Refined**
-- Keep the alumni marquee but: add edge fade masks (left/right), reduce logo size, double-row variant on desktop with one row reversing direction. Adds visual rhythm without clutter.
+- Remove the dotted SVG radial connector lines from `FloatingTechLogos` (the "lines on the hero").
+- Lighten the background — reduce purple radial intensity (lower opacity stops) and remove the bottom purple gradient band so it reads as a clean white canvas with only a soft top-center hue, matching the reference image.
+- Keep the floating tech logos but space them further toward the edges (avoid crowding the headline area), shrink mid-area logos, and ensure they don't appear behind the CTA stack.
+- **Center brand mark**: replace the "SE" gradient square with the actual Silicon Edge favicon (`/public/favicon.png`) inside the white rounded card.
+- **Mobile hero layout**:
+  - Reduce hero top/bottom padding on mobile (`pt-24 pb-14`).
+  - Smaller headline clamp floor (`clamp(1.85rem, 8vw, 4.75rem)`).
+  - Show a *condensed* version of floating logos on mobile (4–6 logos, smaller, edges only) instead of `hidden md:block` — keeps the premium feel without clutter.
+  - Tighten social-proof pill spacing on small screens.
 
-**3. Stats counter band — NEW**
-- A thin full-bleed band right after the marquee with 4 animated counters (Students, Courses, Instructors, Countries). Pulled from real DB counts where possible; otherwise honest defaults. Each counter sits in a glass pill with a tiny line-chart sparkline animating in.
+## 2. Header refresh (Header.tsx)
 
-**4. "Why Silicon Edge" — Bento grid replacement**
-- Replace the 4 equal cards with an **asymmetric bento layout** (5 tiles, mixed sizes):
-  - Large feature tile: "Live, instructor-led" with mock chat-bubble animation cycling messages.
-  - Medium tile: "Built for completion" with animated radial progress ring (0→92%).
-  - Medium tile: "Hireable skills" with rotating skill chips.
-  - Small tile: "Lifetime access" with playing video icon pulse.
-  - Small tile: "Community" with an animated avatar group.
-- All tiles share `glass-card` style, hover-lift, and a magnetic cursor-follow effect on the large one.
+- Add a soft white border + subtle shadow even when transparent over hero pages, so the header is always visible: when `!scrolled && isHeroPage`, use `bg-white/70 backdrop-blur-md border-b border-white/60 shadow-sm`.
+- Make nav links bolder and clearer: bump from `text-[13px] font-medium` to `text-sm font-semibold`, and over hero pages use `text-foreground/80 hover:text-primary` (drop the muted hero-muted color now that the header has a white background).
+- Active route gets a primary-color text with a small underline.
 
-**5. Categories + Course rail — Polished**
-- Keep horizontal scroll but: add edge fade gradients, replace the round chevron buttons with cleaner pill buttons that only appear on hover, and add an animated underline beneath the active category pill (framer-motion `layoutId`).
+## 3. Location-based currency for course prices
 
-**6. How it works — Vertical scroll-driven timeline (replace 4-column row)**
-- Sticky-scroll timeline: as the user scrolls, a vertical progress line fills (`useScroll` + `scaleY`), each step animates in alternately left/right with a number that morphs in. Feels cinematic vs. the current static 4-up grid.
+New utility `src/lib/currency.ts`:
+- Detect visitor country via `Intl.DateTimeFormat().resolvedOptions().timeZone` mapped to country (lightweight, no network) plus `navigator.language` as fallback.
+- If country is NG → display Naira (₦, no conversion).
+- Otherwise convert from NGN to the local currency using a static FX table for major currencies (USD, EUR, GBP, CAD, GHS, KES, ZAR, INR, AUD) with a daily-cached rate fetched from a free endpoint (`https://open.er-api.com/v6/latest/NGN`) via React Query (24 h staleTime). Fallback to bundled rates if the request fails.
+- Format using `Intl.NumberFormat(locale, { style: "currency", currency })`.
 
-**7. Instructors — Marquee-style hover reveal (replace static 4-up)**
-- Horizontal scrolling card row (drag-to-scroll on mobile). Each card greyscales by default; on hover/focus, color returns, the card tilts 3°, and a hidden tagline slides up. Tap "View all instructors" → /instructors page.
+New hook `useLocalizedPrice(amountNgn)` returning `{ formatted, currency, isNgn }`.
 
-**8. Mentors block — Keep but enhance**
-- Keep the side-by-side layout. Replace the static `courseBanner` image with a layered composition: instructor portrait + floating UI card snippets (mock "Live class · 24 online", "Project graded · A+", "Job offer received"). Adds storytelling depth.
+Refactor every public-facing price display to go through this hook (admin/order/receipt screens stay in Naira since those are the merchant's books):
+- `src/components/CourseCard.tsx`
+- `src/pages/CourseDetail.tsx`
+- `src/pages/Pricing.tsx`
+- `src/pages/Cart.tsx` (display only — checkout still charges NGN via Paystack with a small "Charged in ₦X,XXX" note)
+- `src/pages/Jobs.tsx`, `src/pages/JobDetail.tsx` (salary ranges)
 
-**9. Trust badges + Testimonials — Merge & redesign**
-- Merge into a single "Loved by ambitious learners" section: trust badges become a thin chip row below a **masonry grid of testimonials** (3 columns, varied heights), not a marquee. Click any testimonial to expand. Marquee is overused; masonry feels editorial and premium.
+## 4. Replace circular selection indicator with underline
 
-**10. FAQ — Keep with polish**
-- Add an icon next to each question, accordion chevron rotates 180° smoothly, expanded item gets a subtle gradient border using conic-gradient animation.
+In the courses category pill row (Index.tsx line ~941–957), drop the `motion.span` pill background. Instead render text-only buttons with a `motion.span layoutId="cat-underline"` — a 2px primary underline that animates between active items. Apply the same pattern anywhere else circular selectors are used in public pages (verify Courses.tsx filters too).
 
-**11. Final CTA — Big finale**
-- Full-bleed dark section with animated SVG grid floor (perspective grid receding to horizon, lines pulsing). Headline "Your edge starts now." Single primary CTA + "Talk to admissions" secondary link.
+## 5. Wire CTAs to real destinations
 
-### Cross-cutting motion & polish
-- Add a global **scroll progress bar** at top (1px primary gradient).
-- Add a **noise grain SVG** overlay utility class for premium texture.
-- Add **magnetic button** behavior to all primary CTAs (cursor pulls button slightly).
-- Replace any remaining `rounded-xl` on hero/feature surfaces with `rounded-2xl` for softer premium feel.
-- Use `prefers-reduced-motion` guard to disable heavy animations for accessibility.
+Use `useSiteSettings().whatsapp_community_url` (already exists in DB):
+- "Meet them all" link in the instructors section (line 1053) → opens WhatsApp community URL in new tab.
+- "Community" bento card (line 893) → wrap `AvatarStackTile` content in an anchor to the WhatsApp community URL.
+- "Lifetime" bento card (line 902) → make the whole card link to `/courses` (lifetime access ties to enrolled courses).
 
-### Technical notes
-- All changes confined to `src/pages/Index.tsx` plus minor utilities in `src/index.css` (noise overlay, scroll-progress, perspective-grid keyframes, magnetic helper).
-- Reuse existing framer-motion, Accordion, CourseCard. No new dependencies.
-- Fetch real counts via Supabase (`profiles`, `courses`, `instructors` count queries) with fallback values; never hardcode misleading copy.
-- Remove the dishonest "Live cohort starting next week · Limited seats" pill.
-- Honor `useReducedMotion()` from framer-motion to skip parallax/tilt for users who prefer reduced motion.
+Fallback: if `whatsapp_community_url` is empty, link defaults to `/contact` and admin can fill it in Site Settings.
 
-### Files to modify
-- `src/pages/Index.tsx` — full rewrite of section composition
-- `src/index.css` — add `.noise-overlay`, `.perspective-grid`, `.magnetic-btn` helpers and `scroll-progress` keyframes
+## 6. Fix broken alumni logos (Index.tsx line 774–793)
 
-No DB schema changes, no new edge functions, no new packages.
+Replace the unreliable Wikipedia URLs with stable Simple Icons CDN equivalents:
+- Meta → `https://cdn.simpleicons.org/meta/0668E1`
+- Andela → use a working hosted SVG or replace with another reputable employer (Spotify, Uber, Stripe).
+- Flutterwave → `https://cdn.simpleicons.org/flutterwave/F5A623`.
+- Add an `onError` handler that hides any logo that still fails so we never render a broken image icon.
+
+## 7. Certificates page (Certificates.tsx)
+
+- **Gate the download button**: in `CertificateCardWithDownload` and the sample preview, only show the download button if `cert.completion_status === 'completed'` (or whatever flag exists on the certificates row — check schema; if not present, key off the existence of a real DB row, since certs are auto-issued only on completion). For the sample card shown to non-completers, replace the download button with a disabled "Complete a course to download" tooltip + lock icon.
+- **More realistic sample certificate**: redesign `BrandedCertificate` / `CertificateForPDF`:
+  - Use the actual Silicon Edge logo at higher resolution.
+  - Add a signature line with an instructor name + signature image.
+  - Add a subtle watermark seal in the background.
+  - Use deeper navy + gold accent colors consistent with brand.
+  - Include "Hours of training", "Skills covered" pill row, and a serial number in monospaced font.
+- **Replace AI hero image**: swap `certificate-celebration.jpg` (AI-generated) with a professional Unsplash stock image of a graduate holding a certificate (download a CC0 image, save to `src/assets/certificate-graduate.jpg`).
+
+## 8. Replace AI imagery on the home page
+
+Swap the following AI-generated assets with curated Unsplash stock photos (free, attribution-free) — download to `src/assets/`:
+- `instructor-1.jpg` … `instructor-4.jpg` → 4 professional headshot stock photos (diverse, business casual).
+- `mentor` image (referenced via `home.mentor_image` fallback `instructor1`) → a stock photo of a mentor reviewing code on a laptop with a student.
+- `hero-team.jpg`, `student-learning.jpg`, `business-training.jpg` → professional stock equivalents.
+
+Will fetch via `curl` from Unsplash source URLs (e.g. `https://images.unsplash.com/photo-XXXX?w=800`) at build time and commit to `src/assets/`.
+
+## 9. Technical notes
+
+- New file: `src/lib/currency.ts` (timezone→country map for ~30 countries, FX fallback table).
+- New file: `src/hooks/useLocalizedPrice.ts`.
+- Edit `src/lib/format-currency.ts` to add `formatLocalized(amountNgn, currency, rate, locale)`.
+- All currency conversions are display-only; orders/receipts/Paystack stay in NGN. Add a small "(charged in ₦)" hint near non-Naira prices on CourseDetail and Cart.
+- Header changes apply to *all* `darkHeroPages` (Home, Pricing, Certificates, For Businesses).
+- No DB migrations needed — `whatsapp_community_url` already exists in `site_content`.
+
+---
+
+## Files to change
+
+- `src/pages/Index.tsx` (hero + alumni logos + category pills + CTA links + AI image swaps)
+- `src/components/Header.tsx` (border, bolder nav)
+- `src/pages/Certificates.tsx` (gate download, redesign sample, swap hero image)
+- `src/components/CourseCard.tsx`, `src/pages/CourseDetail.tsx`, `src/pages/Pricing.tsx`, `src/pages/Cart.tsx`, `src/pages/Jobs.tsx`, `src/pages/JobDetail.tsx` (localized prices)
+- `src/lib/currency.ts`, `src/lib/format-currency.ts`, `src/hooks/useLocalizedPrice.ts` (new helpers)
+- `src/assets/*` (replace AI imagery with stock photos via curl)
