@@ -10,12 +10,14 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import instructor1 from "@/assets/instructor-1.jpg";
-import instructor2 from "@/assets/instructor-2.jpg";
-import instructor3 from "@/assets/instructor-3.jpg";
-import instructor4 from "@/assets/instructor-4.jpg";
+import instructor1 from "@/assets/stock/instructor-1.jpg";
+import instructor2 from "@/assets/stock/instructor-2.jpg";
+import instructor3 from "@/assets/stock/instructor-3.jpg";
+import instructor4 from "@/assets/stock/instructor-4.jpg";
+import mentorStock from "@/assets/stock/mentor.jpg";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
