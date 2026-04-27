@@ -684,7 +684,7 @@ export default function Index() {
                 transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
                 className="block"
               >
-                {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-primary">.</span>
+                {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-gold">.</span>
               </motion.span>
             </h1>
 
