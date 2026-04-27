@@ -320,8 +320,16 @@
    `:where()` keeps specificity at 0 so per-component overrides still win.
    ───────────────────────────────────────────────────────────────────── */
 :where(svg.lucide) {
-  stroke-width: 2.4;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* Tiny icons (≤14px) need extra stroke to read as bold at small sizes. */
+:where(svg.lucide.h-3),
+:where(svg.lucide.h-3\.5),
+:where(svg.lucide.w-3),
+:where(svg.lucide.w-3\.5) {
+  stroke-width: 2.75;
 }
