@@ -785,31 +785,7 @@ export default function Index() {
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
             {home?.alumni_label ?? "Our alumni now work at"}
           </p>
-          <div className="relative overflow-hidden mask-fade-x">
-            <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
-              {Array.from({ length: 2 }).flatMap((_, dup) => [
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-                { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
-                { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
-                { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
-                { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
-                { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
-                { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
-                { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
-                { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
-                { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
-              ].map((logo, i) => (
-                <img
-                  key={`${logo.alt}-${dup}-${i}`}
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
-                  loading="lazy"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                />
-              )))}
-            </div>
-          </div>
+          <AlumniMarquee />
         </div>
       </section>
 
