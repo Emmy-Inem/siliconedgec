@@ -931,12 +931,12 @@ export default function Index() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`relative px-2 pb-2 text-sm font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {isActive && (
-                    <motion.span layoutId="cat-pill" className="absolute inset-0 rounded-full bg-primary shadow-lg shadow-primary/25" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
                   )}
-                  <span className={`relative ${!isActive ? "px-0" : ""}`}>{cat}</span>
+                  <span className="relative">{cat}</span>
                 </button>
               );
             })}
