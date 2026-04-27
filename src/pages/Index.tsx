@@ -682,7 +682,7 @@ export default function Index() {
   ];
   const typedText = useTypewriter(typewriterWords);
 
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("All Categories");
   const scrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const { data: courses = [] } = useCourses();
@@ -701,8 +701,8 @@ export default function Index() {
   const { scrollYProgress: timelineProgress } = useScroll({ target: timelineRef, offset: ["start 80%", "end 20%"] });
   const lineScale = useSpring(timelineProgress, { stiffness: 80, damping: 20 });
 
-  const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
-  const filteredCourses = activeCategory === "All" ? courses : courses.filter((c) => c.category === activeCategory);
+  const categories = ["All Categories", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
+  const filteredCourses = activeCategory === "All Categories" ? courses : courses.filter((c) => c.category === activeCategory);
 
   const scrollCourses = (dir: "left" | "right") => {
     if (scrollRef.current) {
