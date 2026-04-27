@@ -247,6 +247,21 @@
             mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
   }
   .marquee-pause:hover .marquee-track { animation-play-state: paused !important; }
+  /* Global @keyframes so inline `style={{ animation: 'marquee ...' }}` works.
+   * Tailwind's keyframes are scoped to its generated animation utility classes
+   * and aren't visible to raw inline-style animations. */
+  @keyframes marquee {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes marquee-vertical {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(0, -50%, 0); }
+  }
+  .marquee-track {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
   .perspective-grid {
     background-image:
       linear-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px),
