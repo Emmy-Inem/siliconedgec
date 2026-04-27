@@ -52,18 +52,19 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-foreground/15 text-foreground text-xs font-semibold mb-5">
               <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} /> Live, instructor-led tracks
             </div>
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.75rem] lg:text-[4.25rem] font-bold text-foreground mb-5 leading-[1.02] tracking-tight">
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[4rem] font-bold text-foreground mb-5 leading-[1.05] tracking-tight">
               Find the course that{" "}
-              <span className="relative inline-block">
+              <span className="relative inline-block whitespace-nowrap">
                 <span className="text-gradient">moves your career</span>
+                <span className="text-gold">.</span>
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
-                  className="absolute -bottom-1 left-0 right-0 h-[6px] origin-left rounded-full bg-gradient-to-r from-primary/30 via-accent/30 to-gold/30"
+                  aria-hidden
+                  className="absolute -bottom-1 left-0 right-2 h-[5px] origin-left rounded-full bg-gradient-to-r from-primary/40 via-accent/40 to-gold/40"
                 />
               </span>
-              <span className="text-gold">.</span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
               Cloud, AI, DevOps, Cybersecurity, Web — taught live by engineers actively shipping in tech.
