@@ -440,44 +440,46 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 /* ----------------------------- alumni marquee ----------------------------- */
 
-const ALUMNI_BRANDS = [
-  { name: "Google", team: "Product" },
-  { name: "Microsoft", team: "Cloud" },
-  { name: "AWS", team: "Infrastructure" },
-  { name: "Meta", team: "Engineering" },
-  { name: "Paystack", team: "Platform" },
-  { name: "Flutterwave", team: "Payments" },
-  { name: "Andela", team: "Talent" },
-  { name: "Oracle", team: "Data" },
-  { name: "IBM", team: "Systems" },
-  { name: "Cisco", team: "Networks" },
+const ALUMNI_BRANDS: { name: string; src: string }[] = [
+  { name: "Google",      src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" },
+  { name: "Microsoft",   src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" },
+  { name: "Amazon",      src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
+  { name: "Meta",        src: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
+  { name: "Paystack",    src: "https://cdn.brandfetch.io/idoCRrFpqr/w/400/h/400/theme/dark/icon.png" },
+  { name: "Flutterwave", src: "https://cdn.brandfetch.io/idfPmHv0vL/w/400/h/400/theme/dark/icon.png" },
+  { name: "Andela",      src: "https://cdn.brandfetch.io/id7e2hZL3w/w/400/h/400/theme/dark/icon.png" },
+  { name: "Oracle",      src: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" },
+  { name: "IBM",         src: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" },
+  { name: "Cisco",       src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" },
+  { name: "Netflix",     src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" },
+  { name: "Spotify",     src: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" },
 ];
 
 function AlumniMarquee() {
   return (
-    <div className="relative overflow-hidden mask-fade-x" aria-label="Our alumni work at leading global companies">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-14 bg-gradient-to-r from-background via-background/80 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-gradient-to-l from-background via-background/80 to-transparent" />
+    <div className="relative overflow-hidden" aria-label="Our alumni work at leading global companies">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="marquee-track flex w-max gap-4 sm:gap-5"
-        style={{ animation: "marquee-reverse 36s linear infinite" }}
+        className="marquee-track flex w-max items-center gap-12 sm:gap-16 py-4"
+        style={{ animation: "marquee 42s linear infinite" }}
       >
         {[0, 1].map((copy) => (
-          <div key={copy} className="flex shrink-0 items-center gap-4 pr-4 sm:gap-5 sm:pr-5">
+          <div key={copy} className="flex shrink-0 items-center gap-12 sm:gap-16 pr-12 sm:pr-16">
             {ALUMNI_BRANDS.map((brand) => (
               <div
                 key={`${brand.name}-${copy}`}
-                className="group flex min-w-[13rem] shrink-0 items-center gap-3 rounded-2xl border border-border/60 bg-card/85 px-4 py-3 shadow-[0_14px_40px_-26px_hsl(var(--foreground)/0.28)] backdrop-blur-sm sm:min-w-[15rem]"
+                className="group flex h-12 sm:h-14 w-28 sm:w-32 shrink-0 items-center justify-center"
+                title={brand.name}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/15 via-primary/8 to-gold/10 font-heading text-base font-bold text-primary">
-                  {brand.name.slice(0, 1)}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-heading text-sm font-semibold text-foreground">{brand.name}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{brand.team}</p>
-                </div>
-                <span className="ml-auto hidden h-2.5 w-2.5 rounded-full bg-gold shadow-[0_0_0_4px_hsl(var(--gold)/0.12)] sm:inline-flex" />
+                <img
+                  src={brand.src}
+                  alt={brand.name}
+                  loading="lazy"
+                  className="max-h-full max-w-full object-contain grayscale opacity-60 transition-all duration-300 ease-out group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
               </div>
             ))}
           </div>
