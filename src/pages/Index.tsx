@@ -266,7 +266,7 @@ function FloatingTechLogos() {
           }}
           transition={{
             opacity: { duration: 0.6, delay: 0.2 + i * 0.04 },
-            scale: { duration: 0.6, delay: 0.2 + i * 0.04, type: "spring", stiffness: 120, damping: 14 },
+            scale: { duration: 0.6, delay: 0.2 + i * 0.04, ease: "easeOut" },
             y: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
             rotate: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
           }}
@@ -277,9 +277,7 @@ function FloatingTechLogos() {
             height: pos.size,
             willChange: "transform",
           }}
-          className={`absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 flex items-center justify-center ${
-            pos.mobile ? "" : "hidden md:flex"
-          }`}
+          className="absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 hidden md:flex items-center justify-center"
           title={logo.name}
         >
           <img
