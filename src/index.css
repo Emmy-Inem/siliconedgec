@@ -246,7 +246,7 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
             mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
   }
-  .marquee-pause:hover .marquee-track { animation-play-state: paused; }
+  .marquee-pause:hover .marquee-track { animation-play-state: paused !important; }
   .perspective-grid {
     background-image:
       linear-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px),

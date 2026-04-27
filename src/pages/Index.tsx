@@ -335,19 +335,20 @@ function TestimonialCard({ t }: { t: Tm }) {
   );
 }
 
-function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
+function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testimonials: Tm[]; speed?: string }) {
   /* Ensure we have enough cards for a seamless loop. */
   const pool: Tm[] = [...testimonials];
   while (pool.length > 0 && pool.length < 8) {
     pool.push(...testimonials.map((t, i) => ({ ...t, id: `${t.id}-r${pool.length + i}` })));
   }
+  const duration = speed === "slow" ? 160 : speed === "fast" ? 50 : 90;
 
   return (
     <div className="relative overflow-hidden mask-fade-x marquee-pause">
       <div
         className="marquee-track flex gap-5 w-max"
         style={{
-          animation: `marquee 80s linear infinite`,
+          animation: `marquee ${duration}s linear infinite`,
           willChange: "transform",
         }}
       >
@@ -565,7 +566,7 @@ export default function Index() {
                   transition={{ type: "spring", stiffness: 60, damping: 18 }}
                   className="block"
                 >
-                  The edge to
+                  {home?.hero_title_pre ?? "Start Learning"}
                 </motion.span>
                 <motion.span
                   initial={{ opacity: 0, y: 30 }}
@@ -582,7 +583,7 @@ export default function Index() {
                   transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
                   className="block"
                 >
-                  your tech career<span className="text-gold">.</span>
+                  {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-gold">.</span>
                 </motion.span>
               </h1>
 
@@ -1125,7 +1126,7 @@ export default function Index() {
           </motion.div>
 
           {/* vertical scrolling columns */}
-          <VerticalTestimonialMarquee testimonials={testimonials} />
+          <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
         </div>
       </section>
 

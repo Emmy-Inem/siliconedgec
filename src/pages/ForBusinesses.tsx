@@ -5,7 +5,7 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
-  Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2,
+  Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,13 +100,18 @@ export default function ForBusinesses() {
 
       {/* ─── Hero ─── */}
       <section className="bg-hero pt-28 pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-70" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.16),transparent_60%)]" />
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
         <div className="container mx-auto px-4 relative">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-2xl">
-            <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-4 leading-tight">
-              Give Your Workforce a Winning Edge
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 60, damping: 18 }} className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
+              <Sparkles className="h-3 w-3" /> Corporate training partner
+            </div>
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero mb-4 leading-[1.05] tracking-tight">
+              Give your workforce a <span className="text-gradient">winning edge</span><span className="text-gold">.</span>
             </h1>
-            <p className="text-hero-muted text-lg mb-6">Equip your business to win!</p>
+            <p className="text-hero-muted text-base md:text-lg mb-6 max-w-xl leading-relaxed">Custom-built tech training that turns your team into the team competitors fear.</p>
             <ul className="space-y-3 mb-8">
               {["Access several Tech Courses", "Course Progress Tracking", "Course Resources & Materials"].map((t) => (
                 <li key={t} className="flex items-center gap-3 text-hero-muted">
