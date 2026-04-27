@@ -576,13 +576,17 @@ export default function Index() {
     return override && override.trim().length > 0 ? { ...inst, image: override } : inst;
   });
 
+  const stockAvatars = [testimonial1, testimonial2, testimonial3, testimonial4, testimonial5, testimonial6];
   const testimonials = (dbTestimonials && dbTestimonials.length > 0)
-    ? dbTestimonials.map((t) => ({
+    ? dbTestimonials.map((t, i) => ({
         id: t.id,
         name: t.name,
         role: t.role ?? "Student",
         quote: t.quote,
-        avatar_url: t.avatar_url,
+        // Always have a display picture — fall back to a stock headshot if none set.
+        avatar_url: t.avatar_url && t.avatar_url.trim().length > 0
+          ? t.avatar_url
+          : (stockAvatars[i % stockAvatars.length] as string),
         rating: t.rating ?? 5,
       }))
     : fallbackTestimonials;
