@@ -441,18 +441,22 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 /* ----------------------------- alumni marquee ----------------------------- */
 
 const ALUMNI_BRANDS: { name: string; src: string }[] = [
-  { name: "Google",      src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" },
-  { name: "Microsoft",   src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" },
-  { name: "Amazon",      src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
-  { name: "Meta",        src: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
-  { name: "Paystack",    src: "https://cdn.brandfetch.io/idoCRrFpqr/w/400/h/400/theme/dark/icon.png" },
-  { name: "Flutterwave", src: "https://cdn.brandfetch.io/idfPmHv0vL/w/400/h/400/theme/dark/icon.png" },
-  { name: "Andela",      src: "https://cdn.brandfetch.io/id7e2hZL3w/w/400/h/400/theme/dark/icon.png" },
-  { name: "Oracle",      src: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" },
-  { name: "IBM",         src: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" },
-  { name: "Cisco",       src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" },
-  { name: "Netflix",     src: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" },
-  { name: "Spotify",     src: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" },
+  { name: "Google",      src: "https://cdn.simpleicons.org/google" },
+  { name: "Microsoft",   src: "https://cdn.simpleicons.org/microsoft" },
+  { name: "Amazon",      src: "https://cdn.simpleicons.org/amazon" },
+  { name: "Meta",        src: "https://cdn.simpleicons.org/meta" },
+  { name: "Apple",       src: "https://cdn.simpleicons.org/apple" },
+  { name: "Oracle",      src: "https://cdn.simpleicons.org/oracle" },
+  { name: "IBM",         src: "https://cdn.simpleicons.org/ibm" },
+  { name: "Cisco",       src: "https://cdn.simpleicons.org/cisco" },
+  { name: "Intel",       src: "https://cdn.simpleicons.org/intel" },
+  { name: "Nvidia",      src: "https://cdn.simpleicons.org/nvidia" },
+  { name: "Salesforce",  src: "https://cdn.simpleicons.org/salesforce" },
+  { name: "Adobe",       src: "https://cdn.simpleicons.org/adobe" },
+  { name: "GitHub",      src: "https://cdn.simpleicons.org/github" },
+  { name: "Atlassian",   src: "https://cdn.simpleicons.org/atlassian" },
+  { name: "Stripe",      src: "https://cdn.simpleicons.org/stripe" },
+  { name: "Shopify",     src: "https://cdn.simpleicons.org/shopify" },
 ];
 
 function AlumniMarquee() {
@@ -462,22 +466,22 @@ function AlumniMarquee() {
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="marquee-track flex w-max items-center gap-12 sm:gap-16 py-4"
-        style={{ animation: "marquee 42s linear infinite" }}
+        className="marquee-track flex w-max items-center py-4"
+        style={{ animation: "marquee 38s linear infinite" }}
       >
         {[0, 1].map((copy) => (
-          <div key={copy} className="flex shrink-0 items-center gap-12 sm:gap-16 pr-12 sm:pr-16">
+          <div key={copy} className="flex shrink-0 items-center gap-8 sm:gap-10 pr-8 sm:pr-10">
             {ALUMNI_BRANDS.map((brand) => (
               <div
                 key={`${brand.name}-${copy}`}
-                className="group flex h-12 sm:h-14 w-28 sm:w-32 shrink-0 items-center justify-center"
+                className="group flex h-7 sm:h-8 shrink-0 items-center justify-center"
                 title={brand.name}
               >
                 <img
                   src={brand.src}
                   alt={brand.name}
                   loading="lazy"
-                  className="max-h-full max-w-full object-contain grayscale opacity-60 transition-all duration-300 ease-out group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
+                  className="h-full w-auto object-contain grayscale opacity-60 transition-all duration-300 ease-out group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
               </div>
@@ -1149,30 +1153,26 @@ export default function Index() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 snap-x mask-fade-x"
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x mask-fade-x"
             style={{ scrollbarWidth: "none" }}
           >
             {instructors.map((inst) => (
               <motion.div
                 key={inst.id}
                 variants={staggerItem}
-                whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
-                className="group min-w-[180px] max-w-[200px] snap-start flex-shrink-0 rounded-2xl overflow-hidden border border-border/60 bg-card relative"
+                whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
+                className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-2xl overflow-hidden border border-border/60 bg-card relative shadow-sm hover:shadow-xl transition-shadow duration-300"
               >
                 <div className="aspect-[4/5] overflow-hidden">
-                  <img src={inst.image} alt={inst.name} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
+                  <img src={inst.image} alt={inst.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
-                  <h3 className="font-heading font-semibold text-white text-sm leading-tight">{inst.name}</h3>
-                  <p className="text-white/70 text-[11px]">{inst.role}</p>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    whileHover={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-                    <span className="text-[11px] text-white/90 font-medium">{inst.rating}</span>
-                  </motion.div>
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                  <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
+                  <p className="text-white/75 text-sm mt-0.5">{inst.role}</p>
+                  <div className="flex items-center gap-1 mt-2">
+                    <Star className="h-4 w-4 fill-gold text-gold" />
+                    <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                  </div>
                 </div>
               </motion.div>
             ))}

@@ -70,20 +70,8 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
               No filler, no fluff — only the skills employers actually pay for.
             </p>
 
-            {/* CTA row */}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Button size="lg" className="rounded-full px-6 group">
-                Browse all programs
-                <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-6 group">
-                <PlayCircle className="mr-1.5 h-4 w-4 text-primary" />
-                Watch a sample class
-              </Button>
-            </div>
-
             {/* Trust strip */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-7 pt-7 border-t border-border/50">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8 pt-7 border-t border-border/50">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1.5">
                   {[...Array(4)].map((_, i) => (
