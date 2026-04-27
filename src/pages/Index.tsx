@@ -566,7 +566,7 @@ export default function Index() {
                   transition={{ type: "spring", stiffness: 60, damping: 18 }}
                   className="block"
                 >
-                  The edge to
+                  {home?.hero_title_pre ?? "Start Learning"}
                 </motion.span>
                 <motion.span
                   initial={{ opacity: 0, y: 30 }}
@@ -583,7 +583,7 @@ export default function Index() {
                   transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
                   className="block"
                 >
-                  your tech career<span className="text-gold">.</span>
+                  {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-gold">.</span>
                 </motion.span>
               </h1>
 
