@@ -740,20 +740,6 @@ export default function Index() {
             </motion.p>
           </div>
 
-          {/* scroll cue */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4 }}
-            className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1.5 text-muted-foreground/60"
-          >
-            <Mouse className="h-4 w-4" />
-            <motion.div
-              animate={reduce ? {} : { y: [0, 6, 0], opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.6, repeat: Infinity }}
-              className="w-px h-6 bg-current"
-            />
-          </motion.div>
         </motion.div>
       </section>
 
