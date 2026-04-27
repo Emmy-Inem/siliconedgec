@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote } from "lucide-react";
+import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Sparkles, Clock4, Rocket, Trophy, Lock, PlayCircle, Users, Globe2, MessagesSquare, Quote, Target, Handshake } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -905,7 +905,7 @@ export default function Index() {
                 className="glass-card rounded-2xl border border-border/60 p-5 md:p-6 hover:border-primary/30 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]">
                     <s.icon className="h-4.5 w-4.5 text-primary" />
                   </div>
                   <span className="text-xs text-muted-foreground">{s.label}</span>
@@ -946,8 +946,8 @@ export default function Index() {
             {/* Large — live chat */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
               <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"><MessageCircle className="h-4.5 w-4.5 text-primary" /></div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-11 h-11 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]"><MessagesSquare className="h-5 w-5 text-primary" /></div>
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
               </div>
               <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
@@ -957,8 +957,8 @@ export default function Index() {
 
             {/* Medium — completion */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-2 mb-1">
-                <Award className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-2 mb-1">
+                  <BadgeCheck className="h-4.5 w-4.5 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Completion</span>
               </div>
               <h3 className="font-heading font-semibold">Built for completion</h3>
@@ -968,8 +968,8 @@ export default function Index() {
 
             {/* Medium — skills */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-2 mb-1">
-                <Briefcase className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-2 mb-1">
+                  <Target className="h-4.5 w-4.5 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Hireable</span>
               </div>
               <h3 className="font-heading font-semibold">Skills that get you hired</h3>
@@ -978,8 +978,8 @@ export default function Index() {
 
             {/* Medium — community */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-2 mb-1">
-                <Heart className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-2 mb-1">
+                  <Handshake className="h-4.5 w-4.5 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Community</span>
               </div>
               <h3 className="font-heading font-semibold">Cohort energy, lifelong network</h3>
@@ -1194,8 +1194,8 @@ export default function Index() {
               </p>
               <div className="space-y-5">
                 {[
-                  { icon: Shield, title: "Industry veterans", desc: "Seasoned professionals sharing current insights and best practices." },
-                  { icon: Heart, title: "Dedicated support", desc: "Personalized guidance, fast answers, and constructive feedback." },
+                  { icon: ShieldCheck, title: "Industry veterans", desc: "Seasoned professionals sharing current insights and best practices." },
+                  { icon: Handshake, title: "Dedicated support", desc: "Personalized guidance, fast answers, and constructive feedback." },
                   { icon: CheckCircle2, title: "Practical-first", desc: "Hands-on projects and real-world scenarios — no theory dumps." },
                 ].map((item, i) => (
                   <motion.div
@@ -1314,7 +1314,7 @@ export default function Index() {
               { icon: Lock, label: "Secure Payments" },
             ].map((b) => (
               <div key={b.label} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/60 backdrop-blur text-xs">
-                <b.icon className="h-3.5 w-3.5 text-primary" />
+                <b.icon className="h-4 w-4 text-primary" />
                 <span className="font-medium">{b.label}</span>
               </div>
             ))}
