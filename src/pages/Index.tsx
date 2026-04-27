@@ -641,8 +641,8 @@ export default function Index() {
       }))
     : fallbackInstructorImages.map((image, idx) => ({
         id: `placeholder-${idx}`,
-        name: ["Adaeze N.", "Marcus L.", "Sofia P.", "Rahul K."][idx],
-        role: ["Cloud Architect", "DevOps Lead", "Senior Software Engineer", "AI/ML Specialist"][idx],
+        name: ["Emeka Obi", "Ngozi Adekunle", "Tobi Balogun", "Amara Eze"][idx],
+        role: ["Senior Software Engineer", "Cloud Architect", "DevOps Lead", "AI/ML Specialist"][idx],
         rating: 4.9,
         students: 0,
         courses: 0,
@@ -1157,21 +1157,21 @@ export default function Index() {
                 key={inst.id}
                 variants={staggerItem}
                 whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
-                className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-3xl overflow-hidden border border-border/60 bg-card relative"
+                className="group min-w-[180px] max-w-[200px] snap-start flex-shrink-0 rounded-2xl overflow-hidden border border-border/60 bg-card relative"
               >
                 <div className="aspect-[4/5] overflow-hidden">
-                  <img src={inst.image} alt={inst.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
+                  <img src={inst.image} alt={inst.name} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
-                  <h3 className="font-heading font-semibold text-white">{inst.name}</h3>
-                  <p className="text-white/70 text-xs">{inst.role}</p>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+                  <h3 className="font-heading font-semibold text-white text-sm leading-tight">{inst.name}</h3>
+                  <p className="text-white/70 text-[11px]">{inst.role}</p>
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileHover={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Star className="h-3.5 w-3.5 fill-gold text-gold" />
-                    <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                    <span className="text-[11px] text-white/90 font-medium">{inst.rating}</span>
                   </motion.div>
                 </div>
               </motion.div>
