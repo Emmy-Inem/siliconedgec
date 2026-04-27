@@ -59,9 +59,17 @@ export default function Courses() {
       />
       <Header />
 
-      <section className="bg-hero relative overflow-hidden pt-28 pb-16 md:pb-20">
-        <div className="absolute inset-0 gradient-mesh opacity-70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.18),transparent_60%)]" />
+      <section className="relative overflow-hidden bg-white pt-28 pb-16 md:pb-20 border-b border-border/40">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.18]"
+          style={{
+            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+          }}
+        />
         <div className="container mx-auto px-4 relative">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -72,10 +80,10 @@ export default function Courses() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
               <Sparkles className="h-3 w-3" /> Live, instructor-led tracks
             </div>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-hero mb-4 leading-[1.05] tracking-tight">
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
               Find the course that <span className="text-gradient">moves your career</span><span className="text-gold">.</span>
             </h1>
-            <p className="text-hero-muted text-base md:text-lg max-w-xl leading-relaxed">
+            <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
               Cloud, AI, DevOps, Cybersecurity, Web — taught live by engineers actively shipping in tech.
             </p>
           </motion.div>
