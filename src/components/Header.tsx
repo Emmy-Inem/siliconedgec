@@ -36,15 +36,15 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const showLight = !scrolled && isHeroPage;
+  const showLight = false; // Header now always uses white background; logoDark always
 
   return (
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled || !isHeroPage
-          ? "bg-card/95 backdrop-blur-md shadow-sm border-b border-border"
-          : "bg-transparent"
+        scrolled
+          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-border"
+          : "bg-white/70 backdrop-blur-md border-b border-white/60 shadow-[0_1px_8px_-4px_rgba(0,0,0,0.08)]"
       )}
     >
       <div className="container mx-auto flex items-center justify-between gap-4 h-14 px-4">
@@ -62,8 +62,8 @@ export function Header() {
               key={link.href}
               to={link.href}
               className={cn(
-                "text-[13px] font-medium transition-colors hover:text-primary whitespace-nowrap",
-                scrolled || !isHeroPage ? "text-foreground" : "text-hero-muted hover:text-hero"
+                "relative text-sm font-semibold transition-colors hover:text-primary whitespace-nowrap text-foreground/85",
+                location.pathname === link.href && "text-primary after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-[2px] after:bg-primary after:rounded-full"
               )}
             >
               {link.label}
@@ -76,10 +76,7 @@ export function Header() {
           <Link
             to="/cart"
             className={cn(
-              "relative p-2 rounded-md transition-colors",
-              scrolled || !isHeroPage
-                ? "text-foreground hover:text-primary hover:bg-muted"
-                : "text-hero-muted hover:text-hero hover:bg-navy-light"
+              "relative p-2 rounded-md transition-colors text-foreground hover:text-primary hover:bg-muted"
             )}
           >
             <ShoppingCart className="h-[18px] w-[18px]" />
@@ -93,35 +90,23 @@ export function Header() {
           {user ? (
             <>
               {isAdmin && (
-                <Button variant="ghost" size="sm" asChild className={cn(
-                  "h-8 px-2.5 text-[13px]",
-                  scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
-                )}>
+                <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                   <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" asChild className={cn(
-                "h-8 px-2.5 text-[13px]",
-                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
-              )}>
+              <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                 <Link to="/dashboard"><User className="h-3.5 w-3.5 mr-1" /> Dashboard</Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={signOut} className={cn(
-                "h-8 px-2.5 text-[13px]",
-                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
-              )}>
+              <Button variant="ghost" size="sm" onClick={signOut} className="h-8 px-2.5 text-sm font-semibold">
                 <LogOut className="h-3.5 w-3.5" />
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild className={cn(
-                "h-8 px-3 text-[13px]",
-                scrolled || !isHeroPage ? "" : "text-hero-muted hover:text-hero hover:bg-navy-light"
-              )}>
+              <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-sm font-semibold">
                 <Link to="/sign-in">Sign In</Link>
               </Button>
-              <Button size="sm" asChild className="hover-scale h-8 px-3 text-[13px]">
+              <Button size="sm" asChild className="hover-scale h-8 px-3 text-sm font-semibold">
                 <Link to="/sign-up">Get Started</Link>
               </Button>
             </>
@@ -130,10 +115,7 @@ export function Header() {
 
         {/* Mobile/Tablet: cart + menu toggle */}
         <div className="lg:hidden flex items-center gap-2">
-          <Link to="/cart" className={cn(
-            "relative p-2",
-            scrolled || !isHeroPage ? "text-foreground" : "text-hero"
-          )}>
+          <Link to="/cart" className="relative p-2 text-foreground">
             <ShoppingCart className="h-5 w-5" />
             {count > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
@@ -143,9 +125,9 @@ export function Header() {
           </Link>
           <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? (
-              <X className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
+              <X className="h-6 w-6 text-foreground" />
             ) : (
-              <Menu className={cn("h-6 w-6", scrolled || !isHeroPage ? "text-foreground" : "text-hero")} />
+              <Menu className="h-6 w-6 text-foreground" />
             )}
           </button>
         </div>
