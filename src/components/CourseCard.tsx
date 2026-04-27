@@ -5,6 +5,19 @@ import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
+import instructor1 from "@/assets/stock/instructor-1.jpg";
+import instructor2 from "@/assets/stock/instructor-2.jpg";
+import instructor3 from "@/assets/stock/instructor-3.jpg";
+import instructor4 from "@/assets/stock/instructor-4.jpg";
+
+const FALLBACK_AVATARS = [instructor1, instructor2, instructor3, instructor4];
+
+/** Deterministic avatar fallback so every card shows a real face. */
+function pickFallbackAvatar(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return FALLBACK_AVATARS[hash % FALLBACK_AVATARS.length];
+}
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -16,6 +29,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
   function CourseCard({ course, index = 0 }, ref) {
     const isWebinar = (course.price ?? 0) === 0 || course.title.toUpperCase().startsWith("FREE");
     const { format } = useLocalizedPrice();
+    const instructorName = course.instructor?.name && course.instructor.name.toLowerCase() !== "silicon-edge"
+      ? course.instructor.name
+      : "Silicon Edge Mentor";
+    const instructorAvatar = course.instructor?.avatar_url && course.instructor.avatar_url.trim().length > 0
+      ? course.instructor.avatar_url
+      : pickFallbackAvatar(course.instructor?.id ?? course.id);
     return (
       <motion.div
         ref={ref}
