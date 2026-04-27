@@ -21,6 +21,7 @@ import {
   Lock, Award, FileText, MonitorPlay, Infinity, Bookmark, BookmarkCheck,
   CheckCircle2,
 } from "lucide-react";
+import { StarRating } from "@/components/StarRating";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
