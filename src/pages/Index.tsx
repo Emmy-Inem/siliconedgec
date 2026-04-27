@@ -819,6 +819,21 @@ export default function Index() {
             </motion.p>
           </div>
 
+          {/* mobile-only floating tech strip — replaces scattered cards on small screens */}
+          <div className="md:hidden mt-10 -mx-4 overflow-hidden mask-fade-x">
+            <div className="flex w-max gap-3" style={{ animation: "marquee 32s linear infinite" }}>
+              {[...HERO_TECH_LOGOS, ...HERO_TECH_LOGOS].map((l, i) => (
+                <div
+                  key={`${l.name}-${i}`}
+                  className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-primary/10 shadow-[0_8px_20px_-10px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center"
+                  title={l.name}
+                >
+                  <img src={l.src} alt={l.name} loading="lazy" className="max-w-full max-h-full object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+                </div>
+              ))}
+            </div>
+          </div>
+
         </motion.div>
       </section>
 
