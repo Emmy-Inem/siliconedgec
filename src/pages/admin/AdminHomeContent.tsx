@@ -11,7 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { HOME_CONTENT_DEFAULTS } from "@/hooks/useHomeContent";
 
-type Field = { key: string; label: string; type: "input" | "textarea"; help?: string; defaultVal: string };
+type Field = {
+  key: string;
+  label: string;
+  type: "input" | "textarea" | "select";
+  help?: string;
+  defaultVal: string;
+  options?: { value: string; label: string }[];
+};
 
 const SECTIONS: { id: string; title: string; description: string; fields: Field[] }[] = [
   {
@@ -20,6 +27,8 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "Top of the home page — first impression for visitors.",
     fields: [
       { key: "home_hero_eyebrow", label: "Eyebrow text", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.hero_eyebrow },
+      { key: "home_hero_title_pre", label: "Headline — opening line", type: "input", help: 'First line of the big hero headline (was "The edge to").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_pre },
+      { key: "home_hero_title_post", label: "Headline — closing line", type: "input", help: 'Last line under the rotating word (was "your tech career").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_post },
       { key: "home_typewriter_words", label: "Rotating typewriter words", type: "textarea", help: "Comma-separated. Each word types out, pauses, then deletes — replace with whatever skills you teach.", defaultVal: HOME_CONTENT_DEFAULTS.typewriter_words.join(", ") },
       { key: "home_hero_subtitle", label: "Subtitle / tagline", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.hero_subtitle },
       { key: "home_hero_cta_primary", label: "Primary CTA label", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.hero_cta_primary },
@@ -120,6 +129,18 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     fields: [
       { key: "home_testimonials_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.testimonials_eyebrow },
       { key: "home_testimonials_title", label: "Heading", type: "input", help: "Plain text — gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.testimonials_title },
+      {
+        key: "home_testimonial_speed",
+        label: "Scroll speed",
+        type: "select",
+        help: "How fast the testimonial strip glides. Hover always pauses it.",
+        defaultVal: HOME_CONTENT_DEFAULTS.testimonial_speed,
+        options: [
+          { value: "slow", label: "Slow (relaxed)" },
+          { value: "normal", label: "Normal" },
+          { value: "fast", label: "Fast" },
+        ],
+      },
     ],
   },
   {
@@ -235,6 +256,16 @@ export default function AdminHomeContent() {
                       </div>
                       {f.type === "input" ? (
                         <Input value={values[f.key] ?? ""} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} />
+                      ) : f.type === "select" ? (
+                        <select
+                          value={values[f.key] ?? ""}
+                          onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                          className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        >
+                          {(f.options ?? []).map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
                       ) : (
                         <Textarea value={values[f.key] ?? ""} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} rows={3} />
                       )}
