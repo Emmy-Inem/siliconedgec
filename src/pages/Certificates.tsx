@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import logoDark from "@/assets/logo-dark.png";
-import certificateCelebration from "@/assets/certificate-celebration.jpg";
+import certificateCelebration from "@/assets/stock/certificate-holder.jpg";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { SEO } from "@/components/SEO";

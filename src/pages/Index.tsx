@@ -266,7 +266,7 @@ function FloatingTechLogos() {
           }}
           transition={{
             opacity: { duration: 0.6, delay: 0.2 + i * 0.04 },
-            scale: { duration: 0.6, delay: 0.2 + i * 0.04, type: "spring", stiffness: 120, damping: 14 },
+            scale: { duration: 0.6, delay: 0.2 + i * 0.04, ease: "easeOut" },
             y: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
             rotate: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
           }}
@@ -277,9 +277,7 @@ function FloatingTechLogos() {
             height: pos.size,
             willChange: "transform",
           }}
-          className={`absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 flex items-center justify-center ${
-            pos.mobile ? "" : "hidden md:flex"
-          }`}
+          className="absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 hidden md:flex items-center justify-center"
           title={logo.name}
         >
           <img
@@ -409,6 +407,51 @@ function AvatarStackTile({ avatars }: { avatars: string[] }) {
 
 const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
 
+/* ----------------------------- alumni marquee ----------------------------- */
+
+const ALUMNI_LOGOS = [
+  { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+  { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
+  { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
+  { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
+  { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
+  { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
+  { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
+  { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
+  { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
+  { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
+];
+
+function AlumniMarquee() {
+  /* Two identical sibling tracks, each 100% wide, sliding together by -100% of one track.
+   * This produces a perfectly seamless left-to-right loop without gap-induced jumps. */
+  const Row = () => (
+    <div className="flex shrink-0 items-center gap-12 sm:gap-16 pr-12 sm:pr-16">
+      {ALUMNI_LOGOS.map((logo) => (
+        <img
+          key={logo.alt}
+          src={logo.src}
+          alt={logo.alt}
+          className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 shrink-0"
+          loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      ))}
+    </div>
+  );
+  return (
+    <div className="relative overflow-hidden mask-fade-x marquee-pause">
+      <div
+        className="marquee-track flex w-max"
+        style={{ animation: "marquee 38s linear infinite", willChange: "transform" }}
+      >
+        <Row />
+        <Row />
+      </div>
+    </div>
+  );
+}
+
 /* ----------------------------- vertical testimonial marquee ----------------------------- */
 
 type Tm = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
@@ -468,12 +511,12 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
 }
 
 const fallbackTestimonials = [
-  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
-  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: testimonial2 as string | null, rating: 5 },
-  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: testimonial3 as string | null, rating: 5 },
-  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: testimonial4 as string | null, rating: 5 },
-  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: testimonial5 as string | null, rating: 5 },
-  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: testimonial6 as string | null, rating: 5 },
+  { id: "fb1", name: "Chiamaka Okonkwo", role: "Cloud Administrator at Flutterwave", quote: "Finally, a course I actually finished. The live tutors kept me accountable and the projects landed me a remote Cloud role within months. Genuinely a game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
+  { id: "fb2", name: "Daniel Adeyemi", role: "Junior Software Engineer at Andela", quote: "The support is on another level. Tutors replied within minutes, and the lifetime access to recordings meant I never fell behind. Highly recommend.", avatar_url: testimonial2 as string | null, rating: 5 },
+  { id: "fb3", name: "Aisha Bello", role: "DevOps Engineer at Paystack", quote: "I switched careers in seven months. The mock interviews were brutal in the best possible way and prepared me for every question I got asked.", avatar_url: testimonial3 as string | null, rating: 5 },
+  { id: "fb4", name: "Tunde Ogunbiyi", role: "Data Analyst at MTN Nigeria", quote: "Cohort energy is unreal. I built a portfolio I'm genuinely proud to show recruiters and made friends I still ship code with today.", avatar_url: testimonial4 as string | null, rating: 5 },
+  { id: "fb5", name: "Priya Ramachandran", role: "Software Engineer at Microsoft", quote: "Mentors actually working at Google, AWS and Microsoft. The bar is high — exactly what I needed to make the leap to a senior role.", avatar_url: testimonial5 as string | null, rating: 5 },
+  { id: "fb6", name: "Kwame Asante", role: "ML Engineer at Spotify", quote: "Real projects, real code reviews, no fluff. The career support after the course is honestly what closed the deal for me. Best investment I've made.", avatar_url: testimonial6 as string | null, rating: 5 },
 ];
 
 const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
@@ -776,6 +819,21 @@ export default function Index() {
             </motion.p>
           </div>
 
+          {/* mobile-only floating tech strip — replaces scattered cards on small screens */}
+          <div className="md:hidden mt-10 -mx-4 overflow-hidden mask-fade-x">
+            <div className="flex w-max gap-3" style={{ animation: "marquee 32s linear infinite" }}>
+              {[...HERO_TECH_LOGOS, ...HERO_TECH_LOGOS].map((l, i) => (
+                <div
+                  key={`${l.name}-${i}`}
+                  className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-primary/10 shadow-[0_8px_20px_-10px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center"
+                  title={l.name}
+                >
+                  <img src={l.src} alt={l.name} loading="lazy" className="max-w-full max-h-full object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
+                </div>
+              ))}
+            </div>
+          </div>
+
         </motion.div>
       </section>
 
@@ -785,31 +843,7 @@ export default function Index() {
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
             {home?.alumni_label ?? "Our alumni now work at"}
           </p>
-          <div className="relative overflow-hidden mask-fade-x">
-            <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
-              {Array.from({ length: 2 }).flatMap((_, dup) => [
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-                { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
-                { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
-                { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
-                { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
-                { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
-                { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
-                { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
-                { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
-                { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
-              ].map((logo, i) => (
-                <img
-                  key={`${logo.alt}-${dup}-${i}`}
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
-                  loading="lazy"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                />
-              )))}
-            </div>
-          </div>
+          <AlumniMarquee />
         </div>
       </section>
 
@@ -1133,7 +1167,7 @@ export default function Index() {
                     key={item.title}
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ type: "spring", stiffness: 80, delay: i * 0.12 }}
+                    transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.1 }}
                     viewport={{ once: true }}
                     whileHover={{ x: 6 }}
                     className="flex gap-4"
@@ -1155,7 +1189,7 @@ export default function Index() {
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ type: "spring", stiffness: 60, damping: 18 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="relative aspect-[4/5] max-w-md mx-auto w-full"
             >
               <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">

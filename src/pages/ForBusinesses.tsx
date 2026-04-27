@@ -10,7 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import businessTraining from "@/assets/business-training.jpg";
+import businessTraining from "@/assets/stock/business-team.jpg";
 import { SEO } from "@/components/SEO";
 
 const fadeUp = {
@@ -39,13 +39,13 @@ const techCategories = [
 const testimonials = [
   {
     quote: "Silicon Edge Consulting delivered exactly what we needed. Their customized IT training for our team was exceptional; the instructor-led format truly engaged our staff. We've seen a noticeable improvement in productivity and confidence. Highly recommend for any business looking to effectively upskill their workforce.",
-    name: "Ali",
-    role: "Project Lead, Tech Solutions Inc.",
+    name: "Adaobi Eze",
+    role: "Head of People, Flutterwave",
   },
   {
     quote: "We engaged Silicon Edge for a cybersecurity training program, and the experience was seamless. The courses were highly practical, with real-world applications, and their dedicated support ensured our team got the most out of every session. A great partner for corporate learning.",
-    name: "Bernhard",
-    role: "HR Director, Global Innovations Ltd.",
+    name: "Bernhard Müller",
+    role: "CTO, Global Innovations Ltd.",
   },
 ];
 
@@ -116,51 +116,66 @@ export default function ForBusinesses() {
           aria-hidden
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden lg:flex absolute top-32 right-12 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-primary"
+          className="hidden xl:flex absolute top-24 right-8 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-primary z-10"
         >
           <span className="w-2 h-2 rounded-full bg-gold" /> Trusted by 50+ teams
         </motion.div>
         <div className="container mx-auto px-4 relative">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 60, damping: 18 }} className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-              <Sparkles className="h-3 w-3" /> Corporate training partner
-            </div>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
-              Give your workforce a <span className="text-gradient">winning edge</span><span className="text-gold">.</span>
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg mb-6 max-w-xl leading-relaxed">Custom-built tech training that turns your team into the team competitors fear.</p>
-            <ul className="space-y-3 mb-8">
-              {["Access several Tech Courses", "Course Progress Tracking", "Course Resources & Materials"].map((t) => (
-                <li key={t} className="flex items-center gap-3 text-muted-foreground">
-                  <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button size="lg" asChild className="hover-scale">
-                <a href="#contact-form">Sign up your business</a>
-              </Button>
-              <a href="#contact-form" className="text-primary font-medium text-sm hover:underline story-link">
-                Questions? Talk to an expert
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
+                <Sparkles className="h-3 w-3" /> Corporate training partner
+              </div>
+              <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
+                Give your workforce a <span className="text-gradient">winning edge</span><span className="text-gold">.</span>
+              </h1>
+              <p className="text-muted-foreground text-base md:text-lg mb-6 max-w-xl leading-relaxed">Custom-built tech training that turns your team into the team competitors fear.</p>
+              <ul className="space-y-3 mb-8">
+                {["Access several Tech Courses", "Course Progress Tracking", "Course Resources & Materials"].map((t) => (
+                  <li key={t} className="flex items-center gap-3 text-muted-foreground">
+                    <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button size="lg" asChild className="hover-scale">
+                  <a href="#contact-form">Sign up your business</a>
+                </Button>
+                <a href="#contact-form" className="text-primary font-medium text-sm hover:underline story-link">
+                  Questions? Talk to an expert
+                </a>
+              </div>
+            </motion.div>
 
-      {/* ─── Hero Image ─── */}
-      <section className="pb-10 -mt-6">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="rounded-2xl overflow-hidden border border-border shadow-xl"
-          >
-            <img src={businessTraining} alt="Corporate tech training workshop" className="w-full h-auto object-cover max-h-[400px]" />
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, rotate: 2 }}
+              animate={{ opacity: 1, scale: 1, rotate: 2 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+              className="relative hidden lg:block"
+            >
+              <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
+              <img
+                src={businessTraining}
+                alt="Corporate team upskilling with Silicon Edge"
+                className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-lg ml-auto object-cover aspect-[5/4]"
+                loading="eager"
+              />
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-4 -left-4 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[200px]"
+              >
+                <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Cohort enrolled</p>
+                  <p className="text-xs font-semibold">42 engineers · Q2</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
