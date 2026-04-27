@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { motion } from "framer-motion";
 import { Upload, Loader2, FileText } from "lucide-react";
 
@@ -24,6 +24,7 @@ export default function JobDetail() {
   const [uploading, setUploading] = useState(false);
   const [resumeName, setResumeName] = useState<string>("");
   const [form, setForm] = useState({ full_name: "", email: user?.email || "", phone: "", cover_letter: "", resume_url: "" });
+  const { format: formatPrice } = useLocalizedPrice();
 
   const handleResumeUpload = async (file: File) => {
     if (!user) {
@@ -111,9 +112,9 @@ export default function JobDetail() {
                 </div>
                 {(job.salary_min || job.salary_max) && (
                   <p className="text-lg font-heading font-semibold mt-3 text-gold">
-                    {job.salary_min ? formatNaira(Number(job.salary_min)) : ""}
+                    {job.salary_min ? formatPrice(Number(job.salary_min)) : ""}
                     {job.salary_min && job.salary_max ? " – " : ""}
-                    {job.salary_max ? formatNaira(Number(job.salary_max)) : ""}
+                    {job.salary_max ? formatPrice(Number(job.salary_max)) : ""}
                   </p>
                 )}
               </div>

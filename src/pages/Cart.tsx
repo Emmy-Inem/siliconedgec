@@ -12,6 +12,7 @@ import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag } from "lucide-re
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
@@ -20,6 +21,7 @@ export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
   const { user } = useAuth();
   const { data: publicAccess } = usePublicAccessMode();
+  const { format: formatPrice, isNgn } = useLocalizedPrice();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
@@ -189,7 +191,7 @@ export default function Cart() {
                         {item.course?.instructor?.name ?? "Instructor"}
                       </p>
                       <p className="font-heading font-bold text-primary mt-2 text-sm">
-                        {formatNaira(item.course?.price ?? 0)}
+                        {formatPrice(item.course?.price ?? 0)}
                       </p>
                     </div>
                     <button
@@ -209,14 +211,17 @@ export default function Cart() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal ({count} course{count !== 1 ? "s" : ""})</span>
-                      <span>{formatNaira(total)}</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-heading font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-primary">{formatNaira(total)}</span>
+                    <span className="text-primary">{formatPrice(total)}</span>
                   </div>
+                  {!isNgn && total > 0 && (
+                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(total)} (NGN) at checkout.</p>
+                  )}
                   <Button
                     size="lg"
                     className="w-full gap-2"

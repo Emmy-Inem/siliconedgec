@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Star, Clock, Users, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -14,6 +14,7 @@ const difficultyColor: Record<string, string> = {
 export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
   function CourseCard({ course, index = 0 }, ref) {
     const isWebinar = (course.price ?? 0) === 0 || course.title.toUpperCase().startsWith("FREE");
+    const { format } = useLocalizedPrice();
     return (
       <motion.div
         ref={ref}
@@ -100,7 +101,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 {isWebinar ? (
                   <span className="text-primary">Free · Register</span>
                 ) : (
-                  formatNaira(course.price)
+                  format(course.price)
                 )}
               </span>
             </div>

@@ -6,13 +6,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Briefcase, MapPin, Clock, Search, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const { data: jobs = [], isLoading } = useJobs({ search, type, remote: remoteOnly });
+  const { format: formatPrice } = useLocalizedPrice();
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,9 +100,9 @@ export default function Jobs() {
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {job.job_type}</span>
                       {(job.salary_min || job.salary_max) && (
                         <span className="text-foreground font-medium">
-                          {job.salary_min ? formatNaira(Number(job.salary_min)) : ""}
+                          {job.salary_min ? formatPrice(Number(job.salary_min)) : ""}
                           {job.salary_min && job.salary_max ? " – " : ""}
-                          {job.salary_max ? formatNaira(Number(job.salary_max)) : ""}
+                          {job.salary_max ? formatPrice(Number(job.salary_max)) : ""}
                         </span>
                       )}
                     </div>

@@ -10,12 +10,14 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { useHomeContent } from "@/hooks/useHomeContent";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import instructor1 from "@/assets/instructor-1.jpg";
-import instructor2 from "@/assets/instructor-2.jpg";
-import instructor3 from "@/assets/instructor-3.jpg";
-import instructor4 from "@/assets/instructor-4.jpg";
+import instructor1 from "@/assets/stock/instructor-1.jpg";
+import instructor2 from "@/assets/stock/instructor-2.jpg";
+import instructor3 from "@/assets/stock/instructor-3.jpg";
+import instructor4 from "@/assets/stock/instructor-4.jpg";
+import mentorStock from "@/assets/stock/mentor.jpg";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
@@ -213,34 +215,22 @@ const HERO_TECH_LOGOS: TechLogo[] = [
 function FloatingTechLogos() {
   const reduce = useReducedMotion();
 
-  // top%, left%, size (rem), float duration (s), delay (s), rot (deg)
+  // Edge-hugging positions that keep the headline area clear.
+  // `mobile` flag controls whether logo shows on small screens.
   const positions = [
-    { top: "6%",  left: "4%",  size: 3.6, dur: 9,  delay: 0,   rot: -8 },
-    { top: "14%", left: "18%", size: 2.8, dur: 11, delay: 0.4, rot: 6 },
-    { top: "4%",  left: "46%", size: 3.0, dur: 8,  delay: 0.2, rot: 0 },
-    { top: "10%", left: "74%", size: 2.8, dur: 10, delay: 0.6, rot: 5 },
-    { top: "5%",  left: "92%", size: 3.6, dur: 12, delay: 0.1, rot: -6 },
-    { top: "46%", left: "3%",  size: 3.8, dur: 13, delay: 0.3, rot: 4 },
-    { top: "64%", left: "12%", size: 2.8, dur: 9,  delay: 0.5, rot: -4 },
-    { top: "50%", left: "94%", size: 3.6, dur: 11, delay: 0.2, rot: 7 },
-    { top: "70%", left: "84%", size: 3.0, dur: 10, delay: 0.4, rot: -5 },
-    { top: "88%", left: "20%", size: 3.0, dur: 12, delay: 0.7, rot: 3 },
-    { top: "92%", left: "56%", size: 2.8, dur: 9,  delay: 0.1, rot: -7 },
-    { top: "84%", left: "76%", size: 3.4, dur: 11, delay: 0.5, rot: 6 },
+    { top: "8%",  left: "6%",  size: 3.4, dur: 9,  delay: 0,   rot: -6, mobile: true  },
+    { top: "18%", left: "92%", size: 3.4, dur: 12, delay: 0.1, rot: 6,  mobile: true  },
+    { top: "52%", left: "4%",  size: 3.6, dur: 13, delay: 0.3, rot: 4,  mobile: true  },
+    { top: "60%", left: "94%", size: 3.4, dur: 11, delay: 0.2, rot: -5, mobile: true  },
+    { top: "12%", left: "24%", size: 2.6, dur: 11, delay: 0.4, rot: 6,  mobile: false },
+    { top: "10%", left: "76%", size: 2.6, dur: 10, delay: 0.6, rot: -4, mobile: false },
+    { top: "84%", left: "16%", size: 2.8, dur: 12, delay: 0.7, rot: 3,  mobile: false },
+    { top: "88%", left: "82%", size: 3.0, dur: 11, delay: 0.5, rot: 6,  mobile: false },
+    { top: "78%", left: "48%", size: 2.6, dur: 9,  delay: 0.1, rot: -7, mobile: false },
   ];
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden hidden md:block" aria-hidden="true">
-      {/* Subtle dotted lines radiating from center, like the reference */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {[
-          "M50 50 L8 8", "M50 50 L92 8", "M50 50 L4 50", "M50 50 L96 50",
-          "M50 50 L8 92", "M50 50 L92 92", "M50 50 L50 4", "M50 50 L50 96",
-        ].map((d, i) => (
-          <path key={i} d={d} stroke="hsl(var(--primary) / 0.25)" strokeWidth="0.15" strokeDasharray="0.5 0.7" fill="none" />
-        ))}
-      </svg>
-
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       {HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => {
         const p = positions[i];
         return (
@@ -249,13 +239,13 @@ function FloatingTechLogos() {
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 + i * 0.06, type: "spring", stiffness: 80, damping: 14 }}
-            className="absolute"
+            className={`absolute ${p.mobile ? "" : "hidden md:block"}`}
             style={{ top: p.top, left: p.left, transform: "translate(-50%, -50%)" }}
           >
             <motion.div
               animate={reduce ? {} : { y: [0, -10, 0], rotate: [p.rot, p.rot + 3, p.rot] }}
               transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.35)] p-2 flex items-center justify-center"
+              className="rounded-2xl bg-white border border-border/60 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] p-2 flex items-center justify-center"
               style={{ width: `${p.size}rem`, height: `${p.size}rem` }}
             >
               <img
@@ -619,15 +609,13 @@ export default function Index() {
 
       {/* ───────────────── HERO (light, premium) ───────────────── */}
       <section ref={heroRef} className="relative overflow-hidden bg-white">
-        {/* soft purple hue background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.10),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.08),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--primary)/0.04)_0%,transparent_40%,transparent_60%,hsl(var(--primary)/0.05)_100%)]" />
+        {/* soft purple hue background — top-only, very subtle */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
         {/* faint dot grid */}
         <div
-          className="absolute inset-0 opacity-[0.35]"
+          className="absolute inset-0 opacity-[0.25]"
           style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
@@ -639,7 +627,7 @@ export default function Index() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative"
+          className="container mx-auto px-4 pt-24 pb-14 md:pt-36 md:pb-28 relative"
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
@@ -652,21 +640,19 @@ export default function Index() {
               <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
             </motion.div>
 
-            {/* center brand mark — like the reference */}
+            {/* center brand mark — favicon */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 90, damping: 14 }}
               className="mx-auto mb-6 w-14 h-14 rounded-2xl bg-white border border-primary/15 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.4)] flex items-center justify-center"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="font-heading font-bold text-primary-foreground text-sm">SE</span>
-              </div>
+              <img src="/favicon.png" alt="Silicon Edge Consulting" className="w-9 h-9 object-contain" />
             </motion.div>
 
             <h1
               className="font-heading font-bold text-foreground leading-[1.02] tracking-tight mb-5 text-balance"
-              style={{ fontSize: "clamp(2.25rem, 6.4vw, 4.75rem)" }}
+              style={{ fontSize: "clamp(1.85rem, 7.5vw, 4.75rem)" }}
             >
               <motion.span
                 initial={{ opacity: 0, y: 24 }}
@@ -945,12 +931,12 @@ export default function Index() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`relative px-2 pb-2 text-sm font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {isActive && (
-                    <motion.span layoutId="cat-pill" className="absolute inset-0 rounded-full bg-primary shadow-lg shadow-primary/25" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
                   )}
-                  <span className={`relative ${!isActive ? "px-0" : ""}`}>{cat}</span>
+                  <span className="relative">{cat}</span>
                 </button>
               );
             })}
@@ -1050,7 +1036,7 @@ export default function Index() {
                 )}
               </h2>
             </div>
-            <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></Link>
+            <a href={communityUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></a>
           </motion.div>
 
           <motion.div
