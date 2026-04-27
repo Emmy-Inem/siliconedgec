@@ -428,71 +428,169 @@ function BrandedCertificate({
   studentName: string; courseName: string; date: string; certId: string; instructorName?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white">
-      <div className="absolute inset-0 rounded-2xl border-[3px]" style={{ borderColor: "hsl(var(--gold))" }} />
+    <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
+      {/* Outer double border — gold + thin navy inner */}
+      <div className="absolute inset-3 rounded-xl border-[2px] pointer-events-none" style={{ borderColor: "hsl(var(--gold))" }} />
+      <div className="absolute inset-[18px] rounded-lg border pointer-events-none" style={{ borderColor: "hsl(var(--navy) / 0.25)" }} />
 
-      {/* Purple branded corners */}
-      {["top-0 left-0 -top-10 -left-10", "top-0 right-0 -top-10 -right-10", "bottom-0 left-0 -bottom-10 -left-10", "bottom-0 right-0 -bottom-10 -right-10"].map((pos, i) => {
-        const [outer1, outer2, inner1, inner2] = pos.split(" ");
-        return (
-          <div key={i} className={`absolute ${outer1} ${outer2} w-20 h-20 overflow-hidden`}>
-            <div className={`absolute ${inner1} ${inner2} w-28 h-28 rotate-45`} style={{ background: "hsl(var(--primary))" }} />
-          </div>
-        );
-      })}
-
+      {/* Subtle guilloche / engraving pattern */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.045] pointer-events-none"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%237c3aed' stroke-width='1'/%3E%3C/svg%3E")`,
-          backgroundSize: "60px 52px",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='40' cy='40' r='32' fill='none' stroke='%231a1a2e' stroke-width='0.6'/%3E%3Ccircle cx='40' cy='40' r='24' fill='none' stroke='%231a1a2e' stroke-width='0.4'/%3E%3Ccircle cx='40' cy='40' r='16' fill='none' stroke='%231a1a2e' stroke-width='0.3'/%3E%3C/svg%3E")`,
+          backgroundSize: "80px 80px",
         }}
       />
 
-      <div className="relative p-8 md:p-14 text-center">
-        <div className="w-32 h-1 rounded-full mb-8 mx-auto" style={{ background: "hsl(var(--gold))" }} />
-        <div className="flex justify-center mb-6">
-          <img src={logoDark} alt="Silicon Edge Consulting" className="h-12" />
+      {/* Soft gold corner flourishes (top-left & bottom-right) */}
+      <svg className="absolute top-3 left-3 w-16 h-16 pointer-events-none" viewBox="0 0 64 64" fill="none">
+        <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
+        <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
+        <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
+        <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+      </svg>
+      <svg className="absolute bottom-3 right-3 w-16 h-16 pointer-events-none rotate-180" viewBox="0 0 64 64" fill="none">
+        <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
+        <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
+        <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
+        <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+      </svg>
+
+      {/* Watermark seal in background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
+        <div className="w-72 h-72 rounded-full border-[12px]" style={{ borderColor: "hsl(var(--navy))" }} />
+      </div>
+
+      <div className="relative px-8 md:px-16 py-8 md:py-10 text-center h-full flex flex-col">
+        {/* Header — logo */}
+        <div className="flex justify-center mb-3">
+          <img src={logoDark} alt="Silicon Edge Consulting" className="h-9 md:h-10" />
         </div>
-        <div className="inline-block px-6 py-2 mb-8 border-2 rounded" style={{ borderColor: "hsl(var(--gold))", background: "hsl(45 100% 51% / 0.1)" }}>
-          <p className="text-xs uppercase tracking-[0.35em] font-heading font-bold" style={{ color: "hsl(var(--navy))" }}>
+        <p className="text-[10px] md:text-[11px] uppercase tracking-[0.4em] font-semibold mb-5" style={{ color: "hsl(var(--navy) / 0.55)" }}>
+          Silicon Edge Consulting · Tech Academy
+        </p>
+
+        {/* Title with flanking ornaments */}
+        <div className="flex items-center justify-center gap-4 mb-1">
+          <span className="h-px w-10 md:w-16" style={{ background: "hsl(var(--gold))" }} />
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.45em] font-bold" style={{ color: "hsl(var(--gold))" }}>
             Certificate of Completion
           </p>
+          <span className="h-px w-10 md:w-16" style={{ background: "hsl(var(--gold))" }} />
         </div>
-        <p className="text-sm mb-3" style={{ color: "#6b7280" }}>This is to certify that</p>
-        <p className="font-heading font-bold text-3xl md:text-4xl mb-4" style={{ color: "hsl(var(--primary))" }}>{studentName}</p>
-        <p className="text-sm mb-3" style={{ color: "#6b7280" }}>has successfully completed</p>
-        <p className="font-heading font-bold text-xl md:text-2xl mb-8" style={{ color: "hsl(var(--navy))" }}>{courseName}</p>
-        <div className="flex items-center justify-center gap-6 mb-8">
-          <div className="flex items-center gap-2 text-sm" style={{ color: "#6b7280" }}>
-            <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
+
+        <p className="text-xs md:text-sm italic mb-2 mt-4" style={{ color: "#6b7280" }}>This is to proudly certify that</p>
+        <p
+          className="font-bold text-3xl md:text-5xl mb-2 leading-tight"
+          style={{
+            color: "hsl(var(--navy))",
+            fontFamily: "'Playfair Display', Georgia, serif",
+            letterSpacing: "0.01em",
+          }}
+        >
+          {studentName}
+        </p>
+        <div className="mx-auto h-px w-40 md:w-64 mb-4" style={{ background: "hsl(var(--navy) / 0.2)" }} />
+
+        <p className="text-xs md:text-sm mb-2" style={{ color: "#6b7280" }}>
+          has successfully completed the live, instructor-led program
+        </p>
+        <p className="font-heading font-semibold text-lg md:text-2xl mb-5" style={{ color: "hsl(var(--primary))" }}>
+          {courseName}
+        </p>
+
+        <div className="flex items-center justify-center gap-5 md:gap-8 text-[11px] md:text-xs mb-auto" style={{ color: "#6b7280" }}>
+          <span className="inline-flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
             All modules completed
-          </div>
-          <div className="flex items-center gap-2 text-sm" style={{ color: "#6b7280" }}>
-            <Shield className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Shield className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
             Digitally verified
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Award className="h-3.5 w-3.5" style={{ color: "hsl(var(--gold))" }} />
+            Hands-on capstone graded
+          </span>
+        </div>
+
+        {/* Footer — signatures + seal */}
+        <div className="grid grid-cols-3 gap-4 mt-6 items-end">
+          <div className="text-center">
+            <p
+              className="text-xl md:text-2xl mb-1"
+              style={{
+                color: "hsl(var(--navy))",
+                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                transform: "rotate(-2deg)",
+                display: "inline-block",
+              }}
+            >
+              {instructorName ?? "Dr. A. Osei"}
+            </p>
+            <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+              Lead Instructor
+            </p>
+          </div>
+
+          {/* Center seal */}
+          <div className="flex justify-center">
+            <div
+              className="relative w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center"
+              style={{
+                background: "radial-gradient(circle at 30% 30%, hsl(45 100% 65%), hsl(45 90% 45%) 60%, hsl(45 80% 35%))",
+                boxShadow: "0 6px 16px -4px hsl(var(--gold) / 0.6), inset 0 0 0 2px hsl(var(--gold) / 0.4)",
+              }}
+            >
+              <div
+                className="absolute inset-1 rounded-full border-2"
+                style={{ borderColor: "hsl(var(--navy) / 0.35)", borderStyle: "dashed" }}
+              />
+              <div className="text-center" style={{ color: "hsl(var(--navy))" }}>
+                <Award className="h-5 w-5 md:h-6 md:w-6 mx-auto" strokeWidth={2.4} />
+                <p className="text-[7px] md:text-[8px] font-bold tracking-widest leading-none mt-0.5">VERIFIED</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p
+              className="text-xl md:text-2xl mb-1"
+              style={{
+                color: "hsl(var(--navy))",
+                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                transform: "rotate(-1deg)",
+                display: "inline-block",
+              }}
+            >
+              E. Adeyemi
+            </p>
+            <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+              Director, Academy
+            </p>
           </div>
         </div>
-        <div className="w-full h-px mb-6" style={{ background: "hsl(var(--gold))" }} />
-        <div className="grid grid-cols-3 gap-4 text-left rounded-lg p-4" style={{ background: "hsl(var(--navy))" }}>
+
+        {/* Bottom meta strip */}
+        <div
+          className="mt-6 grid grid-cols-3 gap-3 rounded-md text-left px-4 py-2.5"
+          style={{ background: "hsl(var(--navy))" }}
+        >
           <div>
-            <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Date Issued</p>
-            <p className="text-sm font-heading font-semibold text-white">{date}</p>
+            <p className="text-[8px] md:text-[9px] uppercase tracking-widest font-medium" style={{ color: "hsl(var(--gold))" }}>Issued</p>
+            <p className="text-[11px] md:text-xs font-semibold text-white">{date}</p>
           </div>
           <div className="text-center">
-            {instructorName && (
-              <>
-                <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Instructor</p>
-                <p className="text-sm font-heading font-semibold text-white">{instructorName}</p>
-              </>
-            )}
+            <p className="text-[8px] md:text-[9px] uppercase tracking-widest font-medium" style={{ color: "hsl(var(--gold))" }}>Verify at</p>
+            <p className="text-[11px] md:text-xs font-semibold text-white">siliconedgec.com/verify</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: "hsl(var(--gold))" }}>Certificate ID</p>
-            <p className="text-sm font-heading font-semibold font-mono text-white">{certId}</p>
+            <p className="text-[8px] md:text-[9px] uppercase tracking-widest font-medium" style={{ color: "hsl(var(--gold))" }}>Certificate ID</p>
+            <p className="text-[11px] md:text-xs font-mono font-semibold text-white">{certId}</p>
           </div>
         </div>
-        <p className="mt-6 text-[10px] tracking-wider" style={{ color: "#9ca3af" }}>www.siliconedgec.com</p>
       </div>
     </div>
   );
