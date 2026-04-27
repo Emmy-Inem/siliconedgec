@@ -440,51 +440,71 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 /* ----------------------------- alumni marquee ----------------------------- */
 
-const ALUMNI_BRANDS: { name: string; src: string }[] = [
-  { name: "Google",      src: "https://cdn.simpleicons.org/google" },
-  { name: "Microsoft",   src: "https://cdn.simpleicons.org/microsoft" },
-  { name: "Amazon",      src: "https://cdn.simpleicons.org/amazon" },
-  { name: "Meta",        src: "https://cdn.simpleicons.org/meta" },
-  { name: "Apple",       src: "https://cdn.simpleicons.org/apple" },
-  { name: "Oracle",      src: "https://cdn.simpleicons.org/oracle" },
-  { name: "IBM",         src: "https://cdn.simpleicons.org/ibm" },
-  { name: "Cisco",       src: "https://cdn.simpleicons.org/cisco" },
-  { name: "Intel",       src: "https://cdn.simpleicons.org/intel" },
-  { name: "Nvidia",      src: "https://cdn.simpleicons.org/nvidia" },
-  { name: "Salesforce",  src: "https://cdn.simpleicons.org/salesforce" },
-  { name: "Adobe",       src: "https://cdn.simpleicons.org/adobe" },
-  { name: "GitHub",      src: "https://cdn.simpleicons.org/github" },
-  { name: "Atlassian",   src: "https://cdn.simpleicons.org/atlassian" },
-  { name: "Stripe",      src: "https://cdn.simpleicons.org/stripe" },
-  { name: "Shopify",     src: "https://cdn.simpleicons.org/shopify" },
+// Use Simple Icons with explicit slug + black hex so every logo renders as a
+// uniform solid-black mark on a white/grayscale background (no missing assets,
+// no inconsistent sizes, no white-on-white blanks).
+const ALUMNI_BRANDS: { name: string; slug: string }[] = [
+  { name: "Google",     slug: "google" },
+  { name: "Microsoft",  slug: "microsoft" },
+  { name: "Amazon",     slug: "amazonwebservices" },
+  { name: "Meta",       slug: "meta" },
+  { name: "Apple",      slug: "apple" },
+  { name: "Oracle",     slug: "oracle" },
+  { name: "IBM",        slug: "ibm" },
+  { name: "Cisco",      slug: "cisco" },
+  { name: "Intel",      slug: "intel" },
+  { name: "Nvidia",     slug: "nvidia" },
+  { name: "Salesforce", slug: "salesforce" },
+  { name: "Adobe",      slug: "adobe" },
+  { name: "GitHub",     slug: "github" },
+  { name: "Atlassian",  slug: "atlassian" },
+  { name: "Stripe",     slug: "stripe" },
+  { name: "Shopify",    slug: "shopify" },
+  { name: "Netflix",    slug: "netflix" },
+  { name: "Spotify",    slug: "spotify" },
 ];
 
 function AlumniMarquee() {
   return (
     <div className="relative overflow-hidden" aria-label="Our alumni work at leading global companies">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
 
       <div
-        className="marquee-track flex w-max items-center py-4"
-        style={{ animation: "marquee 38s linear infinite" }}
+        className="flex w-max items-center py-5 will-change-transform"
+        style={{ animation: "marquee 42s linear infinite" }}
       >
         {[0, 1].map((copy) => (
-          <div key={copy} className="flex shrink-0 items-center gap-8 sm:gap-10 pr-8 sm:pr-10">
+          <div key={copy} className="flex shrink-0 items-center gap-10 sm:gap-14 pr-10 sm:pr-14">
             {ALUMNI_BRANDS.map((brand) => (
-              <div
+              <a
                 key={`${brand.name}-${copy}`}
-                className="group flex h-7 sm:h-8 shrink-0 items-center justify-center"
+                href="#"
+                onClick={(e) => e.preventDefault()}
                 title={brand.name}
+                aria-label={brand.name}
+                className="group relative flex h-8 sm:h-9 w-[110px] sm:w-[130px] shrink-0 items-center justify-center"
               >
+                {/* Black/grayscale base */}
                 <img
-                  src={brand.src}
+                  src={`https://cdn.simpleicons.org/${brand.slug}/111111`}
                   alt={brand.name}
                   loading="lazy"
-                  className="h-full w-auto object-contain grayscale opacity-60 transition-all duration-300 ease-out group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  width={120}
+                  height={36}
+                  className="max-h-full max-w-full object-contain opacity-60 transition-opacity duration-300 ease-out group-hover:opacity-0"
                 />
-              </div>
+                {/* Full color overlay revealed on hover */}
+                <img
+                  src={`https://cdn.simpleicons.org/${brand.slug}`}
+                  alt=""
+                  aria-hidden
+                  loading="lazy"
+                  width={120}
+                  height={36}
+                  className="absolute inset-0 m-auto max-h-full max-w-full object-contain opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+                />
+              </a>
             ))}
           </div>
         ))}
@@ -1136,7 +1156,7 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
+              <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
                 {home?.instructors_title ? (
                   <span className="text-gradient">{home.instructors_title}</span>
