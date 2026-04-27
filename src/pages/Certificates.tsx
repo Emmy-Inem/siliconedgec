@@ -126,6 +126,27 @@ export default function Certificates() {
       {/* How it works */}
       <section className="py-16">
         <div className="container mx-auto px-4">
+          {/* Premium stats strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 max-w-5xl mx-auto mb-16"
+          >
+            {[
+              { v: "100%", l: "Verifiable" },
+              { v: "QR", l: "Coded ID" },
+              { v: "PDF", l: "Instant download" },
+              { v: "1-click", l: "LinkedIn share" },
+            ].map((s) => (
+              <div key={s.l} className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 text-center">
+                <div className="font-heading text-2xl font-bold text-gradient">{s.v}</div>
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground mt-1">{s.l}</div>
+              </div>
+            ))}
+          </motion.div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {[
               { icon: GraduationCap, title: "Complete a Course", desc: "Finish all modules and pass the final assessment to earn your certificate." },
@@ -138,15 +159,13 @@ export default function Certificates() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-card rounded-xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-lg transition-all group"
+                className="relative bg-card rounded-2xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all group overflow-hidden"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors"
-                >
-                  <item.icon className="h-7 w-7 text-primary" />
-                </motion.div>
+                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary/5 blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors" />
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/30 flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-transform">
+                  <item.icon className="h-7 w-7 text-primary-foreground" />
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-gold ring-2 ring-background" />
+                </div>
                 <h3 className="font-heading font-semibold text-lg mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
