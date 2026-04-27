@@ -25,18 +25,15 @@ const HERO_TRACKS = [
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
   return (
     <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
-      {/* Layered backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.10),transparent_55%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--gold)/0.08),transparent_55%)]" />
-      <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
-      <div className="absolute -bottom-32 -right-24 w-[24rem] h-[24rem] rounded-full opacity-15 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
+      {/* Subtle, premium backdrop — soft top-left primary wash + tiny dot grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.06),transparent_60%)]" />
       <div
-        className="absolute inset-0 opacity-[0.18]"
+        className="absolute inset-0 opacity-[0.12]"
         style={{
-          backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-          maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+          backgroundImage: "radial-gradient(hsl(var(--primary) / 0.5) 1px, transparent 1px)",
+          backgroundSize: "26px 26px",
+          maskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
         }}
       />
 
@@ -103,7 +100,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
           {/* Right — floating track tiles */}
           <div className="lg:col-span-6 relative hidden md:block">
-            <div className="absolute -inset-8 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-[2.75rem] blur-3xl" />
+            <div aria-hidden className="absolute -inset-6 bg-gradient-to-br from-primary/8 via-transparent to-gold/8 rounded-[2.75rem] blur-2xl" />
 
             {/* Frame */}
             <motion.div
