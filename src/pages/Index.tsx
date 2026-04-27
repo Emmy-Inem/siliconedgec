@@ -211,54 +211,43 @@ const HERO_TECH_LOGOS: TechLogo[] = [
   { name: "TypeScript",   tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
 ];
 
-/** Scattered, gently-floating tech logo cards that surround the hero headline. */
+/** Two continuously-drifting rows of premium tech logo cards behind the hero. */
 function FloatingTechLogos() {
-  const reduce = useReducedMotion();
+  const rowA = HERO_TECH_LOGOS;
+  const rowB = [...HERO_TECH_LOGOS].reverse();
 
-  // Edge-hugging positions that keep the headline area clear.
-  // `mobile` flag controls whether logo shows on small screens.
-  const positions = [
-    { top: "8%",  left: "6%",  size: 3.4, dur: 9,  delay: 0,   rot: -6, mobile: true  },
-    { top: "18%", left: "92%", size: 3.4, dur: 12, delay: 0.1, rot: 6,  mobile: true  },
-    { top: "52%", left: "4%",  size: 3.6, dur: 13, delay: 0.3, rot: 4,  mobile: true  },
-    { top: "60%", left: "94%", size: 3.4, dur: 11, delay: 0.2, rot: -5, mobile: true  },
-    { top: "12%", left: "24%", size: 2.6, dur: 11, delay: 0.4, rot: 6,  mobile: false },
-    { top: "10%", left: "76%", size: 2.6, dur: 10, delay: 0.6, rot: -4, mobile: false },
-    { top: "84%", left: "16%", size: 2.8, dur: 12, delay: 0.7, rot: 3,  mobile: false },
-    { top: "88%", left: "82%", size: 3.0, dur: 11, delay: 0.5, rot: 6,  mobile: false },
-    { top: "78%", left: "48%", size: 2.6, dur: 9,  delay: 0.1, rot: -7, mobile: false },
-  ];
+  const Card = ({ logo }: { logo: typeof HERO_TECH_LOGOS[number] }) => (
+    <div
+      className="shrink-0 rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14"
+      title={logo.name}
+    >
+      <img
+        src={logo.src}
+        alt={logo.name}
+        loading="lazy"
+        className="max-w-full max-h-full object-contain"
+        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+      />
+    </div>
+  );
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => {
-        const p = positions[i];
-        return (
-          <motion.div
-            key={logo.name}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + i * 0.06, type: "spring", stiffness: 80, damping: 14 }}
-            className={`absolute ${p.mobile ? "" : "hidden md:block"}`}
-            style={{ top: p.top, left: p.left, transform: "translate(-50%, -50%)" }}
-          >
-            <motion.div
-              animate={reduce ? {} : { y: [0, -10, 0], rotate: [p.rot, p.rot + 3, p.rot] }}
-              transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-2xl bg-white border border-border/60 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)] p-2 flex items-center justify-center"
-              style={{ width: `${p.size}rem`, height: `${p.size}rem` }}
-            >
-              <img
-                src={logo.src}
-                alt={logo.name}
-                loading="lazy"
-                className="max-w-full max-h-full object-contain"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }}
-              />
-            </motion.div>
-          </motion.div>
-        );
-      })}
+      {/* Top drifting row */}
+      <div className="absolute top-[8%] left-0 right-0 mask-fade-x">
+        <div className="flex gap-5 sm:gap-7 animate-marquee" style={{ width: "max-content", animationDuration: "55s" }}>
+          {[...rowA, ...rowA, ...rowA].map((l, i) => <Card key={`a-${i}`} logo={l} />)}
+        </div>
+      </div>
+      {/* Bottom drifting row (reverse direction via right-to-left translate) */}
+      <div className="absolute bottom-[8%] left-0 right-0 mask-fade-x hidden sm:block">
+        <div
+          className="flex gap-5 sm:gap-7 animate-marquee"
+          style={{ width: "max-content", animationDuration: "70s", animationDirection: "reverse" }}
+        >
+          {[...rowB, ...rowB, ...rowB].map((l, i) => <Card key={`b-${i}`} logo={l} />)}
+        </div>
+      </div>
     </div>
   );
 }
@@ -762,13 +751,15 @@ export default function Index() {
             <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
               {Array.from({ length: 2 }).flatMap((_, dup) => [
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+                { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
+                { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
+                { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
+                { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
+                { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
+                { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
+                { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
+                { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
+                { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
               ].map((logo, i) => (
                 <img
                   key={`${logo.alt}-${dup}-${i}`}
@@ -776,6 +767,7 @@ export default function Index() {
                   alt={logo.alt}
                   className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
                   loading="lazy"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
               )))}
             </div>
