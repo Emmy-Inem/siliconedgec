@@ -1262,7 +1262,7 @@ export default function Index() {
                 className="absolute bottom-6 -left-4 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[200px]"
               >
                 <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center">
-                  <Briefcase className="h-4 w-4 text-primary" />
+                  <BriefcaseBusiness className="h-4 w-4 text-primary" />
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Just now</p>
@@ -1308,7 +1308,7 @@ export default function Index() {
           >
             {[
               { icon: BadgeCheck, label: "Verified Certificates" },
-              { icon: Shield, label: "7-Day Money-Back" },
+              { icon: ShieldCheck, label: "7-Day Money-Back" },
               { icon: GraduationCap, label: "Industry Mentors" },
               { icon: PlayCircle, label: "Live + Recorded" },
               { icon: Lock, label: "Secure Payments" },
