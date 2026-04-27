@@ -886,24 +886,26 @@ export default function Index() {
             </motion.div>
 
             {/* Small — lifetime */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-2 mb-1">
-                <PlayCircle className="h-4 w-4 text-primary" />
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
-              </div>
-              <h3 className="font-heading font-semibold">Lifetime access to recordings</h3>
-              <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
-              <motion.div
-                animate={reduce ? {} : { scale: [1, 1.08, 1] }}
-                transition={{ duration: 2.4, repeat: Infinity }}
-                className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium"
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2">
+              <Link
+                to={user ? "/dashboard" : "/courses"}
+                className="group block h-full glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                <div className="flex items-center gap-2 mb-1">
+                  <PlayCircle className="h-4 w-4 text-primary" />
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
+                </div>
+                <h3 className="font-heading font-semibold group-hover:text-primary transition-colors">Lifetime access to recordings</h3>
+                <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
+                <span className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  {user ? "Open my recordings" : "Browse courses"}
+                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
                 </span>
-                Always available
-              </motion.div>
+              </Link>
             </motion.div>
           </motion.div>
         </div>
