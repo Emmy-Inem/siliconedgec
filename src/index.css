@@ -312,3 +312,16 @@
     .conic-border[data-active="true"]::before { animation: conic-spin 4s linear infinite; }
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Premium iconography — bolder Lucide stroke + crisper line joins.
+   Lucide ships at stroke-width 2; bumping to 2.25 + round joins gives a
+   more confident, premium feel without breaking icon-button alignment.
+   `:where()` keeps specificity at 0 so per-component overrides still win.
+   ───────────────────────────────────────────────────────────────────── */
+:where(svg.lucide) {
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
