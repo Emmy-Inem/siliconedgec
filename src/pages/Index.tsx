@@ -638,7 +638,7 @@ export default function Index() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="container mx-auto px-4 pt-24 pb-14 md:pt-36 md:pb-28 relative"
+          className="container mx-auto px-4 pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32 relative"
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
@@ -662,8 +662,8 @@ export default function Index() {
             </motion.div>
 
             <h1
-              className="font-heading font-bold text-foreground leading-[1.02] tracking-tight mb-5 text-balance"
-              style={{ fontSize: "clamp(1.85rem, 7.5vw, 4.75rem)" }}
+              className="font-heading font-bold text-foreground leading-[1.04] tracking-tight mb-5 text-balance"
+              style={{ fontSize: "clamp(2rem, 7vw, 4.75rem)" }}
             >
               <motion.span
                 initial={{ opacity: 0, y: 24 }}
