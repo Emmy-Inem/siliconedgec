@@ -167,16 +167,34 @@ export default function ForBusinesses() {
       {/* ─── Feature Grid ─── */}
       <section className="py-20">
         <div className="container mx-auto px-4">
+          {/* Trust strip */}
+          <motion.div
+            {...fadeUp}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 max-w-5xl mx-auto mb-16"
+          >
+            {[
+              { v: "50+", l: "Teams trained" },
+              { v: "94%", l: "Completion rate" },
+              { v: "12+", l: "Industries served" },
+              { v: "24/7", l: "Mentor support" },
+            ].map((s) => (
+              <div key={s.l} className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 text-center hover:border-primary/30 transition-colors">
+                <div className="font-heading text-2xl md:text-3xl font-bold text-gradient">{s.v}</div>
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground mt-1">{s.l}</div>
+              </div>
+            ))}
+          </motion.div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {features.map((item, i) => (
               <motion.div
                 key={item.title}
                 {...fadeUp}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="text-center md:text-left"
+                className="text-center md:text-left rounded-2xl border border-border/60 bg-card/40 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto md:mx-0">
-                  <item.icon className="h-6 w-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20 flex items-center justify-center mb-4 mx-auto md:mx-0">
+                  <item.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <h3 className="font-heading font-semibold text-base mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
