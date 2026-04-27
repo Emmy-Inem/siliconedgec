@@ -129,18 +129,21 @@ export default function Courses() {
 
           {/* Desktop Filters — always visible */}
           <div className="hidden md:block space-y-4 mb-8">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-border">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`relative px-1 py-3 text-sm font-medium transition-colors ${
                     activeCategory === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {cat}
+                  {activeCategory === cat && (
+                    <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" />
+                  )}
                 </button>
               ))}
             </div>
@@ -149,13 +152,16 @@ export default function Courses() {
                 <button
                   key={d}
                   onClick={() => setActiveDifficulty(d)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`relative px-1 py-1.5 text-xs font-medium transition-colors ${
                     activeDifficulty === d
-                      ? "bg-secondary text-secondary-foreground"
+                      ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {d}
+                  {activeDifficulty === d && (
+                    <span className="absolute left-0 right-0 -bottom-0.5 h-[2px] bg-primary rounded-full" />
+                  )}
                 </button>
               ))}
               {activeFilterCount > 0 && (
