@@ -482,10 +482,10 @@ const staggerItem = {
   show: { opacity: 1, y: 0, transition: { type: "tween" as const, ease: "easeOut" as const, duration: 0.5 } },
 };
 const sectionReveal = {
-  initial: { opacity: 0, y: 32 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
-  transition: { type: "spring" as const, stiffness: 60, damping: 20 },
+  transition: { duration: 0.55, ease: "easeOut" as const },
 };
 
 /* ----------------------------- main ----------------------------- */
