@@ -174,15 +174,18 @@ export default function Certificates() {
             </motion.div>
           )}
 
-          {/* Sample Certificate Preview */}
+          {/* Sample Certificate Preview (preview-only, no download until a course is completed) */}
           <motion.div {...fadeUp} id="sample" className="max-w-3xl mx-auto scroll-mt-24">
             <h2 className="font-heading text-2xl font-bold mb-6 text-center">
               {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
             <p className="text-muted-foreground text-sm text-center mb-8 max-w-xl mx-auto">
               Below is what your certificate will look like — fully branded, with a unique ID and verification link.
+              {(!user || certificates.length === 0) && (
+                <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
+              )}
             </p>
-            <DownloadableCertificate
+            <BrandedCertificate
               studentName={userName}
               courseName="Cloud Engineering Crash Course"
               date="March 7, 2026"
