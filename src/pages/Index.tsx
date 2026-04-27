@@ -1036,7 +1036,7 @@ export default function Index() {
                 )}
               </h2>
             </div>
-            <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></Link>
+            <a href={communityUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></a>
           </motion.div>
 
           <motion.div
