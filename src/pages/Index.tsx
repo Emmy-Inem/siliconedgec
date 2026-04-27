@@ -1050,7 +1050,7 @@ export default function Index() {
               <motion.div
                 key={inst.id}
                 variants={staggerItem}
-                whileHover={{ y: -8, rotate: 1 }}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
                 className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-3xl overflow-hidden border border-border/60 bg-card relative"
               >
                 <div className="aspect-[4/5] overflow-hidden">
