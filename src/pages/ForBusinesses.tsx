@@ -110,6 +110,16 @@ export default function ForBusinesses() {
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
           }}
         />
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+        <motion.div
+          aria-hidden
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="hidden lg:flex absolute top-32 right-12 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-primary"
+        >
+          <span className="w-2 h-2 rounded-full bg-gold" /> Trusted by 50+ teams
+        </motion.div>
         <div className="container mx-auto px-4 relative">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 60, damping: 18 }} className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
