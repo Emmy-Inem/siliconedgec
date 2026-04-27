@@ -409,6 +409,51 @@ function AvatarStackTile({ avatars }: { avatars: string[] }) {
 
 const fallbackInstructorImages = [instructor1, instructor2, instructor3, instructor4];
 
+/* ----------------------------- alumni marquee ----------------------------- */
+
+const ALUMNI_LOGOS = [
+  { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
+  { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
+  { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
+  { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
+  { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
+  { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
+  { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
+  { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
+  { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
+  { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
+];
+
+function AlumniMarquee() {
+  /* Two identical sibling tracks, each 100% wide, sliding together by -100% of one track.
+   * This produces a perfectly seamless left-to-right loop without gap-induced jumps. */
+  const Row = () => (
+    <div className="flex shrink-0 items-center gap-12 sm:gap-16 pr-12 sm:pr-16">
+      {ALUMNI_LOGOS.map((logo) => (
+        <img
+          key={logo.alt}
+          src={logo.src}
+          alt={logo.alt}
+          className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 shrink-0"
+          loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      ))}
+    </div>
+  );
+  return (
+    <div className="relative overflow-hidden mask-fade-x marquee-pause">
+      <div
+        className="marquee-track flex w-max"
+        style={{ animation: "marquee 38s linear infinite", willChange: "transform" }}
+      >
+        <Row />
+        <Row />
+      </div>
+    </div>
+  );
+}
+
 /* ----------------------------- vertical testimonial marquee ----------------------------- */
 
 type Tm = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
