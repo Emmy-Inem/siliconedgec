@@ -21,6 +21,7 @@ import {
   Lock, Award, FileText, MonitorPlay, Infinity, Bookmark, BookmarkCheck,
   CheckCircle2,
 } from "lucide-react";
+import { StarRating } from "@/components/StarRating";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
@@ -236,6 +237,8 @@ export default function CourseDetail() {
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
           }}
         />
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
         <div className="container mx-auto px-4 relative">
           <Link to="/courses" className="inline-flex items-center text-muted-foreground hover:text-primary text-sm mb-6 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Courses
@@ -256,12 +259,8 @@ export default function CourseDetail() {
               </span>
               {(avgRating > 0 || (course.rating ?? 0) > 0) && (
                 <span className="flex items-center gap-1.5">
-                  <span className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(avgRating || course.rating || 0) ? "fill-accent text-accent" : "text-muted-foreground/30"}`} />
-                    ))}
-                  </span>
-                  {avgRating || course.rating} ({reviewCount || 4})
+                  <StarRating value={avgRating || course.rating || 0} size="md" />
+                  <span>{(avgRating || course.rating || 0).toFixed(1)} ({reviewCount || 4})</span>
                 </span>
               )}
               <span className="flex items-center gap-1.5">

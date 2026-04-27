@@ -71,7 +71,17 @@ export default function Certificates() {
       />
       <Header />
 
-      <section className="bg-hero pt-28 pb-20 relative overflow-hidden">
+      <section className="relative overflow-hidden bg-white pt-28 pb-20 border-b border-border/40">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_55%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.2]"
+          style={{
+            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.16) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+          }}
+        />
         <div className="absolute -top-40 -right-40 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
         <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
         <div className="container mx-auto px-4 relative">
@@ -81,10 +91,10 @@ export default function Certificates() {
                 <Award className="h-3.5 w-3.5 text-primary" />
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Verifiable · QR-Coded · LinkedIn-ready</span>
               </div>
-              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-hero mb-4 leading-[1.05]">
-                Certificates that <span className="text-primary">open doors</span>.
+              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05]">
+                Certificates that <span className="text-gradient">open doors</span><span className="text-gold">.</span>
               </h1>
-              <p className="text-hero-muted text-base md:text-lg max-w-xl leading-relaxed">
+              <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
                 Earn industry-recognized completion certificates with a unique verification ID employers can validate online — instantly downloadable as PDF.
               </p>
               <div className="flex flex-wrap gap-3 mt-7">

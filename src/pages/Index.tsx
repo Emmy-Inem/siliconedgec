@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote, Mouse } from "lucide-react";
+import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -18,6 +18,12 @@ import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
 import instructor4 from "@/assets/stock/instructor-4.jpg";
 import mentorStock from "@/assets/stock/mentor.jpg";
+import testimonial1 from "@/assets/stock/testimonial-1.jpg";
+import testimonial2 from "@/assets/stock/testimonial-2.jpg";
+import testimonial3 from "@/assets/stock/testimonial-3.jpg";
+import testimonial4 from "@/assets/stock/testimonial-4.jpg";
+import testimonial5 from "@/assets/stock/testimonial-5.jpg";
+import testimonial6 from "@/assets/stock/testimonial-6.jpg";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
@@ -433,16 +439,19 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
 }
 
 const fallbackTestimonials = [
-  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
+  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: testimonial2 as string | null, rating: 5 },
+  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: testimonial3 as string | null, rating: 5 },
+  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: testimonial4 as string | null, rating: 5 },
+  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: testimonial5 as string | null, rating: 5 },
+  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: testimonial6 as string | null, rating: 5 },
 ];
 
 const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-const staggerItem = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 16 } } };
+const staggerItem = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { type: "tween" as const, ease: "easeOut" as const, duration: 0.5 } },
+};
 const sectionReveal = {
   initial: { opacity: 0, y: 32 },
   whileInView: { opacity: 1, y: 0 },
@@ -678,7 +687,7 @@ export default function Index() {
                 transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
                 className="block"
               >
-                {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-primary">.</span>
+                {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-gold">.</span>
               </motion.span>
             </h1>
 
@@ -734,20 +743,6 @@ export default function Index() {
             </motion.p>
           </div>
 
-          {/* scroll cue */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4 }}
-            className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1.5 text-muted-foreground/60"
-          >
-            <Mouse className="h-4 w-4" />
-            <motion.div
-              animate={reduce ? {} : { y: [0, 6, 0], opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.6, repeat: Infinity }}
-              className="w-px h-6 bg-current"
-            />
-          </motion.div>
         </motion.div>
       </section>
 
@@ -847,7 +842,7 @@ export default function Index() {
             className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-5 auto-rows-[minmax(180px,auto)]"
           >
             {/* Large — live chat */}
-            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
               <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"><MessageCircle className="h-4.5 w-4.5 text-primary" /></div>
@@ -859,7 +854,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — completion */}
-            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Award className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Completion</span>
@@ -870,7 +865,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — skills */}
-            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Briefcase className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Hireable</span>
@@ -880,7 +875,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — community */}
-            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Heart className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Community</span>
@@ -890,7 +885,7 @@ export default function Index() {
             </motion.div>
 
             {/* Small — lifetime */}
-            <motion.div variants={staggerItem} whileHover={{ y: -6 }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <PlayCircle className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
@@ -1055,7 +1050,7 @@ export default function Index() {
               <motion.div
                 key={inst.id}
                 variants={staggerItem}
-                whileHover={{ y: -8, rotate: 1 }}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
                 className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-3xl overflow-hidden border border-border/60 bg-card relative"
               >
                 <div className="aspect-[4/5] overflow-hidden">

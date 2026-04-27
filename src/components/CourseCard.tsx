@@ -1,9 +1,10 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { Star, Clock, Users, Sparkles } from "lucide-react";
+import { Clock, Users, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
+import { StarRating } from "@/components/StarRating";
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -71,10 +72,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 {course.duration_hours}h
               </span>
               {(course.rating ?? 0) > 0 && (
-                <span className="flex items-center gap-1">
-                  <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-accent text-accent" />
-                  {course.rating}
-                </span>
+                <StarRating value={course.rating ?? 0} size="sm" showValue />
               )}
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
