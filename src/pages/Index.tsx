@@ -457,6 +457,8 @@ export default function Index() {
   const { data: home } = useHomeContent();
   const { user } = useAuth();
   const reduce = useReducedMotion();
+  const { data: settings } = useSiteSettings();
+  const communityUrl = settings?.whatsapp_community_url || (settings?.whatsapp_number ? `https://wa.me/${settings.whatsapp_number}` : "#");
 
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
