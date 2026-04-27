@@ -1126,7 +1126,7 @@ export default function Index() {
           </motion.div>
 
           {/* vertical scrolling columns */}
-          <VerticalTestimonialMarquee testimonials={testimonials} />
+          <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
         </div>
       </section>
 
