@@ -49,8 +49,8 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
             transition={{ duration: 0.48, ease: "easeOut" }}
             className="lg:col-span-6"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-              <Sparkles className="h-3 w-3" /> Live, instructor-led tracks
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-foreground/15 text-foreground text-xs font-semibold mb-5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} /> Live, instructor-led tracks
             </div>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.75rem] lg:text-[4.25rem] font-bold text-foreground mb-5 leading-[1.02] tracking-tight">
               Find the course that{" "}
