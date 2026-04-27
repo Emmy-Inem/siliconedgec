@@ -58,6 +58,8 @@ export interface HomeContent {
 
 const DEFAULTS: HomeContent = {
   hero_eyebrow: "Start Learning",
+  hero_title_pre: "Start Learning",
+  hero_title_post: "Unlock your tech career",
   hero_subtitle: "Live Online Courses. Hands-On Projects. Real Certifications.",
   hero_cta_primary: "Explore Courses",
   hero_cta_secondary: "Sign up now",
@@ -111,6 +113,7 @@ const DEFAULTS: HomeContent = {
     "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.",
   testimonials_eyebrow: "Loved by ambitious learners",
   testimonials_title: "Don't take our word for it.",
+  testimonial_speed: "normal",
   faq_eyebrow: "Frequently asked",
   faq_title: "Everything you need to know.",
   faq_subtitle: "Still curious? Reach out — real humans reply.",
@@ -124,6 +127,8 @@ const DEFAULTS: HomeContent = {
 
 export const HOME_CONTENT_KEYS = [
   "home_hero_eyebrow",
+  "home_hero_title_pre",
+  "home_hero_title_post",
   "home_hero_subtitle",
   "home_hero_cta_primary",
   "home_hero_cta_secondary",
@@ -164,6 +169,7 @@ export const HOME_CONTENT_KEYS = [
   "home_mentors_description",
   "home_testimonials_eyebrow",
   "home_testimonials_title",
+  "home_testimonial_speed",
   "home_faq_eyebrow",
   "home_faq_title",
   "home_faq_subtitle",
@@ -196,6 +202,8 @@ export function useHomeContent() {
         .filter(Boolean);
       return {
         hero_eyebrow: get("home_hero_eyebrow", DEFAULTS.hero_eyebrow),
+        hero_title_pre: get("home_hero_title_pre", DEFAULTS.hero_title_pre),
+        hero_title_post: get("home_hero_title_post", DEFAULTS.hero_title_post),
         hero_subtitle: get("home_hero_subtitle", DEFAULTS.hero_subtitle),
         hero_cta_primary: get("home_hero_cta_primary", DEFAULTS.hero_cta_primary),
         hero_cta_secondary: get("home_hero_cta_secondary", DEFAULTS.hero_cta_secondary),
@@ -248,6 +256,7 @@ export function useHomeContent() {
         mentors_description: get("home_mentors_description", DEFAULTS.mentors_description),
         testimonials_eyebrow: get("home_testimonials_eyebrow", DEFAULTS.testimonials_eyebrow),
         testimonials_title: get("home_testimonials_title", DEFAULTS.testimonials_title),
+        testimonial_speed: get("home_testimonial_speed", DEFAULTS.testimonial_speed),
         faq_eyebrow: get("home_faq_eyebrow", DEFAULTS.faq_eyebrow),
         faq_title: get("home_faq_title", DEFAULTS.faq_title),
         faq_subtitle: get("home_faq_subtitle", DEFAULTS.faq_subtitle),
