@@ -320,7 +320,7 @@
    `:where()` keeps specificity at 0 so per-component overrides still win.
    ───────────────────────────────────────────────────────────────────── */
 :where(svg.lucide) {
-  stroke-width: 2.25;
+  stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;

@@ -5,6 +5,19 @@ import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
+import instructor1 from "@/assets/stock/instructor-1.jpg";
+import instructor2 from "@/assets/stock/instructor-2.jpg";
+import instructor3 from "@/assets/stock/instructor-3.jpg";
+import instructor4 from "@/assets/stock/instructor-4.jpg";
+
+const FALLBACK_AVATARS = [instructor1, instructor2, instructor3, instructor4];
+
+/** Deterministic avatar fallback so every card shows a real face. */
+function pickFallbackAvatar(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return FALLBACK_AVATARS[hash % FALLBACK_AVATARS.length];
+}
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-green-100 text-green-700",
@@ -16,6 +29,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
   function CourseCard({ course, index = 0 }, ref) {
     const isWebinar = (course.price ?? 0) === 0 || course.title.toUpperCase().startsWith("FREE");
     const { format } = useLocalizedPrice();
+    const instructorName = course.instructor?.name && course.instructor.name.toLowerCase() !== "silicon-edge"
+      ? course.instructor.name
+      : "Silicon Edge Mentor";
+    const instructorAvatar = course.instructor?.avatar_url && course.instructor.avatar_url.trim().length > 0
+      ? course.instructor.avatar_url
+      : pickFallbackAvatar(course.instructor?.id ?? course.id);
     return (
       <motion.div
         ref={ref}
@@ -83,18 +102,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-primary/15">
-                  {course.instructor?.avatar_url ? (
-                    <img src={course.instructor.avatar_url} alt={course.instructor.name} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <span className="text-[11px] font-bold text-primary">
-                      {(course.instructor?.name ?? "?").split(" ").map((n) => n[0]).join("")}
-                    </span>
-                  )}
+                  <img src={instructorAvatar} alt={instructorName} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">Instructor</span>
                   <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                    {course.instructor?.name ?? "Silicon Edge Mentor"}
+                    {instructorName}
                   </span>
                 </div>
               </div>
