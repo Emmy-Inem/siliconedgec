@@ -71,27 +71,16 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
               <li><Link to="/courses" className="hover:text-primary transition-colors">Courses</Link></li>
               <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
               <li><Link to="/for-businesses" className="hover:text-primary transition-colors">For Businesses</Link></li>
-              {settings?.whatsapp_community_url ? (
-                <li>
-                  <a
-                    href={settings.whatsapp_community_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Support
-                  </a>
-                </li>
-              ) : (
-                <li>
-                  <a
-                    href={`mailto:${settings?.contact_email || "info@siliconedgec.com"}`}
-                    className="hover:text-primary transition-colors"
-                  >
-                    Support
-                  </a>
-                </li>
-              )}
+              <li>
+                <a
+                  href="https://wa.me/447741247592"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  Support
+                </a>
+              </li>
               {cmsLinks.map((p) => (
                 <li key={p.slug}>
                   <Link to={`/p/${p.slug}`} className="hover:text-primary transition-colors">{p.title}</Link>
