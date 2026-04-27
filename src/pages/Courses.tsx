@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Sparkles, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Sparkles, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
@@ -24,9 +24,10 @@ const HERO_TRACKS = [
 
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
   return (
-    <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-16 md:pb-20 border-b border-border/40">
+    <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
       {/* Layered backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.10),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--gold)/0.08),transparent_55%)]" />
       <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
       <div className="absolute -bottom-32 -right-24 w-[24rem] h-[24rem] rounded-full opacity-15 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
       <div
@@ -40,18 +41,18 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
       />
 
       <div className="container mx-auto px-4 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left — copy */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
-            className="lg:col-span-7"
+            className="lg:col-span-6"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
               <Sparkles className="h-3 w-3" /> Live, instructor-led tracks
             </div>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-4 leading-[1.04] tracking-tight">
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.75rem] lg:text-[4.25rem] font-bold text-foreground mb-5 leading-[1.02] tracking-tight">
               Find the course that{" "}
               <span className="relative inline-block">
                 <span className="text-gradient">moves your career</span>
@@ -69,8 +70,20 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
               No filler, no fluff — only the skills employers actually pay for.
             </p>
 
+            {/* CTA row */}
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Button size="lg" className="rounded-full px-6 group">
+                Browse all programs
+                <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button size="lg" variant="outline" className="rounded-full px-6 group">
+                <PlayCircle className="mr-1.5 h-4 w-4 text-primary" />
+                Watch a sample class
+              </Button>
+            </div>
+
             {/* Trust strip */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-7">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-7 pt-7 border-t border-border/50">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1.5">
                   {[...Array(4)].map((_, i) => (
@@ -100,39 +113,76 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
           </motion.div>
 
           {/* Right — floating track tiles */}
-          <div className="lg:col-span-5 relative hidden md:block">
-            <div className="absolute -inset-6 bg-gradient-to-br from-primary/15 via-transparent to-gold/15 rounded-[2.5rem] blur-2xl" />
-            <div className="relative grid grid-cols-2 gap-3">
-              {HERO_TRACKS.map((t, i) => (
-                <motion.div
-                  key={t.label}
-                  initial={{ opacity: 0, y: 18, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.12 + i * 0.05, duration: 0.38, ease: "easeOut" }}
-                  whileHover={{ y: -3, scale: 1.015 }}
-                  className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br ${t.tint} backdrop-blur-sm p-4 ${
-                    i % 3 === 0 ? "translate-y-2" : i % 3 === 1 ? "-translate-y-1" : ""
-                  }`}
-                >
-                  <div className="w-9 h-9 rounded-xl bg-white shadow-sm border border-border/60 flex items-center justify-center mb-2.5">
-                    <t.icon className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  <p className="font-heading font-semibold text-sm text-foreground leading-tight">{t.label}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Live cohort</p>
-                  <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full bg-white/40 blur-xl group-hover:bg-white/60 transition-colors" />
-                </motion.div>
-              ))}
-            </div>
+          <div className="lg:col-span-6 relative hidden md:block">
+            <div className="absolute -inset-8 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-[2.75rem] blur-3xl" />
+
+            {/* Frame */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              className="relative rounded-[2rem] border border-border/70 bg-gradient-to-br from-white to-muted/40 p-5 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.35)]"
+            >
+              <div className="flex items-center justify-between mb-4 px-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  </span>
+                  Live tracks
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {HERO_TRACKS.map((t, i) => (
+                  <motion.div
+                    key={t.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.18 + i * 0.06, duration: 0.4, ease: "easeOut" }}
+                    whileHover={{ y: -3 }}
+                    className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br ${t.tint} p-4`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-border/60 flex items-center justify-center mb-2.5">
+                      <t.icon className="h-5 w-5 text-primary" strokeWidth={2.25} />
+                    </div>
+                    <p className="font-heading font-semibold text-sm text-foreground leading-tight">{t.label}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Live cohort · Mentor-led</p>
+                    <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full bg-white/40 blur-xl group-hover:bg-white/70 transition-colors" />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
 
             {/* Floating "Live now" badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.35, ease: "easeOut" }}
-              className="absolute -top-3 -left-3 z-10 flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-border shadow-xl"
+              transition={{ delay: 0.55, duration: 0.4, ease: "easeOut" }}
+              className="absolute -top-4 -left-4 z-10 flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-border shadow-xl"
             >
               <Users className="h-3.5 w-3.5 text-primary" />
               <span className="text-[11px] font-semibold">Cohort starts soon</span>
+            </motion.div>
+
+            {/* Floating completion stat */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.4, ease: "easeOut" }}
+              className="absolute -bottom-5 -right-3 z-10 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-border shadow-xl"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-heading text-base font-bold leading-none">92%</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Cohort completion</p>
+              </div>
             </motion.div>
           </div>
         </div>
