@@ -48,6 +48,7 @@ export default function CourseDetail() {
   const { addToCart, isInCart } = useCart();
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
+  const { format: formatPrice, isNgn } = useLocalizedPrice();
 
   // Log course view once per page load
   useEffect(() => {
@@ -429,14 +430,17 @@ export default function CourseDetail() {
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-3">
                     <span className="font-heading text-3xl md:text-4xl font-bold text-foreground">
-                      {formatNaira(course.price)}
+                      {formatPrice(course.price)}
                     </span>
                     {course.price > 0 && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {formatNaira(originalPrice)}
+                        {formatPrice(originalPrice)}
                       </span>
                     )}
                   </div>
+                  {!isNgn && course.price > 0 && (
+                    <p className="text-[11px] text-muted-foreground">Charged in {formatNaira(course.price)} (NGN)</p>
+                  )}
 
                   {isEnrolled ? (
                     isFreeWebinar ? (
