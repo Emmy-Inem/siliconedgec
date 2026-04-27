@@ -751,13 +751,15 @@ export default function Index() {
             <div className="flex animate-marquee gap-12 sm:gap-16 items-center" style={{ width: "max-content" }}>
               {Array.from({ length: 2 }).flatMap((_, dup) => [
                 { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", alt: "Microsoft" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg", alt: "AWS" },
-                { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg", alt: "Azure" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/0/05/Meta_Platforms_Inc._logo_%28cropped%29.svg", alt: "Meta" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Flutterwave_Logo.png", alt: "Flutterwave" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/7/77/Andela_logo.svg", alt: "Andela" },
-                { src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/IBM_logo.svg", alt: "IBM" },
+                { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
+                { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
+                { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
+                { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
+                { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
+                { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
+                { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
+                { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
+                { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
               ].map((logo, i) => (
                 <img
                   key={`${logo.alt}-${dup}-${i}`}
@@ -765,6 +767,7 @@ export default function Index() {
                   alt={logo.alt}
                   className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
                   loading="lazy"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
               )))}
             </div>
