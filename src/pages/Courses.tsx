@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Sparkles } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Sparkles, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
@@ -59,36 +59,7 @@ export default function Courses() {
       />
       <Header />
 
-      <section className="relative overflow-hidden bg-white pt-28 pb-16 md:pb-20 border-b border-border/40">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
-        <div
-          className="absolute inset-0 opacity-[0.18]"
-          style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-            maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-            WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-          }}
-        />
-        <div className="container mx-auto px-4 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 60, damping: 18 }}
-            className="max-w-3xl"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-              <Sparkles className="h-3 w-3" /> Live, instructor-led tracks
-            </div>
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
-              Find the course that <span className="text-gradient">moves your career</span><span className="text-gold">.</span>
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
-              Cloud, AI, DevOps, Cybersecurity, Web — taught live by engineers actively shipping in tech.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <CoursesHero coursesCount={courses.length} />
 
       <section className="py-8 md:py-10">
         <div className="container mx-auto px-4">
