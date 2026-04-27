@@ -607,10 +607,10 @@ export default function Index() {
   const { scrollYProgress: pageProgress } = useScroll();
   const progressX = useTransform(pageProgress, [0, 1], ["0%", "100%"]);
 
-  /* hero parallax */
+  /* hero parallax — gentle, non-glitchy */
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 40]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.95], [1, 0]);
 
   /* timeline scroll */
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -1032,7 +1032,7 @@ export default function Index() {
                   initial={{ opacity: 0, x: left ? -40 : 40 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ type: "spring", stiffness: 60, damping: 18 }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
                   className={`relative grid md:grid-cols-2 gap-6 mb-12 md:mb-16 ${left ? "" : "md:[&>*:first-child]:order-2"}`}
                 >
                   {/* node */}
