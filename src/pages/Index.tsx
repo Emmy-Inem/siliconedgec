@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -299,31 +299,62 @@ function FloatingTechLogos() {
 
 function ChatBubbleTile() {
   const messages = [
-    { who: "Mentor", text: "Today: deploy a fault-tolerant VPC across 3 AZs on AWS.", side: "left" as const },
-    { who: "You",    text: "Should the NAT gateway be per-AZ or shared?", side: "right" as const },
-    { who: "Mentor", text: "Per-AZ. Shared NAT = single point of failure + cross-AZ data charges.", side: "left" as const },
-    { who: "You",    text: "Got it. Pushing my Terraform module now 🚀", side: "right" as const },
-    { who: "Mentor", text: "Nice. I'll review the IAM least-privilege policies in 5min live.", side: "left" as const },
+    { text: "Today: deploy a fault-tolerant VPC across 3 AZs on AWS.", side: "left" as const },
+    { text: "Should the NAT gateway be per-AZ or shared?", side: "right" as const },
+    { text: "Per-AZ. Shared NAT adds a single point of failure and cross-AZ data costs.", side: "left" as const },
+    { text: "Got it. Pushing my Terraform module now.", side: "right" as const },
+    { text: "Nice. I’ll review the IAM least-privilege policies live in five minutes.", side: "left" as const },
   ];
   const [i, setI] = useState(0);
-  useEffect(() => { const t = setInterval(() => setI((v) => (v + 1) % messages.length), 2800); return () => clearInterval(t); }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % messages.length), 3200);
+    return () => clearInterval(t);
+  }, []);
+
+  const active = messages[i];
+
   return (
-    <div className="space-y-2 mt-5 min-h-[180px]">
-      <AnimatePresence mode="popLayout">
-        {messages.slice(Math.max(0, i - 2), i + 1).map((m, k) => (
-          <motion.div
-            key={`${m.text}-${k}-${i}`}
-            layout
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`max-w-[85%] text-xs px-3 py-2 rounded-2xl ${m.side === "left" ? "bg-muted text-foreground rounded-bl-sm" : "ml-auto bg-primary text-primary-foreground rounded-br-sm"}`}
-          >
-            {m.text}
-          </motion.div>
-        ))}
+    <div className="mt-5 min-h-[180px] rounded-[1.75rem] border border-border/50 bg-background/80 p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-80" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+          </span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">Live mentor feedback</span>
+        </div>
+        <div className="flex gap-1.5">
+          {messages.map((_, idx) => (
+            <span
+              key={idx}
+              className={`h-1.5 rounded-full transition-all duration-500 ${idx === i ? "w-6 bg-primary" : "w-1.5 bg-border"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${active.text}-${i}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className={`max-w-[88%] px-4 py-3 text-sm leading-relaxed shadow-sm ${
+            active.side === "left"
+              ? "rounded-3xl rounded-bl-md bg-muted text-foreground"
+              : "ml-auto rounded-3xl rounded-br-md bg-primary text-primary-foreground"
+          }`}
+        >
+          {active.text}
+        </motion.div>
       </AnimatePresence>
+
+      <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground sm:max-w-[18rem]">
+        <div className="rounded-2xl border border-border/50 bg-card px-3 py-2">Terraform review</div>
+        <div className="rounded-2xl border border-border/50 bg-card px-3 py-2">Career feedback</div>
+      </div>
     </div>
   );
 }
@@ -409,44 +440,48 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 /* ----------------------------- alumni marquee ----------------------------- */
 
-const ALUMNI_LOGOS = [
-  { src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg", alt: "Google" },
-  { src: "https://cdn.simpleicons.org/microsoft/0078D4", alt: "Microsoft" },
-  { src: "https://cdn.simpleicons.org/amazonwebservices/232F3E", alt: "AWS" },
-  { src: "https://cdn.simpleicons.org/microsoftazure/0078D4", alt: "Azure" },
-  { src: "https://cdn.simpleicons.org/meta/0467DF", alt: "Meta" },
-  { src: "https://cdn.simpleicons.org/ibm/052FAD", alt: "IBM" },
-  { src: "https://cdn.simpleicons.org/oracle/F80000", alt: "Oracle" },
-  { src: "https://cdn.simpleicons.org/intel/0071C5", alt: "Intel" },
-  { src: "https://cdn.simpleicons.org/cisco/1BA0D7", alt: "Cisco" },
-  { src: "https://cdn.simpleicons.org/paystack/00C3F7", alt: "Paystack" },
+const ALUMNI_BRANDS = [
+  { name: "Google", team: "Product" },
+  { name: "Microsoft", team: "Cloud" },
+  { name: "AWS", team: "Infrastructure" },
+  { name: "Meta", team: "Engineering" },
+  { name: "Paystack", team: "Platform" },
+  { name: "Flutterwave", team: "Payments" },
+  { name: "Andela", team: "Talent" },
+  { name: "Oracle", team: "Data" },
+  { name: "IBM", team: "Systems" },
+  { name: "Cisco", team: "Networks" },
 ];
 
 function AlumniMarquee() {
-  /* Two identical sibling tracks, each 100% wide, sliding together by -100% of one track.
-   * This produces a perfectly seamless left-to-right loop without gap-induced jumps. */
-  const Row = () => (
-    <div className="flex shrink-0 items-center gap-12 sm:gap-16 pr-12 sm:pr-16">
-      {ALUMNI_LOGOS.map((logo) => (
-        <img
-          key={logo.alt}
-          src={logo.src}
-          alt={logo.alt}
-          className="h-7 sm:h-8 w-auto opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 shrink-0"
-          loading="lazy"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-      ))}
-    </div>
-  );
   return (
-    <div className="relative overflow-hidden mask-fade-x marquee-pause">
+    <div className="relative overflow-hidden mask-fade-x" aria-label="Our alumni work at leading global companies">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-14 bg-gradient-to-r from-background via-background/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-gradient-to-l from-background via-background/80 to-transparent" />
+
       <div
-        className="marquee-track flex w-max"
-        style={{ animation: "marquee 38s linear infinite", willChange: "transform" }}
+        className="marquee-track flex w-max gap-4 sm:gap-5"
+        style={{ animation: "marquee-reverse 36s linear infinite" }}
       >
-        <Row />
-        <Row />
+        {[0, 1].map((copy) => (
+          <div key={copy} className="flex shrink-0 items-center gap-4 pr-4 sm:gap-5 sm:pr-5">
+            {ALUMNI_BRANDS.map((brand) => (
+              <div
+                key={`${brand.name}-${copy}`}
+                className="group flex min-w-[13rem] shrink-0 items-center gap-3 rounded-2xl border border-border/60 bg-card/85 px-4 py-3 shadow-[0_14px_40px_-26px_hsl(var(--foreground)/0.28)] backdrop-blur-sm sm:min-w-[15rem]"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/15 via-primary/8 to-gold/10 font-heading text-base font-bold text-primary">
+                  {brand.name.slice(0, 1)}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-heading text-sm font-semibold text-foreground">{brand.name}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{brand.team}</p>
+                </div>
+                <span className="ml-auto hidden h-2.5 w-2.5 rounded-full bg-gold shadow-[0_0_0_4px_hsl(var(--gold)/0.12)] sm:inline-flex" />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
