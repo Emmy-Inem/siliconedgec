@@ -102,18 +102,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-primary/15">
-                  {course.instructor?.avatar_url ? (
-                    <img src={course.instructor.avatar_url} alt={course.instructor.name} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <span className="text-[11px] font-bold text-primary">
-                      {(course.instructor?.name ?? "?").split(" ").map((n) => n[0]).join("")}
-                    </span>
-                  )}
+                  <img src={instructorAvatar} alt={instructorName} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">Instructor</span>
                   <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                    {course.instructor?.name ?? "Silicon Edge Mentor"}
+                    {instructorName}
                   </span>
                 </div>
               </div>
