@@ -217,53 +217,54 @@ const HERO_TECH_LOGOS: TechLogo[] = [
   { name: "TypeScript",   tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
 ];
 
-/** Scattered, gently-floating tech logo cards that surround the hero headline (quso.ai style). */
+/** Two slow orbital marquee rows of tech logos (top drifts right, bottom drifts left).
+ * Frames the hero headline without crowding it; logos are always in motion. */
 function FloatingTechLogos() {
-  const reduce = useReducedMotion();
+  // Split logos roughly in half for two distinct rows.
+  const topRow = HERO_TECH_LOGOS.slice(0, 6);
+  const bottomRow = HERO_TECH_LOGOS.slice(6);
 
-  // Edge-hugging positions that keep the headline area clear.
-  const positions = [
-    { top: "10%", left: "6%",  size: 3.4, dur: 9,  delay: 0,   rot: -6, mobile: true  },
-    { top: "20%", left: "92%", size: 3.4, dur: 12, delay: 0.1, rot: 6,  mobile: true  },
-    { top: "54%", left: "4%",  size: 3.6, dur: 13, delay: 0.3, rot: 4,  mobile: true  },
-    { top: "62%", left: "94%", size: 3.4, dur: 11, delay: 0.2, rot: -5, mobile: true  },
-    { top: "12%", left: "24%", size: 2.6, dur: 11, delay: 0.4, rot: 6,  mobile: false },
-    { top: "10%", left: "76%", size: 2.6, dur: 10, delay: 0.6, rot: -4, mobile: false },
-    { top: "84%", left: "16%", size: 2.8, dur: 12, delay: 0.7, rot: 3,  mobile: false },
-    { top: "88%", left: "82%", size: 3.0, dur: 11, delay: 0.5, rot: 6,  mobile: false },
-    { top: "78%", left: "48%", size: 2.6, dur: 9,  delay: 0.1, rot: -7, mobile: false },
-  ];
+  const Logo = ({ logo }: { logo: TechLogo }) => (
+    <div
+      className="shrink-0 rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14"
+      title={logo.name}
+    >
+      <img
+        src={logo.src}
+        alt={logo.name}
+        loading="lazy"
+        className="max-w-full max-h-full object-contain"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
+      />
+    </div>
+  );
+
+  const Row = ({ items, reverse = false }: { items: TechLogo[]; reverse?: boolean }) => (
+    <div className="relative overflow-hidden mask-fade-x">
+      <div
+        className="flex gap-5 sm:gap-7 items-center w-max animate-marquee"
+        style={{
+          animationDuration: "40s",
+          animationDirection: reverse ? "reverse" : "normal",
+          willChange: "transform",
+        }}
+      >
+        {[...items, ...items, ...items].map((logo, i) => (
+          <Logo key={`${logo.name}-${i}`} logo={logo} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => {
-        const p = positions[i];
-        return (
-          <motion.div
-            key={logo.name}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + i * 0.06, type: "spring", stiffness: 80, damping: 14 }}
-            className={`absolute ${p.mobile ? "" : "hidden md:block"}`}
-            style={{ top: p.top, left: p.left, transform: "translate(-50%, -50%)" }}
-          >
-            <motion.div
-              animate={reduce ? {} : { y: [0, -10, 0], rotate: [p.rot, p.rot + 3, p.rot] }}
-              transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2 flex items-center justify-center"
-              style={{ width: `${p.size}rem`, height: `${p.size}rem` }}
-            >
-              <img
-                src={logo.src}
-                alt={logo.name}
-                loading="lazy"
-                className="max-w-full max-h-full object-contain"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              />
-            </motion.div>
-          </motion.div>
-        );
-      })}
+    <div
+      className="pointer-events-none absolute inset-x-0 top-0 bottom-0 flex flex-col justify-between py-8 sm:py-12"
+      aria-hidden="true"
+    >
+      <Row items={topRow} />
+      <Row items={bottomRow} reverse />
     </div>
   );
 }
