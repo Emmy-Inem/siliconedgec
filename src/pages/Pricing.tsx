@@ -245,17 +245,20 @@ export default function Pricing() {
                   key={plan.name}
                   variants={staggerItem}
                   whileHover={{
-                    y: -8,
-                    transition: { type: "spring", stiffness: 300 },
+                    y: -6,
+                    transition: { duration: 0.25, ease: "easeOut" },
                   }}
-                  className={`rounded-2xl border bg-card transition-all relative overflow-hidden group flex flex-col ${
+                  className={`rounded-2xl border bg-card transition-all relative group flex flex-col ${
                     plan.highlight
-                      ? "border-primary/30 shadow-xl shadow-primary/10"
+                      ? "border-primary/40 shadow-2xl shadow-primary/20 md:scale-[1.03]"
                       : "border-border hover:border-primary/30"
                   }`}
                 >
+                  {plan.highlight && (
+                    <div className="absolute -inset-3 -z-10 bg-gradient-to-br from-primary/30 via-accent/20 to-gold/20 rounded-3xl blur-2xl opacity-70 pointer-events-none" />
+                  )}
                   {/* Top accent bar */}
-                  <div className={`h-2.5 w-full ${accentBar}`} />
+                  <div className={`h-2.5 w-full rounded-t-2xl overflow-hidden ${accentBar}`} />
 
                   {plan.highlight && (
                     <div className="absolute top-5 right-5 bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-1 rounded-full tracking-wide uppercase">
