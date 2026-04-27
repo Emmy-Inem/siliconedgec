@@ -129,6 +129,7 @@ const sectionReveal = {
 };
 
 export default function Pricing() {
+  const { format: formatPrice, isNgn } = useLocalizedPrice();
   return (
     <div className="min-h-screen bg-background">
       <SEO
@@ -249,9 +250,12 @@ export default function Pricing() {
                       </p>
                       <div className="flex items-baseline gap-1">
                         <span className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                          {plan.price}
+                          {formatPrice(plan.priceNgn)}
                         </span>
                       </div>
+                      {!isNgn && (
+                        <p className="text-[11px] text-muted-foreground mt-1">{formatNaira(plan.priceNgn)} (NGN)</p>
+                      )}
                     </div>
                     <Button
                       asChild
