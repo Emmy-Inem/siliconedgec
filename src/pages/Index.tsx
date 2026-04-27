@@ -468,12 +468,12 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
 }
 
 const fallbackTestimonials = [
-  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
-  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: testimonial2 as string | null, rating: 5 },
-  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: testimonial3 as string | null, rating: 5 },
-  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: testimonial4 as string | null, rating: 5 },
-  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: testimonial5 as string | null, rating: 5 },
-  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: testimonial6 as string | null, rating: 5 },
+  { id: "fb1", name: "Chiamaka Okonkwo", role: "Cloud Administrator at Flutterwave", quote: "Finally, a course I actually finished. The live tutors kept me accountable and the projects landed me a remote Cloud role within months. Genuinely a game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
+  { id: "fb2", name: "Daniel Adeyemi", role: "Junior Software Engineer at Andela", quote: "The support is on another level. Tutors replied within minutes, and the lifetime access to recordings meant I never fell behind. Highly recommend.", avatar_url: testimonial2 as string | null, rating: 5 },
+  { id: "fb3", name: "Aisha Bello", role: "DevOps Engineer at Paystack", quote: "I switched careers in seven months. The mock interviews were brutal in the best possible way and prepared me for every question I got asked.", avatar_url: testimonial3 as string | null, rating: 5 },
+  { id: "fb4", name: "Tunde Ogunbiyi", role: "Data Analyst at MTN Nigeria", quote: "Cohort energy is unreal. I built a portfolio I'm genuinely proud to show recruiters and made friends I still ship code with today.", avatar_url: testimonial4 as string | null, rating: 5 },
+  { id: "fb5", name: "Priya Ramachandran", role: "Software Engineer at Microsoft", quote: "Mentors actually working at Google, AWS and Microsoft. The bar is high — exactly what I needed to make the leap to a senior role.", avatar_url: testimonial5 as string | null, rating: 5 },
+  { id: "fb6", name: "Kwame Asante", role: "ML Engineer at Spotify", quote: "Real projects, real code reviews, no fluff. The career support after the course is honestly what closed the deal for me. Best investment I've made.", avatar_url: testimonial6 as string | null, rating: 5 },
 ];
 
 const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
