@@ -25,18 +25,15 @@ const HERO_TRACKS = [
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
   return (
     <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
-      {/* Layered backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.10),transparent_55%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--gold)/0.08),transparent_55%)]" />
-      <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
-      <div className="absolute -bottom-32 -right-24 w-[24rem] h-[24rem] rounded-full opacity-15 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
+      {/* Subtle, premium backdrop — soft top-left primary wash + tiny dot grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.06),transparent_60%)]" />
       <div
-        className="absolute inset-0 opacity-[0.18]"
+        className="absolute inset-0 opacity-[0.12]"
         style={{
-          backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-          maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+          backgroundImage: "radial-gradient(hsl(var(--primary) / 0.5) 1px, transparent 1px)",
+          backgroundSize: "26px 26px",
+          maskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
         }}
       />
 
@@ -52,18 +49,19 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-foreground/15 text-foreground text-xs font-semibold mb-5">
               <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} /> Live, instructor-led tracks
             </div>
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.75rem] lg:text-[4.25rem] font-bold text-foreground mb-5 leading-[1.02] tracking-tight">
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[4rem] font-bold text-foreground mb-5 leading-[1.05] tracking-tight">
               Find the course that{" "}
-              <span className="relative inline-block">
+              <span className="relative inline-block whitespace-nowrap">
                 <span className="text-gradient">moves your career</span>
+                <span className="text-gold">.</span>
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
-                  className="absolute -bottom-1 left-0 right-0 h-[6px] origin-left rounded-full bg-gradient-to-r from-primary/30 via-accent/30 to-gold/30"
+                  aria-hidden
+                  className="absolute -bottom-1 left-0 right-2 h-[5px] origin-left rounded-full bg-gradient-to-r from-primary/40 via-accent/40 to-gold/40"
                 />
               </span>
-              <span className="text-gold">.</span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
               Cloud, AI, DevOps, Cybersecurity, Web — taught live by engineers actively shipping in tech.
@@ -102,7 +100,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
           {/* Right — floating track tiles */}
           <div className="lg:col-span-6 relative hidden md:block">
-            <div className="absolute -inset-8 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-[2.75rem] blur-3xl" />
+            <div aria-hidden className="absolute -inset-6 bg-gradient-to-br from-primary/8 via-transparent to-gold/8 rounded-[2.75rem] blur-2xl" />
 
             {/* Frame */}
             <motion.div
