@@ -24,6 +24,7 @@ import {
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { SEO } from "@/components/SEO";
 import { logUserActivity } from "@/lib/user-activity";
