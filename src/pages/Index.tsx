@@ -217,53 +217,54 @@ const HERO_TECH_LOGOS: TechLogo[] = [
   { name: "TypeScript",   tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
 ];
 
-/** Scattered, gently-floating tech logo cards that surround the hero headline (quso.ai style). */
+/** Two slow orbital marquee rows of tech logos (top drifts right, bottom drifts left).
+ * Frames the hero headline without crowding it; logos are always in motion. */
 function FloatingTechLogos() {
-  const reduce = useReducedMotion();
+  // Split logos roughly in half for two distinct rows.
+  const topRow = HERO_TECH_LOGOS.slice(0, 6);
+  const bottomRow = HERO_TECH_LOGOS.slice(6);
 
-  // Edge-hugging positions that keep the headline area clear.
-  const positions = [
-    { top: "10%", left: "6%",  size: 3.4, dur: 9,  delay: 0,   rot: -6, mobile: true  },
-    { top: "20%", left: "92%", size: 3.4, dur: 12, delay: 0.1, rot: 6,  mobile: true  },
-    { top: "54%", left: "4%",  size: 3.6, dur: 13, delay: 0.3, rot: 4,  mobile: true  },
-    { top: "62%", left: "94%", size: 3.4, dur: 11, delay: 0.2, rot: -5, mobile: true  },
-    { top: "12%", left: "24%", size: 2.6, dur: 11, delay: 0.4, rot: 6,  mobile: false },
-    { top: "10%", left: "76%", size: 2.6, dur: 10, delay: 0.6, rot: -4, mobile: false },
-    { top: "84%", left: "16%", size: 2.8, dur: 12, delay: 0.7, rot: 3,  mobile: false },
-    { top: "88%", left: "82%", size: 3.0, dur: 11, delay: 0.5, rot: 6,  mobile: false },
-    { top: "78%", left: "48%", size: 2.6, dur: 9,  delay: 0.1, rot: -7, mobile: false },
-  ];
+  const Logo = ({ logo }: { logo: TechLogo }) => (
+    <div
+      className="shrink-0 rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14"
+      title={logo.name}
+    >
+      <img
+        src={logo.src}
+        alt={logo.name}
+        loading="lazy"
+        className="max-w-full max-h-full object-contain"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = "none";
+        }}
+      />
+    </div>
+  );
+
+  const Row = ({ items, reverse = false }: { items: TechLogo[]; reverse?: boolean }) => (
+    <div className="relative overflow-hidden mask-fade-x">
+      <div
+        className="flex gap-5 sm:gap-7 items-center w-max animate-marquee"
+        style={{
+          animationDuration: "40s",
+          animationDirection: reverse ? "reverse" : "normal",
+          willChange: "transform",
+        }}
+      >
+        {[...items, ...items, ...items].map((logo, i) => (
+          <Logo key={`${logo.name}-${i}`} logo={logo} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => {
-        const p = positions[i];
-        return (
-          <motion.div
-            key={logo.name}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + i * 0.06, type: "spring", stiffness: 80, damping: 14 }}
-            className={`absolute ${p.mobile ? "" : "hidden md:block"}`}
-            style={{ top: p.top, left: p.left, transform: "translate(-50%, -50%)" }}
-          >
-            <motion.div
-              animate={reduce ? {} : { y: [0, -10, 0], rotate: [p.rot, p.rot + 3, p.rot] }}
-              transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.35)] p-2 flex items-center justify-center"
-              style={{ width: `${p.size}rem`, height: `${p.size}rem` }}
-            >
-              <img
-                src={logo.src}
-                alt={logo.name}
-                loading="lazy"
-                className="max-w-full max-h-full object-contain"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              />
-            </motion.div>
-          </motion.div>
-        );
-      })}
+    <div
+      className="pointer-events-none absolute inset-x-0 top-0 bottom-0 flex flex-col justify-between py-8 sm:py-12"
+      aria-hidden="true"
+    >
+      <Row items={topRow} />
+      <Row items={bottomRow} reverse />
     </div>
   );
 }
@@ -637,7 +638,7 @@ export default function Index() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="container mx-auto px-4 pt-24 pb-14 md:pt-36 md:pb-28 relative"
+          className="container mx-auto px-4 pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32 relative"
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
@@ -661,8 +662,8 @@ export default function Index() {
             </motion.div>
 
             <h1
-              className="font-heading font-bold text-foreground leading-[1.02] tracking-tight mb-5 text-balance"
-              style={{ fontSize: "clamp(1.85rem, 7.5vw, 4.75rem)" }}
+              className="font-heading font-bold text-foreground leading-[1.04] tracking-tight mb-5 text-balance"
+              style={{ fontSize: "clamp(2rem, 7vw, 4.75rem)" }}
             >
               <motion.span
                 initial={{ opacity: 0, y: 24 }}
@@ -885,24 +886,26 @@ export default function Index() {
             </motion.div>
 
             {/* Small — lifetime */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
-              <div className="flex items-center gap-2 mb-1">
-                <PlayCircle className="h-4 w-4 text-primary" />
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
-              </div>
-              <h3 className="font-heading font-semibold">Lifetime access to recordings</h3>
-              <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
-              <motion.div
-                animate={reduce ? {} : { scale: [1, 1.08, 1] }}
-                transition={{ duration: 2.4, repeat: Infinity }}
-                className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium"
+            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2">
+              <Link
+                to={user ? "/dashboard" : "/courses"}
+                className="group block h-full glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                <div className="flex items-center gap-2 mb-1">
+                  <PlayCircle className="h-4 w-4 text-primary" />
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
+                </div>
+                <h3 className="font-heading font-semibold group-hover:text-primary transition-colors">Lifetime access to recordings</h3>
+                <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
+                <span className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  {user ? "Open my recordings" : "Browse courses"}
+                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
                 </span>
-                Always available
-              </motion.div>
+              </Link>
             </motion.div>
           </motion.div>
         </div>
