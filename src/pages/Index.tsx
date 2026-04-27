@@ -1167,7 +1167,7 @@ export default function Index() {
                     key={item.title}
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ type: "spring", stiffness: 80, delay: i * 0.12 }}
+                    transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.1 }}
                     viewport={{ once: true }}
                     whileHover={{ x: 6 }}
                     className="flex gap-4"
@@ -1189,7 +1189,7 @@ export default function Index() {
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ type: "spring", stiffness: 60, damping: 18 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="relative aspect-[4/5] max-w-md mx-auto w-full"
             >
               <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">
