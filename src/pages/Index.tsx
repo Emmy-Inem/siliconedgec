@@ -439,16 +439,19 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
 }
 
 const fallbackTestimonials = [
-  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: null as string | null, rating: 5 },
-  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: null as string | null, rating: 5 },
+  { id: "fb1", name: "Sarah K.", role: "Cloud Administrator", quote: "Finally, a course I finished. The live tutors kept me on track and the projects landed me a remote Cloud role. Game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
+  { id: "fb2", name: "David C.", role: "Junior Software Engineer", quote: "Support is top-notch. Tutors were always there. Lifetime access and real projects made learning effective.", avatar_url: testimonial2 as string | null, rating: 5 },
+  { id: "fb3", name: "Aisha M.", role: "DevOps Engineer", quote: "Switched careers in 7 months. The mock interviews were brutal in the best way. Worth every naira.", avatar_url: testimonial3 as string | null, rating: 5 },
+  { id: "fb4", name: "Tunde O.", role: "Data Analyst", quote: "Cohort energy is unreal. I built a portfolio I'm actually proud to show recruiters.", avatar_url: testimonial4 as string | null, rating: 5 },
+  { id: "fb5", name: "Priya R.", role: "Software Engineer", quote: "Mentors from Google and AWS. The bar is very high here, and that's exactly what I needed.", avatar_url: testimonial5 as string | null, rating: 5 },
+  { id: "fb6", name: "Kwame A.", role: "ML Engineer", quote: "Real projects, real reviews. No fluff. The career support after the course is what closed the deal for me.", avatar_url: testimonial6 as string | null, rating: 5 },
 ];
 
 const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-const staggerItem = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 16 } } };
+const staggerItem = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { type: "tween" as const, ease: "easeOut" as const, duration: 0.5 } },
+};
 const sectionReveal = {
   initial: { opacity: 0, y: 32 },
   whileInView: { opacity: 1, y: 0 },
