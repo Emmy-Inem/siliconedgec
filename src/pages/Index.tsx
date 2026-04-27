@@ -685,10 +685,10 @@ export default function Index() {
   const { scrollYProgress: pageProgress } = useScroll();
   const progressX = useTransform(pageProgress, [0, 1], ["0%", "100%"]);
 
-  /* hero parallax — gentle, non-glitchy */
+  /* hero parallax — subtle enough to avoid jitter */
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 40]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.95], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 22]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.92]);
 
   /* timeline scroll */
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -944,7 +944,7 @@ export default function Index() {
             className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-5 auto-rows-[minmax(180px,auto)]"
           >
             {/* Large — live chat */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
               <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center"><MessageCircle className="h-4.5 w-4.5 text-primary" /></div>
@@ -956,7 +956,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — completion */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Award className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Completion</span>
@@ -967,7 +967,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — skills */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Briefcase className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Hireable</span>
@@ -977,7 +977,7 @@ export default function Index() {
             </motion.div>
 
             {/* Medium — community */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
               <div className="flex items-center gap-2 mb-1">
                 <Heart className="h-4 w-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Community</span>
@@ -987,7 +987,7 @@ export default function Index() {
             </motion.div>
 
             {/* Small — lifetime */}
-            <motion.div variants={staggerItem} whileHover={{ y: -4, transition: { duration: 0.25, ease: "easeOut" } }} className="md:col-span-2">
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2">
               <Link
                 to={user ? "/dashboard" : "/courses"}
                 className="group block h-full glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all"
@@ -1037,7 +1037,7 @@ export default function Index() {
                   className={`relative px-2 pb-2 text-sm font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {isActive && (
-                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" transition={{ duration: 0.22, ease: "easeOut" }} />
                   )}
                   <span className="relative">{cat}</span>
                 </button>
@@ -1101,7 +1101,7 @@ export default function Index() {
                   initial={{ opacity: 0, x: left ? -40 : 40 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  transition={{ duration: 0.42, ease: "easeOut" }}
                   className={`relative grid md:grid-cols-2 gap-6 mb-12 md:mb-16 ${left ? "" : "md:[&>*:first-child]:order-2"}`}
                 >
                   {/* node */}
@@ -1202,9 +1202,9 @@ export default function Index() {
                     key={item.title}
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.1 }}
+                    transition={{ duration: 0.35, ease: "easeOut", delay: i * 0.08 }}
                     viewport={{ once: true }}
-                    whileHover={{ x: 6 }}
+                    whileHover={{ x: 3 }}
                     className="flex gap-4"
                   >
                     <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
