@@ -445,23 +445,25 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 // no inconsistent sizes, no white-on-white blanks).
 const ALUMNI_BRANDS: { name: string; slug: string }[] = [
   { name: "Google",     slug: "google" },
-  { name: "Microsoft",  slug: "microsoft" },
-  { name: "Amazon",     slug: "amazonwebservices" },
   { name: "Meta",       slug: "meta" },
   { name: "Apple",      slug: "apple" },
-  { name: "Oracle",     slug: "oracle" },
-  { name: "IBM",        slug: "ibm" },
   { name: "Cisco",      slug: "cisco" },
   { name: "Intel",      slug: "intel" },
   { name: "Nvidia",     slug: "nvidia" },
-  { name: "Salesforce", slug: "salesforce" },
-  { name: "Adobe",      slug: "adobe" },
   { name: "GitHub",     slug: "github" },
   { name: "Atlassian",  slug: "atlassian" },
   { name: "Stripe",     slug: "stripe" },
   { name: "Shopify",    slug: "shopify" },
   { name: "Netflix",    slug: "netflix" },
   { name: "Spotify",    slug: "spotify" },
+  { name: "Airbnb",     slug: "airbnb" },
+  { name: "Uber",       slug: "uber" },
+  { name: "PayPal",     slug: "paypal" },
+  { name: "Tesla",      slug: "tesla" },
+  { name: "Cloudflare", slug: "cloudflare" },
+  { name: "Vercel",     slug: "vercel" },
+  { name: "Docker",     slug: "docker" },
+  { name: "MongoDB",    slug: "mongodb" },
 ];
 
 function AlumniMarquee() {
