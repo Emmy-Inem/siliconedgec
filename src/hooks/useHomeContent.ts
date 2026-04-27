@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface HomeContent {
   hero_eyebrow: string;
+  hero_title_pre: string;
+  hero_title_post: string;
   hero_subtitle: string;
   hero_cta_primary: string;
   hero_cta_secondary: string;
@@ -43,6 +45,7 @@ export interface HomeContent {
   mentors_description: string;
   testimonials_eyebrow: string;
   testimonials_title: string;
+  testimonial_speed: string;
   faq_eyebrow: string;
   faq_title: string;
   faq_subtitle: string;
