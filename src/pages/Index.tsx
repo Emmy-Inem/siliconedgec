@@ -440,7 +440,6 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 /* ----------------------------- alumni marquee ----------------------------- */
 
-const ALUMNI_BRANDS: { name: string; src: string }[] = [
 // Use Simple Icons with explicit slug + black hex so every logo renders as a
 // uniform solid-black mark on a white/grayscale background (no missing assets,
 // no inconsistent sizes, no white-on-white blanks).
