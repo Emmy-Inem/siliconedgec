@@ -335,19 +335,20 @@ function TestimonialCard({ t }: { t: Tm }) {
   );
 }
 
-function VerticalTestimonialMarquee({ testimonials }: { testimonials: Tm[] }) {
+function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testimonials: Tm[]; speed?: string }) {
   /* Ensure we have enough cards for a seamless loop. */
   const pool: Tm[] = [...testimonials];
   while (pool.length > 0 && pool.length < 8) {
     pool.push(...testimonials.map((t, i) => ({ ...t, id: `${t.id}-r${pool.length + i}` })));
   }
+  const duration = speed === "slow" ? 160 : speed === "fast" ? 50 : 90;
 
   return (
     <div className="relative overflow-hidden mask-fade-x marquee-pause">
       <div
         className="marquee-track flex gap-5 w-max"
         style={{
-          animation: `marquee 80s linear infinite`,
+          animation: `marquee ${duration}s linear infinite`,
           willChange: "transform",
         }}
       >
