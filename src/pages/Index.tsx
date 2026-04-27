@@ -190,6 +190,89 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
   );
 }
 
+/* ----------------------------- floating tech logos (hero) ----------------------------- */
+
+type TechLogo = { name: string; src: string; tag: string };
+
+const HERO_TECH_LOGOS: TechLogo[] = [
+  { name: "AWS",          tag: "Cloud",  src: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg" },
+  { name: "Azure",        tag: "Cloud",  src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" },
+  { name: "Google Cloud", tag: "Cloud",  src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg" },
+  { name: "OpenAI",       tag: "AI",     src: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" },
+  { name: "Gemini",       tag: "AI",     src: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" },
+  { name: "TensorFlow",   tag: "ML",     src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" },
+  { name: "Python",       tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+  { name: "React",        tag: "Web",    src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
+  { name: "Docker",       tag: "DevOps", src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
+  { name: "Kubernetes",   tag: "DevOps", src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg" },
+  { name: "GitHub",       tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" },
+  { name: "TypeScript",   tag: "Code",   src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
+];
+
+/** Scattered, gently-floating tech logo cards that surround the hero headline. */
+function FloatingTechLogos() {
+  const reduce = useReducedMotion();
+
+  // top%, left%, size (rem), float duration (s), delay (s), rot (deg)
+  const positions = [
+    { top: "6%",  left: "4%",  size: 3.6, dur: 9,  delay: 0,   rot: -8 },
+    { top: "14%", left: "18%", size: 2.8, dur: 11, delay: 0.4, rot: 6 },
+    { top: "4%",  left: "46%", size: 3.0, dur: 8,  delay: 0.2, rot: 0 },
+    { top: "10%", left: "74%", size: 2.8, dur: 10, delay: 0.6, rot: 5 },
+    { top: "5%",  left: "92%", size: 3.6, dur: 12, delay: 0.1, rot: -6 },
+    { top: "46%", left: "3%",  size: 3.8, dur: 13, delay: 0.3, rot: 4 },
+    { top: "64%", left: "12%", size: 2.8, dur: 9,  delay: 0.5, rot: -4 },
+    { top: "50%", left: "94%", size: 3.6, dur: 11, delay: 0.2, rot: 7 },
+    { top: "70%", left: "84%", size: 3.0, dur: 10, delay: 0.4, rot: -5 },
+    { top: "88%", left: "20%", size: 3.0, dur: 12, delay: 0.7, rot: 3 },
+    { top: "92%", left: "56%", size: 2.8, dur: 9,  delay: 0.1, rot: -7 },
+    { top: "84%", left: "76%", size: 3.4, dur: 11, delay: 0.5, rot: 6 },
+  ];
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden hidden md:block" aria-hidden="true">
+      {/* Subtle dotted lines radiating from center, like the reference */}
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {[
+          "M50 50 L8 8", "M50 50 L92 8", "M50 50 L4 50", "M50 50 L96 50",
+          "M50 50 L8 92", "M50 50 L92 92", "M50 50 L50 4", "M50 50 L50 96",
+        ].map((d, i) => (
+          <path key={i} d={d} stroke="hsl(var(--primary) / 0.25)" strokeWidth="0.15" strokeDasharray="0.5 0.7" fill="none" />
+        ))}
+      </svg>
+
+      {HERO_TECH_LOGOS.slice(0, positions.length).map((logo, i) => {
+        const p = positions[i];
+        return (
+          <motion.div
+            key={logo.name}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 + i * 0.06, type: "spring", stiffness: 80, damping: 14 }}
+            className="absolute"
+            style={{ top: p.top, left: p.left, transform: "translate(-50%, -50%)" }}
+          >
+            <motion.div
+              animate={reduce ? {} : { y: [0, -10, 0], rotate: [p.rot, p.rot + 3, p.rot] }}
+              transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
+              className="rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.35)] p-2 flex items-center justify-center"
+              style={{ width: `${p.size}rem`, height: `${p.size}rem` }}
+            >
+              <img
+                src={logo.src}
+                alt={logo.name}
+                loading="lazy"
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0"; }}
+              />
+            </motion.div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ----------------------------- bento tiles ----------------------------- */
 
 function ChatBubbleTile() {
@@ -534,111 +617,134 @@ export default function Index() {
         style={{ scaleX: pageProgress }}
       />
 
-      {/* ───────────────── HERO ───────────────── */}
-      <section ref={heroRef} className="bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(276_100%_65%/0.18),transparent_60%)]" />
-        <div className="noise-overlay" />
-        <motion.div
-          className="absolute top-32 right-[8%] w-72 h-72 rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { y: [0, -20, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          style={{ willChange: "transform" }}
+      {/* ───────────────── HERO (light, premium) ───────────────── */}
+      <section ref={heroRef} className="relative overflow-hidden bg-white">
+        {/* soft purple hue background */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.10),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.08),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(var(--primary)/0.04)_0%,transparent_40%,transparent_60%,hsl(var(--primary)/0.05)_100%)]" />
+        {/* faint dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.35]"
+          style={{
+            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.18) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+          }}
         />
 
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative">
-          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-16 items-center">
-            {/* LEFT — kinetic headline */}
-            <div>
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6"
-              >
-                <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
-              </motion.div>
+        {/* floating tech logos behind the headline */}
+        <FloatingTechLogos />
 
-              <h1 className="font-heading font-bold text-hero leading-[0.95] tracking-tight mb-5 text-balance" style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 60, damping: 18 }}
-                  className="block"
-                >
-                  {home?.hero_title_pre ?? "Start Learning"}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.1 }}
-                  className="block text-gradient"
-                >
-                  {typedText}
-                  <span className="inline-block w-[6px] h-[0.85em] bg-primary ml-2 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
-                  className="block"
-                >
-                  {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-gold">.</span>
-                </motion.span>
-              </h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                className="text-hero-muted text-base md:text-lg max-w-xl leading-relaxed mb-7"
-              >
-                {home?.hero_subtitle ?? "Live online courses. Hands-on projects. Verified certificates. Built by engineers who hire engineers."}
-              </motion.p>
-
-              {/* honest social proof pill */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45 }}
-                className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/30 shadow-lg shadow-primary/20 mb-8 ring-1 ring-white/10"
-              >
-                <div className="flex -space-x-1.5 sm:-space-x-2">
-                  {heroAvatars.slice(0, 4).map((a, i) => (
-                    <img key={i} src={a} alt="" loading="lazy" className="w-5 h-5 sm:w-7 sm:h-7 rounded-full ring-2 ring-white/40 object-cover" />
-                  ))}
-                </div>
-                <span className="text-[11px] sm:text-sm font-medium text-white whitespace-nowrap">
-                  Join <span className="text-gold font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
-                </span>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55, type: "spring" }}
-                className="flex flex-wrap gap-3"
-              >
-                <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
-                  <Link to="/courses">{home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </MagneticButton>
-                {!user && (
-                  <MagneticButton size="lg" variant="outline" asChild className="border-hero-muted/30 text-hero-muted hover:bg-navy-light hover:text-hero">
-                    <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up free"}</Link>
-                  </MagneticButton>
-                )}
-              </motion.div>
-            </div>
-
-            {/* RIGHT — instructor collage */}
+        <motion.div
+          style={{ y: heroY, opacity: heroOpacity }}
+          className="container mx-auto px-4 pt-28 pb-20 md:pt-36 md:pb-28 relative"
+        >
+          <div className="max-w-3xl mx-auto text-center relative z-10">
+            {/* eyebrow pill */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 60, damping: 18 }}
-              className="hidden lg:block"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6"
             >
-              <TiltCollage instructors={instructors.map((i) => ({ name: i.name, role: i.role, image: i.image }))} />
+              <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
             </motion.div>
+
+            {/* center brand mark — like the reference */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 90, damping: 14 }}
+              className="mx-auto mb-6 w-14 h-14 rounded-2xl bg-white border border-primary/15 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.4)] flex items-center justify-center"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <span className="font-heading font-bold text-primary-foreground text-sm">SE</span>
+              </div>
+            </motion.div>
+
+            <h1
+              className="font-heading font-bold text-foreground leading-[1.02] tracking-tight mb-5 text-balance"
+              style={{ fontSize: "clamp(2.25rem, 6.4vw, 4.75rem)" }}
+            >
+              <motion.span
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 60, damping: 18 }}
+                className="block"
+              >
+                {home?.hero_title_pre ?? "Start Learning"}
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.1 }}
+                className="block text-gradient"
+              >
+                {typedText}
+                <span className="inline-block w-[6px] h-[0.85em] bg-primary ml-2 align-middle animate-[typewriter-blink_1s_step-end_infinite]" />
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 60, damping: 18, delay: 0.2 }}
+                className="block"
+              >
+                {home?.hero_title_post ?? "Unlock your tech career"}<span className="text-primary">.</span>
+              </motion.span>
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed mb-7"
+            >
+              {home?.hero_subtitle ?? "Live online courses. Hands-on projects. Verified certificates. Built by engineers who hire engineers."}
+            </motion.p>
+
+            {/* honest social proof pill */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white border border-primary/15 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.3)] mb-8"
+            >
+              <div className="flex -space-x-1.5 sm:-space-x-2">
+                {heroAvatars.slice(0, 4).map((a, i) => (
+                  <img key={i} src={a} alt="" loading="lazy" className="w-5 h-5 sm:w-7 sm:h-7 rounded-full ring-2 ring-white object-cover" />
+                ))}
+              </div>
+              <span className="text-[11px] sm:text-sm font-medium text-foreground whitespace-nowrap">
+                Join <span className="text-primary font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
+              </span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55, type: "spring" }}
+              className="flex flex-wrap gap-3 justify-center"
+            >
+              <MagneticButton size="lg" asChild className="shimmer-btn text-primary-foreground relative overflow-hidden">
+                <Link to="/courses">{home?.hero_cta_primary ?? "Explore Courses"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </MagneticButton>
+              {!user && (
+                <MagneticButton size="lg" variant="outline" asChild className="border-primary/30 text-foreground hover:bg-primary/5 hover:text-primary">
+                  <Link to="/sign-up">{home?.hero_cta_secondary ?? "Sign up free"}</Link>
+                </MagneticButton>
+              )}
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="text-xs text-muted-foreground mt-4"
+            >
+              No credit card required
+            </motion.p>
           </div>
 
           {/* scroll cue */}
@@ -646,7 +752,7 @@ export default function Index() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4 }}
-            className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1.5 text-hero-muted/60"
+            className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1.5 text-muted-foreground/60"
           >
             <Mouse className="h-4 w-4" />
             <motion.div
