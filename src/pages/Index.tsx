@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote, Mouse } from "lucide-react";
+import { ArrowRight, BookOpen, Award, Briefcase, ChevronRight, ChevronLeft, Star, Shield, GraduationCap, CheckCircle2, Zap, Heart, Sparkles, Clock4, Rocket, Trophy, BadgeCheck, Lock, PlayCircle, Users, Globe2, MessageCircle, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -18,6 +18,12 @@ import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
 import instructor4 from "@/assets/stock/instructor-4.jpg";
 import mentorStock from "@/assets/stock/mentor.jpg";
+import testimonial1 from "@/assets/stock/testimonial-1.jpg";
+import testimonial2 from "@/assets/stock/testimonial-2.jpg";
+import testimonial3 from "@/assets/stock/testimonial-3.jpg";
+import testimonial4 from "@/assets/stock/testimonial-4.jpg";
+import testimonial5 from "@/assets/stock/testimonial-5.jpg";
+import testimonial6 from "@/assets/stock/testimonial-6.jpg";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
