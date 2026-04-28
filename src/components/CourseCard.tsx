@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
+import { SafeImage } from "@/components/SafeImage";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -49,8 +50,9 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
           {/* Thumbnail */}
           <div className="aspect-[16/10] sm:aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden flex-shrink-0">
             {course.thumbnail_url ? (
-              <img
+              <SafeImage
                 src={course.thumbnail_url}
+                fallback={pickFallbackAvatar(course.id)}
                 alt={course.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
@@ -102,7 +104,13 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-primary/15">
-                  <img src={instructorAvatar} alt={instructorName} className="w-full h-full object-cover" loading="lazy" />
+                  <SafeImage
+                    src={instructorAvatar}
+                    fallback={pickFallbackAvatar(course.id)}
+                    alt={instructorName}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">Instructor</span>
