@@ -6,6 +6,8 @@ import { Footer } from "@/components/Footer";
 import { Loader2, CheckCircle2, XCircle, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import { useEffect } from "react";
+import { trackLead } from "@/lib/track-lead";
 
 export default function VerifyCertificate() {
   const { code } = useParams<{ code: string }>();
@@ -30,6 +32,14 @@ export default function VerifyCertificate() {
     },
     enabled: !!code,
   });
+
+  useEffect(() => {
+    if (isLoading || !code) return;
+    trackLead({
+      formType: "certificate_verify",
+      formData: { code, valid: !!data, course_id: data?.cert?.course_id ?? null },
+    }).catch(() => {/* never block UX */});
+  }, [code, isLoading, data]);
 
   return (
     <div className="min-h-screen bg-background">
