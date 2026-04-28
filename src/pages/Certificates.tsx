@@ -179,7 +179,7 @@ export default function Certificates() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {certificates.map((cert: any) => {
                   const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-                  const verifyUrl = `${window.location.origin}/verify/${cert.verification_code}`;
+                   const verifyUrl = siteUrl(`/verify/${cert.verification_code}`);
                   return (
                     <CertificateCardWithDownload
                       key={cert.id}
