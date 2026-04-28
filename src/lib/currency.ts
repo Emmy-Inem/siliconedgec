@@ -137,21 +137,58 @@ export const FALLBACK_RATES_FROM_NGN: Record<string, number> = {
 export function detectVisitorCountry(): string {
   if (typeof window === "undefined") return "NG";
   try {
+    // 1) Cached IP-derived country (set by ensureGeoCountry)
+    const cached = window.localStorage.getItem("sec_geo_country");
+    if (cached && COUNTRY_TO_CURRENCY[cached]) return cached;
+    // 2) Timezone heuristic (works for ~95% of visitors)
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz && TZ_TO_COUNTRY[tz]) return TZ_TO_COUNTRY[tz];
-    // navigator.language fallback (e.g. "en-US")
+    // 3) navigator.language fallback (e.g. "en-US")
     const lang = navigator.language || "en-NG";
     const region = lang.split("-")[1];
     if (region && COUNTRY_TO_CURRENCY[region.toUpperCase()]) return region.toUpperCase();
   } catch {
     /* ignore */
   }
-  return "NG";
+  return "US";
 }
 
 export function detectVisitorCurrency(): string {
   const country = detectVisitorCountry();
   return COUNTRY_TO_CURRENCY[country] ?? "USD";
+}
+
+/**
+ * Best-effort IP geolocation. Caches result in localStorage for 24h so we
+ * never block render. Falls through silently on any failure (timezone
+ * detection still applies).
+ */
+export async function ensureGeoCountry(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const cachedAt = Number(window.localStorage.getItem("sec_geo_at") || 0);
+    const cached = window.localStorage.getItem("sec_geo_country");
+    const fresh = cached && Date.now() - cachedAt < 24 * 60 * 60 * 1000;
+    if (fresh && cached) return cached;
+
+    // Cloudflare's free trace endpoint — no key, fast, CORS-enabled.
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 2500);
+    const res = await fetch("https://www.cloudflare.com/cdn-cgi/trace", { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) throw new Error("trace http");
+    const text = await res.text();
+    const loc = text.split("\n").find((l) => l.startsWith("loc="))?.split("=")[1]?.trim();
+    if (loc && COUNTRY_TO_CURRENCY[loc.toUpperCase()]) {
+      const code = loc.toUpperCase();
+      window.localStorage.setItem("sec_geo_country", code);
+      window.localStorage.setItem("sec_geo_at", String(Date.now()));
+      return code;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 export function formatLocalized(amountNgn: number, currency: string, rateFromNgn: number, locale?: string): string {
