@@ -66,8 +66,3 @@ export function UtmTracker() {
 
   return null;
 }
-    }
-  }, [location.search, location.pathname]);
-
-  return null;
-}
