@@ -848,7 +848,18 @@ export default function Index() {
             >
               <div className="flex -space-x-1.5 sm:-space-x-2">
                 {heroAvatars.slice(0, 4).map((a, i) => (
-                  <img key={i} src={a} alt="" loading="lazy" className="w-5 h-5 sm:w-7 sm:h-7 rounded-full ring-2 ring-white object-cover" />
+                  <img
+                    key={i}
+                    src={a || fallbackInstructorImages[i % fallbackInstructorImages.length]}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      const fb = fallbackInstructorImages[i % fallbackInstructorImages.length];
+                      if (img.src !== fb) img.src = fb;
+                    }}
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full ring-2 ring-white object-cover bg-muted"
+                  />
                 ))}
               </div>
               <span className="text-[11px] sm:text-sm font-medium text-foreground whitespace-nowrap">
@@ -872,29 +883,6 @@ export default function Index() {
               )}
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="text-xs text-muted-foreground mt-4"
-            >
-              No credit card required
-            </motion.p>
-          </div>
-
-          {/* mobile-only floating tech strip — replaces scattered cards on small screens */}
-          <div className="md:hidden mt-10 -mx-4 overflow-hidden mask-fade-x">
-            <div className="flex w-max gap-3" style={{ animation: "marquee 32s linear infinite" }}>
-              {[...HERO_TECH_LOGOS, ...HERO_TECH_LOGOS].map((l, i) => (
-                <div
-                  key={`${l.name}-${i}`}
-                  className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-primary/10 shadow-[0_8px_20px_-10px_hsl(var(--primary)/0.35)] p-2.5 flex items-center justify-center"
-                  title={l.name}
-                >
-                  <img src={l.src} alt={l.name} loading="lazy" className="max-w-full max-h-full object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} />
-                </div>
-              ))}
-            </div>
           </div>
 
         </motion.div>
