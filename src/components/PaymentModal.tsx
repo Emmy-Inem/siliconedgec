@@ -126,9 +126,13 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       }
       throw new Error("Unexpected response from payment provider");
     } catch (e: any) {
+      const msg = e?.message ?? "Could not start payment. Please try again.";
+      const notConfigured = /paystack/i.test(msg) && /not configured|secret/i.test(msg);
       toast({
-        title: "Payment unavailable",
-        description: e?.message ?? "Could not start payment. Please try again.",
+        title: notConfigured ? "Payments temporarily unavailable" : "Payment unavailable",
+        description: notConfigured
+          ? "Card payments are being set up. Please check back shortly or contact support to enroll."
+          : msg,
         variant: "destructive",
       });
       setProcessing(false);
