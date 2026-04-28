@@ -9,6 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
+import instructor1 from "@/assets/stock/instructor-1.jpg";
+import instructor2 from "@/assets/stock/instructor-2.jpg";
+import instructor3 from "@/assets/stock/instructor-3.jpg";
+import instructor4 from "@/assets/stock/instructor-4.jpg";
+
+const LEARNER_AVATARS = [instructor1, instructor2, instructor3, instructor4];
 
 const difficulties = ["All Levels", "Beginner", "Intermediate", "Expert"];
 
@@ -73,12 +79,14 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8 pt-7 border-t border-border/50">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1.5">
-                  {[...Array(4)].map((_, i) => (
-                  <span
-                    key={i}
-                    className="w-6 h-6 rounded-full ring-2 ring-white"
-                    style={{ background: ["hsl(var(--gold))", "hsl(var(--accent))", "hsl(var(--primary))", "hsl(var(--secondary-foreground))"][i] }}
-                  />
+                  {LEARNER_AVATARS.map((src, i) => (
+                    <img
+                      key={i}
+                      src={src}
+                      alt={`Silicon Edge learner ${i + 1}`}
+                      loading="lazy"
+                      className="w-7 h-7 rounded-full ring-2 ring-white object-cover shadow-sm"
+                    />
                   ))}
                 </div>
                 <span className="text-xs text-muted-foreground"><span className="font-bold text-foreground">2,000+</span> learners</span>
