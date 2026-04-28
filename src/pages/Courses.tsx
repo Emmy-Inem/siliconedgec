@@ -8,6 +8,7 @@ import { Search, Loader2, SlidersHorizontal, X, Sparkles, Cloud, Cpu, Code2, Shi
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 
 const difficulties = ["All Levels", "Beginner", "Intermediate", "Expert"];
 
@@ -219,7 +220,7 @@ export default function Courses() {
             "@type": "ListItem",
             position: i + 1,
             name: c.title,
-            url: `${typeof window !== "undefined" ? window.location.origin : ""}/courses/${c.id}`,
+            url: siteUrl(`/courses/${c.id}`),
           })),
         }}
       />

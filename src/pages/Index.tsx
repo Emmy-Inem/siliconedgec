@@ -744,7 +744,7 @@ export default function Index() {
           "@context": "https://schema.org",
           "@type": "EducationalOrganization",
           name: "Silicon Edge Consulting",
-          url: typeof window !== "undefined" ? window.location.origin : undefined,
+          url: "https://siliconedgec.com",
           sameAs: ["https://siliconedgec.com"],
         }}
       />
