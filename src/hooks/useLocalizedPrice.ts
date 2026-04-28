@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { detectVisitorCurrency, formatLocalized, FALLBACK_RATES_FROM_NGN } from "@/lib/currency";
+import { detectVisitorCurrency, ensureGeoCountry, formatLocalized, FALLBACK_RATES_FROM_NGN } from "@/lib/currency";
 import { formatNaira } from "@/lib/format-currency";
 
 /**
@@ -9,8 +10,19 @@ import { formatNaira } from "@/lib/format-currency";
  * falls back to bundled rates if unreachable.
  */
 export function useLocalizedPrice() {
+  // Re-evaluate after IP geo resolves so visitors abroad don't get stuck on
+  // the timezone fallback.
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let active = true;
+    ensureGeoCountry().then((c) => { if (active && c) setTick((n) => n + 1); });
+    return () => { active = false; };
+  }, []);
+
   const currency = typeof window === "undefined" ? "NGN" : detectVisitorCurrency();
   const isNgn = currency === "NGN";
+  // tick is referenced so React re-runs detection after IP geo lands
+  void tick;
 
   const { data: rate } = useQuery({
     queryKey: ["fx-ngn", currency],
