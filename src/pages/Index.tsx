@@ -745,7 +745,7 @@ export default function Index() {
           "@type": "EducationalOrganization",
           name: "Silicon Edge Consulting",
           url: typeof window !== "undefined" ? window.location.origin : undefined,
-          sameAs: ["https://siliconedgec.lovable.app"],
+          sameAs: ["https://siliconedgec.com"],
         }}
       />
       <Header />

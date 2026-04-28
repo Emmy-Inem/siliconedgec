@@ -83,7 +83,7 @@ export function generateReceiptPdf(input: ReceiptInput): jsPDF {
   doc.setFontSize(9);
   doc.setTextColor(120);
   doc.text("Thank you for choosing Silicon Edge Consulting.", margin, y);
-  doc.text("Need help? Email support@siliconedgeconsulting.com", margin, y + 14);
+  doc.text("Need help? Email info@siliconedgec.com", margin, y + 14);
 
   return doc;
 }

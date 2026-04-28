@@ -50,7 +50,7 @@ const LEGACY_TEMPLATES = {
     html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
       <h1 style="color:#a855f7">Welcome aboard, ${name}!</h1>
       <p>Your Silicon Edge account is ready. Start exploring our job-ready IT training programs in AI, Cloud, and DevOps.</p>
-      <a href="https://siliconedgec.lovable.app/courses" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Browse Courses</a>
+      <a href="https://siliconedgec.com/courses" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Browse Courses</a>
     </div>`,
   }),
   enrollment: (name: string, course: string) => ({
@@ -58,7 +58,7 @@ const LEGACY_TEMPLATES = {
     html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
       <h1 style="color:#a855f7">Enrollment confirmed</h1>
       <p>Hi ${name}, you now have lifetime access to <strong>${course}</strong>.</p>
-      <a href="https://siliconedgec.lovable.app/dashboard" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Go to Dashboard</a>
+      <a href="https://siliconedgec.com/dashboard" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Go to Dashboard</a>
     </div>`,
   }),
   certificate: (name: string, course: string, code: string) => ({
@@ -66,7 +66,7 @@ const LEGACY_TEMPLATES = {
     html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
       <h1 style="color:#fbbf24">Congratulations, ${name}! 🎓</h1>
       <p>You've completed <strong>${course}</strong>. Verification code: <code>${code}</code></p>
-      <a href="https://siliconedgec.lovable.app/certificates" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">View Certificate</a>
+      <a href="https://siliconedgec.com/certificates" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">View Certificate</a>
     </div>`,
   }),
 } as const;
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       const rawSubject = map[`${template_key}_subject`] || fallback.subject;
       const rawBody = map[`${template_key}_body`] || fallback.body;
       const vars = {
-        site_url: "https://siliconedgec.lovable.app",
+        site_url: "https://siliconedgec.com",
         ...(variables ?? {}),
       };
       const subject = applyVars(rawSubject, vars);

@@ -20,12 +20,12 @@ const TEMPLATES = [
 
 const VARIABLES = [
   { token: "{{name}}", sample: "John Doe" },
-  { token: "{{site_url}}", sample: "https://siliconedgec.lovable.app" },
+  { token: "{{site_url}}", sample: "https://siliconedgec.com" },
   { token: "{{course_title}}", sample: "AI Foundations" },
-  { token: "{{course_url}}", sample: "https://siliconedgec.lovable.app/dashboard" },
-  { token: "{{verify_url}}", sample: "https://siliconedgec.lovable.app/verify/ABC123" },
-  { token: "{{reset_url}}", sample: "https://siliconedgec.lovable.app/reset?token=..." },
-  { token: "{{cart_url}}", sample: "https://siliconedgec.lovable.app/cart" },
+  { token: "{{course_url}}", sample: "https://siliconedgec.com/dashboard" },
+  { token: "{{verify_url}}", sample: "https://siliconedgec.com/verify/ABC123" },
+  { token: "{{reset_url}}", sample: "https://siliconedgec.com/reset?token=..." },
+  { token: "{{cart_url}}", sample: "https://siliconedgec.com/cart" },
 ];
 
 function applyVars(s: string) {

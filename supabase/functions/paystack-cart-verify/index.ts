@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
             variables: {
               name: profileRow?.full_name || recipient.split("@")[0],
               course_title: `${courseIds.length} course(s)`,
-              course_url: `https://siliconedgec.lovable.app/dashboard`,
+              course_url: `https://siliconedgec.com/dashboard`,
               course_list: courseList,
             },
           }),
