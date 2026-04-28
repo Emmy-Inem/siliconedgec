@@ -21,5 +21,8 @@ Disallow: /sign-up
 Disallow: /reset-password
 Disallow: /verify-receipt/
 Disallow: /r/
+Disallow: /*?utm_*
+Disallow: /*?gclid=*
+Disallow: /*?fbclid=*
 
 Sitemap: https://siliconedgec.com/sitemap.xml
