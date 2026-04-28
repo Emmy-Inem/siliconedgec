@@ -12,5 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /cart
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /reset-password
+Disallow: /verify-receipt/
+Disallow: /r/
 
 Sitemap: https://siliconedgec.com/sitemap.xml
