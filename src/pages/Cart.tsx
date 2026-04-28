@@ -106,7 +106,15 @@ export default function Cart() {
       }
       throw new Error("Unexpected response from payment provider");
     } catch (e: any) {
-      toast({ title: "Checkout failed", description: e?.message ?? "Try again.", variant: "destructive" });
+      const msg = e?.message ?? "Try again.";
+      const notConfigured = /paystack/i.test(msg) && /not configured|secret/i.test(msg);
+      toast({
+        title: notConfigured ? "Checkout temporarily unavailable" : "Checkout failed",
+        description: notConfigured
+          ? "Payments are being set up. Please check back shortly or contact support."
+          : msg,
+        variant: "destructive",
+      });
       setProcessing(false);
     }
   };
