@@ -26,13 +26,13 @@ const NotFound = () => {
 
     (async () => {
       try {
-        const { data } = await (supabase
-          .from("gone_urls" as any)
+        const { data } = await (supabase as any)
+          .from("gone_urls")
           .select("reason")
           .eq("path", location.pathname)
-          .maybeSingle());
+          .maybeSingle();
         if (!active) return;
-        setGone((data as GoneRow | null) ?? null);
+        setGone((data as unknown as GoneRow | null) ?? null);
       } catch {
         // Network/RLS hiccup — treat as plain 404
         if (active) setGone(null);
