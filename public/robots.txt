@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://siliconedgec.lovable.app/sitemap.xml
+Sitemap: https://siliconedgec.com/sitemap.xml

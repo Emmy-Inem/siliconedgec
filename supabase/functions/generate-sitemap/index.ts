@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     );
 
     const url = new URL(req.url);
-    const baseUrl = url.searchParams.get("base") ?? "https://siliconedgec.lovable.app";
+    const baseUrl = url.searchParams.get("base") ?? "https://siliconedgec.com";
 
     const { data: courses } = await supabase
       .from("courses")

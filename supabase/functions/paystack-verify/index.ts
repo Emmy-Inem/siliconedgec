@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
             variables: {
               name: profileRow?.full_name || recipient.split("@")[0],
               course_title: courseRow?.title ?? "your course",
-              course_url: `https://siliconedgec.lovable.app/courses/${order.course_id}/learn`,
+              course_url: `https://siliconedgec.com/courses/${order.course_id}/learn`,
             },
           }),
         }).catch((e) => console.error("send-email enrollment failed", e));

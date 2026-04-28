@@ -20,7 +20,7 @@ import { format } from "date-fns";
 
 // Canonical public URL — always use the published domain for shareable
 // influencer/UTM links so testers don't hit the preview-domain auth gate.
-const PUBLIC_SITE_URL = "https://siliconedgec.lovable.app";
+const PUBLIC_SITE_URL = "https://siliconedgec.com";
 
 function generateCode(prefix = "PROMO") {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
