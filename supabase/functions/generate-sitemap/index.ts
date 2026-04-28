@@ -18,12 +18,21 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const baseUrl = url.searchParams.get("base") ?? "https://siliconedgec.com";
 
-    const [{ data: courses }, { data: cmsPages }, { data: jobs }, { data: instructors }] = await Promise.all([
+    const [
+      { data: courses },
+      { data: cmsPages },
+      { data: jobs },
+      { data: instructors },
+      { data: gone },
+    ] = await Promise.all([
       supabase.from("courses").select("id, updated_at").eq("is_published", true),
       supabase.from("cms_pages").select("slug, updated_at").eq("status", "published"),
       supabase.from("jobs").select("id, updated_at").eq("is_published", true),
       supabase.from("instructors").select("id, updated_at"),
+      supabase.from("gone_urls").select("path"),
     ]);
+
+    const gonePaths = new Set<string>((gone ?? []).map((g: any) => g.path));
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -41,17 +50,18 @@ Deno.serve(async (req) => {
     const entry = (loc: string, lastmod: string, changefreq: string, priority: string) =>
       `<url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
 
-    const urls = [
-      ...staticRoutes.map((r) => entry(`${baseUrl}${r.path}`, today, r.changefreq, r.priority)),
-      ...(courses ?? []).map((c: any) =>
-        entry(`${baseUrl}/courses/${c.id}`, (c.updated_at ?? today).split("T")[0], "weekly", "0.8")),
-      ...(cmsPages ?? []).map((p: any) =>
-        entry(`${baseUrl}/p/${p.slug}`, (p.updated_at ?? today).split("T")[0], "monthly", "0.5")),
-      ...(jobs ?? []).map((j: any) =>
-        entry(`${baseUrl}/jobs/${j.id}`, (j.updated_at ?? today).split("T")[0], "weekly", "0.6")),
-      ...(instructors ?? []).map((i: any) =>
-        entry(`${baseUrl}/instructors/${i.id}`, (i.updated_at ?? today).split("T")[0], "monthly", "0.5")),
-    ].join("\n");
+    const all: { loc: string; lastmod: string; cf: string; pr: string; path: string }[] = [
+      ...staticRoutes.map((r) => ({ loc: `${baseUrl}${r.path}`, lastmod: today, cf: r.changefreq, pr: r.priority, path: r.path })),
+      ...(courses ?? []).map((c: any) => ({ loc: `${baseUrl}/courses/${c.id}`, lastmod: (c.updated_at ?? today).split("T")[0], cf: "weekly", pr: "0.8", path: `/courses/${c.id}` })),
+      ...(cmsPages ?? []).map((p: any) => ({ loc: `${baseUrl}/p/${p.slug}`, lastmod: (p.updated_at ?? today).split("T")[0], cf: "monthly", pr: "0.5", path: `/p/${p.slug}` })),
+      ...(jobs ?? []).map((j: any) => ({ loc: `${baseUrl}/jobs/${j.id}`, lastmod: (j.updated_at ?? today).split("T")[0], cf: "weekly", pr: "0.6", path: `/jobs/${j.id}` })),
+      ...(instructors ?? []).map((i: any) => ({ loc: `${baseUrl}/instructors/${i.id}`, lastmod: (i.updated_at ?? today).split("T")[0], cf: "monthly", pr: "0.5", path: `/instructors/${i.id}` })),
+    ];
+
+    const urls = all
+      .filter((u) => !gonePaths.has(u.path))
+      .map((u) => entry(u.loc, u.lastmod, u.cf, u.pr))
+      .join("\n");
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

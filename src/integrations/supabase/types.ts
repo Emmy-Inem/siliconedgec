@@ -820,6 +820,27 @@ export type Database = {
           },
         ]
       }
+      gone_urls: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       influencer_referrals: {
         Row: {
           commission_earned: number
