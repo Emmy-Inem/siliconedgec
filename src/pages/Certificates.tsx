@@ -14,6 +14,7 @@ import certificateCelebration from "@/assets/stock/certificate-holder.jpg";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
