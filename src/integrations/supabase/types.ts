@@ -651,6 +651,7 @@ export type Database = {
           product_type: string | null
           purchase_note: string | null
           rating: number | null
+          slug: string | null
           status: string | null
           students_enrolled: number | null
           thumbnail_url: string | null
@@ -686,6 +687,7 @@ export type Database = {
           product_type?: string | null
           purchase_note?: string | null
           rating?: number | null
+          slug?: string | null
           status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
@@ -721,6 +723,7 @@ export type Database = {
           product_type?: string | null
           purchase_note?: string | null
           rating?: number | null
+          slug?: string | null
           status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
@@ -2083,6 +2086,11 @@ export type Database = {
       is_login_locked: {
         Args: { _email: string; _ip: string }
         Returns: boolean
+      }
+      slugify: { Args: { _text: string }; Returns: string }
+      unique_course_slug: {
+        Args: { _base: string; _id: string }
+        Returns: string
       }
     }
     Enums: {
