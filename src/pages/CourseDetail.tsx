@@ -500,7 +500,7 @@ export default function CourseDetail() {
                         className="w-full gap-2"
                         onClick={() => {
                           if (!user) {
-                            navigate(`/sign-in?next=/courses/${id}`);
+                            navigate(`/sign-in?next=/courses/${courseSlug}`);
                             return;
                           }
                           setRegisterOpen(true);
