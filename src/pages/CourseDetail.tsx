@@ -28,6 +28,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 
 const difficultyIcon: Record<string, string> = {
@@ -51,6 +52,22 @@ export default function CourseDetail() {
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
   const { format: formatPrice, isNgn } = useLocalizedPrice();
 
+  // The URL param may be a UUID or a slug. The DB row id is always a UUID,
+  // so use `courseId` for any database query. Use `courseSlug` (or fallback
+  // to id) for any user-facing URL.
+  const courseId = course?.id;
+  const courseSlug = (course as any)?.slug ?? course?.id;
+
+  // Canonicalize the URL: if the user landed via UUID but the course has a
+  // slug, replace the URL with the slug version (no history entry).
+  useEffect(() => {
+    if (!course) return;
+    const slug = (course as any).slug as string | null | undefined;
+    if (slug && id !== slug) {
+      navigate(`/courses/${slug}${window.location.search}${window.location.hash}`, { replace: true });
+    }
+  }, [course, id, navigate]);
+
   // Log course view once per page load
   useEffect(() => {
     if (id && course) {
@@ -58,7 +75,7 @@ export default function CourseDetail() {
         user_id: user?.id ?? null,
         action: "course_view",
         entity_type: "course",
-        entity_id: id,
+        entity_id: course.id,
         metadata: { title: course.title },
       });
     }
@@ -72,7 +89,7 @@ export default function CourseDetail() {
       supabase.functions.invoke("paystack-verify", { body: { reference } }).then(({ data }) => {
         if (data?.verified) {
           toast({ title: "Payment confirmed", description: "You're now enrolled. Welcome aboard!" });
-          qc.invalidateQueries({ queryKey: ["enrollment", id] });
+          qc.invalidateQueries({ queryKey: ["enrollment", courseId] });
         } else {
           toast({ title: "Payment not confirmed", description: data?.message ?? "Please contact support.", variant: "destructive" });
         }
@@ -87,40 +104,40 @@ export default function CourseDetail() {
   const [hoverRating, setHoverRating] = useState(0);
 
   const { data: enrollment } = useQuery({
-    queryKey: ["enrollment", id, user?.id],
+    queryKey: ["enrollment", courseId, user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("enrollments")
         .select("id, progress_percentage, is_completed")
         .eq("user_id", user!.id)
-        .eq("course_id", id!)
+        .eq("course_id", courseId!)
         .maybeSingle();
       return data;
     },
-    enabled: !!user && !!id,
+    enabled: !!user && !!courseId,
   });
 
   // For free webinars, also check course_registrations so the CTA reflects
   // "Registered" even if the enrollment row is somehow missing.
   const { data: webinarReg } = useQuery({
-    queryKey: ["webinar-registration", id, user?.id],
+    queryKey: ["webinar-registration", courseId, user?.id],
     queryFn: async () => {
       const { data } = await (supabase.from("course_registrations") as any)
         .select("id")
         .eq("user_id", user!.id)
-        .eq("course_id", id!)
+        .eq("course_id", courseId!)
         .eq("registration_type", "webinar")
         .maybeSingle();
       return data;
     },
-    enabled: !!user && !!id,
+    enabled: !!user && !!courseId,
   });
 
   const enroll = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("enrollments").insert({
         user_id: user!.id,
-        course_id: id!,
+        course_id: courseId!,
         payment_status: "confirmed",
         progress_percentage: 0,
       });
@@ -129,18 +146,18 @@ export default function CourseDetail() {
       // Track lead with UTM attribution (standardized: course_id only, UTMs auto-attached)
       await trackLead({
         formType: "enrollment",
-        formData: { course_id: id },
+        formData: { course_id: courseId },
       });
       await logUserActivity({
         user_id: user!.id,
         action: "course_enroll",
         entity_type: "course",
-        entity_id: id!,
+        entity_id: courseId!,
         metadata: { title: course?.title, price: course?.price ?? 0 },
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["enrollment", id, user?.id] });
+      qc.invalidateQueries({ queryKey: ["enrollment", courseId, user?.id] });
       toast({ title: "Enrolled successfully!", description: "You can now access this course from your dashboard." });
     },
     onError: (e) => toast({ title: "Enrollment failed", description: e.message, variant: "destructive" }),
@@ -148,12 +165,12 @@ export default function CourseDetail() {
 
   const handleAddToCart = () => {
     if (!user) { navigate("/sign-in"); return; }
-    addToCart(id!);
+    if (courseId) addToCart(courseId);
   };
 
   const handleBookmark = () => {
     if (!user) { navigate("/sign-in"); return; }
-    toggleBookmark(id!);
+    if (courseId) toggleBookmark(courseId);
   };
 
   const handlePaymentSuccess = () => { enroll.mutate(); };
@@ -191,8 +208,8 @@ export default function CourseDetail() {
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
   const isFreeWebinar = course.price === 0 || course.title.toUpperCase().startsWith("FREE");
   const isEnrolled = !!enrollment || (isFreeWebinar && !!webinarReg);
-  const bookmarked = isBookmarked(id!);
-  const inCart = isInCart(id!);
+  const bookmarked = isBookmarked(course.id);
+  const inCart = isInCart(course.id);
   const originalPrice = Math.round(course.price * 1.2);
   const hours = Math.floor(course.duration_hours);
   const minutes = Math.round((course.duration_hours - hours) * 60);
@@ -204,6 +221,7 @@ export default function CourseDetail() {
         description={(course.description ?? `Master ${course.title} with live, instructor-led training.`).slice(0, 155)}
         image={course.thumbnail_url ?? undefined}
         type="article"
+        canonical={siteUrl(`/courses/${courseSlug}`)}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Course",
