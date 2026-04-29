@@ -49,7 +49,7 @@ export default function CourseDetail() {
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
-  const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(id);
+  const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(course?.id);
   const { format: formatPrice, isNgn } = useLocalizedPrice();
 
   // The URL param may be a UUID or a slug. The DB row id is always a UUID,
