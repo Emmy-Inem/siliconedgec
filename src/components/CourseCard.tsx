@@ -6,6 +6,7 @@ import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
 import { SafeImage } from "@/components/SafeImage";
+import { courseHref } from "@/lib/course-url";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -45,7 +46,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
         transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.3) }}
         viewport={{ once: true }}
       >
-      <Link to={`/courses/${course.id}`} className="group block h-full">
+      <Link to={courseHref(course)} className="group block h-full">
         <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/10 group-hover:border-primary/30 h-full flex flex-col">
           {/* Thumbnail */}
           <div className="aspect-[16/10] sm:aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden flex-shrink-0">
