@@ -228,7 +228,7 @@ export default function Courses() {
             "@type": "ListItem",
             position: i + 1,
             name: c.title,
-            url: siteUrl(`/courses/${c.id}`),
+            url: siteUrl(`/courses/${c.slug ?? c.id}`),
           })),
         }}
       />
