@@ -17,6 +17,7 @@ export interface DbModule {
 
 export interface DbCourse {
   id: string;
+  slug: string | null;
   title: string;
   description: string | null;
   category: string;
@@ -72,11 +73,14 @@ async function fetchCourses(): Promise<DbCourse[]> {
 }
 
 // Full fetch with modules/lessons for detail page
-async function fetchCourseById(id: string): Promise<DbCourse | null> {
+async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null> {
+  // UUIDs match this pattern; everything else is treated as a slug
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+  const column = isUuid ? "id" : "slug";
   const { data: course, error } = await supabase
     .from("courses")
     .select("*, instructor:instructors(id, name, bio, avatar_url)")
-    .eq("id", id)
+    .eq(column, idOrSlug)
     .maybeSingle();
 
   if (error) throw error;
@@ -85,7 +89,7 @@ async function fetchCourseById(id: string): Promise<DbCourse | null> {
   const { data: modules } = await supabase
     .from("modules")
     .select("*, lessons:lessons(id, title, duration, order_index)")
-    .eq("course_id", id)
+    .eq("course_id", (course as any).id)
     .order("order_index");
 
   return {
@@ -111,7 +115,7 @@ export function useCourses() {
 export function useCourse(id: string | undefined) {
   return useQuery({
     queryKey: ["course", id],
-    queryFn: () => fetchCourseById(id!),
+    queryFn: () => fetchCourseByIdOrSlug(id!),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   });
