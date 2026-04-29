@@ -1,4 +1,5 @@
-import { useState, useMemo, forwardRef } from "react";
+import { useState, useMemo, forwardRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
@@ -188,10 +189,18 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
 export default function Courses() {
   const { data: courses = [], isLoading } = useCourses();
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Allow deep-links like /courses?q=aws (used by the 404 cover-page search
+  // fallback) to pre-fill the search input on arrival.
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) setSearch(q);
+  }, [searchParams]);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(courses.map((c) => c.category)));

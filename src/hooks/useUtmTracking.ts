@@ -65,7 +65,19 @@ export function useUtmTracking() {
   const location = useLocation();
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
+    // Mobile in-app browsers (FB, IG, some PWAs) occasionally rewrite links so
+    // the marketing query string lands in the hash instead of `?…`. Read both
+    // so attribution survives those rewrites.
+    const queryParams = new URLSearchParams(location.search);
+    const hash = (location.hash || "").replace(/^#/, "");
+    const hashQueryStart = hash.indexOf("?");
+    const hashSearch = hashQueryStart >= 0 ? hash.slice(hashQueryStart + 1) : hash;
+    const hashParams = new URLSearchParams(hashSearch);
+    const params = new URLSearchParams();
+    // Hash first, then real query overrides — query is the canonical source.
+    hashParams.forEach((v, k) => params.set(k, v));
+    queryParams.forEach((v, k) => params.set(k, v));
+
     const utmFromUrl: UtmParams = {};
     let hasUtm = false;
 
@@ -82,7 +94,7 @@ export function useUtmTracking() {
       const existing = getStoredUtmParams();
       setWithExpiry(STORAGE_KEY, { ...existing, ...utmFromUrl });
     }
-  }, [location.search]);
+  }, [location.search, location.hash]);
 
   return getStoredUtmParams();
 }

@@ -1,5 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2, Home, Search, Briefcase, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,9 +12,22 @@ type GoneRow = { reason: string | null; redirect_to?: string | null };
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [gone, setGone] = useState<GoneRow | null>(null);
   const [checked, setChecked] = useState(false);
   const [slow, setSlow] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+
+  /** Cover-page search fallback — when a user hits a dead URL we let them
+   *  type a term and bounce them to /courses?q=… so they don't dead-end. */
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setSearching(true);
+    navigate(`/courses?q=${encodeURIComponent(q)}`);
+  };
 
   useEffect(() => {
     let active = true;
@@ -111,10 +125,36 @@ const NotFound = () => {
             </Link>
           </div>
 
-          <Link to="/courses" className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium">
-            <Search className="h-4 w-4" />
-            Or search the catalog
-          </Link>
+          <form
+            onSubmit={handleSearch}
+            className="mt-2 flex items-stretch gap-2 max-w-md mx-auto"
+            role="search"
+            aria-label="Search the course catalog"
+          >
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search courses (e.g. AWS, Python, DevOps)"
+                aria-label="Search courses"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                maxLength={120}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!query.trim() || searching}
+              className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+            >
+              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              Search
+            </button>
+          </form>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Or <Link to="/courses" className="text-primary hover:underline">browse the full catalog</Link>.
+          </p>
         </div>
       </div>
     </>

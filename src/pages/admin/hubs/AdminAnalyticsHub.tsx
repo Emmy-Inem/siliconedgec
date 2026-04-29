@@ -5,6 +5,7 @@ import AdminCourseHealth from "../AdminCourseHealth";
 import AdminUserActivity from "../AdminUserActivity";
 import AdminWishlistInsights from "../AdminWishlistInsights";
 import AdminTrackingQA from "../AdminTrackingQA";
+import AdminAuthReplay from "../AdminAuthReplay";
 
 export default function AdminAnalyticsHub() {
   return (
@@ -15,6 +16,7 @@ export default function AdminAnalyticsHub() {
         { value: "platform", label: "Platform", content: <AdminAnalytics /> },
         { value: "marketing", label: "Marketing", content: <AdminMarketingAnalytics /> },
         { value: "tracking-qa", label: "Tracking QA", content: <AdminTrackingQA /> },
+        { value: "auth-replay", label: "Auth Replay", content: <AdminAuthReplay /> },
         { value: "course-health", label: "Course Health", content: <AdminCourseHealth /> },
         { value: "user-activity", label: "User Activity", content: <AdminUserActivity /> },
         { value: "wishlist", label: "Wishlist Insights", content: <AdminWishlistInsights /> },
