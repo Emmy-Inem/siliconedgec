@@ -10,13 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from "@/lib/user-activity";
+import { z } from "zod";
 import logoDark from "@/assets/logo-dark.png";
+
+const signInSchema = z.object({
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+});
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -32,6 +39,17 @@ export default function SignIn() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
+    const parsed = signInSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      const errs: { email?: string; password?: string } = {};
+      for (const issue of parsed.error.issues) {
+        const k = issue.path[0] as "email" | "password";
+        if (!errs[k]) errs[k] = issue.message;
+      }
+      setFieldErrors(errs);
+      return;
+    }
     setLoading(true);
 
     // Pre-flight: check if this IP is blocked or under lockout BEFORE attempting auth
@@ -127,12 +145,15 @@ export default function SignIn() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined })); }}
                     placeholder="you@example.com"
                     required
+                    autoComplete="email"
+                    aria-invalid={!!fieldErrors.email}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
+                {fieldErrors.email && <p className="mt-1.5 text-xs text-destructive">{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -142,42 +163,32 @@ export default function SignIn() {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors((f) => ({ ...f, password: undefined })); }}
                     placeholder="••••••••"
                     required
+                    autoComplete="current-password"
+                    aria-invalid={!!fieldErrors.password}
                     className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {fieldErrors.password && <p className="mt-1.5 text-xs text-destructive">{fieldErrors.password}</p>}
               </div>
 
               <div className="flex justify-end">
-                <button
-                  type="button"
+                <Link
+                  to={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
                   className="text-xs text-primary hover:underline"
-                  onClick={async () => {
-                    if (!email) {
-                      toast({ title: "Enter your email", description: "Please enter your email address first.", variant: "destructive" });
-                      return;
-                    }
-                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                      redirectTo: `${window.location.origin}/reset-password`,
-                    });
-                    if (error) {
-                      toast({ title: "Error", description: error.message, variant: "destructive" });
-                    } else {
-                      toast({ title: "Check your email", description: "A password reset link has been sent to your email." });
-                    }
-                  }}
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
 
               <Button type="submit" className="w-full" size="lg" disabled={loading}>

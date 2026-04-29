@@ -10,13 +10,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from "@/lib/user-activity";
+import { z } from "zod";
 import logoDark from "@/assets/logo-dark.png";
+
+const signUpSchema = z.object({
+  name: z.string().trim().min(2, "Please enter your full name").max(80, "Name is too long"),
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254),
+  password: z
+    .string()
+    .min(8, "Use at least 8 characters")
+    .max(128, "Password is too long")
+    .regex(/[A-Za-z]/, "Include at least one letter")
+    .regex(/[0-9]/, "Include at least one number"),
+});
 
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; password?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -36,6 +49,17 @@ export default function SignUp() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
+    const parsed = signUpSchema.safeParse({ name, email, password });
+    if (!parsed.success) {
+      const errs: { name?: string; email?: string; password?: string } = {};
+      for (const issue of parsed.error.issues) {
+        const k = issue.path[0] as "name" | "email" | "password";
+        if (!errs[k]) errs[k] = issue.message;
+      }
+      setFieldErrors(errs);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -108,7 +132,7 @@ export default function SignUp() {
               <p className="text-muted-foreground text-sm mt-1">Start your tech journey with Silicon Edge</p>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSignUp}>
+            <form className="space-y-4" onSubmit={handleSignUp} noValidate>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Full Name</label>
                 <div className="relative">
@@ -116,12 +140,15 @@ export default function SignUp() {
                   <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { setName(e.target.value); if (fieldErrors.name) setFieldErrors((f) => ({ ...f, name: undefined })); }}
                     placeholder="John Doe"
                     required
+                    autoComplete="name"
+                    aria-invalid={!!fieldErrors.name}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
+                {fieldErrors.name && <p className="mt-1.5 text-xs text-destructive">{fieldErrors.name}</p>}
               </div>
 
               <div>
@@ -131,12 +158,15 @@ export default function SignUp() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined })); }}
                     placeholder="you@example.com"
                     required
+                    autoComplete="email"
+                    aria-invalid={!!fieldErrors.email}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
+                {fieldErrors.email && <p className="mt-1.5 text-xs text-destructive">{fieldErrors.email}</p>}
               </div>
 
               <div>
@@ -146,13 +176,20 @@ export default function SignUp() {
                   <input
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors((f) => ({ ...f, password: undefined })); }}
                     placeholder="••••••••"
                     required
                     minLength={6}
+                    autoComplete="new-password"
+                    aria-invalid={!!fieldErrors.password}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
+                {fieldErrors.password ? (
+                  <p className="mt-1.5 text-xs text-destructive">{fieldErrors.password}</p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-muted-foreground">At least 8 characters with a letter and a number.</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full" size="lg" disabled={loading}>
