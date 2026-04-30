@@ -44,6 +44,33 @@ const HealthIcon = ({ status }: { status: ReturnType<typeof classifyHealth> }) =
   return <XCircle className="h-3.5 w-3.5 text-red-500" />;
 };
 
+function ChecklistRow({ ok, label, hint, warnInsteadOfFail }: {
+  ok: boolean;
+  label: string;
+  hint?: string;
+  warnInsteadOfFail?: boolean;
+}) {
+  const Icon = ok
+    ? CheckCircle2
+    : warnInsteadOfFail
+      ? AlertTriangle
+      : XCircle;
+  const colorClass = ok
+    ? "text-emerald-500"
+    : warnInsteadOfFail
+      ? "text-amber-500"
+      : "text-red-500";
+  return (
+    <li className="flex items-start gap-2">
+      <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${colorClass}`} />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium">{label}</p>
+        {hint ? <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p> : null}
+      </div>
+    </li>
+  );
+}
+
 export default function AdminTrackingQA() {
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-tracking-qa"],
