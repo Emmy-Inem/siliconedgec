@@ -109,9 +109,6 @@
         } catch (e) {}
       }, 4000);
     </script>
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=802223455823137&ev=PageView&noscript=1"
-      alt="" /></noscript>
     <!-- End Meta Pixel Code -->
 
     <meta name="description" content="Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.">
@@ -140,6 +137,10 @@
 </head>
 
   <body>
+    <!-- Meta Pixel <noscript> fallback (must live in <body> per HTML5) -->
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=802223455823137&ev=PageView&noscript=1"
+      alt="" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
