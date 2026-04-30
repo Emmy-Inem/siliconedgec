@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, type TikTokPixelStatus } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, type TikTokPixelStatus, type MetaPixelStatus } from "@/lib/analytics";
 
 /**
  * Tracking QA dashboard — confirms UTM + analytics events fire on every
@@ -89,10 +89,12 @@ export default function AdminTrackingQA() {
   // TikTok Pixel runtime status — re-checked every 2s for up to ~10s so we
   // catch the SDK transition from "stub" → "loaded".
   const [ttStatus, setTtStatus] = useState<TikTokPixelStatus>(() => getTikTokPixelStatus());
+  const [metaStatus, setMetaStatus] = useState<MetaPixelStatus>(() => getMetaPixelStatus());
   useEffect(() => {
     let n = 0;
     const id = setInterval(() => {
       setTtStatus(getTikTokPixelStatus());
+      setMetaStatus(getMetaPixelStatus());
       if (++n > 10) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
