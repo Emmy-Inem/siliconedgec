@@ -11,7 +11,10 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XNK29YHXLT');
+      // Disable automatic pageviews — we send them manually on every SPA
+      // route change (see src/lib/analytics.ts) so client-side navigations
+      // are tracked correctly on iOS/Android in-app browsers too.
+      gtag('config', 'G-XNK29YHXLT', { send_page_view: false });
     </script>
     <meta name="description" content="Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.">
     <meta name="author" content="Silicon Edge Consulting" />

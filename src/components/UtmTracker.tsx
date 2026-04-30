@@ -2,6 +2,9 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useUtmTracking, getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { trackLead } from "@/lib/track-lead";
+import { gaPageview, gaSetUserId } from "@/lib/analytics";
+import { getVisitorGeo } from "@/lib/geo";
+import { supabase } from "@/integrations/supabase/client";
 
 /** Auth funnel pages → discriminated `form_type` for analytics joins.
  *  Each entry produces a dedicated event row alongside the generic pageview,
@@ -29,6 +32,30 @@ export function UtmTracker() {
   const tracked = useRef<string | null>(null);
   const seenPaths = useRef<Set<string>>(new Set());
   const authTracked = useRef<Set<string>>(new Set());
+  const gaSentPaths = useRef<Set<string>>(new Set());
+
+  // Warm geo lookup + push GA4 user_id once per session (so reports can join
+  // signed-in users across devices). Fire-and-forget; never blocks routing.
+  useEffect(() => {
+    void getVisitorGeo();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.id) gaSetUserId(data.user.id);
+    }).catch(() => { /* ignore */ });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      gaSetUserId(session?.user?.id ?? null);
+    });
+    return () => { sub?.subscription?.unsubscribe?.(); };
+  }, []);
+
+  // Send a manual GA4 pageview on every SPA route change (we disabled GA's
+  // automatic page_view in index.html). De-duped per (path + search) so
+  // tab-switch query updates don't double-count.
+  useEffect(() => {
+    const key = `${location.pathname}${location.search}`;
+    if (gaSentPaths.current.has(key)) return;
+    gaSentPaths.current.add(key);
+    gaPageview(location.pathname + location.search);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);

@@ -257,6 +257,7 @@ export default function AdminMarketingAnalytics() {
     const deviceMap: Record<string, number> = { Mobile: 0, Tablet: 0, Desktop: 0, Unknown: 0 };
     const sourceMap: Record<string, number> = {};
     const langMap: Record<string, number> = {};
+    const countryMap: Record<string, number> = {};
 
     filtered.forEach((l) => {
       if (l.form_type !== "pageview" && l.form_type !== "page_visit") return;
@@ -285,6 +286,14 @@ export default function AdminMarketingAnalytics() {
 
       const lang: string | null = typeof fd.language === "string" ? fd.language : null;
       if (lang) langMap[lang] = (langMap[lang] ?? 0) + 1;
+
+      // Real visitor country (Cloudflare/ipapi). We never invent a value:
+      // rows captured before geo was wired up are simply skipped from the
+      // breakdown, never bucketed as "Unknown".
+      const country: string | null = typeof fd.country === "string" && fd.country.length > 0
+        ? fd.country.toUpperCase()
+        : null;
+      if (country) countryMap[country] = (countryMap[country] ?? 0) + 1;
     });
 
     const topPages = Object.entries(pageMap)
@@ -303,6 +312,10 @@ export default function AdminMarketingAnalytics() {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
+    const countries = Object.entries(countryMap)
+      .map(([code, value]) => ({ code, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 12);
     const pagesPerVisit = visitors.size > 0 ? (totalViews / visitors.size).toFixed(2) : "0";
 
     return {
@@ -313,6 +326,8 @@ export default function AdminMarketingAnalytics() {
       devices,
       sources,
       languages,
+      countries,
+      countryTotal: countries.reduce((s, c) => s + c.value, 0),
       maxPageViews: topPages[0]?.views || 1,
       deviceTotal: devices.reduce((s, d) => s + d.value, 0) || 1,
     };
@@ -881,12 +896,37 @@ export default function AdminMarketingAnalytics() {
             </motion.div>
           )}
 
-          <div className="bg-muted/20 border border-border rounded-2xl p-4 text-[11px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Note on geo / country data:</strong> the platform does not capture
-            visitor IPs or run server-side geo lookups, so a country breakdown would be fabricated. To get
-            country-level traffic, connect a server-side analytics provider (e.g. GA4 with IP-based geo or Plausible)
-            in <em>Settings → Custom Scripts</em>.
-          </div>
+          {/* Real visitor countries — only renders when we actually have geo data
+              attached to lead rows (Cloudflare/ipapi lookup at first pageview). */}
+          {trafficStats.countries.length > 0 ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4 text-primary" />
+                <h3 className="font-heading font-semibold text-sm">Visitor Countries</h3>
+                <span className="ml-auto text-[10px] text-muted-foreground">
+                  Edge-resolved (Cloudflare) · {trafficStats.countryTotal} attributed visits
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {trafficStats.countries.map((c) => (
+                  <div key={c.code} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
+                    <span className="font-mono">{c.code}</span>
+                    <span className="font-medium">{c.value} ({Math.round((c.value / trafficStats.countryTotal) * 100)}%)</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-3">
+                For demographic detail (age, interests, full city) see GA4 → Reports → Demographics.
+              </p>
+            </motion.div>
+          ) : (
+            <div className="bg-muted/20 border border-border rounded-2xl p-4 text-[11px] text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">Visitor countries — collecting…</strong> Geo is now resolved on
+              every pageview via Cloudflare's edge. Country data will appear here as new visits come in. For
+              richer geo (region/city + acquisition by country) open <em>GA4 → Reports → Demographics</em>.
+            </div>
+          )}
 
           <div className="text-center">
             <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events — no estimates.</p>
