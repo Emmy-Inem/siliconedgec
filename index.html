@@ -28,17 +28,46 @@
         // conversion events using first-party storage / fingerprint.
         try { ttq.grantConsent && ttq.grantConsent(); } catch (e) {}
         ttq.page();
-        // QA helper — visible in DevTools console so you can verify the SDK
-        // actually downloaded (TikTok Pixel Helper marks the page as "no
-        // pixel detected" if `events.js` is blocked by an ad-blocker, even
-        // though the beacon itself still fires). Logs once per page load.
+        // ───── In-app browser hardening ─────────────────────────────────
+        // iOS/Android in-app WebViews (Instagram, Facebook, TikTok,
+        // LinkedIn) sometimes:
+        //   1. Block the initial events.js request (slow JS engine, CSP,
+        //      tracking protection) — we retry the load once after 3s.
+        //   2. Suspend timers when the WebView is backgrounded — we
+        //      re-fire ttq.page() on `pageshow` (bfcache restore) and on
+        //      `visibilitychange → visible` so abandoned sessions still
+        //      report a pageview when the user returns.
+        var PIXEL_ID = 'D7PTAHBC77UF8O7SC90G';
+        function pixelLoaded() {
+          try { return !!(w.ttq && w.ttq._i && w.ttq._i[PIXEL_ID] && w.ttq._i[PIXEL_ID].loaded); } catch (e) { return false; }
+        }
+        // Retry SDK load if first attempt didn't complete within 3s. Safe:
+        // ttq.load() is idempotent (it overwrites the per-pixel slot).
+        setTimeout(function () {
+          if (!pixelLoaded()) {
+            try { ttq.load(PIXEL_ID); ttq.page(); } catch (e) {}
+          }
+        }, 3000);
+        // bfcache restore (iOS Safari, Android Chrome) — fires `pageshow`
+        // with persisted=true. Without this the pixel misses pageviews
+        // when users swipe back into the app.
+        w.addEventListener('pageshow', function (ev) {
+          if (ev.persisted) { try { ttq.page(); } catch (e) {} }
+        });
+        // In-app browser tab returns to foreground.
+        d.addEventListener('visibilitychange', function () {
+          if (d.visibilityState === 'visible' && pixelLoaded()) {
+            try { ttq.page(); } catch (e) {}
+          }
+        });
+        // QA log — visible in DevTools console. Helps confirm whether the
+        // Pixel Helper "not detected" warning is caused by an ad-blocker.
         setTimeout(function () {
           try {
-            var loaded = !!(w.ttq && w.ttq._i && w.ttq._i['D7PTAHBC77UF8O7SC90G'] && w.ttq._i['D7PTAHBC77UF8O7SC90G'].loaded);
             // eslint-disable-next-line no-console
-            console.info('[TikTok Pixel] sdk_loaded=' + loaded + ' pixel_id=D7PTAHBC77UF8O7SC90G');
+            console.info('[TikTok Pixel] sdk_loaded=' + pixelLoaded() + ' pixel_id=' + PIXEL_ID + ' ua=' + (navigator && navigator.userAgent));
           } catch (e) {}
-        }, 2500);
+        }, 4000);
       }(window, document, 'ttq');
     </script>
     <!-- End TikTok Pixel Code -->

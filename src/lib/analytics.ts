@@ -63,6 +63,20 @@ function whenTtqReady(cb: () => void, timeoutMs = 4000) {
   tick();
 }
 
+/** True once the per-pixel SDK slot reports `loaded`. The base snippet
+ *  exposes `track` immediately (it's a queued stub), so we look at the
+ *  internal `_i[pixel_id].loaded` flag to know if events.js has actually
+ *  executed — the only signal that conversions will be attributed in real
+ *  time rather than dropped on iOS in-app browsers under heavy memory
+ *  pressure. */
+function isTtqSdkLoaded(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const inst = (window.ttq as any)?._i?.[TIKTOK_PIXEL_ID];
+    return !!inst?.loaded;
+  } catch { return false; }
+}
+
 /** Send a SPA pageview to GA4. GA's IP-based geolocation runs server-side
  *  on every event, so this is what unlocks real country/region/device data
  *  in the GA4 Reports → Demographics / Tech sections. */
@@ -74,7 +88,10 @@ export function gaPageview(path: string, title?: string) {
   });
   // TikTok Pixel: fire a SPA pageview on every route change. The base snippet
   // already calls ttq.page() on initial load; this covers client-side nav.
-  safeTtq("page");
+  // We wrap in `whenTtqReady` so in-app WebViews that load the SDK slowly
+  // don't drop the very first SPA navigation (common when users land on
+  // `/` and immediately tap a CTA before the 3rd-party script finishes).
+  whenTtqReady(() => safeTtq("page"));
 }
 
 /** Generic GA4 event. Use sparingly — most analytics live in `lead_sources`. */
@@ -128,12 +145,9 @@ function detectInAppBrowser(): TikTokPixelStatus["in_app_browser"] {
 
 export function getTikTokPixelStatus(): TikTokPixelStatus {
   const ttq = typeof window !== "undefined" ? window.ttq : undefined;
-  // The official snippet stores per-pixel state under `ttq._i[pixel_id]`
-  // and sets `.loaded = true` once events.js has executed.
-  const instance = (ttq as any)?._i?.[TIKTOK_PIXEL_ID];
   return {
     stub_present: !!ttq,
-    sdk_loaded: !!instance?.loaded,
+    sdk_loaded: isTtqSdkLoaded(),
     pixel_id: TIKTOK_PIXEL_ID,
     user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
     in_app_browser: detectInAppBrowser(),
