@@ -9,6 +9,12 @@ declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
+    ttq?: {
+      page: () => void;
+      track: (event: string, params?: Record<string, unknown>) => void;
+      identify: (params: Record<string, unknown>) => void;
+      [k: string]: any;
+    };
   }
 }
 
@@ -22,6 +28,17 @@ function safeGtag(...args: any[]) {
   try { window.gtag?.(...args); } catch { /* ignore */ }
 }
 
+/** TikTok Pixel — safe wrapper. The base snippet in index.html stubs `ttq`
+ *  so calls made before the SDK loads are queued and replayed on load. */
+function safeTtq(method: "page" | "track" | "identify", ...args: any[]) {
+  if (typeof window === "undefined") return;
+  try {
+    const ttq = window.ttq;
+    if (!ttq) return;
+    (ttq[method] as any)?.(...args);
+  } catch { /* ignore */ }
+}
+
 /** Send a SPA pageview to GA4. GA's IP-based geolocation runs server-side
  *  on every event, so this is what unlocks real country/region/device data
  *  in the GA4 Reports → Demographics / Tech sections. */
@@ -31,6 +48,9 @@ export function gaPageview(path: string, title?: string) {
     page_location: typeof window !== "undefined" ? window.location.href : path,
     page_title: title ?? (typeof document !== "undefined" ? document.title : undefined),
   });
+  // TikTok Pixel: fire a SPA pageview on every route change. The base snippet
+  // already calls ttq.page() on initial load; this covers client-side nav.
+  safeTtq("page");
 }
 
 /** Generic GA4 event. Use sparingly — most analytics live in `lead_sources`. */
@@ -41,4 +61,11 @@ export function gaEvent(name: string, params: Record<string, unknown> = {}) {
 /** Set user_id on GA4 once they sign in, so funnels can join across devices. */
 export function gaSetUserId(userId: string | null) {
   safeGtag("set", { user_id: userId ?? undefined });
+  if (userId) safeTtq("identify", { external_id: userId });
+}
+
+/** TikTok-specific event helper for conversion tracking
+ *  (e.g. `tikTokEvent("CompletePayment", { value: 50000, currency: "NGN" })`). */
+export function tikTokEvent(event: string, params: Record<string, unknown> = {}) {
+  safeTtq("track", event, params);
 }
