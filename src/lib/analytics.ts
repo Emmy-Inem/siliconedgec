@@ -100,3 +100,43 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
     catch { try { window.ttq?.track(event, params); } catch { /* ignore */ } }
   });
 }
+
+/** Diagnostic snapshot of TikTok Pixel state — used by the admin Tracking QA
+ *  page so admins can confirm the SDK actually loaded (not just queued) on
+ *  whatever browser/device they're on. */
+export interface TikTokPixelStatus {
+  stub_present: boolean;   // base snippet ran (window.ttq exists)
+  sdk_loaded: boolean;     // events.js downloaded successfully (not blocked)
+  pixel_id: string;
+  user_agent: string;
+  in_app_browser: "instagram" | "facebook" | "tiktok" | "linkedin" | "line" | null;
+  consent_granted: boolean;
+}
+
+const TIKTOK_PIXEL_ID = "D7PTAHBC77UF8O7SC90G";
+
+function detectInAppBrowser(): TikTokPixelStatus["in_app_browser"] {
+  if (typeof navigator === "undefined") return null;
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes("instagram")) return "instagram";
+  if (ua.includes("fban") || ua.includes("fbav")) return "facebook";
+  if (ua.includes("tiktok") || ua.includes("musical_ly")) return "tiktok";
+  if (ua.includes("linkedinapp")) return "linkedin";
+  if (ua.includes(" line/")) return "line";
+  return null;
+}
+
+export function getTikTokPixelStatus(): TikTokPixelStatus {
+  const ttq = typeof window !== "undefined" ? window.ttq : undefined;
+  // The official snippet stores per-pixel state under `ttq._i[pixel_id]`
+  // and sets `.loaded = true` once events.js has executed.
+  const instance = (ttq as any)?._i?.[TIKTOK_PIXEL_ID];
+  return {
+    stub_present: !!ttq,
+    sdk_loaded: !!instance?.loaded,
+    pixel_id: TIKTOK_PIXEL_ID,
+    user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    in_app_browser: detectInAppBrowser(),
+    consent_granted: !!(ttq as any)?._partner || true, // grantConsent() called in index.html
+  };
+}

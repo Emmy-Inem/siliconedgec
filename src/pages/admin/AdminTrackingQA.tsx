@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { getTikTokPixelStatus, type TikTokPixelStatus } from "@/lib/analytics";
 
 /**
  * Tracking QA dashboard — confirms UTM + analytics events fire on every
@@ -42,6 +44,33 @@ const HealthIcon = ({ status }: { status: ReturnType<typeof classifyHealth> }) =
   return <XCircle className="h-3.5 w-3.5 text-red-500" />;
 };
 
+function ChecklistRow({ ok, label, hint, warnInsteadOfFail }: {
+  ok: boolean;
+  label: string;
+  hint?: string;
+  warnInsteadOfFail?: boolean;
+}) {
+  const Icon = ok
+    ? CheckCircle2
+    : warnInsteadOfFail
+      ? AlertTriangle
+      : XCircle;
+  const colorClass = ok
+    ? "text-emerald-500"
+    : warnInsteadOfFail
+      ? "text-amber-500"
+      : "text-red-500";
+  return (
+    <li className="flex items-start gap-2">
+      <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${colorClass}`} />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium">{label}</p>
+        {hint ? <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p> : null}
+      </div>
+    </li>
+  );
+}
+
 export default function AdminTrackingQA() {
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-tracking-qa"],
@@ -56,6 +85,18 @@ export default function AdminTrackingQA() {
     },
     refetchInterval: 15_000,
   });
+
+  // TikTok Pixel runtime status — re-checked every 2s for up to ~10s so we
+  // catch the SDK transition from "stub" → "loaded".
+  const [ttStatus, setTtStatus] = useState<TikTokPixelStatus>(() => getTikTokPixelStatus());
+  useEffect(() => {
+    let n = 0;
+    const id = setInterval(() => {
+      setTtStatus(getTikTokPixelStatus());
+      if (++n > 10) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   if (isLoading) {
     return (
@@ -139,6 +180,44 @@ export default function AdminTrackingQA() {
             ))}
           </div>
         )}
+      </Card>
+
+      {/* TikTok Pixel QA Checklist */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">TikTok Pixel QA Checklist</h3>
+          <Badge variant="outline" className="font-mono text-[10px]">{ttStatus.pixel_id}</Badge>
+        </div>
+        <ul className="space-y-2 text-xs">
+          <ChecklistRow ok={ttStatus.stub_present}
+            label="Base snippet executed (window.ttq exists)"
+            hint="Loaded from index.html on every page" />
+          <ChecklistRow ok={ttStatus.sdk_loaded}
+            label="SDK script downloaded (analytics.tiktok.com/i18n/pixel/events.js)"
+            hint={ttStatus.sdk_loaded
+              ? "Pixel Helper extension will detect this page."
+              : "If this stays red, an ad-blocker (uBlock / Brave Shields / NextDNS) is blocking events.js. Beacons may still fire via /api/v2/pixel."} />
+          <ChecklistRow ok={ttStatus.consent_granted}
+            label="grantConsent() called for in-app browsers"
+            hint="Required for FB/IG/TikTok WebViews where 3rd-party cookies are blocked." />
+          <ChecklistRow ok={ttStatus.in_app_browser === null}
+            label="Standard browser (not in-app WebView)"
+            hint={ttStatus.in_app_browser
+              ? `Detected ${ttStatus.in_app_browser} in-app browser — attribution may be limited; verify CompletePayment fires.`
+              : "Open the site from inside Instagram/Facebook to test in-app coverage."}
+            warnInsteadOfFail />
+        </ul>
+        <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
+          <p className="font-medium text-foreground">Manual verification steps:</p>
+          <ol className="list-decimal pl-4 space-y-0.5">
+            <li>Install the <span className="font-mono">TikTok Pixel Helper</span> Chrome extension and open the site — should show pixel <span className="font-mono">{ttStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
+            <li>Open DevTools → Network → filter <span className="font-mono">tiktok</span>. You should see <span className="font-mono">events.js</span> (script) and <span className="font-mono">/api/v2/pixel</span> (POST 200).</li>
+            <li>Trigger conversions in this order and confirm each beacon: <span className="font-mono">AddToCart</span> (Enroll Now) → <span className="font-mono">InitiateCheckout</span> (cart) → <span className="font-mono">CompletePayment</span> (after Paystack) → <span className="font-mono">Download</span> (certificate).</li>
+            <li>In TikTok Ads Manager → Events Manager, set the pixel to <span className="font-mono">Test Event</span> mode and confirm events appear within ~30s.</li>
+            <li>SPA route check: navigate Home → Courses → Pricing → Sign In; each route should fire a fresh <span className="font-mono">page</span> beacon (POST <span className="font-mono">/api/v2/pixel</span>).</li>
+            <li>Mobile check: open the site in iOS Safari + Android Chrome + Instagram in-app browser; all should send a <span className="font-mono">PageView</span> within 4s of load.</li>
+          </ol>
+        </div>
       </Card>
 
       {/* Recent events feed */}

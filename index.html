@@ -28,6 +28,17 @@
         // conversion events using first-party storage / fingerprint.
         try { ttq.grantConsent && ttq.grantConsent(); } catch (e) {}
         ttq.page();
+        // QA helper — visible in DevTools console so you can verify the SDK
+        // actually downloaded (TikTok Pixel Helper marks the page as "no
+        // pixel detected" if `events.js` is blocked by an ad-blocker, even
+        // though the beacon itself still fires). Logs once per page load.
+        setTimeout(function () {
+          try {
+            var loaded = !!(w.ttq && w.ttq._i && w.ttq._i['D7PTAHBC77UF8O7SC90G'] && w.ttq._i['D7PTAHBC77UF8O7SC90G'].loaded);
+            // eslint-disable-next-line no-console
+            console.info('[TikTok Pixel] sdk_loaded=' + loaded + ' pixel_id=D7PTAHBC77UF8O7SC90G');
+          } catch (e) {}
+        }, 2500);
       }(window, document, 'ttq');
     </script>
     <!-- End TikTok Pixel Code -->
