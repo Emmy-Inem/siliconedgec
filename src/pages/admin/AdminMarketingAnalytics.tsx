@@ -246,6 +246,78 @@ export default function AdminMarketingAnalytics() {
   // Recent leads
   const recentLeads = filtered.slice(0, 15);
 
+  // ---- Real platform traffic metrics derived from lead_sources ----
+  // We do not have first-party geo/IP data, so country breakdown is intentionally
+  // omitted. Device classification falls back from `user_agent` to `screen_w` so
+  // older rows (pre-UA capture) are still bucketed instead of being shown as fake.
+  const trafficStats = useMemo(() => {
+    const visitors = new Set<string>();
+    let totalViews = 0;
+    const pageMap: Record<string, number> = {};
+    const deviceMap: Record<string, number> = { Mobile: 0, Tablet: 0, Desktop: 0, Unknown: 0 };
+    const sourceMap: Record<string, number> = {};
+    const langMap: Record<string, number> = {};
+
+    filtered.forEach((l) => {
+      if (l.form_type !== "pageview" && l.form_type !== "page_visit") return;
+      totalViews++;
+      const id = l.user_id || `anon:${l.id}`; // anon rows can't be unified across visits — best effort
+      visitors.add(id);
+      const page = l.landing_page || "/";
+      pageMap[page] = (pageMap[page] ?? 0) + 1;
+
+      const fd = (l.form_data || {}) as Record<string, any>;
+      const ua: string = typeof fd.user_agent === "string" ? fd.user_agent : "";
+      const sw: number | null = typeof fd.screen_w === "number" ? fd.screen_w : null;
+      let device = "Unknown";
+      if (ua) {
+        if (/iPad|Tablet/i.test(ua)) device = "Tablet";
+        else if (/Mobi|Android|iPhone/i.test(ua)) device = "Mobile";
+        else device = "Desktop";
+      } else if (sw !== null) {
+        device = sw < 768 ? "Mobile" : sw < 1024 ? "Tablet" : "Desktop";
+      }
+      deviceMap[device] = (deviceMap[device] ?? 0) + 1;
+
+      let ref = l.referrer || "Direct";
+      try { if (ref !== "Direct") ref = new URL(ref).hostname; } catch {}
+      sourceMap[ref] = (sourceMap[ref] ?? 0) + 1;
+
+      const lang: string | null = typeof fd.language === "string" ? fd.language : null;
+      if (lang) langMap[lang] = (langMap[lang] ?? 0) + 1;
+    });
+
+    const topPages = Object.entries(pageMap)
+      .map(([page, views]) => ({ page, views }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10);
+    const devices = Object.entries(deviceMap)
+      .filter(([, v]) => v > 0)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+    const sources = Object.entries(sourceMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+    const languages = Object.entries(langMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+    const pagesPerVisit = visitors.size > 0 ? (totalViews / visitors.size).toFixed(2) : "0";
+
+    return {
+      uniqueVisitors: visitors.size,
+      totalViews,
+      pagesPerVisit,
+      topPages,
+      devices,
+      sources,
+      languages,
+      maxPageViews: topPages[0]?.views || 1,
+      deviceTotal: devices.reduce((s, d) => s + d.value, 0) || 1,
+    };
+  }, [filtered]);
+
   const inputClass = "px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   if (isLoading) {
