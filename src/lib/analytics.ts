@@ -99,6 +99,9 @@ export function gaPageview(path: string, title?: string) {
   // don't drop the very first SPA navigation (common when users land on
   // `/` and immediately tap a CTA before the 3rd-party script finishes).
   whenTtqReady(() => safeTtq("page"));
+  // Meta (Facebook) Pixel SPA pageview. fbq() queues calls before the SDK
+  // is ready, so no readiness check is needed.
+  metaPageview();
 }
 
 /** Generic GA4 event. Use sparingly — most analytics live in `lead_sources`. */
@@ -110,6 +113,9 @@ export function gaEvent(name: string, params: Record<string, unknown> = {}) {
 export function gaSetUserId(userId: string | null) {
   safeGtag("set", { user_id: userId ?? undefined });
   if (userId) safeTtq("identify", { external_id: userId });
+  // Meta advanced matching — passing an external_id helps Meta tie
+  // conversions to the same user across devices when cookies are blocked.
+  if (userId) safeFbq("init", META_PIXEL_ID, { external_id: userId });
 }
 
 /** TikTok-specific event helper for conversion tracking
