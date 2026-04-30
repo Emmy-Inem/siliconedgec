@@ -176,7 +176,7 @@ export default function Certificates() {
           {/* User's Earned Certificates */}
           {user && certificates && certificates.length > 0 && (
             <motion.div {...fadeUp} className="mb-16">
-              <h2 className="font-heading text-2xl font-bold mb-6 text-center">Your Certificates</h2>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold mb-6 text-center">Your Certificates</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {certificates.map((cert: any) => {
                   const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -206,22 +206,28 @@ export default function Certificates() {
 
           {/* Sample Certificate Preview (preview-only, no download until a course is completed) */}
           <motion.div {...fadeUp} id="sample" className="max-w-3xl mx-auto scroll-mt-24">
-            <h2 className="font-heading text-2xl font-bold mb-6 text-center">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold mb-6 text-center">
               {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
-            <p className="text-muted-foreground text-sm text-center mb-8 max-w-xl mx-auto">
+            <p className="text-muted-foreground text-xs sm:text-sm text-center mb-6 sm:mb-8 max-w-xl mx-auto px-2">
               Below is what your certificate will look like — fully branded, with a unique ID and verification link.
               {(!user || certificates.length === 0) && (
                 <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
               )}
             </p>
-            <BrandedCertificate
-              studentName={userName}
-              courseName="Cloud Engineering Crash Course"
-              date="March 7, 2026"
-              certId="SE-2026-A1B2C3"
-              instructorName="Dr. Amara Osei"
-            />
+            {/* Mobile: horizontally scrollable so the full landscape cert stays readable. */}
+            <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-thin">
+              <div className="min-w-[640px] sm:min-w-0">
+                <BrandedCertificate
+                  studentName={userName}
+                  courseName="Cloud Engineering Crash Course"
+                  date="March 7, 2026"
+                  certId="SE-2026-A1B2C3"
+                  instructorName="Dr. Amara Osei"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center mt-2 sm:hidden">← Swipe to see the full certificate →</p>
           </motion.div>
 
           <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
