@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
+import { tikTokEvent } from "@/lib/analytics";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
@@ -147,6 +148,14 @@ export default function CourseDetail() {
       await trackLead({
         formType: "enrollment",
         formData: { course_id: courseId },
+      });
+      // TikTok conversion: free / direct enrollment counts as a CompleteRegistration.
+      tikTokEvent("CompleteRegistration", {
+        content_id: courseId,
+        content_name: course?.title,
+        content_type: "product",
+        value: Number(course?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
       });
       await logUserActivity({
         user_id: user!.id,
