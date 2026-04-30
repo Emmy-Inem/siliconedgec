@@ -55,6 +55,56 @@ function makeEventId(event: string): string {
   return `${event}-${ts}-${rnd}`;
 }
 
+// ───── Event-ID observability ───────────────────────────────────────────
+// Every TikTok / Meta conversion gets a unique event_id used for server-side
+// Conversions API dedup. We mirror those IDs into a per-tab ring buffer so
+// the admin Tracking QA panel (and curious devs in DevTools) can confirm
+// a conversion actually fired with the right id, even when an ad-blocker
+// hides the network request from the user's view.
+
+export interface PixelEventLogEntry {
+  ts: number;
+  vendor: "tiktok" | "meta";
+  event: string;
+  event_id: string;
+  params: Record<string, unknown>;
+}
+
+const EVENT_LOG_LIMIT = 50;
+const EVENT_LOG: PixelEventLogEntry[] = [];
+const EVENT_LOG_LISTENERS = new Set<(log: readonly PixelEventLogEntry[]) => void>();
+
+function logPixelEvent(entry: PixelEventLogEntry) {
+  EVENT_LOG.unshift(entry);
+  if (EVENT_LOG.length > EVENT_LOG_LIMIT) EVENT_LOG.length = EVENT_LOG_LIMIT;
+  // Surface to DevTools so devs can grep `[Pixel]` to follow a conversion
+  // through the TikTok / Meta network beacons.
+  try {
+    // eslint-disable-next-line no-console
+    console.info(
+      `[Pixel] ${entry.vendor}.${entry.event} event_id=${entry.event_id}`,
+      entry.params
+    );
+  } catch { /* ignore */ }
+  // Also expose on `window` so admins can run `window.__pixelLog` in
+  // DevTools to inspect history without opening the admin panel.
+  try {
+    (window as any).__pixelLog = EVENT_LOG;
+  } catch { /* ignore */ }
+  EVENT_LOG_LISTENERS.forEach((cb) => { try { cb(EVENT_LOG); } catch { /* ignore */ } });
+}
+
+/** Read the current pixel event log (newest first). */
+export function getPixelEventLog(): readonly PixelEventLogEntry[] {
+  return EVENT_LOG;
+}
+
+/** Subscribe to live updates. Returns an unsubscribe function. */
+export function subscribePixelEventLog(cb: (log: readonly PixelEventLogEntry[]) => void): () => void {
+  EVENT_LOG_LISTENERS.add(cb);
+  return () => { EVENT_LOG_LISTENERS.delete(cb); };
+}
+
 /** In-app browsers (Instagram, Facebook, TikTok, LinkedIn) sometimes load
  *  the page before the pixel SDK finishes initialising, and they block
  *  third-party storage. We poll briefly and fall back to a no-op so callers
@@ -125,6 +175,7 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
   // future server-side Events API call. Required for accurate iOS attribution
   // because Apple's ITP / in-app WebViews can drop the client-side request.
   const event_id = makeEventId(event);
+  logPixelEvent({ ts: Date.now(), vendor: "tiktok", event, event_id, params });
   whenTtqReady(() => {
     try { window.ttq?.track(event, params, { event_id }); }
     catch { try { window.ttq?.track(event, params); } catch { /* ignore */ } }
@@ -155,6 +206,7 @@ export function metaPageview() {
  *  `eventID` so server-side Conversions API calls can dedup later. */
 export function metaEvent(event: string, params: Record<string, unknown> = {}) {
   const eventID = makeEventId(event);
+  logPixelEvent({ ts: Date.now(), vendor: "meta", event, event_id: eventID, params });
   // Meta accepts the eventID as the 3rd-position options object.
   safeFbq("track", event, params, { eventID });
 }
@@ -163,6 +215,7 @@ export function metaEvent(event: string, params: Record<string, unknown> = {}) {
  *  canonical name for, e.g. `DownloadCertificate`. */
 export function metaCustomEvent(event: string, params: Record<string, unknown> = {}) {
   const eventID = makeEventId(event);
+  logPixelEvent({ ts: Date.now(), vendor: "meta", event: `${event} (custom)`, event_id: eventID, params });
   safeFbq("trackCustom", event, params, { eventID });
 }
 
