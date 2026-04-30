@@ -773,16 +773,20 @@ export default function AdminMarketingAnalytics() {
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-4 w-4 text-primary" />
               <h3 className="font-heading font-semibold text-sm">Platform Site Analytics</h3>
+              <span className="ml-auto text-[10px] text-muted-foreground">
+                Period: {dateFilter === "all" ? "All time" : dateFilter}
+              </span>
             </div>
             <p className="text-[10px] text-muted-foreground mb-4">
-              Real visitor & pageview data from the platform. View full analytics in Settings → Project Insights.
+              Live data computed from <code>lead_sources</code>. Anonymous visitors are best-effort
+              (one row = one anonymous visit). For deep insights, connect GA4 in Settings.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
-                { label: "Total Visitors (30d)", value: "37", icon: Users },
-                { label: "Total Pageviews (30d)", value: "301", icon: Eye },
-                { label: "Pages/Visit", value: "8.14", icon: BarChart3 },
-                { label: "Avg. Bounce Rate", value: "68%", icon: ArrowDownRight },
+                { label: "Visitors", value: trafficStats.uniqueVisitors.toLocaleString(), icon: Users },
+                { label: "Pageviews", value: trafficStats.totalViews.toLocaleString(), icon: Eye },
+                { label: "Pages/Visit", value: trafficStats.pagesPerVisit, icon: BarChart3 },
+                { label: "Conversion Rate", value: `${conversionRate}%`, icon: ArrowUpRight },
               ].map((m) => (
                 <div key={m.label} className="bg-muted/30 rounded-xl p-4 text-center">
                   <m.icon className="h-4 w-4 mx-auto mb-2 text-primary" />
@@ -798,27 +802,19 @@ export default function AdminMarketingAnalytics() {
             className="bg-card rounded-2xl border border-border p-5">
             <h3 className="font-heading font-semibold text-sm mb-4">Top Pages</h3>
             <div className="space-y-2">
-              {[
-                { page: "/", views: 29 },
-                { page: "/admin", views: 15 },
-                { page: "/admin/marketing", views: 13 },
-                { page: "/admin/influencers-marketing", views: 12 },
-                { page: "/admin/courses", views: 10 },
-                { page: "/courses", views: 9 },
-                { page: "/admin/paths", views: 7 },
-                { page: "/admin/users", views: 6 },
-                { page: "/admin/enrollments", views: 6 },
-                { page: "/admin/tags", views: 6 },
-              ].map((p, i) => (
+              {trafficStats.topPages.length === 0 && (
+                <p className="text-xs text-muted-foreground py-4 text-center">No pageviews recorded yet for this period.</p>
+              )}
+              {trafficStats.topPages.map((p, i) => (
                 <div key={p.page} className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground w-5 text-right">{i + 1}</span>
                   <div className="flex-1">
                     <div className="flex justify-between mb-0.5">
-                      <span className="text-xs font-mono font-medium">{p.page}</span>
+                      <span className="text-xs font-mono font-medium truncate max-w-[60%]" title={p.page}>{p.page}</span>
                       <span className="text-xs text-muted-foreground">{p.views} views</span>
                     </div>
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(p.views / 29) * 100}%` }} />
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(p.views / trafficStats.maxPageViews) * 100}%` }} />
                     </div>
                   </div>
                 </div>
@@ -826,15 +822,18 @@ export default function AdminMarketingAnalytics() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Traffic Sources */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
               className="bg-card rounded-2xl border border-border p-5">
               <h3 className="font-heading font-semibold text-sm mb-4">Traffic Sources</h3>
               <div className="space-y-3">
-                {[{ name: "Direct", value: 33 }, { name: "accounts.google.com", value: 7 }].map((s) => (
+                {trafficStats.sources.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No referrer data yet.</p>
+                )}
+                {trafficStats.sources.map((s) => (
                   <div key={s.name} className="flex justify-between items-center text-sm">
-                    <span className="text-xs">{s.name}</span>
+                    <span className="text-xs truncate max-w-[70%]" title={s.name}>{s.name}</span>
                     <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">{s.value}</span>
                   </div>
                 ))}
@@ -846,32 +845,51 @@ export default function AdminMarketingAnalytics() {
               className="bg-card rounded-2xl border border-border p-5">
               <h3 className="font-heading font-semibold text-sm mb-4">Devices</h3>
               <div className="space-y-3">
-                {[{ name: "Desktop", value: 27, icon: Monitor }, { name: "Mobile", value: 10, icon: Smartphone }].map((d) => (
-                  <div key={d.name} className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 text-xs"><d.icon className="h-3.5 w-3.5 text-muted-foreground" />{d.name}</span>
-                    <span className="text-xs font-medium">{d.value} ({Math.round((d.value / 37) * 100)}%)</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Country Breakdown */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <h3 className="font-heading font-semibold text-sm mb-4">Countries</h3>
-              <div className="space-y-3">
-                {[{ name: "🇳🇬 Nigeria", value: 22 }, { name: "🇺🇸 United States", value: 11 }, { name: "🏳️ Unknown", value: 3 }, { name: "🇬🇧 United Kingdom", value: 1 }].map((c) => (
-                  <div key={c.name} className="flex justify-between items-center text-sm">
-                    <span className="text-xs">{c.name}</span>
-                    <span className="text-xs font-medium">{c.value}</span>
-                  </div>
-                ))}
+                {trafficStats.devices.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No device data yet.</p>
+                )}
+                {trafficStats.devices.map((d) => {
+                  const Icon = d.name === "Mobile" ? Smartphone : d.name === "Tablet" ? Laptop : d.name === "Desktop" ? Monitor : Globe;
+                  return (
+                    <div key={d.name} className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-2 text-xs"><Icon className="h-3.5 w-3.5 text-muted-foreground" />{d.name}</span>
+                      <span className="text-xs font-medium">{d.value} ({Math.round((d.value / trafficStats.deviceTotal) * 100)}%)</span>
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           </div>
 
+          {/* Languages — only renders if we have data; honest about geo */}
+          {trafficStats.languages.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4 text-primary" />
+                <h3 className="font-heading font-semibold text-sm">Visitor Languages</h3>
+                <span className="ml-auto text-[10px] text-muted-foreground">Browser locale (not geo)</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {trafficStats.languages.map((l) => (
+                  <div key={l.name} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
+                    <span className="font-mono">{l.name}</span>
+                    <span className="font-medium">{l.value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          <div className="bg-muted/20 border border-border rounded-2xl p-4 text-[11px] text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">Note on geo / country data:</strong> the platform does not capture
+            visitor IPs or run server-side geo lookups, so a country breakdown would be fabricated. To get
+            country-level traffic, connect a server-side analytics provider (e.g. GA4 with IP-based geo or Plausible)
+            in <em>Settings → Custom Scripts</em>.
+          </div>
+
           <div className="text-center">
-            <p className="text-xs text-muted-foreground">Data refreshed periodically from platform analytics. For live data, check Project Insights in Settings.</p>
+            <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events — no estimates.</p>
           </div>
         </TabsContent>
 
