@@ -154,7 +154,7 @@ export default function CourseDetail() {
         content_id: courseId,
         content_name: course?.title,
         content_type: "product",
-        value: Number(course?.discount_price ?? course?.price ?? 0),
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
         currency: "NGN",
       });
       await logUserActivity({
