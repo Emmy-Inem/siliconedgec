@@ -11,7 +11,7 @@ declare global {
     gtag?: (...args: any[]) => void;
     ttq?: {
       page: () => void;
-      track: (event: string, params?: Record<string, unknown>) => void;
+      track: (event: string, params?: Record<string, unknown>, opts?: Record<string, unknown>) => void;
       identify: (params: Record<string, unknown>) => void;
       [k: string]: any;
     };
@@ -37,6 +37,30 @@ function safeTtq(method: "page" | "track" | "identify", ...args: any[]) {
     if (!ttq) return;
     (ttq[method] as any)?.(...args);
   } catch { /* ignore */ }
+}
+
+/** Stable per-visitor event_id for TikTok dedup with future server-side
+ *  Events API. Persists per browser; falls back to in-memory if storage is
+ *  blocked (iOS in-app browsers in private mode, Android WebView w/o cookies). */
+function makeEventId(event: string): string {
+  const rnd = Math.random().toString(36).slice(2, 10);
+  const ts = Date.now().toString(36);
+  return `${event}-${ts}-${rnd}`;
+}
+
+/** In-app browsers (Instagram, Facebook, TikTok, LinkedIn) sometimes load
+ *  the page before the pixel SDK finishes initialising, and they block
+ *  third-party storage. We poll briefly and fall back to a no-op so callers
+ *  never block UX waiting for the pixel. */
+function whenTtqReady(cb: () => void, timeoutMs = 4000) {
+  if (typeof window === "undefined") return;
+  const start = Date.now();
+  const tick = () => {
+    if (window.ttq && typeof window.ttq.track === "function") { cb(); return; }
+    if (Date.now() - start > timeoutMs) return; // give up silently
+    setTimeout(tick, 150);
+  };
+  tick();
 }
 
 /** Send a SPA pageview to GA4. GA's IP-based geolocation runs server-side
@@ -67,5 +91,12 @@ export function gaSetUserId(userId: string | null) {
 /** TikTok-specific event helper for conversion tracking
  *  (e.g. `tikTokEvent("CompletePayment", { value: 50000, currency: "NGN" })`). */
 export function tikTokEvent(event: string, params: Record<string, unknown> = {}) {
-  safeTtq("track", event, params);
+  // Attach a unique event_id so the same conversion can be deduped against a
+  // future server-side Events API call. Required for accurate iOS attribution
+  // because Apple's ITP / in-app WebViews can drop the client-side request.
+  const event_id = makeEventId(event);
+  whenTtqReady(() => {
+    try { window.ttq?.track(event, params, { event_id }); }
+    catch { try { window.ttq?.track(event, params); } catch { /* ignore */ } }
+  });
 }
