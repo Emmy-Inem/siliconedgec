@@ -75,7 +75,7 @@ export default function AdminCourseAnnouncements() {
   const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
-    <>
+    <div>
       <AdminCrudTable title="Course Announcements" data={announcements} columns={columns} onAdd={openAdd} onEdit={openEdit} onDelete={(id) => remove.mutate(id)} isLoading={isLoading} addLabel="New Announcement" />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
@@ -103,6 +103,6 @@ export default function AdminCourseAnnouncements() {
           </form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
