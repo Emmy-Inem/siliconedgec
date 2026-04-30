@@ -15,6 +15,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
+import { tikTokEvent } from "@/lib/analytics";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 
 export default function Cart() {
@@ -54,6 +55,19 @@ export default function Cart() {
           lines,
           total: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
         });
+        // TikTok conversion: paid checkout completed.
+        tikTokEvent("CompletePayment", {
+          content_type: "product_group",
+          contents: lines.map((l, i) => ({
+            content_id: courseIds[i],
+            content_name: l.title,
+            quantity: 1,
+            price: l.amount,
+          })),
+          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
+          currency: "NGN",
+          description: reference,
+        });
         await refresh();
         toast({
           title: "Payment confirmed",
@@ -85,6 +99,14 @@ export default function Cart() {
     try {
       const { getStoredUtmParams } = await import("@/hooks/useUtmTracking");
       const utm = getStoredUtmParams();
+      // Fire BEFORE the redirect so iOS in-app browsers (which kill in-flight
+      // requests on navigation) still get the InitiateCheckout signal.
+      tikTokEvent("InitiateCheckout", {
+        content_type: "product_group",
+        contents: items.map((i) => ({ content_id: i.course_id, quantity: 1 })),
+        value: total,
+        currency: "NGN",
+      });
       const { data, error } = await supabase.functions.invoke("paystack-cart-initialize", {
         body: {
           course_ids: items.map((i) => i.course_id),
@@ -135,6 +157,13 @@ export default function Cart() {
     for (const courseId of courseIds) {
       await trackLead({ formType: "enrollment", formData: { course_id: courseId } });
     }
+    // TikTok conversion: free enrollment counts as a CompleteRegistration.
+    tikTokEvent("CompleteRegistration", {
+      content_type: "product_group",
+      contents: courseIds.map((id) => ({ content_id: id, quantity: 1 })),
+      value: 0,
+      currency: "NGN",
+    });
 
     await clearCart();
     setProcessing(false);
