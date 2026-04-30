@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
+import { getCachedVisitorGeo, getVisitorGeo } from "@/lib/geo";
 import { z } from "zod";
 
 interface TrackLeadOptions {
@@ -46,6 +47,14 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
   const utm = getStoredUtmParams();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Best-effort visitor geo — never block the call if the lookup hasn't
+  // resolved yet. We fire-and-forget the warm-up and use whatever's cached.
+  let geo = getCachedVisitorGeo();
+  if (!geo) {
+    // Kick off the lookup so the *next* event has it; don't await on first call.
+    void getVisitorGeo();
+  }
+
   // Normalize course id key + strip duplicate utm_* fields callers may have added
   const normalized: Record<string, unknown> = { ...formData };
   if (normalized.courseId && !normalized.course_id) {
@@ -55,6 +64,22 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
   ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((k) => {
     if (normalized[k] === undefined || normalized[k] === null || normalized[k] === "") delete normalized[k];
   });
+
+  // Attach geo/device metadata once, in a consistent shape, so the admin
+  // analytics dashboard can compute real country / device breakdowns.
+  if (geo && geo.country && normalized.country === undefined) {
+    normalized.country = geo.country;
+    if (geo.region) normalized.region = geo.region;
+    if (geo.city) normalized.city = geo.city;
+    normalized.geo_source = geo.source;
+  }
+  if (typeof navigator !== "undefined") {
+    if (normalized.user_agent === undefined) normalized.user_agent = navigator.userAgent;
+    if (normalized.language === undefined) normalized.language = navigator.language;
+  }
+  if (typeof window !== "undefined" && normalized.screen_w === undefined) {
+    normalized.screen_w = window.innerWidth;
+  }
 
   const candidate = {
     user_id: user?.id ?? null,
@@ -81,5 +106,39 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
     return;
   }
 
-  await supabase.from("lead_sources").insert(parsed.data as any);
+  // iOS Safari + Android Chrome aggressively suspend background tabs on
+  // navigation, which can drop in-flight fetches. We POST directly to the
+  // Supabase REST endpoint with `keepalive: true` so the browser commits
+  // the request even if the page is unloading. We fall back to the SDK on
+  // any error so existing behaviour is preserved.
+  await sendKeepalive(parsed.data).catch(async () => {
+    try { await supabase.from("lead_sources").insert(parsed.data as any); } catch { /* swallow */ }
+  });
+}
+
+async function sendKeepalive(row: Record<string, unknown>) {
+  const url = (import.meta.env.VITE_SUPABASE_URL || "") + "/rest/v1/lead_sources";
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+  if (!url || !key) throw new Error("missing-supabase-env");
+
+  // Pull the current access token (if any) so RLS still attributes the row.
+  let authHeader: string = `Bearer ${key}`;
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.access_token) authHeader = `Bearer ${data.session.access_token}`;
+  } catch { /* anon is fine */ }
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: authHeader,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(row),
+    keepalive: true, // critical for iOS/Android navigation handoff
+    credentials: "omit",
+  });
+  if (!res.ok) throw new Error(`lead_sources insert failed: ${res.status}`);
 }
