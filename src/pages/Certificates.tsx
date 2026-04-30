@@ -90,12 +90,12 @@ export default function Certificates() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
                 <Award className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Verifiable · QR-Coded · LinkedIn-ready</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-primary">Verifiable · QR-Coded · LinkedIn-ready</span>
               </div>
-              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05]">
+              <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05]">
                 Certificates that <span className="text-gradient">open doors</span><span className="text-gold">.</span>
               </h1>
-              <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
+              <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-xl leading-relaxed">
                 Earn industry-recognized completion certificates with a unique verification ID employers can validate online — instantly downloadable as PDF.
               </p>
               <div className="flex flex-wrap gap-3 mt-7">
@@ -176,7 +176,7 @@ export default function Certificates() {
           {/* User's Earned Certificates */}
           {user && certificates && certificates.length > 0 && (
             <motion.div {...fadeUp} className="mb-16">
-              <h2 className="font-heading text-2xl font-bold mb-6 text-center">Your Certificates</h2>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold mb-6 text-center">Your Certificates</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {certificates.map((cert: any) => {
                   const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -206,22 +206,28 @@ export default function Certificates() {
 
           {/* Sample Certificate Preview (preview-only, no download until a course is completed) */}
           <motion.div {...fadeUp} id="sample" className="max-w-3xl mx-auto scroll-mt-24">
-            <h2 className="font-heading text-2xl font-bold mb-6 text-center">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold mb-6 text-center">
               {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
-            <p className="text-muted-foreground text-sm text-center mb-8 max-w-xl mx-auto">
+            <p className="text-muted-foreground text-xs sm:text-sm text-center mb-6 sm:mb-8 max-w-xl mx-auto px-2">
               Below is what your certificate will look like — fully branded, with a unique ID and verification link.
               {(!user || certificates.length === 0) && (
                 <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
               )}
             </p>
-            <BrandedCertificate
-              studentName={userName}
-              courseName="Cloud Engineering Crash Course"
-              date="March 7, 2026"
-              certId="SE-2026-A1B2C3"
-              instructorName="Dr. Amara Osei"
-            />
+            {/* Mobile: horizontally scrollable so the full landscape cert stays readable. */}
+            <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-thin">
+              <div className="min-w-[640px] sm:min-w-0">
+                <BrandedCertificate
+                  studentName={userName}
+                  courseName="Cloud Engineering Crash Course"
+                  date="March 7, 2026"
+                  certId="SE-2026-A1B2C3"
+                  instructorName="Dr. Amara Osei"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center mt-2 sm:hidden">← Swipe to see the full certificate →</p>
           </motion.div>
 
           <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
@@ -273,22 +279,24 @@ function CertificateCardWithDownload({
       <motion.div
         whileHover={{ y: -4 }}
         transition={{ type: "spring", stiffness: 300 }}
-        className="bg-card border border-border rounded-xl p-6 flex items-start gap-4 hover:border-primary/30 hover:shadow-lg transition-all"
+        className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 hover:border-primary/30 hover:shadow-lg transition-all"
       >
-        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <Award className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-3 sm:gap-4 w-full sm:w-auto sm:flex-1 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Award className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-heading font-semibold text-sm leading-snug break-words">{courseName}</h3>
+            <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
+            <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
+            {verifyUrl && (
+              <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
+                <Shield className="h-3 w-3" /> Verify
+              </Link>
+            )}
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-semibold text-sm truncate">{courseName}</h3>
-          <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
-          <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
-          {verifyUrl && (
-            <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
-              <Shield className="h-3 w-3" /> Verify
-            </Link>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-2 shrink-0">
+        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
           <div className="flex items-center gap-1 text-xs text-primary font-medium">
             <CheckCircle2 className="h-4 w-4" />
             Verified
@@ -296,7 +304,7 @@ function CertificateCardWithDownload({
           <Button
             size="sm"
             variant="outline"
-            className="text-xs h-7 px-2"
+            className="text-xs h-8 px-3"
             onClick={handleDownload}
             disabled={downloading}
           >

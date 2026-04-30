@@ -53,6 +53,9 @@ export function UtmTracker() {
               utm_campaign: utm.utm_campaign,
               utm_content: utm.utm_content,
               utm_term: utm.utm_term,
+              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+              language: typeof navigator !== "undefined" ? navigator.language : null,
+              screen_w: typeof window !== "undefined" ? window.innerWidth : null,
             },
           });
         }, 100);
@@ -86,6 +89,7 @@ export function UtmTracker() {
               has_recovery_token: hasRecoveryToken || undefined,
               email_hint_present: emailHint ? true : undefined,
               referrer: document.referrer || null,
+              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
             },
           }).catch(() => {});
         }, 120);
@@ -109,6 +113,9 @@ export function UtmTracker() {
           path: location.pathname,
           search: location.search || null,
           referrer: document.referrer || null,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+          language: typeof navigator !== "undefined" ? navigator.language : null,
+          screen_w: typeof window !== "undefined" ? window.innerWidth : null,
         },
       }).catch(() => {/* swallow — tracking must never block UX */});
     }, 150);
