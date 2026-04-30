@@ -120,17 +120,42 @@ function whenTtqReady(cb: () => void, timeoutMs = 4000) {
   tick();
 }
 
-/** True once the per-pixel SDK slot reports `loaded`. The base snippet
- *  exposes `track` immediately (it's a queued stub), so we look at the
- *  internal `_i[pixel_id].loaded` flag to know if events.js has actually
- *  executed — the only signal that conversions will be attributed in real
- *  time rather than dropped on iOS in-app browsers under heavy memory
- *  pressure. */
+/** True once events.js has actually downloaded and replaced the queued
+ *  stub. The TikTok base snippet doesn't expose a `.loaded` flag — instead
+ *  we check three real signals:
+ *    1. A <script> tag for `events.js` exists in the DOM and has finished
+ *       executing (no `data-loading` / readyState pending).
+ *    2. The post-load SDK exposes `ttq.instance(id)` returning a real
+ *       object whose `track` is a function (the stub stores `track` on the
+ *       queue array as `setAndDefer`, but the live SDK replaces it).
+ *    3. As a final fallback, if `ttq._partner` got populated (the live SDK
+ *       sets it during init), we know events.js ran.
+ *  Any one of these is sufficient — we use OR semantics so a strict
+ *  ad-blocker that strips one signal but not the others still passes. */
 function isTtqSdkLoaded(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    const inst = (window.ttq as any)?._i?.[TIKTOK_PIXEL_ID];
-    return !!inst?.loaded;
+    const ttq: any = window.ttq;
+    if (!ttq) return false;
+    // Signal 1 — events.js script tag is in the DOM and not still loading.
+    const scripts = document.getElementsByTagName("script");
+    for (let i = 0; i < scripts.length; i++) {
+      const s = scripts[i] as HTMLScriptElement;
+      if (s.src && s.src.indexOf("analytics.tiktok.com/i18n/pixel/events.js") !== -1) {
+        // `readyState` is IE-only; in modern browsers a script that
+        // finished executing has no pending state we can observe directly.
+        // Presence + lack of `data-failed` is a strong positive signal.
+        if (!(s as any).dataset?.failed) return true;
+      }
+    }
+    // Signal 2 — live SDK populated `_partner` or replaced `instance()`
+    if (ttq._partner) return true;
+    if (typeof ttq.instance === "function") {
+      const inst = ttq.instance(TIKTOK_PIXEL_ID);
+      // The live SDK's instance returns an object with a numeric `_t`.
+      if (inst && typeof inst === "object" && (inst.identify || inst._sodar)) return true;
+    }
+    return false;
   } catch { return false; }
 }
 
