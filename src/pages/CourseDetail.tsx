@@ -174,7 +174,17 @@ export default function CourseDetail() {
 
   const handleAddToCart = () => {
     if (!user) { navigate("/sign-in"); return; }
-    if (courseId) addToCart(courseId);
+    if (courseId) {
+      addToCart(courseId);
+      // TikTok intent signal — fires on the "Enroll Now / Add to cart" CTA.
+      tikTokEvent("AddToCart", {
+        content_id: courseId,
+        content_name: course?.title,
+        content_type: "product",
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
+      });
+    }
   };
 
   const handleBookmark = () => {
