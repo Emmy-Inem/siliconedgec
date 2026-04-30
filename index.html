@@ -72,6 +72,48 @@
     </script>
     <!-- End TikTok Pixel Code -->
 
+    <!-- Meta (Facebook) Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+      var META_PIXEL_ID = '802223455823137';
+      fbq('init', META_PIXEL_ID);
+      fbq('track', 'PageView');
+
+      // ───── In-app browser hardening (mirrors TikTok pixel logic) ─────
+      // iOS Safari + in-app WebViews (FB/IG/TikTok) can drop the initial
+      // fbevents.js request or freeze it when the tab backgrounds. We:
+      //   1. Re-fire PageView on bfcache restore (`pageshow.persisted`).
+      //   2. Re-fire PageView when the tab returns to foreground.
+      // fbq() queues calls before the SDK loads, so this is always safe.
+      window.addEventListener('pageshow', function (ev) {
+        if (ev.persisted) { try { fbq('track', 'PageView'); } catch (e) {} }
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          try { fbq('track', 'PageView'); } catch (e) {}
+        }
+      });
+      // QA log — tells you whether the SDK actually downloaded (Pixel
+      // Helper extension reports "no pixel" when fbevents.js is blocked,
+      // even though the beacon may still fire to /tr).
+      setTimeout(function () {
+        try {
+          var loaded = !!(window.fbq && window.fbq.loaded);
+          // eslint-disable-next-line no-console
+          console.info('[Meta Pixel] sdk_loaded=' + loaded + ' pixel_id=' + META_PIXEL_ID);
+        } catch (e) {}
+      }, 4000);
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=802223455823137&ev=PageView&noscript=1"
+      alt="" /></noscript>
+    <!-- End Meta Pixel Code -->
+
     <meta name="description" content="Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.">
     <meta name="author" content="Silicon Edge Consulting" />
 
