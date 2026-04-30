@@ -39,7 +39,20 @@
         //      report a pageview when the user returns.
         var PIXEL_ID = 'D7PTAHBC77UF8O7SC90G';
         function pixelLoaded() {
-          try { return !!(w.ttq && w.ttq._i && w.ttq._i[PIXEL_ID] && w.ttq._i[PIXEL_ID].loaded); } catch (e) { return false; }
+          // The base snippet's `_i[id]` is the queue array, NOT a status
+          // flag — it never gets `.loaded` set. The reliable signals are:
+          //  - the <script> tag for events.js is in the DOM (network OK)
+          //  - or the live SDK has populated `ttq._partner`
+          try {
+            if (w.ttq && w.ttq._partner) return true;
+            var scripts = d.getElementsByTagName('script');
+            for (var i = 0; i < scripts.length; i++) {
+              if (scripts[i].src && scripts[i].src.indexOf('analytics.tiktok.com/i18n/pixel/events.js') !== -1) {
+                return true;
+              }
+            }
+            return false;
+          } catch (e) { return false; }
         }
         // Retry SDK load if first attempt didn't complete within 3s. Safe:
         // ttq.load() is idempotent (it overwrites the per-pixel slot).
