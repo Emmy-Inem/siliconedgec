@@ -279,22 +279,24 @@ function CertificateCardWithDownload({
       <motion.div
         whileHover={{ y: -4 }}
         transition={{ type: "spring", stiffness: 300 }}
-        className="bg-card border border-border rounded-xl p-6 flex items-start gap-4 hover:border-primary/30 hover:shadow-lg transition-all"
+        className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 hover:border-primary/30 hover:shadow-lg transition-all"
       >
-        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <Award className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-3 sm:gap-4 w-full sm:w-auto sm:flex-1 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Award className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-heading font-semibold text-sm leading-snug break-words">{courseName}</h3>
+            <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
+            <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
+            {verifyUrl && (
+              <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
+                <Shield className="h-3 w-3" /> Verify
+              </Link>
+            )}
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-semibold text-sm truncate">{courseName}</h3>
-          <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
-          <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
-          {verifyUrl && (
-            <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
-              <Shield className="h-3 w-3" /> Verify
-            </Link>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-2 shrink-0">
+        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
           <div className="flex items-center gap-1 text-xs text-primary font-medium">
             <CheckCircle2 className="h-4 w-4" />
             Verified
@@ -302,7 +304,7 @@ function CertificateCardWithDownload({
           <Button
             size="sm"
             variant="outline"
-            className="text-xs h-7 px-2"
+            className="text-xs h-8 px-3"
             onClick={handleDownload}
             disabled={downloading}
           >
