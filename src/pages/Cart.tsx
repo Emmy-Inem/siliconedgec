@@ -15,7 +15,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
-import { tikTokEvent } from "@/lib/analytics";
+import { tikTokEvent, metaEvent } from "@/lib/analytics";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 
 export default function Cart() {
@@ -68,6 +68,20 @@ export default function Cart() {
           currency: "NGN",
           description: reference,
         });
+        // Meta Pixel: paid checkout maps to the canonical `Purchase` event,
+        // which is what Meta Ads optimisation uses for conversion bidding.
+        metaEvent("Purchase", {
+          content_ids: courseIds,
+          content_type: "product",
+          contents: lines.map((l, i) => ({
+            id: courseIds[i],
+            quantity: 1,
+            item_price: l.amount,
+          })),
+          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
+          currency: "NGN",
+          order_id: reference,
+        });
         await refresh();
         toast({
           title: "Payment confirmed",
@@ -104,6 +118,13 @@ export default function Cart() {
       tikTokEvent("InitiateCheckout", {
         content_type: "product_group",
         contents: items.map((i) => ({ content_id: i.course_id, quantity: 1 })),
+        value: total,
+        currency: "NGN",
+      });
+      metaEvent("InitiateCheckout", {
+        content_ids: items.map((i) => i.course_id),
+        content_type: "product",
+        num_items: items.length,
         value: total,
         currency: "NGN",
       });
@@ -161,6 +182,12 @@ export default function Cart() {
     tikTokEvent("CompleteRegistration", {
       content_type: "product_group",
       contents: courseIds.map((id) => ({ content_id: id, quantity: 1 })),
+      value: 0,
+      currency: "NGN",
+    });
+    metaEvent("CompleteRegistration", {
+      content_ids: courseIds,
+      content_type: "product",
       value: 0,
       currency: "NGN",
     });

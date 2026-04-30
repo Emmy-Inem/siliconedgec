@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, type TikTokPixelStatus } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, type TikTokPixelStatus, type MetaPixelStatus } from "@/lib/analytics";
 
 /**
  * Tracking QA dashboard — confirms UTM + analytics events fire on every
@@ -89,10 +89,12 @@ export default function AdminTrackingQA() {
   // TikTok Pixel runtime status — re-checked every 2s for up to ~10s so we
   // catch the SDK transition from "stub" → "loaded".
   const [ttStatus, setTtStatus] = useState<TikTokPixelStatus>(() => getTikTokPixelStatus());
+  const [metaStatus, setMetaStatus] = useState<MetaPixelStatus>(() => getMetaPixelStatus());
   useEffect(() => {
     let n = 0;
     const id = setInterval(() => {
       setTtStatus(getTikTokPixelStatus());
+      setMetaStatus(getMetaPixelStatus());
       if (++n > 10) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
@@ -220,6 +222,40 @@ export default function AdminTrackingQA() {
             <li>SPA route check: navigate Home → Courses → Pricing → Sign In; each route should fire a fresh <span className="font-mono">page</span> beacon (POST <span className="font-mono">/api/v2/pixel</span>).</li>
             <li>Mobile check: open the site in iOS Safari + Android Chrome + Instagram in-app browser; all should send a <span className="font-mono">PageView</span> within 4s of load.</li>
             <li>bfcache check: navigate forward to another site, then tap the back button. The pixel should re-fire <span className="font-mono">page</span> via the <span className="font-mono">pageshow</span> handler in <span className="font-mono">index.html</span>.</li>
+          </ol>
+        </div>
+      </Card>
+
+      {/* Meta (Facebook) Pixel QA Checklist */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">Meta Pixel QA Checklist</h3>
+          <Badge variant="outline" className="font-mono text-[10px]">{metaStatus.pixel_id}</Badge>
+        </div>
+        <ul className="space-y-2 text-xs">
+          <ChecklistRow ok={metaStatus.stub_present}
+            label="Base snippet executed (window.fbq exists)"
+            hint="Loaded from index.html on every page" />
+          <ChecklistRow ok={metaStatus.sdk_loaded}
+            label="SDK script downloaded (connect.facebook.net/en_US/fbevents.js)"
+            hint={metaStatus.sdk_loaded
+              ? "Meta Pixel Helper extension will detect this page."
+              : "If this stays red, an ad-blocker (uBlock / Brave Shields / NextDNS) is blocking fbevents.js. Beacons may still fire via /tr."} />
+          <ChecklistRow ok={metaStatus.in_app_browser === null}
+            label="Standard browser (not in-app WebView)"
+            hint={metaStatus.in_app_browser
+              ? `Detected ${metaStatus.in_app_browser} in-app browser — verify Purchase fires; Conversions API recommended.`
+              : "Open the site from inside Instagram/Facebook to test in-app coverage."}
+            warnInsteadOfFail />
+        </ul>
+        <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
+          <p className="font-medium text-foreground">Manual verification steps:</p>
+          <ol className="list-decimal pl-4 space-y-0.5">
+            <li>Install the <span className="font-mono">Meta Pixel Helper</span> Chrome extension and open the site — should show pixel <span className="font-mono">{metaStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
+            <li>Open DevTools → Network → filter <span className="font-mono">facebook.com/tr</span>. Each event fires a GET to <span className="font-mono">/tr</span> with <span className="font-mono">id={metaStatus.pixel_id}</span>.</li>
+            <li>Trigger conversions and confirm in Meta Events Manager → Test Events: <span className="font-mono">AddToCart</span> → <span className="font-mono">InitiateCheckout</span> → <span className="font-mono">Purchase</span> (after Paystack) → <span className="font-mono">DownloadCertificate</span> (custom).</li>
+            <li>SPA route check: navigate Home → Courses → Pricing; each route should fire a fresh <span className="font-mono">PageView</span>.</li>
+            <li>bfcache + visibility: tab away and return — <span className="font-mono">PageView</span> should re-fire (covers iOS in-app browser sleep).</li>
           </ol>
         </div>
       </Card>

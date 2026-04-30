@@ -15,6 +15,13 @@ declare global {
       identify: (params: Record<string, unknown>) => void;
       [k: string]: any;
     };
+    fbq?: ((...args: any[]) => void) & {
+      loaded?: boolean;
+      version?: string;
+      queue?: any[];
+      callMethod?: (...args: any[]) => void;
+    };
+    _fbq?: any;
   }
 }
 
@@ -92,6 +99,9 @@ export function gaPageview(path: string, title?: string) {
   // don't drop the very first SPA navigation (common when users land on
   // `/` and immediately tap a CTA before the 3rd-party script finishes).
   whenTtqReady(() => safeTtq("page"));
+  // Meta (Facebook) Pixel SPA pageview. fbq() queues calls before the SDK
+  // is ready, so no readiness check is needed.
+  metaPageview();
 }
 
 /** Generic GA4 event. Use sparingly — most analytics live in `lead_sources`. */
@@ -103,6 +113,9 @@ export function gaEvent(name: string, params: Record<string, unknown> = {}) {
 export function gaSetUserId(userId: string | null) {
   safeGtag("set", { user_id: userId ?? undefined });
   if (userId) safeTtq("identify", { external_id: userId });
+  // Meta advanced matching — passing an external_id helps Meta tie
+  // conversions to the same user across devices when cookies are blocked.
+  if (userId) safeFbq("init", META_PIXEL_ID, { external_id: userId });
 }
 
 /** TikTok-specific event helper for conversion tracking
@@ -116,6 +129,64 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
     try { window.ttq?.track(event, params, { event_id }); }
     catch { try { window.ttq?.track(event, params); } catch { /* ignore */ } }
   });
+}
+
+// ───── Meta (Facebook) Pixel ────────────────────────────────────────────
+// The base snippet in index.html stubs `window.fbq` so calls before the
+// SDK is ready are queued and replayed once fbevents.js loads — we still
+// guard every call to avoid throwing if a privacy extension nuked `fbq`.
+
+const META_PIXEL_ID = "802223455823137";
+
+function safeFbq(...args: any[]) {
+  if (typeof window === "undefined") return;
+  try { window.fbq?.(...args); } catch { /* ignore */ }
+}
+
+/** Send a Meta Pixel `PageView` for SPA route changes. The base snippet
+ *  fires the initial PageView; this covers client-side nav. */
+export function metaPageview() {
+  safeFbq("track", "PageView");
+}
+
+/** Standard Meta Pixel event. Use the canonical event names where
+ *  possible (AddToCart, InitiateCheckout, Purchase, CompleteRegistration,
+ *  Lead, ViewContent) — they unlock Meta Ads optimisation. Pass an
+ *  `eventID` so server-side Conversions API calls can dedup later. */
+export function metaEvent(event: string, params: Record<string, unknown> = {}) {
+  const eventID = makeEventId(event);
+  // Meta accepts the eventID as the 3rd-position options object.
+  safeFbq("track", event, params, { eventID });
+}
+
+/** Custom (non-standard) Meta event — used for things Meta doesn't have a
+ *  canonical name for, e.g. `DownloadCertificate`. */
+export function metaCustomEvent(event: string, params: Record<string, unknown> = {}) {
+  const eventID = makeEventId(event);
+  safeFbq("trackCustom", event, params, { eventID });
+}
+
+function isFbqSdkLoaded(): boolean {
+  if (typeof window === "undefined") return false;
+  try { return !!window.fbq?.loaded; } catch { return false; }
+}
+
+export interface MetaPixelStatus {
+  stub_present: boolean;
+  sdk_loaded: boolean;
+  pixel_id: string;
+  user_agent: string;
+  in_app_browser: TikTokPixelStatus["in_app_browser"];
+}
+
+export function getMetaPixelStatus(): MetaPixelStatus {
+  return {
+    stub_present: typeof window !== "undefined" && !!window.fbq,
+    sdk_loaded: isFbqSdkLoaded(),
+    pixel_id: META_PIXEL_ID,
+    user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    in_app_browser: detectInAppBrowser(),
+  };
 }
 
 /** Diagnostic snapshot of TikTok Pixel state — used by the admin Tracking QA
