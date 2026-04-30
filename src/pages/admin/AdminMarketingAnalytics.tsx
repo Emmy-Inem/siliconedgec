@@ -257,6 +257,7 @@ export default function AdminMarketingAnalytics() {
     const deviceMap: Record<string, number> = { Mobile: 0, Tablet: 0, Desktop: 0, Unknown: 0 };
     const sourceMap: Record<string, number> = {};
     const langMap: Record<string, number> = {};
+    const countryMap: Record<string, number> = {};
 
     filtered.forEach((l) => {
       if (l.form_type !== "pageview" && l.form_type !== "page_visit") return;
@@ -285,6 +286,14 @@ export default function AdminMarketingAnalytics() {
 
       const lang: string | null = typeof fd.language === "string" ? fd.language : null;
       if (lang) langMap[lang] = (langMap[lang] ?? 0) + 1;
+
+      // Real visitor country (Cloudflare/ipapi). We never invent a value:
+      // rows captured before geo was wired up are simply skipped from the
+      // breakdown, never bucketed as "Unknown".
+      const country: string | null = typeof fd.country === "string" && fd.country.length > 0
+        ? fd.country.toUpperCase()
+        : null;
+      if (country) countryMap[country] = (countryMap[country] ?? 0) + 1;
     });
 
     const topPages = Object.entries(pageMap)
@@ -303,6 +312,10 @@ export default function AdminMarketingAnalytics() {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6);
+    const countries = Object.entries(countryMap)
+      .map(([code, value]) => ({ code, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 12);
     const pagesPerVisit = visitors.size > 0 ? (totalViews / visitors.size).toFixed(2) : "0";
 
     return {
@@ -313,6 +326,8 @@ export default function AdminMarketingAnalytics() {
       devices,
       sources,
       languages,
+      countries,
+      countryTotal: countries.reduce((s, c) => s + c.value, 0),
       maxPageViews: topPages[0]?.views || 1,
       deviceTotal: devices.reduce((s, d) => s + d.value, 0) || 1,
     };
