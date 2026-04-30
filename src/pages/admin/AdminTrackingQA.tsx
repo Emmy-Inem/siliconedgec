@@ -196,7 +196,7 @@ export default function AdminTrackingQA() {
             label="SDK script downloaded (analytics.tiktok.com/i18n/pixel/events.js)"
             hint={ttStatus.sdk_loaded
               ? "Pixel Helper extension will detect this page."
-              : "If this stays red, an ad-blocker (uBlock / Brave Shields / NextDNS) is blocking events.js. Beacons may still fire via /api/v2/pixel."} />
+              : "If this stays red after 5s, an ad-blocker (uBlock / Brave Shields / NextDNS) or in-app WebView is blocking events.js. The base snippet auto-retries once at 3s; beacons can still fire via /api/v2/pixel."} />
           <ChecklistRow ok={ttStatus.consent_granted}
             label="grantConsent() called for in-app browsers"
             hint="Required for FB/IG/TikTok WebViews where 3rd-party cookies are blocked." />
@@ -207,6 +207,9 @@ export default function AdminTrackingQA() {
               : "Open the site from inside Instagram/Facebook to test in-app coverage."}
             warnInsteadOfFail />
         </ul>
+        <div className="mt-3 rounded-md bg-muted/40 p-2 text-[10px] font-mono break-all text-muted-foreground">
+          UA: {ttStatus.user_agent || "—"}
+        </div>
         <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
           <p className="font-medium text-foreground">Manual verification steps:</p>
           <ol className="list-decimal pl-4 space-y-0.5">
@@ -216,6 +219,7 @@ export default function AdminTrackingQA() {
             <li>In TikTok Ads Manager → Events Manager, set the pixel to <span className="font-mono">Test Event</span> mode and confirm events appear within ~30s.</li>
             <li>SPA route check: navigate Home → Courses → Pricing → Sign In; each route should fire a fresh <span className="font-mono">page</span> beacon (POST <span className="font-mono">/api/v2/pixel</span>).</li>
             <li>Mobile check: open the site in iOS Safari + Android Chrome + Instagram in-app browser; all should send a <span className="font-mono">PageView</span> within 4s of load.</li>
+            <li>bfcache check: navigate forward to another site, then tap the back button. The pixel should re-fire <span className="font-mono">page</span> via the <span className="font-mono">pageshow</span> handler in <span className="font-mono">index.html</span>.</li>
           </ol>
         </div>
       </Card>
