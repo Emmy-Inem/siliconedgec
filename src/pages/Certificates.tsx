@@ -15,6 +15,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
+import { tikTokEvent } from "@/lib/analytics";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -266,6 +267,12 @@ function CertificateCardWithDownload({
       const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
       pdf.save(`${certId}-certificate.pdf`);
+      // TikTok conversion: certificate download is a post-completion action.
+      tikTokEvent("Download", {
+        content_id: certId,
+        content_name: courseName,
+        content_type: "certificate",
+      });
     } catch (e) {
       console.error("PDF generation failed", e);
     } finally {
@@ -341,6 +348,12 @@ function DownloadableCertificate({
       const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
       pdf.save(`${certId}-certificate.pdf`);
+      // TikTok conversion: sample/preview certificate download.
+      tikTokEvent("Download", {
+        content_id: certId,
+        content_name: courseName,
+        content_type: "certificate",
+      });
     } catch (e) {
       console.error("PDF generation failed", e);
     } finally {
