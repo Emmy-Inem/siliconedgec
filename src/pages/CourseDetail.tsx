@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
-import { tikTokEvent } from "@/lib/analytics";
+import { tikTokEvent, metaEvent } from "@/lib/analytics";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
@@ -157,6 +157,14 @@ export default function CourseDetail() {
         value: Number((course as any)?.discount_price ?? course?.price ?? 0),
         currency: "NGN",
       });
+      // Meta Pixel: same conversion, mapped to the canonical event name.
+      metaEvent("CompleteRegistration", {
+        content_ids: [courseId],
+        content_name: course?.title,
+        content_type: "product",
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
+      });
       await logUserActivity({
         user_id: user!.id,
         action: "course_enroll",
@@ -179,6 +187,13 @@ export default function CourseDetail() {
       // TikTok intent signal — fires on the "Enroll Now / Add to cart" CTA.
       tikTokEvent("AddToCart", {
         content_id: courseId,
+        content_name: course?.title,
+        content_type: "product",
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
+      });
+      metaEvent("AddToCart", {
+        content_ids: [courseId],
         content_name: course?.title,
         content_type: "product",
         value: Number((course as any)?.discount_price ?? course?.price ?? 0),

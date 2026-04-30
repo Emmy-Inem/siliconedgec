@@ -15,7 +15,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
-import { tikTokEvent } from "@/lib/analytics";
+import { tikTokEvent, metaCustomEvent } from "@/lib/analytics";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -273,6 +273,13 @@ function CertificateCardWithDownload({
         content_name: courseName,
         content_type: "certificate",
       });
+      // Meta has no canonical "Download" event — use a custom event so
+      // it shows up under Events Manager → Custom Conversions.
+      metaCustomEvent("DownloadCertificate", {
+        content_ids: [certId],
+        content_name: courseName,
+        content_type: "certificate",
+      });
     } catch (e) {
       console.error("PDF generation failed", e);
     } finally {
@@ -351,6 +358,11 @@ function DownloadableCertificate({
       // TikTok conversion: sample/preview certificate download.
       tikTokEvent("Download", {
         content_id: certId,
+        content_name: courseName,
+        content_type: "certificate",
+      });
+      metaCustomEvent("DownloadCertificate", {
+        content_ids: [certId],
         content_name: courseName,
         content_type: "certificate",
       });
