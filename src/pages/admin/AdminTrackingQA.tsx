@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, getMetaPixelStatus, type TikTokPixelStatus, type MetaPixelStatus } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, getPixelEventLog, subscribePixelEventLog, type TikTokPixelStatus, type MetaPixelStatus, type PixelEventLogEntry } from "@/lib/analytics";
 
 /**
  * Tracking QA dashboard — confirms UTM + analytics events fire on every
@@ -98,6 +98,25 @@ export default function AdminTrackingQA() {
       if (++n > 10) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Live event_id feed — subscribes to the in-memory ring buffer in
+  // analytics.ts so admins can visually confirm a conversion fired with
+  // the right event_id (which is what server-side Conversions API will
+  // dedup against).
+  const [eventLog, setEventLog] = useState<readonly PixelEventLogEntry[]>(() => getPixelEventLog());
+  useEffect(() => subscribePixelEventLog((log) => setEventLog([...log])), []);
+
+  // Detect <noscript> Meta fallback by querying the live DOM. We can't
+  // probe a real "JS disabled" run, but we can confirm the markup that
+  // crawlers + JS-blocked browsers will see is actually present.
+  const [noscriptOk, setNoscriptOk] = useState(false);
+  useEffect(() => {
+    try {
+      const tags = Array.from(document.getElementsByTagName("noscript"));
+      const html = tags.map((n) => n.innerHTML).join("\n");
+      setNoscriptOk(/facebook\.com\/tr\?id=802223455823137/.test(html));
+    } catch { setNoscriptOk(false); }
   }, []);
 
   if (isLoading) {
@@ -241,6 +260,11 @@ export default function AdminTrackingQA() {
             hint={metaStatus.sdk_loaded
               ? "Meta Pixel Helper extension will detect this page."
               : "If this stays red, an ad-blocker (uBlock / Brave Shields / NextDNS) is blocking fbevents.js. Beacons may still fire via /tr."} />
+          <ChecklistRow ok={noscriptOk}
+            label="<noscript> fallback present in DOM"
+            hint={noscriptOk
+              ? "Crawlers and JS-disabled browsers will still hit /tr?id=802223455823137&ev=PageView&noscript=1 on every route (SPA shell is index.html)."
+              : "Could not find the <noscript> <img> tag for the Meta pixel — check index.html <body>."} />
           <ChecklistRow ok={metaStatus.in_app_browser === null}
             label="Standard browser (not in-app WebView)"
             hint={metaStatus.in_app_browser
@@ -258,6 +282,49 @@ export default function AdminTrackingQA() {
             <li>bfcache + visibility: tab away and return — <span className="font-mono">PageView</span> should re-fire (covers iOS in-app browser sleep).</li>
           </ol>
         </div>
+      </Card>
+
+      {/* Event-ID live feed (TikTok + Meta) */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">Pixel event_id log (this tab)</h3>
+          <Badge variant="outline" className="text-[10px]">{eventLog.length} events</Badge>
+        </div>
+        <p className="text-[11px] text-muted-foreground mb-3">
+          Every conversion fired in this browser tab. Each <span className="font-mono">event_id</span> is the dedup key the server-side Conversions API will use. Also available as <span className="font-mono">window.__pixelLog</span> in DevTools.
+        </p>
+        {eventLog.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">No conversions fired yet in this tab. Trigger an Enroll Now / Add to Cart / Purchase to populate.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="text-left text-muted-foreground">
+                <tr className="border-b">
+                  <th className="py-2 pr-3"><Clock className="h-3 w-3 inline" /> Time</th>
+                  <th className="py-2 pr-3">Vendor</th>
+                  <th className="py-2 pr-3">Event</th>
+                  <th className="py-2 pr-3">event_id</th>
+                </tr>
+              </thead>
+              <tbody>
+                {eventLog.slice(0, 25).map((e) => (
+                  <tr key={e.event_id} className="border-b last:border-0 hover:bg-muted/30">
+                    <td className="py-2 pr-3 font-mono whitespace-nowrap">
+                      {format(new Date(e.ts), "HH:mm:ss")}
+                    </td>
+                    <td className="py-2 pr-3">
+                      <Badge variant={e.vendor === "meta" ? "default" : "secondary"} className="text-[10px] font-mono">
+                        {e.vendor}
+                      </Badge>
+                    </td>
+                    <td className="py-2 pr-3 font-mono">{e.event}</td>
+                    <td className="py-2 pr-3 font-mono text-muted-foreground truncate max-w-[260px]">{e.event_id}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
 
       {/* Recent events feed */}
