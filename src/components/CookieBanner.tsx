@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Cookie, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { updateGoogleConsent } from "@/lib/analytics";
 
 const STORAGE_KEY = "se_cookie_consent";
 
@@ -11,13 +12,24 @@ export function CookieBanner() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (!localStorage.getItem(STORAGE_KEY)) setOpen(true);
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        setOpen(true);
+      } else {
+        // Re-apply stored consent on every page load so Google Consent
+        // Mode v2 starts in the right state for ad_storage / personalisation.
+        updateGoogleConsent(stored === "all");
+      }
     }, 1200);
     return () => clearTimeout(t);
   }, []);
 
   const accept = (value: "all" | "essential") => {
     localStorage.setItem(STORAGE_KEY, value);
+    // Google Consent Mode v2: flip ad_storage / ad_user_data /
+    // ad_personalization based on the user's choice. analytics_storage
+    // stays granted (anonymous, aggregate) either way.
+    updateGoogleConsent(value === "all");
     setOpen(false);
   };
 
