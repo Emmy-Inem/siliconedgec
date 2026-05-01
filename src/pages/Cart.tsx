@@ -15,7 +15,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
-import { tikTokEvent, metaEvent } from "@/lib/analytics";
+import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 
 export default function Cart() {
@@ -82,6 +82,19 @@ export default function Cart() {
           currency: "NGN",
           order_id: reference,
         });
+        // Google Ads: paid checkout is the primary conversion. We pass
+        // `transaction_id: reference` so Paystack's reference doubles as
+        // the dedup key against any future server-side conversion import.
+        void setGoogleAdsUserData({
+          email: user.email,
+          phone: (user.user_metadata as any)?.phone ?? null,
+        });
+        googleAdsConversion("Purchase", {
+          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
+          currency: "NGN",
+          transaction_id: reference,
+          items: lines.map((l, i) => ({ id: courseIds[i], name: l.title, price: l.amount })),
+        });
         await refresh();
         toast({
           title: "Payment confirmed",
@@ -127,6 +140,11 @@ export default function Cart() {
         num_items: items.length,
         value: total,
         currency: "NGN",
+      });
+      googleAdsConversion("InitiateCheckout", {
+        value: total,
+        currency: "NGN",
+        items: items.map((i) => ({ id: i.course_id, quantity: 1 })),
       });
       const { data, error } = await supabase.functions.invoke("paystack-cart-initialize", {
         body: {
@@ -190,6 +208,15 @@ export default function Cart() {
       content_type: "product",
       value: 0,
       currency: "NGN",
+    });
+    void setGoogleAdsUserData({
+      email: user?.email,
+      phone: (user?.user_metadata as any)?.phone ?? null,
+    });
+    googleAdsConversion("CompleteRegistration", {
+      value: 0,
+      currency: "NGN",
+      items: courseIds.map((id) => ({ id })),
     });
 
     await clearCart();
