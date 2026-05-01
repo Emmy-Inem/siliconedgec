@@ -118,6 +118,17 @@ export default function AdminTrackingQA() {
   const eventKeys = Object.keys(GOOGLE_ADS_EVENTS) as GoogleAdsEventKey[];
   const [gadsLabels, setGadsLabels] = useState<Record<string, string>>({});
   const [savingLabels, setSavingLabels] = useState(false);
+
+  // ───── Live consent state + Enhanced Conversions test ─────
+  const [consent, setConsent] = useState(() => getConsentState());
+  useEffect(() => {
+    const id = setInterval(() => setConsent(getConsentState()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const [testEmail, setTestEmail] = useState("qa+test@siliconedgec.com");
+  const [testPhone, setTestPhone] = useState("+2348000000000");
+  const [testFiring, setTestFiring] = useState(false);
+  const [lastTestId, setLastTestId] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       try {
