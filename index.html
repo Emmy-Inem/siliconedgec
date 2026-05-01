@@ -11,13 +11,31 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+      // ───── Google Consent Mode v2 defaults ───────────────────────────
+      // Set BEFORE any config so the very first hits respect consent.
+      // Analytics is granted (anonymised, aggregate) so we still get
+      // traffic insights, but ad/personalisation storage is denied until
+      // the visitor accepts the cookie banner. CookieBanner.tsx flips
+      // these to 'granted' on Accept all.
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'granted',
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+        wait_for_update: 500
+      });
       // Disable automatic pageviews — we send them manually on every SPA
       // route change (see src/lib/analytics.ts) so client-side navigations
       // are tracked correctly on iOS/Android in-app browsers too.
       gtag('config', 'G-XNK29YHXLT', { send_page_view: false });
       // Google Ads conversion tracking — shares the same gtag.js runtime
       // loaded above, so no second loader script is required.
-      gtag('config', 'AW-18126380202');
+      // `allow_enhanced_conversions: true` lets us send hashed user_data
+      // (email/phone) alongside conversions to recover attribution lost
+      // to ITP / in-app browsers — set per-event in src/lib/analytics.ts.
+      gtag('config', 'AW-18126380202', { allow_enhanced_conversions: true });
     </script>
 
     <!-- TikTok Pixel Code -->
