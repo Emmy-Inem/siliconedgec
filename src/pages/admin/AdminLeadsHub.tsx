@@ -431,12 +431,26 @@ export default function AdminLeadsHub() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{u.name}</span>
                       <Badge variant="outline" className={`text-[10px] ${meta.color} border`}>{meta.label}</Badge>
+                      <Badge variant="outline" className={`text-[10px] border ${CHANNEL_BADGE[u.channel]}`}>
+                        {u.channel}
+                      </Badge>
                       {u.status && <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
                       {u.email !== "—" && <span>{u.email}</span>}
                       {u.phone && <span className="ml-2">· {u.phone}</span>}
-                      {u.course_title && <span className="ml-2">· {u.course_title}</span>}
+                      {u.webinar_title && (
+                        <span className="ml-2">
+                          · <span className="text-blue-600/90 dark:text-blue-400">Webinar:</span> {u.webinar_title}
+                        </span>
+                      )}
+                      {u.course_title && (
+                        <span className="ml-2">
+                          · <span className="text-green-600/90 dark:text-green-400">
+                            {u.source === "business" ? "Company" : "Course"}:
+                          </span> {u.course_title}
+                        </span>
+                      )}
                       {u.meta && <span className="ml-2 italic">· {u.meta}</span>}
                     </p>
                   </div>
