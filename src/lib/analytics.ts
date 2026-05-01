@@ -458,9 +458,10 @@ export interface GoogleAdsStatus {
 
 export function getGoogleAdsStatus(): GoogleAdsStatus {
   const dl = typeof window !== "undefined" ? (window.dataLayer ?? []) : [];
-  // The default consent call pushes ['consent','default',{...}] — we
-  // detect it by scanning the dataLayer (cheap, runs once on render).
-  const consent_default_set = dl.some((row: any) => Array.isArray(row) && row[0] === "consent" && row[1] === "default");
+  // gtag consumes the consent default args into its internal queue, so
+  // dataLayer scanning is unreliable. We rely on the synchronous sentinel
+  // set in index.html right after `gtag('consent','default',...)`.
+  const consent_default_set = typeof window !== "undefined" && !!window.__gtagConsentDefaultSet;
   return {
     account_id: GOOGLE_ADS_ACCOUNT,
     gtag_loaded: typeof window !== "undefined" && typeof window.gtag === "function",
@@ -469,7 +470,20 @@ export function getGoogleAdsStatus(): GoogleAdsStatus {
     configured_events: (Object.keys(GOOGLE_ADS_EVENTS) as GoogleAdsEventKey[]).map((k) => ({
       key: k,
       ga_name: GOOGLE_ADS_EVENTS[k].gaName,
-      has_label: !!GOOGLE_ADS_EVENTS[k].label,
+      has_label: !!(GOOGLE_ADS_EVENTS[k].label || (typeof window !== "undefined" && window.__gadsLabelOverrides?.[k])),
     })),
   };
+}
+
+// ───── Admin-editable conversion labels ─────────────────────────────────
+// Stored in site_content under key `gads_conversion_labels` as JSON
+// `{ Lead: "abc", Purchase: "def", ... }`. Loaded once on app start by
+// AdminTrackingQA / App and mirrored to `window.__gadsLabelOverrides` so
+// `googleAdsConversion()` can read them synchronously without a network
+// hop on every fire.
+export const GADS_LABELS_KEY = "gads_conversion_labels";
+
+export function applyGadsLabelOverrides(map: Partial<Record<GoogleAdsEventKey, string>>) {
+  if (typeof window === "undefined") return;
+  window.__gadsLabelOverrides = { ...(window.__gadsLabelOverrides || {}), ...map };
 }
