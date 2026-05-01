@@ -350,12 +350,19 @@ export default function AdminTrackingQA() {
           <ChecklistRow ok={gadsStatus.consent_default_set}
             label="Consent Mode v2 defaults set before first hit"
             hint="ad_storage / ad_user_data / ad_personalization start denied; CookieBanner flips them on Accept all." />
-          <ChecklistRow ok={gadsStatus.configured_events.every((e) => e.has_label)}
-            label="All conversion labels configured"
-            warnInsteadOfFail
-            hint={gadsStatus.configured_events.every((e) => e.has_label)
-              ? "Each event sends to a labelled conversion action."
-              : "Some events fall back to account-level send_to (still recorded under the AW account, but won't drive bidding until labels are pasted into src/lib/analytics.ts → GOOGLE_ADS_EVENTS)."} />
+          {(() => {
+            const total = gadsStatus.configured_events.length;
+            const filled = gadsStatus.configured_events.filter((e) => e.has_label).length;
+            const allOk = filled === total;
+            return (
+              <ChecklistRow ok={allOk}
+                warnInsteadOfFail
+                label={`Conversion labels configured (${filled}/${total})`}
+                hint={allOk
+                  ? "Every event sends to its own labelled action — bidding can use these signals."
+                  : `${total - filled} event(s) still send at account level. That's fine for diagnostics, but Google Ads needs labelled actions to optimise bidding. Paste labels in the form below.`} />
+            );
+          })()}
         </ul>
 
         <div className="mt-4">
