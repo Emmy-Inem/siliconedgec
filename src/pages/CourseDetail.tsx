@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
-import { tikTokEvent, metaEvent } from "@/lib/analytics";
+import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
@@ -165,6 +165,19 @@ export default function CourseDetail() {
         value: Number((course as any)?.discount_price ?? course?.price ?? 0),
         currency: "NGN",
       });
+      // Google Ads: free enrollment counts as a sign_up / registration.
+      // Enhanced conversions: hash the signed-in user's email/phone so
+      // Google can match the conversion even when 3rd-party cookies are
+      // blocked (iOS Safari, in-app browsers).
+      void setGoogleAdsUserData({
+        email: user?.email,
+        phone: (user?.user_metadata as any)?.phone ?? null,
+      });
+      googleAdsConversion("CompleteRegistration", {
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
+        items: [{ id: courseId, name: course?.title }],
+      });
       await logUserActivity({
         user_id: user!.id,
         action: "course_enroll",
@@ -198,6 +211,11 @@ export default function CourseDetail() {
         content_type: "product",
         value: Number((course as any)?.discount_price ?? course?.price ?? 0),
         currency: "NGN",
+      });
+      googleAdsConversion("AddToCart", {
+        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        currency: "NGN",
+        items: [{ id: courseId, name: course?.title }],
       });
     }
   };

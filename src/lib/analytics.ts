@@ -64,7 +64,7 @@ function makeEventId(event: string): string {
 
 export interface PixelEventLogEntry {
   ts: number;
-  vendor: "tiktok" | "meta";
+  vendor: "tiktok" | "meta" | "google";
   event: string;
   event_id: string;
   params: Record<string, unknown>;
@@ -301,5 +301,156 @@ export function getTikTokPixelStatus(): TikTokPixelStatus {
     user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
     in_app_browser: detectInAppBrowser(),
     consent_granted: !!(ttq as any)?._partner || true, // grantConsent() called in index.html
+  };
+}
+
+// ───── Google Ads conversion tracking ───────────────────────────────────
+// Single Google Ads account loaded via gtag.js in index.html. We expose:
+//   1. A central event mapping (GOOGLE_ADS_EVENTS) so every conversion is
+//      named consistently across the codebase and easy to audit.
+//   2. `googleAdsConversion()` — fires `event: 'conversion'` with the
+//      correct `send_to` (account or labelled), value, currency and
+//      `transaction_id` (used by Google Ads for dedup, mirrors the same
+//      event_id we use for Meta/TikTok).
+//   3. Enhanced Conversions — when the user is signed in (or supplies an
+//      email at registration), we hash with SHA-256 and pass via
+//      `gtag('set', 'user_data', ...)` so Google can match the conversion
+//      to a logged-in Google account even when 3rd-party cookies are gone.
+//   4. Consent Mode v2 helper — CookieBanner.tsx calls this on Accept all
+//      to flip ad_storage / ad_user_data / ad_personalization to granted.
+
+export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
+
+/**
+ * Conversion label registry. Until the admin creates conversion actions
+ * in Google Ads (Tools → Conversions) and pastes the labels, we leave
+ * these as `null` — the helper falls back to account-level `send_to`
+ * which still records the event under the account so it appears in
+ * "All conversions" diagnostics. Once labels arrive, replace `null`
+ * with the string after the `/` in the snippet (e.g. "abcDEF123").
+ */
+export const GOOGLE_ADS_EVENTS = {
+  // Webinar / contact / business lead form submissions
+  Lead:                  { label: null as string | null, gaName: "generate_lead" },
+  // "Enroll Now" / "Add to cart" intent click on a course
+  AddToCart:             { label: null as string | null, gaName: "add_to_cart" },
+  // Cart → Paystack handoff
+  InitiateCheckout:      { label: null as string | null, gaName: "begin_checkout" },
+  // Free enrollment (₦0 course) — counts as a registration conversion
+  CompleteRegistration:  { label: null as string | null, gaName: "sign_up" },
+  // Paid enrollment confirmed by Paystack
+  Purchase:              { label: null as string | null, gaName: "purchase" },
+  // Webinar registration (form modal completed)
+  WebinarRegistration:   { label: null as string | null, gaName: "generate_lead" },
+} as const;
+
+export type GoogleAdsEventKey = keyof typeof GOOGLE_ADS_EVENTS;
+
+async function sha256Hex(input: string): Promise<string | null> {
+  if (!input) return null;
+  const trimmed = input.trim().toLowerCase();
+  if (!trimmed) return null;
+  try {
+    if (typeof crypto === "undefined" || !crypto.subtle) return null;
+    const buf = new TextEncoder().encode(trimmed);
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  } catch { return null; }
+}
+
+/**
+ * Set Enhanced Conversions user_data on the gtag layer. Call BEFORE
+ * firing the conversion (or right after the user signs in / submits the
+ * form) so the next `event: 'conversion'` carries hashed PII.
+ * Email is hashed via SHA-256 (Google's required format). Phone is
+ * normalised to E.164 best-effort then hashed.
+ */
+export async function setGoogleAdsUserData(input: {
+  email?: string | null;
+  phone?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+}) {
+  const sha_email = input.email ? await sha256Hex(input.email) : null;
+  // Normalise phone: strip everything except digits and leading +.
+  const phoneRaw = input.phone ? String(input.phone).replace(/[^\d+]/g, "") : "";
+  const sha_phone = phoneRaw ? await sha256Hex(phoneRaw.startsWith("+") ? phoneRaw : `+${phoneRaw}`) : null;
+  const userData: Record<string, string> = {};
+  if (sha_email) userData.sha256_email_address = sha_email;
+  if (sha_phone) userData.sha256_phone_number = sha_phone;
+  if (Object.keys(userData).length === 0) return;
+  safeGtag("set", "user_data", userData);
+}
+
+/**
+ * Fire a Google Ads conversion. Mirrors `metaEvent` / `tikTokEvent` so
+ * the call sites stay symmetrical. `transaction_id` deduplicates against
+ * server-side Conversions Import / Offline Conversions if added later.
+ */
+export function googleAdsConversion(
+  eventKey: GoogleAdsEventKey,
+  params: { value?: number; currency?: string; transaction_id?: string; [k: string]: unknown } = {},
+) {
+  const cfg = GOOGLE_ADS_EVENTS[eventKey];
+  const transaction_id = params.transaction_id ?? makeEventId(eventKey);
+  const send_to = cfg.label ? `${GOOGLE_ADS_ACCOUNT}/${cfg.label}` : GOOGLE_ADS_ACCOUNT;
+  const payload: Record<string, unknown> = {
+    send_to,
+    value: params.value ?? 0,
+    currency: params.currency ?? "NGN",
+    transaction_id,
+  };
+  // Pass through extra metadata (content_ids, items, etc.) for GA4 reports.
+  Object.keys(params).forEach((k) => {
+    if (k !== "value" && k !== "currency" && k !== "transaction_id") payload[k] = params[k];
+  });
+  safeGtag("event", "conversion", payload);
+  // Mirror to GA4 with the canonical event name so funnel reports work
+  // even before the Google Ads label is configured.
+  safeGtag("event", cfg.gaName, payload);
+  logPixelEvent({
+    ts: Date.now(),
+    vendor: "google",
+    event: `${eventKey}${cfg.label ? "" : " (account-level)"}`,
+    event_id: transaction_id,
+    params: payload,
+  });
+}
+
+/** Update Google Consent Mode v2 — called by CookieBanner.tsx. */
+export function updateGoogleConsent(granted: boolean) {
+  safeGtag("consent", "update", {
+    ad_storage: granted ? "granted" : "denied",
+    ad_user_data: granted ? "granted" : "denied",
+    ad_personalization: granted ? "granted" : "denied",
+    analytics_storage: "granted",
+  });
+}
+
+export interface GoogleAdsStatus {
+  account_id: string;
+  gtag_loaded: boolean;
+  datalayer_present: boolean;
+  consent_default_set: boolean;
+  configured_events: { key: GoogleAdsEventKey; ga_name: string; has_label: boolean }[];
+}
+
+export function getGoogleAdsStatus(): GoogleAdsStatus {
+  const dl = typeof window !== "undefined" ? (window.dataLayer ?? []) : [];
+  // The default consent call pushes ['consent','default',{...}] — we
+  // detect it by scanning the dataLayer (cheap, runs once on render).
+  const consent_default_set = dl.some((row: any) => Array.isArray(row) && row[0] === "consent" && row[1] === "default");
+  return {
+    account_id: GOOGLE_ADS_ACCOUNT,
+    gtag_loaded: typeof window !== "undefined" && typeof window.gtag === "function",
+    datalayer_present: Array.isArray(dl),
+    consent_default_set,
+    configured_events: (Object.keys(GOOGLE_ADS_EVENTS) as GoogleAdsEventKey[]).map((k) => ({
+      key: k,
+      ga_name: GOOGLE_ADS_EVENTS[k].gaName,
+      has_label: !!GOOGLE_ADS_EVENTS[k].label,
+    })),
   };
 }

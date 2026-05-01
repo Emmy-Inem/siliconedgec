@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, getMetaPixelStatus, getPixelEventLog, subscribePixelEventLog, type TikTokPixelStatus, type MetaPixelStatus, type PixelEventLogEntry } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, getGoogleAdsStatus, getPixelEventLog, subscribePixelEventLog, type TikTokPixelStatus, type MetaPixelStatus, type GoogleAdsStatus, type PixelEventLogEntry } from "@/lib/analytics";
 
 /**
  * Tracking QA dashboard — confirms UTM + analytics events fire on every
@@ -36,6 +36,16 @@ function classifyHealth(row: Row): "ok" | "warn" | "error" {
   if (row.form_type === "certificate_verify" && !(row.form_data as any)?.code) return "error";
   if (row.form_type === "page_visit" && !row.utm_source) return "warn";
   return "ok";
+}
+
+// Helpers for the Google Ads event-mapping table.
+function GADS_LABEL(status: GoogleAdsStatus, key: string): string {
+  const ev = status.configured_events.find((e) => e.key === key);
+  return ev?.has_label ? "configured" : "account-level";
+}
+function GADS_LABEL_OK(status: GoogleAdsStatus, key: string): string {
+  const ev = status.configured_events.find((e) => e.key === key);
+  return ev?.has_label ? "text-emerald-500" : "text-amber-500";
 }
 
 const HealthIcon = ({ status }: { status: ReturnType<typeof classifyHealth> }) => {
@@ -90,11 +100,13 @@ export default function AdminTrackingQA() {
   // catch the SDK transition from "stub" → "loaded".
   const [ttStatus, setTtStatus] = useState<TikTokPixelStatus>(() => getTikTokPixelStatus());
   const [metaStatus, setMetaStatus] = useState<MetaPixelStatus>(() => getMetaPixelStatus());
+  const [gadsStatus, setGadsStatus] = useState<GoogleAdsStatus>(() => getGoogleAdsStatus());
   useEffect(() => {
     let n = 0;
     const id = setInterval(() => {
       setTtStatus(getTikTokPixelStatus());
       setMetaStatus(getMetaPixelStatus());
+      setGadsStatus(getGoogleAdsStatus());
       if (++n > 10) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
@@ -280,6 +292,69 @@ export default function AdminTrackingQA() {
             <li>Trigger conversions and confirm in Meta Events Manager → Test Events: <span className="font-mono">AddToCart</span> → <span className="font-mono">InitiateCheckout</span> → <span className="font-mono">Purchase</span> (after Paystack) → <span className="font-mono">DownloadCertificate</span> (custom).</li>
             <li>SPA route check: navigate Home → Courses → Pricing; each route should fire a fresh <span className="font-mono">PageView</span>.</li>
             <li>bfcache + visibility: tab away and return — <span className="font-mono">PageView</span> should re-fire (covers iOS in-app browser sleep).</li>
+          </ol>
+        </div>
+      </Card>
+
+      {/* Google Ads QA Checklist + Event Mapping */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">Google Ads conversion tracking</h3>
+          <Badge variant="outline" className="font-mono text-[10px]">{gadsStatus.account_id}</Badge>
+        </div>
+        <ul className="space-y-2 text-xs">
+          <ChecklistRow ok={gadsStatus.datalayer_present}
+            label="window.dataLayer initialised"
+            hint="Loaded inline from index.html before gtag.js." />
+          <ChecklistRow ok={gadsStatus.gtag_loaded}
+            label="gtag.js script downloaded (googletagmanager.com)"
+            hint={gadsStatus.gtag_loaded
+              ? "Conversions and Enhanced Conversions can fire."
+              : "Likely blocked by ad-blocker. Beacons still queue in dataLayer and replay if a script later loads."} />
+          <ChecklistRow ok={gadsStatus.consent_default_set}
+            label="Consent Mode v2 defaults set before first hit"
+            hint="ad_storage / ad_user_data / ad_personalization start denied; CookieBanner flips them on Accept all." />
+          <ChecklistRow ok={gadsStatus.configured_events.every((e) => e.has_label)}
+            label="All conversion labels configured"
+            warnInsteadOfFail
+            hint={gadsStatus.configured_events.every((e) => e.has_label)
+              ? "Each event sends to a labelled conversion action."
+              : "Some events fall back to account-level send_to (still recorded under the AW account, but won't drive bidding until labels are pasted into src/lib/analytics.ts → GOOGLE_ADS_EVENTS)."} />
+        </ul>
+
+        <div className="mt-4">
+          <p className="text-[11px] font-medium mb-2">Event mapping (call site → Google Ads / GA4)</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[11px]">
+              <thead className="text-left text-muted-foreground">
+                <tr className="border-b">
+                  <th className="py-1.5 pr-3">Trigger</th>
+                  <th className="py-1.5 pr-3">Conversion key</th>
+                  <th className="py-1.5 pr-3">GA4 event</th>
+                  <th className="py-1.5 pr-3">Label</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono">
+                <tr className="border-b"><td className="py-1.5 pr-3">Course "Enroll Now" / Add to cart</td><td>AddToCart</td><td>add_to_cart</td><td className={GADS_LABEL_OK(gadsStatus, "AddToCart")}>{GADS_LABEL(gadsStatus, "AddToCart")}</td></tr>
+                <tr className="border-b"><td className="py-1.5 pr-3">Cart → Paystack handoff</td><td>InitiateCheckout</td><td>begin_checkout</td><td className={GADS_LABEL_OK(gadsStatus, "InitiateCheckout")}>{GADS_LABEL(gadsStatus, "InitiateCheckout")}</td></tr>
+                <tr className="border-b"><td className="py-1.5 pr-3">Free enrollment confirmed</td><td>CompleteRegistration</td><td>sign_up</td><td className={GADS_LABEL_OK(gadsStatus, "CompleteRegistration")}>{GADS_LABEL(gadsStatus, "CompleteRegistration")}</td></tr>
+                <tr className="border-b"><td className="py-1.5 pr-3">Paid enrollment (Paystack verified)</td><td>Purchase</td><td>purchase</td><td className={GADS_LABEL_OK(gadsStatus, "Purchase")}>{GADS_LABEL(gadsStatus, "Purchase")}</td></tr>
+                <tr className="border-b"><td className="py-1.5 pr-3">Webinar registration submitted</td><td>WebinarRegistration</td><td>generate_lead</td><td className={GADS_LABEL_OK(gadsStatus, "WebinarRegistration")}>{GADS_LABEL(gadsStatus, "WebinarRegistration")}</td></tr>
+                <tr><td className="py-1.5 pr-3">Generic lead form (future)</td><td>Lead</td><td>generate_lead</td><td className={GADS_LABEL_OK(gadsStatus, "Lead")}>{GADS_LABEL(gadsStatus, "Lead")}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
+          <p className="font-medium text-foreground">Setup &amp; verification</p>
+          <ol className="list-decimal pl-4 space-y-0.5">
+            <li>In Google Ads → <span className="font-mono">Tools → Conversions</span>, create a conversion action for each row above (or import GA4 key events).</li>
+            <li>Open the action → "Tag setup" → "Use Google tag" → copy the value after <span className="font-mono">/</span> in <span className="font-mono">send_to: 'AW-…/LABEL'</span>.</li>
+            <li>Paste each label into <span className="font-mono">GOOGLE_ADS_EVENTS</span> in <span className="font-mono">src/lib/analytics.ts</span>.</li>
+            <li>Enable <span className="font-mono">Enhanced conversions</span> on the action and choose "Google tag" — hashed email + phone are already being sent via <span className="font-mono">setGoogleAdsUserData()</span>.</li>
+            <li>Use the <span className="font-mono">Google Tag Assistant</span> Chrome extension to confirm <span className="font-mono">conversion</span> events fire on this site with the right account.</li>
+            <li>SPA route check: navigate Home → Courses → Pricing; gtag pageviews fire from <span className="font-mono">gaPageview()</span> (analytics.ts) on every route change.</li>
           </ol>
         </div>
       </Card>
