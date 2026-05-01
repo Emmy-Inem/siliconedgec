@@ -15,6 +15,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { logUserActivity } from "@/lib/user-activity";
 import { trackLead } from "@/lib/track-lead";
 import { recordInfluencerConversion } from "@/lib/influencer-attribution";
+import { googleAdsConversion, setGoogleAdsUserData, tikTokEvent, metaEvent } from "@/lib/analytics";
 
 const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
 
@@ -152,6 +153,30 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
           registrationId,
         }),
       ]);
+
+      // Pixel conversions — Google Ads (with enhanced conversions),
+      // TikTok and Meta. We hash email + WhatsApp number so Google can
+      // match the lead even when 3rd-party cookies are blocked.
+      void setGoogleAdsUserData({
+        email: parsed.data.email,
+        phone: parsed.data.whatsapp_number,
+      });
+      googleAdsConversion("WebinarRegistration", {
+        value: 0,
+        currency: "NGN",
+        content_id: courseId,
+        content_name: courseTitle,
+      });
+      tikTokEvent("SubmitForm", {
+        content_id: courseId,
+        content_name: courseTitle,
+        content_type: "webinar",
+      });
+      metaEvent("Lead", {
+        content_name: courseTitle,
+        content_category: "webinar",
+        content_ids: [courseId],
+      });
 
       setDone(true);
       toast({
