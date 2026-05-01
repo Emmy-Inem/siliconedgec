@@ -9,6 +9,8 @@ declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
+    __gtagConsentDefaultSet?: boolean;
+    __gadsLabelOverrides?: Partial<Record<string, string>>;
     ttq?: {
       page: () => void;
       track: (event: string, params?: Record<string, unknown>, opts?: Record<string, unknown>) => void;
