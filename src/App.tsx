@@ -33,6 +33,7 @@ import RedirectInfluencer from "./pages/RedirectInfluencer";
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
+import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { HelmetProvider } from "react-helmet-async";
 import CmsPagePublic from "./pages/CmsPage";
 import InstructorDetail from "./pages/InstructorDetail";
@@ -229,6 +230,7 @@ const App = () => (
             <LiveChat />
             <CustomScripts />
             <CookieBanner />
+            <GadsLabelsLoader />
             <InfluencerSignupPrompt />
           </CartProvider>
         </AuthProvider>

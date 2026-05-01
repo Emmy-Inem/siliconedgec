@@ -26,6 +26,11 @@
         security_storage: 'granted',
         wait_for_update: 500
       });
+      // Sentinel — gtag consumes the arguments above into its internal
+      // queue, so the Tracking QA panel can't reliably read them back
+      // from window.dataLayer. We set this flag synchronously right
+      // after the call so the UI can confirm defaults were registered.
+      window.__gtagConsentDefaultSet = true;
       // Disable automatic pageviews — we send them manually on every SPA
       // route change (see src/lib/analytics.ts) so client-side navigations
       // are tracked correctly on iOS/Android in-app browsers too.
