@@ -396,7 +396,8 @@ export default function AdminTrackingQA() {
           <ol className="list-decimal pl-4 space-y-0.5">
             <li>In Google Ads → <span className="font-mono">Tools → Conversions</span>, create a conversion action for each row above (or import GA4 key events).</li>
             <li>Open the action → "Tag setup" → "Use Google tag" → copy the value after <span className="font-mono">/</span> in <span className="font-mono">send_to: 'AW-…/LABEL'</span>.</li>
-            <li>Paste each label into <span className="font-mono">GOOGLE_ADS_EVENTS</span> in <span className="font-mono">src/lib/analytics.ts</span>.</li>
+            <li>Paste each label into the inputs above and click <span className="font-mono">Save labels</span> — they hydrate on every page load via <span className="font-mono">GadsLabelsLoader</span>.</li>
+            <li>In <span className="font-mono">GA4 → Admin → Events</span>, mark these as <span className="font-mono">key events</span>: <span className="font-mono">purchase, sign_up, generate_lead, begin_checkout, add_to_cart</span>. They&apos;re already being sent by <span className="font-mono">googleAdsConversion()</span> with full UTM attribution.</li>
             <li>Enable <span className="font-mono">Enhanced conversions</span> on the action and choose "Google tag" — hashed email + phone are already being sent via <span className="font-mono">setGoogleAdsUserData()</span>.</li>
             <li>Use the <span className="font-mono">Google Tag Assistant</span> Chrome extension to confirm <span className="font-mono">conversion</span> events fire on this site with the right account.</li>
             <li>SPA route check: navigate Home → Courses → Pricing; gtag pageviews fire from <span className="font-mono">gaPageview()</span> (analytics.ts) on every route change.</li>
