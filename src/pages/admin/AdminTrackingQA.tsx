@@ -38,6 +38,16 @@ function classifyHealth(row: Row): "ok" | "warn" | "error" {
   return "ok";
 }
 
+// Helpers for the Google Ads event-mapping table.
+function GADS_LABEL(status: GoogleAdsStatus, key: string): string {
+  const ev = status.configured_events.find((e) => e.key === key);
+  return ev?.has_label ? "configured" : "account-level";
+}
+function GADS_LABEL_OK(status: GoogleAdsStatus, key: string): string {
+  const ev = status.configured_events.find((e) => e.key === key);
+  return ev?.has_label ? "text-emerald-500" : "text-amber-500";
+}
+
 const HealthIcon = ({ status }: { status: ReturnType<typeof classifyHealth> }) => {
   if (status === "ok") return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
   if (status === "warn") return <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />;
