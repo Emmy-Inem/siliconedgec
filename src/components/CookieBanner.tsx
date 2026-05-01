@@ -18,7 +18,7 @@ export function CookieBanner() {
       } else {
         // Re-apply stored consent on every page load so Google Consent
         // Mode v2 starts in the right state for ad_storage / personalisation.
-        updateGoogleConsent(stored === "all");
+        updateGoogleConsent(stored === "all", "stored");
       }
     }, 1200);
     return () => clearTimeout(t);

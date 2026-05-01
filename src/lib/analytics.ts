@@ -11,6 +11,14 @@ declare global {
     gtag?: (...args: any[]) => void;
     __gtagConsentDefaultSet?: boolean;
     __gadsLabelOverrides?: Partial<Record<string, string>>;
+    __seConsent?: {
+      ad_storage: "granted" | "denied";
+      ad_user_data: "granted" | "denied";
+      ad_personalization: "granted" | "denied";
+      analytics_storage: "granted" | "denied";
+      source: "default" | "user" | "stored";
+      updated_at: number;
+    };
     ttq?: {
       page: () => void;
       track: (event: string, params?: Record<string, unknown>, opts?: Record<string, unknown>) => void;
@@ -439,13 +447,51 @@ export function googleAdsConversion(
 }
 
 /** Update Google Consent Mode v2 — called by CookieBanner.tsx. */
-export function updateGoogleConsent(granted: boolean) {
-  safeGtag("consent", "update", {
-    ad_storage: granted ? "granted" : "denied",
-    ad_user_data: granted ? "granted" : "denied",
-    ad_personalization: granted ? "granted" : "denied",
-    analytics_storage: "granted",
+export function updateGoogleConsent(granted: boolean, source: "user" | "stored" = "user") {
+  const state = {
+    ad_storage: (granted ? "granted" : "denied") as "granted" | "denied",
+    ad_user_data: (granted ? "granted" : "denied") as "granted" | "denied",
+    ad_personalization: (granted ? "granted" : "denied") as "granted" | "denied",
+    analytics_storage: "granted" as const,
+  };
+  safeGtag("consent", "update", state);
+  // Mirror the chosen state so the admin QA panel can read it back.
+  // gtag's internal consent queue isn't exposed publicly, so this is
+  // the most reliable readback we have without re-parsing dataLayer.
+  if (typeof window !== "undefined") {
+    window.__seConsent = { ...state, source, updated_at: Date.now() };
+  }
+}
+
+/** Live snapshot of the current consent state — `null` if no
+ *  update has been registered yet (cookie banner not yet acted on
+ *  AND no stored choice was replayed). */
+export function getConsentState() {
+  if (typeof window === "undefined") return null;
+  return window.__seConsent ?? null;
+}
+
+/**
+ * Fire a synthetic Lead conversion with hashed test PII so admins can
+ * verify Enhanced Conversions in Google Ads → Conversions → Diagnostics.
+ * Returns the `event_id` so it can be matched against Tag Assistant.
+ */
+export async function fireEnhancedConversionsTest(input: {
+  email?: string;
+  phone?: string;
+}): Promise<string> {
+  await setGoogleAdsUserData({
+    email: input.email || "qa+test@siliconedgec.com",
+    phone: input.phone || "+2348000000000",
   });
+  const event_id = `test-${Date.now().toString(36)}`;
+  googleAdsConversion("Lead", {
+    value: 1,
+    currency: "NGN",
+    transaction_id: event_id,
+    test_mode: true,
+  });
+  return event_id;
 }
 
 export interface GoogleAdsStatus {

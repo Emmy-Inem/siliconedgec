@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, getMetaPixelStatus, getGoogleAdsStatus, getPixelEventLog, subscribePixelEventLog, applyGadsLabelOverrides, GADS_LABELS_KEY, GOOGLE_ADS_EVENTS, type TikTokPixelStatus, type MetaPixelStatus, type GoogleAdsStatus, type PixelEventLogEntry, type GoogleAdsEventKey } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, getGoogleAdsStatus, getPixelEventLog, subscribePixelEventLog, applyGadsLabelOverrides, GADS_LABELS_KEY, GOOGLE_ADS_EVENTS, getConsentState, fireEnhancedConversionsTest, updateGoogleConsent, type TikTokPixelStatus, type MetaPixelStatus, type GoogleAdsStatus, type PixelEventLogEntry, type GoogleAdsEventKey } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -118,6 +118,17 @@ export default function AdminTrackingQA() {
   const eventKeys = Object.keys(GOOGLE_ADS_EVENTS) as GoogleAdsEventKey[];
   const [gadsLabels, setGadsLabels] = useState<Record<string, string>>({});
   const [savingLabels, setSavingLabels] = useState(false);
+
+  // ───── Live consent state + Enhanced Conversions test ─────
+  const [consent, setConsent] = useState(() => getConsentState());
+  useEffect(() => {
+    const id = setInterval(() => setConsent(getConsentState()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const [testEmail, setTestEmail] = useState("qa+test@siliconedgec.com");
+  const [testPhone, setTestPhone] = useState("+2348000000000");
+  const [testFiring, setTestFiring] = useState(false);
+  const [lastTestId, setLastTestId] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       try {
@@ -350,12 +361,19 @@ export default function AdminTrackingQA() {
           <ChecklistRow ok={gadsStatus.consent_default_set}
             label="Consent Mode v2 defaults set before first hit"
             hint="ad_storage / ad_user_data / ad_personalization start denied; CookieBanner flips them on Accept all." />
-          <ChecklistRow ok={gadsStatus.configured_events.every((e) => e.has_label)}
-            label="All conversion labels configured"
-            warnInsteadOfFail
-            hint={gadsStatus.configured_events.every((e) => e.has_label)
-              ? "Each event sends to a labelled conversion action."
-              : "Some events fall back to account-level send_to (still recorded under the AW account, but won't drive bidding until labels are pasted into src/lib/analytics.ts → GOOGLE_ADS_EVENTS)."} />
+          {(() => {
+            const total = gadsStatus.configured_events.length;
+            const filled = gadsStatus.configured_events.filter((e) => e.has_label).length;
+            const allOk = filled === total;
+            return (
+              <ChecklistRow ok={allOk}
+                warnInsteadOfFail
+                label={`Conversion labels configured (${filled}/${total})`}
+                hint={allOk
+                  ? "Every event sends to its own labelled action — bidding can use these signals."
+                  : `${total - filled} event(s) still send at account level. That's fine for diagnostics, but Google Ads needs labelled actions to optimise bidding. Paste labels in the form below.`} />
+            );
+          })()}
         </ul>
 
         <div className="mt-4">
@@ -402,6 +420,91 @@ export default function AdminTrackingQA() {
             <li>Use the <span className="font-mono">Google Tag Assistant</span> Chrome extension to confirm <span className="font-mono">conversion</span> events fire on this site with the right account.</li>
             <li>SPA route check: navigate Home → Courses → Pricing; gtag pageviews fire from <span className="font-mono">gaPageview()</span> (analytics.ts) on every route change.</li>
           </ol>
+        </div>
+      </Card>
+
+      {/* Consent state + Enhanced Conversions test */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">Consent state &amp; Enhanced Conversions test</h3>
+          {consent ? (
+            <Badge variant="outline" className="text-[10px] font-mono">
+              source: {consent.source}
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="text-[10px]">no choice yet</Badge>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px] mb-4">
+          {(["ad_storage", "ad_user_data", "ad_personalization", "analytics_storage"] as const).map((k) => {
+            const v = consent?.[k];
+            // Default state per index.html: only analytics_storage starts granted.
+            const fallback = k === "analytics_storage" ? "granted" : "denied";
+            const display = v ?? fallback;
+            const ok = display === "granted";
+            return (
+              <div key={k} className="rounded-md border border-border p-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{k.replace(/_/g, " ")}</p>
+                <p className={`mt-1 text-xs font-mono ${ok ? "text-emerald-500" : "text-amber-500"}`}>
+                  {display}
+                  {!v && <span className="text-muted-foreground"> (default)</span>}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4 text-[11px]">
+          <Button size="sm" variant="outline" onClick={() => { updateGoogleConsent(true, "user"); setConsent(getConsentState()); }}>
+            Simulate Accept all
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => { updateGoogleConsent(false, "user"); setConsent(getConsentState()); }}>
+            Simulate Essential only
+          </Button>
+          <span className="text-muted-foreground self-center">
+            Updates Google Consent Mode v2 in this tab so you can confirm the wiring without re-opening the cookie banner.
+          </span>
+        </div>
+
+        <div className="border-t pt-4">
+          <p className="text-[11px] font-medium mb-2">Enhanced Conversions test fire</p>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Sends a synthetic <span className="font-mono">Lead</span> conversion (value ₦1) with hashed email + phone via <span className="font-mono">user_data</span>. Confirm it appears in Google Ads → Tools → Conversions → <span className="font-mono">Diagnostics</span> → Recent conversions, with the matching <span className="font-mono">Order ID</span>.
+          </p>
+          <div className="grid md:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+            <div>
+              <label className="text-[10px] text-muted-foreground">Test email</label>
+              <Input value={testEmail} onChange={(e) => setTestEmail(e.target.value)} className="h-8 font-mono text-xs" />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Test phone (E.164)</label>
+              <Input value={testPhone} onChange={(e) => setTestPhone(e.target.value)} className="h-8 font-mono text-xs" />
+            </div>
+            <Button
+              size="sm"
+              disabled={testFiring}
+              onClick={async () => {
+                setTestFiring(true);
+                try {
+                  const id = await fireEnhancedConversionsTest({ email: testEmail, phone: testPhone });
+                  setLastTestId(id);
+                  toast({ title: "Test conversion fired", description: `event_id ${id} — check Google Ads diagnostics in ~1 min.` });
+                } catch (e: any) {
+                  toast({ title: "Test failed", description: e?.message ?? "Try again", variant: "destructive" });
+                } finally { setTestFiring(false); }
+              }}>
+              {testFiring ? "Firing…" : "Fire test conversion"}
+            </Button>
+          </div>
+          {lastTestId && (
+            <p className="text-[11px] text-emerald-500 mt-2 font-mono">
+              ✓ Last test event_id: {lastTestId}
+            </p>
+          )}
+          <p className="text-[10px] text-muted-foreground mt-3">
+            Note: requires <span className="font-mono">ad_user_data: granted</span> for the hashed PII to leave the device. Click <span className="font-mono">Simulate Accept all</span> first if testing in an incognito tab.
+          </p>
         </div>
       </Card>
 
