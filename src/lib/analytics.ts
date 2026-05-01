@@ -397,7 +397,21 @@ export function googleAdsConversion(
 ) {
   const cfg = GOOGLE_ADS_EVENTS[eventKey];
   const transaction_id = params.transaction_id ?? makeEventId(eventKey);
-  const send_to = cfg.label ? `${GOOGLE_ADS_ACCOUNT}/${cfg.label}` : GOOGLE_ADS_ACCOUNT;
+  // Allow an admin-pasted label override (set via AdminTrackingQA → saved
+  // to site_content + replayed into window.__gadsLabelOverrides on app
+  // start). This lets the user activate proper conversion bidding without
+  // a code change.
+  const overrideLabel = (typeof window !== "undefined" && window.__gadsLabelOverrides?.[eventKey]) || null;
+  const effectiveLabel = overrideLabel || cfg.label;
+  const send_to = effectiveLabel ? `${GOOGLE_ADS_ACCOUNT}/${effectiveLabel}` : GOOGLE_ADS_ACCOUNT;
+  // Pull stored UTM attribution so every conversion carries the campaign
+  // that drove it. GA4 uses these as event-scoped dimensions.
+  let utm: Record<string, string> = {};
+  try {
+    const stored = JSON.parse(localStorage.getItem("sec_utm_params") || "{}");
+    if (stored?.value) utm = stored.value;
+    else utm = stored || {};
+  } catch { /* ignore */ }
   const payload: Record<string, unknown> = {
     send_to,
     value: params.value ?? 0,
@@ -408,6 +422,9 @@ export function googleAdsConversion(
   Object.keys(params).forEach((k) => {
     if (k !== "value" && k !== "currency" && k !== "transaction_id") payload[k] = params[k];
   });
+  ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach((k) => {
+    if (utm[k]) payload[k] = utm[k];
+  });
   safeGtag("event", "conversion", payload);
   // Mirror to GA4 with the canonical event name so funnel reports work
   // even before the Google Ads label is configured.
@@ -415,7 +432,7 @@ export function googleAdsConversion(
   logPixelEvent({
     ts: Date.now(),
     vendor: "google",
-    event: `${eventKey}${cfg.label ? "" : " (account-level)"}`,
+    event: `${eventKey}${effectiveLabel ? "" : " (account-level)"}`,
     event_id: transaction_id,
     params: payload,
   });
