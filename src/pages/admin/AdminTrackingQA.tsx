@@ -368,26 +368,35 @@ export default function AdminTrackingQA() {
         </ul>
 
         <div className="mt-4">
-          <p className="text-[11px] font-medium mb-2">Event mapping (call site → Google Ads / GA4)</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[11px]">
-              <thead className="text-left text-muted-foreground">
-                <tr className="border-b">
-                  <th className="py-1.5 pr-3">Trigger</th>
-                  <th className="py-1.5 pr-3">Conversion key</th>
-                  <th className="py-1.5 pr-3">GA4 event</th>
-                  <th className="py-1.5 pr-3">Label</th>
-                </tr>
-              </thead>
-              <tbody className="font-mono">
-                <tr className="border-b"><td className="py-1.5 pr-3">Course "Enroll Now" / Add to cart</td><td>AddToCart</td><td>add_to_cart</td><td className={GADS_LABEL_OK(gadsStatus, "AddToCart")}>{GADS_LABEL(gadsStatus, "AddToCart")}</td></tr>
-                <tr className="border-b"><td className="py-1.5 pr-3">Cart → Paystack handoff</td><td>InitiateCheckout</td><td>begin_checkout</td><td className={GADS_LABEL_OK(gadsStatus, "InitiateCheckout")}>{GADS_LABEL(gadsStatus, "InitiateCheckout")}</td></tr>
-                <tr className="border-b"><td className="py-1.5 pr-3">Free enrollment confirmed</td><td>CompleteRegistration</td><td>sign_up</td><td className={GADS_LABEL_OK(gadsStatus, "CompleteRegistration")}>{GADS_LABEL(gadsStatus, "CompleteRegistration")}</td></tr>
-                <tr className="border-b"><td className="py-1.5 pr-3">Paid enrollment (Paystack verified)</td><td>Purchase</td><td>purchase</td><td className={GADS_LABEL_OK(gadsStatus, "Purchase")}>{GADS_LABEL(gadsStatus, "Purchase")}</td></tr>
-                <tr className="border-b"><td className="py-1.5 pr-3">Webinar registration submitted</td><td>WebinarRegistration</td><td>generate_lead</td><td className={GADS_LABEL_OK(gadsStatus, "WebinarRegistration")}>{GADS_LABEL(gadsStatus, "WebinarRegistration")}</td></tr>
-                <tr><td className="py-1.5 pr-3">Generic lead form (future)</td><td>Lead</td><td>generate_lead</td><td className={GADS_LABEL_OK(gadsStatus, "Lead")}>{GADS_LABEL(gadsStatus, "Lead")}</td></tr>
-              </tbody>
-            </table>
+          <p className="text-[11px] font-medium mb-2">Conversion labels (paste from Google Ads → Tools → Conversions)</p>
+          <p className="text-[11px] text-muted-foreground mb-3">For each action, copy the value after the <span className="font-mono">/</span> in <span className="font-mono">send_to: 'AW-…/LABEL'</span>. Leave blank to fall back to account-level tracking.</p>
+          <div className="grid gap-2">
+            {eventKeys.map((k) => {
+              const cfg = GOOGLE_ADS_EVENTS[k];
+              const has = !!gadsLabels[k]?.trim();
+              return (
+                <div key={k} className="grid grid-cols-[1fr_2fr] gap-2 items-center text-[11px]">
+                  <div className="flex flex-col">
+                    <span className="font-mono font-medium">{k}</span>
+                    <span className="text-muted-foreground">→ GA4 <span className="font-mono">{cfg.gaName}</span></span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={gadsLabels[k] ?? ""}
+                      onChange={(e) => setGadsLabels((s) => ({ ...s, [k]: e.target.value }))}
+                      placeholder="e.g. abc123XYZ"
+                      className="h-8 font-mono text-xs"
+                    />
+                    <span className={`text-[10px] whitespace-nowrap ${has ? "text-emerald-500" : "text-amber-500"}`}>
+                      {has ? "labelled" : "account-level"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+            <Button onClick={saveGadsLabels} disabled={savingLabels} size="sm" className="mt-2 w-fit">
+              {savingLabels ? "Saving…" : "Save labels"}
+            </Button>
           </div>
         </div>
 
