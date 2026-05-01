@@ -230,6 +230,7 @@ const App = () => (
             <LiveChat />
             <CustomScripts />
             <CookieBanner />
+            <GadsLabelsLoader />
             <InfluencerSignupPrompt />
           </CartProvider>
         </AuthProvider>
