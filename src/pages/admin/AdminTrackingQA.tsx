@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { getTikTokPixelStatus, getMetaPixelStatus, getGoogleAdsStatus, getPixelEventLog, subscribePixelEventLog, applyGadsLabelOverrides, GADS_LABELS_KEY, GOOGLE_ADS_EVENTS, type TikTokPixelStatus, type MetaPixelStatus, type GoogleAdsStatus, type PixelEventLogEntry, type GoogleAdsEventKey } from "@/lib/analytics";
+import { getTikTokPixelStatus, getMetaPixelStatus, getGoogleAdsStatus, getPixelEventLog, subscribePixelEventLog, applyGadsLabelOverrides, GADS_LABELS_KEY, GOOGLE_ADS_EVENTS, getConsentState, fireEnhancedConversionsTest, updateGoogleConsent, type TikTokPixelStatus, type MetaPixelStatus, type GoogleAdsStatus, type PixelEventLogEntry, type GoogleAdsEventKey } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
