@@ -64,7 +64,7 @@ function makeEventId(event: string): string {
 
 export interface PixelEventLogEntry {
   ts: number;
-  vendor: "tiktok" | "meta";
+  vendor: "tiktok" | "meta" | "google";
   event: string;
   event_id: string;
   params: Record<string, unknown>;
