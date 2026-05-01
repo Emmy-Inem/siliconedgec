@@ -68,7 +68,7 @@ export function HubShell({ title, description, tabs, defaultTab }: Props) {
         // belongs to (e.g. "Analytics, tab list, 7 tabs").
         activationMode="manual"
       >
-        <div className="sticky top-0 z-10 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2 bg-background/85 backdrop-blur border-b border-border/60">
+        <div className="-mx-3 sm:-mx-6 px-3 sm:px-6 py-2 bg-background/85 backdrop-blur border-b border-border/60">
           <div className="overflow-x-auto scrollbar-thin">
             <TabsList
               aria-labelledby={headingId}

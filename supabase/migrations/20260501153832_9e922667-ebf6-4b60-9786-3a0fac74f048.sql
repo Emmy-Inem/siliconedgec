@@ -1,0 +1,50 @@
+-- Seed / refresh SEO entries for top-of-funnel routes so every key landing page has
+-- an optimised title, description, keyword set and OG image without needing the SEO
+-- editor to be touched. Uses ON CONFLICT so re-running is safe.
+
+INSERT INTO public.page_seo (path, title, description, keywords, no_index)
+VALUES
+  ('/',
+   'AI, Cloud & DevOps Training in Nigeria | Silicon Edge Consulting',
+   'Become job-ready in 12 weeks. Live, instructor-led AI, Cloud, DevOps, Data & Cybersecurity bootcamps for African professionals. Real projects, real certificates, real careers.',
+   'tech training Nigeria, AI bootcamp, cloud training Lagos, DevOps course, data science Nigeria, cybersecurity training Africa, AWS training, Azure certification, Kubernetes course, instructor led IT training',
+   false),
+  ('/courses',
+   'Browse AI, Cloud, DevOps & Data Courses | Silicon Edge',
+   'Explore live, instructor-led tech courses across AI/ML, Cloud (AWS, Azure, GCP), DevOps, Data Engineering and Cybersecurity. Beginner to advanced tracks with verifiable certificates.',
+   'AI courses Nigeria, cloud computing course, AWS course, Azure course, DevOps bootcamp, data engineering course, cybersecurity bootcamp, online tech courses Africa',
+   false),
+  ('/pricing',
+   'Affordable Tech Training Pricing in Naira | Silicon Edge',
+   'Transparent pricing for live, instructor-led tech training. Beginner, Intermediate and Advanced tiers in Naira (₦). Pay once, learn live, get a verifiable certificate.',
+   'tech training cost Nigeria, AI course price, cloud training pricing, DevOps bootcamp cost Naira, affordable IT training Africa',
+   false),
+  ('/for-businesses',
+   'Corporate AI, Cloud & DevOps Training for Teams | Silicon Edge',
+   'Upskill your engineering, product and data teams with bespoke instructor-led training. Custom curriculums in AI, Cloud, DevOps & Cybersecurity for Nigerian and pan-African companies.',
+   'corporate IT training Nigeria, team upskilling, B2B tech training Africa, AI training for teams, cloud training for companies, DevOps for enterprise',
+   false),
+  ('/certificates',
+   'Verifiable Tech Training Certificates | Silicon Edge',
+   'Every Silicon Edge certificate is publicly verifiable. Showcase real, instructor-graded skills in AI, Cloud, DevOps, Data and Cybersecurity to recruiters and hiring managers.',
+   'verifiable certificate, tech certification Nigeria, online course certificate, AI certificate, cloud certificate, DevOps certificate, blockchain verified credentials',
+   false),
+  ('/jobs',
+   'Tech Jobs in Nigeria & Remote | Silicon Edge Job Board',
+   'Browse curated tech roles for AI, Cloud, DevOps, Data & Cybersecurity professionals across Nigeria and remote-friendly companies. Updated regularly.',
+   'tech jobs Nigeria, remote tech jobs Africa, AI jobs Lagos, cloud engineer jobs, DevOps jobs Nigeria, data engineer remote, cybersecurity jobs',
+   false),
+  ('/sign-up',
+   'Create Your Free Silicon Edge Account',
+   'Join thousands of African professionals learning live with industry experts. Free account — start tracking courses, certificates and bookmarks.',
+   'sign up tech training, create account Silicon Edge, join AI bootcamp Nigeria',
+   false),
+  ('/sign-in', 'Sign In | Silicon Edge Consulting', 'Sign in to continue your live tech training, view certificates and manage your enrollments.', NULL, true),
+  ('/cart', 'Your Cart | Silicon Edge', 'Review the courses in your cart and complete enrollment.', NULL, true),
+  ('/dashboard', 'Your Learning Dashboard | Silicon Edge', 'Track your courses, lessons, certificates and live class schedule.', NULL, true)
+ON CONFLICT (path) DO UPDATE
+SET title = EXCLUDED.title,
+    description = EXCLUDED.description,
+    keywords = COALESCE(EXCLUDED.keywords, public.page_seo.keywords),
+    no_index = EXCLUDED.no_index,
+    updated_at = now();

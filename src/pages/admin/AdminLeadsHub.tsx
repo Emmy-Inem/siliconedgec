@@ -16,6 +16,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  classifyChannel, CHANNEL_BADGE, DIRECT_EXPLANATION, type Channel,
+} from "@/lib/channel-attribution";
 
 type UnifiedLead = {
   id: string;
@@ -24,13 +28,16 @@ type UnifiedLead = {
   email: string;
   phone?: string | null;
   course_title?: string;
+  /** Webinar/event title — only set for source==="registration". */
+  webinar_title?: string;
   status?: string;
   meta?: string;
   created_at: string;
+  channel: Channel;
 };
 
 const SOURCE_META = {
-  registration: { label: "Webinar Registration", color: "bg-blue-500/15 text-blue-700 border-blue-500/30", Icon: ClipboardCheck, link: "/admin/registrations" },
+  registration: { label: "Webinar / Event", color: "bg-blue-500/15 text-blue-700 border-blue-500/30", Icon: ClipboardCheck, link: "/admin/registrations" },
   enrollment: { label: "Course Enrollment", color: "bg-green-500/15 text-green-700 border-green-500/30", Icon: GraduationCap, link: "/admin/enrollments" },
   business: { label: "Business Lead", color: "bg-primary/15 text-primary border-primary/30", Icon: Briefcase, link: "/admin/business-leads" },
 } as const;
@@ -38,6 +45,7 @@ const SOURCE_META = {
 export default function AdminLeadsHub() {
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [channelFilter, setChannelFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
   const [extractorOpen, setExtractorOpen] = useState(false);
   const [includeName, setIncludeName] = useState(false);
@@ -80,6 +88,46 @@ export default function AdminLeadsHub() {
     queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
   });
 
+  // Pull last 90 days of attribution events so we can resolve channel per lead.
+  // We match by email (registration/business) or user_id (enrollment).
+  const { data: leadSources = [] } = useQuery({
+    queryKey: ["hub-lead-sources"],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 90 * 86400000).toISOString();
+      const { data } = await supabase
+        .from("lead_sources")
+        .select("user_id, utm_source, utm_medium, utm_campaign, referrer, form_data, created_at")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      return data ?? [];
+    },
+    refetchInterval: 60000,
+  });
+
+  // Build O(1) lookup maps: email → most-recent attribution, user_id → same.
+  const { byEmail, byUser } = useMemo(() => {
+    const e = new Map<string, any>();
+    const u = new Map<string, any>();
+    (leadSources as any[]).forEach((row) => {
+      const fd = (row.form_data || {}) as Record<string, any>;
+      const em = (fd.email || "").toString().trim().toLowerCase();
+      if (em && !e.has(em)) e.set(em, row);
+      if (row.user_id && !u.has(row.user_id)) u.set(row.user_id, row);
+    });
+    return { byEmail: e, byUser: u };
+  }, [leadSources]);
+
+  const resolveChannel = (email?: string | null, userId?: string | null): Channel => {
+    const em = (email || "").trim().toLowerCase();
+    const src = (em && byEmail.get(em)) || (userId && byUser.get(userId)) || null;
+    return classifyChannel({
+      utm_source: src?.utm_source,
+      utm_medium: src?.utm_medium,
+      referrer: src?.referrer,
+    });
+  };
+
   const courseTitle = (id: string | null | undefined) =>
     id ? (courses.find((c: any) => c.id === id)?.title ?? "Unknown course") : "—";
   const profileName = (id: string | null | undefined) =>
@@ -92,10 +140,11 @@ export default function AdminLeadsHub() {
       name: x.full_name,
       email: x.email,
       phone: x.whatsapp_number,
-      course_title: courseTitle(x.course_id),
+      webinar_title: courseTitle(x.course_id),
       status: x.status,
       meta: `${x.registration_type} · ${x.country ?? "—"}`,
       created_at: x.created_at,
+      channel: resolveChannel(x.email, x.user_id),
     }));
     const e: UnifiedLead[] = (enrollments as any[]).map((x) => ({
       id: `enr-${x.id}`,
@@ -106,6 +155,7 @@ export default function AdminLeadsHub() {
       status: x.payment_status,
       meta: `${Math.round(x.progress_percentage ?? 0)}% complete`,
       created_at: x.created_at,
+      channel: resolveChannel(null, x.user_id),
     }));
     const b: UnifiedLead[] = (businessLeads as any[]).map((x) => ({
       id: `biz-${x.id}`,
@@ -117,15 +167,17 @@ export default function AdminLeadsHub() {
       status: x.status,
       meta: x.industry ?? "—",
       created_at: x.created_at,
+      channel: resolveChannel(x.email, null),
     }));
     return [...r, ...e, ...b].sort((a, z) => +new Date(z.created_at) - +new Date(a.created_at));
-  }, [registrations, enrollments, businessLeads, courses, profiles]);
+  }, [registrations, enrollments, businessLeads, courses, profiles, byEmail, byUser]);
 
   const filtered = useMemo(() => {
     const now = Date.now();
     const ranges: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
     return unified.filter((u) => {
       if (sourceFilter !== "all" && u.source !== sourceFilter) return false;
+      if (channelFilter !== "all" && u.channel !== channelFilter) return false;
       if (dateRange !== "all") {
         const days = ranges[dateRange] ?? 0;
         if (now - +new Date(u.created_at) > days * 86400000) return false;
@@ -136,12 +188,21 @@ export default function AdminLeadsHub() {
           u.name.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
           (u.course_title ?? "").toLowerCase().includes(q) ||
+          (u.webinar_title ?? "").toLowerCase().includes(q) ||
           (u.phone ?? "").toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [unified, sourceFilter, dateRange, search]);
+  }, [unified, sourceFilter, channelFilter, dateRange, search]);
+
+  // Channel breakdown across the unfiltered set so admins always see every
+  // platform that brought leads, not just whatever's currently filtered.
+  const channelStats = useMemo(() => {
+    const map = new Map<Channel, number>();
+    unified.forEach((u) => map.set(u.channel, (map.get(u.channel) ?? 0) + 1));
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [unified]);
 
   const stats = useMemo(() => ({
     total: unified.length,
@@ -151,9 +212,11 @@ export default function AdminLeadsHub() {
   }), [unified, registrations, enrollments, businessLeads]);
 
   const exportCsv = () => {
-    const header = ["Source", "Name", "Email", "Phone", "Course/Company", "Status", "Meta", "Created"];
+    const header = ["Source", "Channel", "Name", "Email", "Phone", "Course / Webinar / Company", "Status", "Meta", "Created"];
     const lines = filtered.map((r) => [
-      r.source, r.name, r.email, r.phone ?? "", r.course_title ?? "", r.status ?? "", r.meta ?? "", new Date(r.created_at).toISOString(),
+      r.source, r.channel, r.name, r.email, r.phone ?? "",
+      r.webinar_title ?? r.course_title ?? "",
+      r.status ?? "", r.meta ?? "", new Date(r.created_at).toISOString(),
     ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
     const blob = new Blob([[header.join(","), ...lines].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -268,6 +331,50 @@ export default function AdminLeadsHub() {
         ))}
       </div>
 
+      {channelStats.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Where leads came from
+              </p>
+              <p className="text-[11px] text-muted-foreground/80">
+                Click a channel to filter the list below.
+              </p>
+            </div>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-[11px] underline decoration-dotted cursor-help text-muted-foreground">
+                    What does “Direct” mean?
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                  {DIRECT_EXPLANATION}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setChannelFilter("all")}
+              className={`px-3 py-1.5 rounded-full text-xs border transition ${channelFilter === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 hover:bg-muted"}`}
+            >
+              All ({unified.length})
+            </button>
+            {channelStats.map(([ch, n]) => (
+              <button
+                key={ch}
+                onClick={() => setChannelFilter(channelFilter === ch ? "all" : ch)}
+                className={`px-3 py-1.5 rounded-full text-xs border transition ${CHANNEL_BADGE[ch]} ${channelFilter === ch ? "ring-2 ring-primary/40" : "hover:opacity-90"}`}
+              >
+                {ch} · {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -302,10 +409,10 @@ export default function AdminLeadsHub() {
             <p className="text-muted-foreground">No leads match your filters.</p>
           </div>
         ) : (
-          <div className="max-h-[70vh] overflow-y-auto">
+          <div>
             {grouped.map(([label, items]) => (
               <div key={label}>
-                <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border px-5 py-2 flex items-center justify-between z-10">
+                <div className="bg-muted/40 border-b border-border px-5 py-2 flex items-center justify-between">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
                   <span className="text-[10px] text-muted-foreground/70">{items.length} {items.length === 1 ? "lead" : "leads"}</span>
                 </div>
@@ -324,12 +431,26 @@ export default function AdminLeadsHub() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{u.name}</span>
                       <Badge variant="outline" className={`text-[10px] ${meta.color} border`}>{meta.label}</Badge>
+                      <Badge variant="outline" className={`text-[10px] border ${CHANNEL_BADGE[u.channel]}`}>
+                        {u.channel}
+                      </Badge>
                       {u.status && <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
                       {u.email !== "—" && <span>{u.email}</span>}
                       {u.phone && <span className="ml-2">· {u.phone}</span>}
-                      {u.course_title && <span className="ml-2">· {u.course_title}</span>}
+                      {u.webinar_title && (
+                        <span className="ml-2">
+                          · <span className="text-blue-600/90 dark:text-blue-400">Webinar:</span> {u.webinar_title}
+                        </span>
+                      )}
+                      {u.course_title && (
+                        <span className="ml-2">
+                          · <span className="text-green-600/90 dark:text-green-400">
+                            {u.source === "business" ? "Company" : "Course"}:
+                          </span> {u.course_title}
+                        </span>
+                      )}
                       {u.meta && <span className="ml-2 italic">· {u.meta}</span>}
                     </p>
                   </div>
