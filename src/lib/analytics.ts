@@ -11,6 +11,14 @@ declare global {
     gtag?: (...args: any[]) => void;
     __gtagConsentDefaultSet?: boolean;
     __gadsLabelOverrides?: Partial<Record<string, string>>;
+    __seConsent?: {
+      ad_storage: "granted" | "denied";
+      ad_user_data: "granted" | "denied";
+      ad_personalization: "granted" | "denied";
+      analytics_storage: "granted" | "denied";
+      source: "default" | "user" | "stored";
+      updated_at: number;
+    };
     ttq?: {
       page: () => void;
       track: (event: string, params?: Record<string, unknown>, opts?: Record<string, unknown>) => void;
