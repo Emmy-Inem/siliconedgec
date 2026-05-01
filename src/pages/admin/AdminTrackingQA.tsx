@@ -122,6 +122,48 @@ export default function AdminTrackingQA() {
   const [eventLog, setEventLog] = useState<readonly PixelEventLogEntry[]>(() => getPixelEventLog());
   useEffect(() => subscribePixelEventLog((log) => setEventLog([...log])), []);
 
+  // ───── Google Ads conversion-label editor ─────
+  const { toast } = useToast();
+  const eventKeys = Object.keys(GOOGLE_ADS_EVENTS) as GoogleAdsEventKey[];
+  const [gadsLabels, setGadsLabels] = useState<Record<string, string>>({});
+  const [savingLabels, setSavingLabels] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("site_content")
+          .select("value")
+          .eq("key", GADS_LABELS_KEY)
+          .maybeSingle();
+        if (data?.value) setGadsLabels(JSON.parse(data.value));
+      } catch { /* noop */ }
+    })();
+  }, []);
+  const saveGadsLabels = async () => {
+    setSavingLabels(true);
+    try {
+      // Strip empty values so account-level fallback kicks in for blanks.
+      const clean: Record<string, string> = {};
+      Object.entries(gadsLabels).forEach(([k, v]) => { if (v && v.trim()) clean[k] = v.trim(); });
+      const value = JSON.stringify(clean);
+      const { data: existing } = await supabase
+        .from("site_content").select("id").eq("key", GADS_LABELS_KEY).maybeSingle();
+      if (existing) {
+        await supabase.from("site_content").update({ value, content_type: "setting" }).eq("id", existing.id);
+      } else {
+        await supabase.from("site_content").insert({ key: GADS_LABELS_KEY, value, content_type: "setting" });
+      }
+      try { localStorage.setItem(GADS_LABELS_KEY, value); } catch { /* ignore */ }
+      applyGadsLabelOverrides(clean as Partial<Record<GoogleAdsEventKey, string>>);
+      setGadsStatus(getGoogleAdsStatus());
+      toast({ title: "Conversion labels saved", description: "Future conversions will send to the labelled actions." });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e?.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setSavingLabels(false);
+    }
+  };
+
   // Detect <noscript> Meta fallback by querying the live DOM. We can't
   // probe a real "JS disabled" run, but we can confirm the markup that
   // crawlers + JS-blocked browsers will see is actually present.
