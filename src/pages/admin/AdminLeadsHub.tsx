@@ -409,10 +409,10 @@ export default function AdminLeadsHub() {
             <p className="text-muted-foreground">No leads match your filters.</p>
           </div>
         ) : (
-          <div className="max-h-[70vh] overflow-y-auto">
+          <div>
             {grouped.map(([label, items]) => (
               <div key={label}>
-                <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border px-5 py-2 flex items-center justify-between z-10">
+                <div className="bg-muted/40 border-b border-border px-5 py-2 flex items-center justify-between">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
                   <span className="text-[10px] text-muted-foreground/70">{items.length} {items.length === 1 ? "lead" : "leads"}</span>
                 </div>
