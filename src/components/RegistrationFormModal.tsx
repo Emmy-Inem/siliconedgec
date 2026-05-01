@@ -136,16 +136,55 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
         }
       }
 
-      // Track activity & lead source
+      // ───── Pixel conversions FIRST (before awaited DB writes) ─────
+      // iOS Safari + in-app WebViews can drop in-flight requests if the
+      // user navigates / closes the modal during the awaited inserts. By
+      // firing pixels here we guarantee the conversion beacons leave the
+      // device. Enhanced Conversions: hash email + WhatsApp BEFORE the
+      // googleAdsConversion call so user_data is attached to the event.
+      const conversionId = registrationId ?? `web-${courseId}-${user.id}-${Date.now().toString(36)}`;
+      await setGoogleAdsUserData({
+        email: parsed.data.email,
+        phone: parsed.data.whatsapp_number,
+      });
+      // Use a small but non-zero value so Google Ads bidding can score
+      // the lead. Webinar leads are a top-of-funnel signal — assign a
+      // proxy value (configurable later via Conversions UI).
+      googleAdsConversion("WebinarRegistration", {
+        value: 500,
+        currency: "NGN",
+        transaction_id: conversionId,
+        content_id: courseId,
+        content_name: courseTitle,
+        registration_type: "webinar",
+      });
+      tikTokEvent("SubmitForm", {
+        content_id: courseId,
+        content_name: courseTitle,
+        content_type: "webinar",
+        description: courseTitle,
+      });
+      metaEvent("Lead", {
+        content_name: courseTitle,
+        content_category: "webinar",
+        content_ids: [courseId],
+        value: 500,
+        currency: "NGN",
+      });
+
+      // Track activity & lead source (DB writes — UTM is auto-attached)
       await Promise.all([
         logUserActivity({
           user_id: user.id,
           action: "webinar_registration",
           entity_type: "course",
           entity_id: courseId,
-          metadata: { course_title: courseTitle, email: parsed.data.email },
+          metadata: { course_title: courseTitle, email: parsed.data.email, conversion_id: conversionId },
         }),
-        trackLead({ formType: "webinar_registration", formData: { course_id: courseId, ...parsed.data } }),
+        trackLead({
+          formType: "webinar_registration",
+          formData: { course_id: courseId, conversion_id: conversionId, ...parsed.data },
+        }),
         recordInfluencerConversion({
           userId: user.id,
           courseId,
@@ -153,30 +192,6 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
           registrationId,
         }),
       ]);
-
-      // Pixel conversions — Google Ads (with enhanced conversions),
-      // TikTok and Meta. We hash email + WhatsApp number so Google can
-      // match the lead even when 3rd-party cookies are blocked.
-      void setGoogleAdsUserData({
-        email: parsed.data.email,
-        phone: parsed.data.whatsapp_number,
-      });
-      googleAdsConversion("WebinarRegistration", {
-        value: 0,
-        currency: "NGN",
-        content_id: courseId,
-        content_name: courseTitle,
-      });
-      tikTokEvent("SubmitForm", {
-        content_id: courseId,
-        content_name: courseTitle,
-        content_type: "webinar",
-      });
-      metaEvent("Lead", {
-        content_name: courseTitle,
-        content_category: "webinar",
-        content_ids: [courseId],
-      });
 
       setDone(true);
       toast({
