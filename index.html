@@ -15,6 +15,9 @@
       // route change (see src/lib/analytics.ts) so client-side navigations
       // are tracked correctly on iOS/Android in-app browsers too.
       gtag('config', 'G-XNK29YHXLT', { send_page_view: false });
+      // Google Ads conversion tracking — shares the same gtag.js runtime
+      // loaded above, so no second loader script is required.
+      gtag('config', 'AW-18126380202');
     </script>
 
     <!-- TikTok Pixel Code -->
