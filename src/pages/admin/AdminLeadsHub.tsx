@@ -331,6 +331,50 @@ export default function AdminLeadsHub() {
         ))}
       </div>
 
+      {channelStats.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Where leads came from
+              </p>
+              <p className="text-[11px] text-muted-foreground/80">
+                Click a channel to filter the list below.
+              </p>
+            </div>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-[11px] underline decoration-dotted cursor-help text-muted-foreground">
+                    What does “Direct” mean?
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                  {DIRECT_EXPLANATION}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setChannelFilter("all")}
+              className={`px-3 py-1.5 rounded-full text-xs border transition ${channelFilter === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 hover:bg-muted"}`}
+            >
+              All ({unified.length})
+            </button>
+            {channelStats.map(([ch, n]) => (
+              <button
+                key={ch}
+                onClick={() => setChannelFilter(channelFilter === ch ? "all" : ch)}
+                className={`px-3 py-1.5 rounded-full text-xs border transition ${CHANNEL_BADGE[ch]} ${channelFilter === ch ? "ring-2 ring-primary/40" : "hover:opacity-90"}`}
+              >
+                {ch} · {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
