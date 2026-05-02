@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { classifyChannel, DIRECT_EXPLANATION } from "@/lib/channel-attribution";
 
 const COLORS = [
   "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
@@ -108,10 +109,15 @@ export default function AdminMarketingAnalytics() {
     ? Math.round(((filtered.length - prevPeriodLeads.length) / prevPeriodLeads.length) * 100)
     : null;
 
-  // Source breakdown
+  // Source breakdown — uses channel classifier so visitors with no UTM but a
+  // recognisable referrer (Facebook, Instagram, Google, etc.) are NOT bucketed
+  // as "Direct". True direct = no UTM AND no/own-domain referrer.
   const sourceData = useMemo(() => {
     const map: Record<string, number> = {};
-    filtered.forEach(l => { const s = l.utm_source || "Direct"; map[s] = (map[s] ?? 0) + 1; });
+    filtered.forEach(l => {
+      const ch = classifyChannel({ utm_source: l.utm_source, utm_medium: l.utm_medium, referrer: l.referrer });
+      map[ch] = (map[ch] ?? 0) + 1;
+    });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
 
@@ -143,6 +149,18 @@ export default function AdminMarketingAnalytics() {
     filtered.forEach(l => { const ft = l.form_type || "unknown"; map[ft] = (map[ft] ?? 0) + 1; });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
+
+  // Distinguish webinar registrations from course/paid enrollments so the
+  // same person doesn't get counted twice and so admins can see at a glance
+  // which funnel is producing.
+  const isWebinarRow = (ft?: string | null) =>
+    !!ft && (ft.startsWith("webinar") || ft === "webinar_registration");
+  const isCourseRow = (ft?: string | null) =>
+    !!ft && (ft === "enrollment" || ft === "purchase" || ft === "paid_enrollment" ||
+             ft === "free_enrollment" || ft === "checkout_complete" ||
+             ft === "course_registration");
+  const webinarRegs = filtered.filter(l => isWebinarRow(l.form_type)).length;
+  const courseRegs = filtered.filter(l => isCourseRow(l.form_type)).length;
 
   // Timeline chart data
   const timelineData = useMemo(() => {
@@ -184,13 +202,22 @@ export default function AdminMarketingAnalytics() {
       .sort((a, b) => b.views - a.views);
   }, [filtered]);
 
-  // Referrer data
+  // Referrer data — strip our own oauth.lovable.app round-trip referrer
+  // (it's noise, not acquisition) and only show Direct when there genuinely
+  // is no referrer host.
   const referrerData = useMemo(() => {
     const map: Record<string, number> = {};
     filtered.forEach(l => {
-      let ref = l.referrer || "Direct";
-      try { ref = new URL(ref).hostname; } catch {}
-      map[ref] = (map[ref] ?? 0) + 1;
+      const raw = (l.referrer || "").trim();
+      if (!raw) { map["Direct"] = (map["Direct"] ?? 0) + 1; return; }
+      let host = raw;
+      try { host = new URL(raw).hostname; } catch { /* keep raw */ }
+      // Suppress our own auth round-trip and preview/published own domains
+      if (/oauth\.lovable\.app$/i.test(host)) return;
+      if (typeof window !== "undefined") {
+        try { if (host.includes(window.location.hostname)) return; } catch { /* noop */ }
+      }
+      map[host] = (map[host] ?? 0) + 1;
     });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
   }, [filtered]);
@@ -202,9 +229,11 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
 
-  // Conversion metrics
-  const totalVisits = filtered.filter(l => l.form_type === "page_visit").length;
-  const totalConversions = filtered.filter(l => l.form_type && l.form_type !== "page_visit").length;
+  // Conversion metrics — split webinars vs course enrollments so we never
+  // double-count and so the dashboard reflects reality (today: all conversions
+  // are webinar registrations; no paid course has been sold yet).
+  const totalVisits = filtered.filter(l => l.form_type === "page_visit" || l.form_type === "pageview").length;
+  const totalConversions = webinarRegs + courseRegs;
   const conversionRate = totalVisits > 0 ? ((totalConversions / totalVisits) * 100).toFixed(1) : "0";
 
   // Enrollment timeline
@@ -226,19 +255,28 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([date, count]) => ({ date, enrollments: count }));
   }, [enrollments, dateFilter]);
 
-  // Source + Campaign table
+  // Source + Campaign table — Source column now uses classified channel so
+  // un-tagged Facebook / Instagram / Google traffic isn't lumped into Direct.
+  // We track webinar and course conversions separately to prevent double-count.
   const tableData = useMemo(() => {
-    const map: Record<string, { leads: number; conversions: number }> = {};
+    const map: Record<string, { leads: number; webinars: number; courses: number }> = {};
     filtered.forEach(l => {
-      const key = `${l.utm_source || "Direct"}|||${l.utm_campaign || "—"}|||${l.utm_medium || "—"}`;
-      if (!map[key]) map[key] = { leads: 0, conversions: 0 };
+      const channel = classifyChannel({ utm_source: l.utm_source, utm_medium: l.utm_medium, referrer: l.referrer });
+      const key = `${channel}|||${l.utm_campaign || "—"}|||${l.utm_medium || "—"}`;
+      if (!map[key]) map[key] = { leads: 0, webinars: 0, courses: 0 };
       map[key].leads++;
-      if (l.form_type && l.form_type !== "page_visit") map[key].conversions++;
+      if (isWebinarRow(l.form_type)) map[key].webinars++;
+      else if (isCourseRow(l.form_type)) map[key].courses++;
     });
     return Object.entries(map)
       .map(([key, d]) => {
         const [source, campaign, medium] = key.split("|||");
-        return { source, campaign, medium, ...d, rate: d.leads > 0 ? Math.round((d.conversions / d.leads) * 100) : 0 };
+        const conversions = d.webinars + d.courses;
+        return {
+          source, campaign, medium,
+          leads: d.leads, conversions, webinars: d.webinars, courses: d.courses,
+          rate: d.leads > 0 ? Math.round((conversions / d.leads) * 100) : 0,
+        };
       })
       .sort((a, b) => b.leads - a.leads);
   }, [filtered]);
