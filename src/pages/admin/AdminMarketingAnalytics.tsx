@@ -444,15 +444,16 @@ export default function AdminMarketingAnalytics() {
         </select>
       </div>
 
-      {/* KPIs */}
+      {/* KPIs — webinar regs and course enrollments are split so the same
+          person never gets counted twice across both buckets. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           { label: "Total Leads", value: filtered.length, icon: TrendingUp, accent: "text-primary", change: percentChange },
           { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500" },
-          { label: "Conversions", value: totalConversions, icon: MousePointerClick, accent: "text-green-500" },
+          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-purple-500" },
+          { label: "Course Enrols", value: courseRegs, icon: MousePointerClick, accent: "text-green-500" },
           { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary" },
           { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500" },
-          { label: "Campaigns", value: campaignData.length, icon: Megaphone, accent: "text-pink-500" },
         ].map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="bg-card rounded-2xl border border-border p-4 hover:border-primary/20 transition-all">
@@ -521,7 +522,15 @@ export default function AdminMarketingAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="bg-card rounded-2xl border border-border p-5">
-              <h3 className="font-heading font-semibold text-sm mb-4">Traffic Sources</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-semibold text-sm">Traffic Sources</h3>
+                <span
+                  title={DIRECT_EXPLANATION}
+                  className="text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5 cursor-help"
+                >
+                  what is "Direct"?
+                </span>
+              </div>
               <div className="h-56">
                 {sourceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
