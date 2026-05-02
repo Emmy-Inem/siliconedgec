@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { classifyChannel, DIRECT_EXPLANATION } from "@/lib/channel-attribution";
 
 const COLORS = [
   "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
@@ -108,10 +109,15 @@ export default function AdminMarketingAnalytics() {
     ? Math.round(((filtered.length - prevPeriodLeads.length) / prevPeriodLeads.length) * 100)
     : null;
 
-  // Source breakdown
+  // Source breakdown — uses channel classifier so visitors with no UTM but a
+  // recognisable referrer (Facebook, Instagram, Google, etc.) are NOT bucketed
+  // as "Direct". True direct = no UTM AND no/own-domain referrer.
   const sourceData = useMemo(() => {
     const map: Record<string, number> = {};
-    filtered.forEach(l => { const s = l.utm_source || "Direct"; map[s] = (map[s] ?? 0) + 1; });
+    filtered.forEach(l => {
+      const ch = classifyChannel({ utm_source: l.utm_source, utm_medium: l.utm_medium, referrer: l.referrer });
+      map[ch] = (map[ch] ?? 0) + 1;
+    });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
 
@@ -143,6 +149,18 @@ export default function AdminMarketingAnalytics() {
     filtered.forEach(l => { const ft = l.form_type || "unknown"; map[ft] = (map[ft] ?? 0) + 1; });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
+
+  // Distinguish webinar registrations from course/paid enrollments so the
+  // same person doesn't get counted twice and so admins can see at a glance
+  // which funnel is producing.
+  const isWebinarRow = (ft?: string | null) =>
+    !!ft && (ft.startsWith("webinar") || ft === "webinar_registration");
+  const isCourseRow = (ft?: string | null) =>
+    !!ft && (ft === "enrollment" || ft === "purchase" || ft === "paid_enrollment" ||
+             ft === "free_enrollment" || ft === "checkout_complete" ||
+             ft === "course_registration");
+  const webinarRegs = filtered.filter(l => isWebinarRow(l.form_type)).length;
+  const courseRegs = filtered.filter(l => isCourseRow(l.form_type)).length;
 
   // Timeline chart data
   const timelineData = useMemo(() => {
@@ -184,13 +202,22 @@ export default function AdminMarketingAnalytics() {
       .sort((a, b) => b.views - a.views);
   }, [filtered]);
 
-  // Referrer data
+  // Referrer data — strip our own oauth.lovable.app round-trip referrer
+  // (it's noise, not acquisition) and only show Direct when there genuinely
+  // is no referrer host.
   const referrerData = useMemo(() => {
     const map: Record<string, number> = {};
     filtered.forEach(l => {
-      let ref = l.referrer || "Direct";
-      try { ref = new URL(ref).hostname; } catch {}
-      map[ref] = (map[ref] ?? 0) + 1;
+      const raw = (l.referrer || "").trim();
+      if (!raw) { map["Direct"] = (map["Direct"] ?? 0) + 1; return; }
+      let host = raw;
+      try { host = new URL(raw).hostname; } catch { /* keep raw */ }
+      // Suppress our own auth round-trip and preview/published own domains
+      if (/oauth\.lovable\.app$/i.test(host)) return;
+      if (typeof window !== "undefined") {
+        try { if (host.includes(window.location.hostname)) return; } catch { /* noop */ }
+      }
+      map[host] = (map[host] ?? 0) + 1;
     });
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
   }, [filtered]);
@@ -202,9 +229,11 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
 
-  // Conversion metrics
-  const totalVisits = filtered.filter(l => l.form_type === "page_visit").length;
-  const totalConversions = filtered.filter(l => l.form_type && l.form_type !== "page_visit").length;
+  // Conversion metrics — split webinars vs course enrollments so we never
+  // double-count and so the dashboard reflects reality (today: all conversions
+  // are webinar registrations; no paid course has been sold yet).
+  const totalVisits = filtered.filter(l => l.form_type === "page_visit" || l.form_type === "pageview").length;
+  const totalConversions = webinarRegs + courseRegs;
   const conversionRate = totalVisits > 0 ? ((totalConversions / totalVisits) * 100).toFixed(1) : "0";
 
   // Enrollment timeline
@@ -226,19 +255,28 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([date, count]) => ({ date, enrollments: count }));
   }, [enrollments, dateFilter]);
 
-  // Source + Campaign table
+  // Source + Campaign table — Source column now uses classified channel so
+  // un-tagged Facebook / Instagram / Google traffic isn't lumped into Direct.
+  // We track webinar and course conversions separately to prevent double-count.
   const tableData = useMemo(() => {
-    const map: Record<string, { leads: number; conversions: number }> = {};
+    const map: Record<string, { leads: number; webinars: number; courses: number }> = {};
     filtered.forEach(l => {
-      const key = `${l.utm_source || "Direct"}|||${l.utm_campaign || "—"}|||${l.utm_medium || "—"}`;
-      if (!map[key]) map[key] = { leads: 0, conversions: 0 };
+      const channel = classifyChannel({ utm_source: l.utm_source, utm_medium: l.utm_medium, referrer: l.referrer });
+      const key = `${channel}|||${l.utm_campaign || "—"}|||${l.utm_medium || "—"}`;
+      if (!map[key]) map[key] = { leads: 0, webinars: 0, courses: 0 };
       map[key].leads++;
-      if (l.form_type && l.form_type !== "page_visit") map[key].conversions++;
+      if (isWebinarRow(l.form_type)) map[key].webinars++;
+      else if (isCourseRow(l.form_type)) map[key].courses++;
     });
     return Object.entries(map)
       .map(([key, d]) => {
         const [source, campaign, medium] = key.split("|||");
-        return { source, campaign, medium, ...d, rate: d.leads > 0 ? Math.round((d.conversions / d.leads) * 100) : 0 };
+        const conversions = d.webinars + d.courses;
+        return {
+          source, campaign, medium,
+          leads: d.leads, conversions, webinars: d.webinars, courses: d.courses,
+          rate: d.leads > 0 ? Math.round((conversions / d.leads) * 100) : 0,
+        };
       })
       .sort((a, b) => b.leads - a.leads);
   }, [filtered]);
@@ -376,8 +414,8 @@ export default function AdminMarketingAnalytics() {
         </div>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
           downloadCSV("marketing-analytics.csv",
-            ["Source", "Campaign", "Medium", "Leads", "Conversions", "Conv. Rate"],
-            tableData.map(r => [r.source, r.campaign, r.medium, String(r.leads), String(r.conversions), `${r.rate}%`])
+            ["Source", "Campaign", "Medium", "Leads", "Webinar", "Course", "Conv. Rate"],
+            tableData.map(r => [r.source, r.campaign, r.medium, String(r.leads), String(r.webinars), String(r.courses), `${r.rate}%`])
           );
           toast({ title: "Exported" });
         }}>
@@ -406,15 +444,16 @@ export default function AdminMarketingAnalytics() {
         </select>
       </div>
 
-      {/* KPIs */}
+      {/* KPIs — webinar regs and course enrollments are split so the same
+          person never gets counted twice across both buckets. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
           { label: "Total Leads", value: filtered.length, icon: TrendingUp, accent: "text-primary", change: percentChange },
           { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500" },
-          { label: "Conversions", value: totalConversions, icon: MousePointerClick, accent: "text-green-500" },
+          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-purple-500" },
+          { label: "Course Enrols", value: courseRegs, icon: MousePointerClick, accent: "text-green-500" },
           { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary" },
           { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500" },
-          { label: "Campaigns", value: campaignData.length, icon: Megaphone, accent: "text-pink-500" },
         ].map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="bg-card rounded-2xl border border-border p-4 hover:border-primary/20 transition-all">
@@ -483,7 +522,15 @@ export default function AdminMarketingAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="bg-card rounded-2xl border border-border p-5">
-              <h3 className="font-heading font-semibold text-sm mb-4">Traffic Sources</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-semibold text-sm">Traffic Sources</h3>
+                <span
+                  title={DIRECT_EXPLANATION}
+                  className="text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5 cursor-help"
+                >
+                  what is "Direct"?
+                </span>
+              </div>
               <div className="h-56">
                 {sourceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -613,7 +660,8 @@ export default function AdminMarketingAnalytics() {
                     <th className="pb-2 pr-4 font-medium">Medium</th>
                     <th className="pb-2 pr-4 font-medium">Campaign</th>
                     <th className="pb-2 pr-4 font-medium text-right">Leads</th>
-                    <th className="pb-2 pr-4 font-medium text-right">Conv.</th>
+                    <th className="pb-2 pr-4 font-medium text-right" title="Webinar registrations">Webinar</th>
+                    <th className="pb-2 pr-4 font-medium text-right" title="Course / paid enrollments">Course</th>
                     <th className="pb-2 font-medium text-right">Rate</th>
                   </tr>
                 </thead>
@@ -624,7 +672,8 @@ export default function AdminMarketingAnalytics() {
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.medium}</td>
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.campaign}</td>
                       <td className="py-2.5 pr-4 text-right">{row.leads}</td>
-                      <td className="py-2.5 pr-4 text-right">{row.conversions}</td>
+                      <td className="py-2.5 pr-4 text-right text-purple-600">{row.webinars}</td>
+                      <td className="py-2.5 pr-4 text-right text-green-600">{row.courses}</td>
                       <td className="py-2.5 text-right">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${row.rate > 10 ? "bg-green-500/10 text-green-600" : row.rate > 0 ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>
                           {row.rate}%
@@ -632,7 +681,7 @@ export default function AdminMarketingAnalytics() {
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No lead data yet</td></tr>
+                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No lead data yet</td></tr>
                   )}
                 </tbody>
               </table>

@@ -1,41 +1,54 @@
 /**
  * Lightweight, key-less visitor geo lookup.
  *
- * We hit Cloudflare's `/cdn-cgi/trace` endpoint which returns the visitor's
- * country code (e.g. `loc=US`) based on the edge POP they hit — no API key,
- * no rate limit issues, and CORS-friendly. The result is cached in
- * sessionStorage so we make at most one call per tab.
+ * Resolution order:
+ *   1. ipapi.co — gives us city + region + country (best signal)
+ *   2. ipwho.is — secondary provider, also returns city/region
+ *   3. Cloudflare /cdn-cgi/trace — country only, but rarely blocked
  *
- * If Cloudflare is blocked (corporate networks, ad blockers, in-app browsers
- * with restricted networking on iOS), we fall back to `ipapi.co` once. If
- * both fail we return `null` and the caller is responsible for not faking it.
+ * Successful lookups are cached in localStorage with a 24h TTL so we make
+ * one network call per visitor per day across tabs. A failed/unknown lookup
+ * is cached for only 30 minutes and never poisons the cache as "Unknown",
+ * so a transient ad-blocker / network blip can recover on the next visit.
  */
 
-const SESSION_KEY = "sec_visitor_geo_v1";
+const STORAGE_KEY = "sec_visitor_geo_v2";
+const SUCCESS_TTL_MS = 24 * 60 * 60 * 1000;   // 24 hours for resolved geo
+const FAILURE_TTL_MS = 30 * 60 * 1000;        // 30 min for "unavailable"
 
 export interface VisitorGeo {
   country: string | null;       // ISO-3166 alpha-2, e.g. "NG", "US"
   region: string | null;        // best-effort, may be null from Cloudflare
   city: string | null;          // best-effort
-  source: "cloudflare" | "ipapi" | "cache" | "unavailable";
+  source: "cloudflare" | "ipapi" | "ipwho" | "cache" | "unavailable";
 }
 
 let inflight: Promise<VisitorGeo | null> | null = null;
 
+interface CacheEnvelope { v: VisitorGeo; exp: number }
+
 function readCache(): VisitorGeo | null {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as VisitorGeo;
-    if (parsed && typeof parsed === "object" && "country" in parsed) return parsed;
+    const parsed = JSON.parse(raw) as CacheEnvelope;
+    if (!parsed?.v || typeof parsed.exp !== "number") return null;
+    if (Date.now() > parsed.exp) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return parsed.v;
   } catch {
-    /* ignore */
+    return null;
   }
-  return null;
 }
 
 function writeCache(geo: VisitorGeo) {
-  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(geo)); } catch { /* ignore */ }
+  try {
+    const ttl = geo.country ? SUCCESS_TTL_MS : FAILURE_TTL_MS;
+    const env: CacheEnvelope = { v: geo, exp: Date.now() + ttl };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(env));
+  } catch { /* ignore */ }
 }
 
 async function fromCloudflare(): Promise<VisitorGeo | null> {
@@ -79,6 +92,26 @@ async function fromIpApi(): Promise<VisitorGeo | null> {
   }
 }
 
+async function fromIpWho(): Promise<VisitorGeo | null> {
+  // Secondary provider: city + region + country, no key, generous CORS.
+  try {
+    const res = await fetch("https://ipwho.is/", { cache: "no-store", credentials: "omit" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.success === false) return null;
+    const country = (data.country_code || "").trim().toUpperCase() || null;
+    if (!country) return null;
+    return {
+      country,
+      region: typeof data.region === "string" ? data.region : null,
+      city: typeof data.city === "string" ? data.city : null,
+      source: "ipwho",
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Resolve the visitor's geo (country code at minimum). Returns the cached
  * value when available so callers can use it synchronously across many events.
@@ -89,11 +122,12 @@ export async function getVisitorGeo(): Promise<VisitorGeo | null> {
   if (inflight) return inflight;
 
   inflight = (async () => {
-    // Prefer ipapi because it returns city + region (Cloudflare only gives
-    // country). If ipapi is blocked / rate-limited we fall back to Cloudflare
-    // so we at least record the country.
+    // Prefer providers that return city + region. If both fail (ad blockers,
+    // in-app browsers), fall back to Cloudflare for country-only.
     const ip = await fromIpApi();
     if (ip) { writeCache(ip); return ip; }
+    const ipw = await fromIpWho();
+    if (ipw) { writeCache(ipw); return ipw; }
     const cf = await fromCloudflare();
     if (cf) { writeCache(cf); return cf; }
     const fallback: VisitorGeo = { country: null, region: null, city: null, source: "unavailable" };
