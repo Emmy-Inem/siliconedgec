@@ -128,6 +128,23 @@ export default function AdminLeadsHub() {
     });
   };
 
+  /** Pull city/region from the visitor's most recent lead_source if known. */
+  const resolveLocation = (
+    email?: string | null,
+    userId?: string | null,
+    fallbackCountry?: string | null,
+  ): string => {
+    const em = (email || "").trim().toLowerCase();
+    const src: any = (em && byEmail.get(em)) || (userId && byUser.get(userId)) || null;
+    const fd = (src?.form_data || {}) as Record<string, any>;
+    const city = typeof fd.city === "string" ? fd.city : null;
+    const country = (typeof fd.country === "string" && fd.country) || fallbackCountry || null;
+    if (city && country) return `${city}, ${country}`;
+    if (city) return city;
+    if (country) return country;
+    return "—";
+  };
+
   const courseTitle = (id: string | null | undefined) =>
     id ? (courses.find((c: any) => c.id === id)?.title ?? "Unknown course") : "—";
   const profileName = (id: string | null | undefined) =>
@@ -142,7 +159,7 @@ export default function AdminLeadsHub() {
       phone: x.whatsapp_number,
       webinar_title: courseTitle(x.course_id),
       status: x.status,
-      meta: `${x.registration_type} · ${x.country ?? "—"}`,
+      meta: `${x.registration_type} · ${resolveLocation(x.email, x.user_id, x.country)}`,
       created_at: x.created_at,
       channel: resolveChannel(x.email, x.user_id),
     }));

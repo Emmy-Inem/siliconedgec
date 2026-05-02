@@ -89,10 +89,13 @@ export async function getVisitorGeo(): Promise<VisitorGeo | null> {
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const cf = await fromCloudflare();
-    if (cf) { writeCache(cf); return cf; }
+    // Prefer ipapi because it returns city + region (Cloudflare only gives
+    // country). If ipapi is blocked / rate-limited we fall back to Cloudflare
+    // so we at least record the country.
     const ip = await fromIpApi();
     if (ip) { writeCache(ip); return ip; }
+    const cf = await fromCloudflare();
+    if (cf) { writeCache(cf); return cf; }
     const fallback: VisitorGeo = { country: null, region: null, city: null, source: "unavailable" };
     writeCache(fallback);
     return fallback;
