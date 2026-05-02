@@ -258,6 +258,7 @@ export default function AdminMarketingAnalytics() {
     const sourceMap: Record<string, number> = {};
     const langMap: Record<string, number> = {};
     const countryMap: Record<string, number> = {};
+    const cityMap: Record<string, { count: number; country: string | null }> = {};
 
     filtered.forEach((l) => {
       if (l.form_type !== "pageview" && l.form_type !== "page_visit") return;
@@ -294,6 +295,16 @@ export default function AdminMarketingAnalytics() {
         ? fd.country.toUpperCase()
         : null;
       if (country) countryMap[country] = (countryMap[country] ?? 0) + 1;
+
+      // City breakdown — only present when the geo lookup resolved via ipapi.
+      // We key by "City, COUNTRY" so duplicate names across countries don't merge.
+      const city: string | null = typeof fd.city === "string" && fd.city.length > 0 ? fd.city : null;
+      if (city) {
+        const key = country ? `${city}|${country}` : city;
+        const entry = cityMap[key] ?? { count: 0, country };
+        entry.count += 1;
+        cityMap[key] = entry;
+      }
     });
 
     const topPages = Object.entries(pageMap)
@@ -316,6 +327,10 @@ export default function AdminMarketingAnalytics() {
       .map(([code, value]) => ({ code, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 12);
+    const cities = Object.entries(cityMap)
+      .map(([key, v]) => ({ name: key.split("|")[0], country: v.country, value: v.count }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 15);
     const pagesPerVisit = visitors.size > 0 ? (totalViews / visitors.size).toFixed(2) : "0";
 
     return {
@@ -327,6 +342,8 @@ export default function AdminMarketingAnalytics() {
       sources,
       languages,
       countries,
+      cities,
+      cityTotal: cities.reduce((s, c) => s + c.value, 0),
       countryTotal: countries.reduce((s, c) => s + c.value, 0),
       maxPageViews: topPages[0]?.views || 1,
       deviceTotal: devices.reduce((s, d) => s + d.value, 0) || 1,
