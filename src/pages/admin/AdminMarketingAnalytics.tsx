@@ -414,8 +414,8 @@ export default function AdminMarketingAnalytics() {
         </div>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
           downloadCSV("marketing-analytics.csv",
-            ["Source", "Campaign", "Medium", "Leads", "Conversions", "Conv. Rate"],
-            tableData.map(r => [r.source, r.campaign, r.medium, String(r.leads), String(r.conversions), `${r.rate}%`])
+            ["Source", "Campaign", "Medium", "Leads", "Webinar", "Course", "Conv. Rate"],
+            tableData.map(r => [r.source, r.campaign, r.medium, String(r.leads), String(r.webinars), String(r.courses), `${r.rate}%`])
           );
           toast({ title: "Exported" });
         }}>
