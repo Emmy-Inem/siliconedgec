@@ -660,7 +660,8 @@ export default function AdminMarketingAnalytics() {
                     <th className="pb-2 pr-4 font-medium">Medium</th>
                     <th className="pb-2 pr-4 font-medium">Campaign</th>
                     <th className="pb-2 pr-4 font-medium text-right">Leads</th>
-                    <th className="pb-2 pr-4 font-medium text-right">Conv.</th>
+                    <th className="pb-2 pr-4 font-medium text-right" title="Webinar registrations">Webinar</th>
+                    <th className="pb-2 pr-4 font-medium text-right" title="Course / paid enrollments">Course</th>
                     <th className="pb-2 font-medium text-right">Rate</th>
                   </tr>
                 </thead>
@@ -671,7 +672,8 @@ export default function AdminMarketingAnalytics() {
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.medium}</td>
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.campaign}</td>
                       <td className="py-2.5 pr-4 text-right">{row.leads}</td>
-                      <td className="py-2.5 pr-4 text-right">{row.conversions}</td>
+                      <td className="py-2.5 pr-4 text-right text-purple-600">{row.webinars}</td>
+                      <td className="py-2.5 pr-4 text-right text-green-600">{row.courses}</td>
                       <td className="py-2.5 text-right">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${row.rate > 10 ? "bg-green-500/10 text-green-600" : row.rate > 0 ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>
                           {row.rate}%
@@ -679,7 +681,7 @@ export default function AdminMarketingAnalytics() {
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No lead data yet</td></tr>
+                    <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">No lead data yet</td></tr>
                   )}
                 </tbody>
               </table>
