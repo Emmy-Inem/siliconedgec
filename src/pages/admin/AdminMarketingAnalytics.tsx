@@ -945,6 +945,31 @@ export default function AdminMarketingAnalytics() {
             </div>
           )}
 
+          {/* Visitor cities — populated when geo resolves via ipapi (preferred). */}
+          {trafficStats.cities.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4 text-primary" />
+                <h3 className="font-heading font-semibold text-sm">Visitor Cities</h3>
+                <span className="ml-auto text-[10px] text-muted-foreground">
+                  {trafficStats.cityTotal} attributed visits
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {trafficStats.cities.map((c) => (
+                  <div key={`${c.name}-${c.country}`} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
+                    <span className="truncate">
+                      {c.name}
+                      {c.country && <span className="ml-1 text-[10px] text-muted-foreground font-mono">{c.country}</span>}
+                    </span>
+                    <span className="font-medium ml-2">{c.value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           <div className="text-center">
             <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events — no estimates.</p>
           </div>
