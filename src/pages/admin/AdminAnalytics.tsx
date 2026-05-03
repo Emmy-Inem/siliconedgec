@@ -269,7 +269,7 @@ export default function AdminAnalytics() {
                 <BarChart data={data?.catRevenueData ?? []} layout="vertical">
                   <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`$${v}`, "Revenue"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₦${Number(v).toLocaleString()}`, "Revenue"]} />
                   <Bar dataKey="revenue" fill="hsl(197, 100%, 47%)" radius={[0, 6, 6, 0]} animationDuration={800} />
                 </BarChart>
               </ResponsiveContainer>
