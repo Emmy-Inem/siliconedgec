@@ -483,7 +483,7 @@ export default function AdminInfluencerMarketing() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {pc.discount_type === "percentage" ? `${pc.discount_value}%` : `$${pc.discount_value}`}
+                            {pc.discount_type === "percentage" ? `${pc.discount_value}%` : `₦${pc.discount_value}`}
                           </TableCell>
                           <TableCell>{pc.commission_percentage}%</TableCell>
                           <TableCell className="text-center font-medium">{clicks}</TableCell>
@@ -732,7 +732,7 @@ export default function AdminInfluencerMarketing() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <DetailRow label="Discount" value={detailCode.discount_type === "percentage" ? `${detailCode.discount_value}%` : `$${detailCode.discount_value}`} />
+                <DetailRow label="Discount" value={detailCode.discount_type === "percentage" ? `${detailCode.discount_value}%` : `₦${detailCode.discount_value}`} />
                 <DetailRow label="Commission" value={`${detailCode.commission_percentage}%`} />
                 <DetailRow label="Uses" value={`${detailCode.usage_count}${detailCode.max_uses ? ` / ${detailCode.max_uses}` : ""}`} />
                 <DetailRow label="Revenue" value={`₦${Number(detailCode.revenue_generated).toLocaleString()}`} />

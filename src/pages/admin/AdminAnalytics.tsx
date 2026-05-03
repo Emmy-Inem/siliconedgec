@@ -372,7 +372,7 @@ export default function AdminAnalytics() {
                     <p className="text-[10px] text-muted-foreground">{p.usage_count} uses</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-semibold tabular-nums">${Number(p.revenue_generated).toLocaleString()}</p>
+                    <p className="text-xs font-semibold tabular-nums">₦{Number(p.revenue_generated).toLocaleString()}</p>
                     <span className={`text-[10px] font-medium ${p.is_active ? "text-green-500" : "text-muted-foreground"}`}>
                       {p.is_active ? "● Active" : "○ Inactive"}
                     </span>
