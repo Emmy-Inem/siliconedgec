@@ -55,7 +55,7 @@ export default function AdminAnalytics() {
     queryKey: ["admin-analytics"],
     queryFn: async () => {
       const [coursesRes, enrollmentsRes, profilesRes, promosRes, referralsRes] = await Promise.all([
-        supabase.from("courses").select("id, category, price, students_enrolled, difficulty, is_published, created_at"),
+        supabase.from("courses").select("id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
         supabase.from("enrollments").select("id, payment_status, progress_percentage, is_completed, created_at, course_id"),
         supabase.from("profiles").select("id, created_at"),
         supabase.from("promo_codes").select("id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
