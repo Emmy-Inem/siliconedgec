@@ -272,7 +272,7 @@ export default function AdminAnalytics() {
                 <BarChart data={data?.catRevenueData ?? []} layout="vertical">
                   <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₦${Number(v).toLocaleString()}`, "Revenue"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmtMoney(Number(v)), "Revenue"]} />
                   <Bar dataKey="revenue" fill="hsl(197, 100%, 47%)" radius={[0, 6, 6, 0]} animationDuration={800} />
                 </BarChart>
               </ResponsiveContainer>
@@ -375,7 +375,7 @@ export default function AdminAnalytics() {
                     <p className="text-[10px] text-muted-foreground">{p.usage_count} uses</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-semibold tabular-nums">₦{Number(p.revenue_generated).toLocaleString()}</p>
+                    <p className="text-xs font-semibold tabular-nums">{fmtMoney(Number(p.revenue_generated))}</p>
                     <span className={`text-[10px] font-medium ${p.is_active ? "text-green-500" : "text-muted-foreground"}`}>
                       {p.is_active ? "● Active" : "○ Inactive"}
                     </span>
