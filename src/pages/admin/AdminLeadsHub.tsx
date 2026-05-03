@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   classifyChannel, CHANNEL_BADGE, DIRECT_EXPLANATION, type Channel,
 } from "@/lib/channel-attribution";
+import { fetchAllRows } from "@/lib/fetch-all";
 
 type UnifiedLead = {
   id: string;
@@ -54,8 +55,7 @@ export default function AdminLeadsHub() {
   const { data: registrations = [], isLoading: l1 } = useQuery({
     queryKey: ["hub-registrations"],
     queryFn: async () => {
-      const { data } = await (supabase.from("course_registrations") as any).select("*").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>("course_registrations", "*");
     },
     refetchInterval: 30000,
   });
@@ -63,8 +63,10 @@ export default function AdminLeadsHub() {
   const { data: enrollments = [], isLoading: l2 } = useQuery({
     queryKey: ["hub-enrollments"],
     queryFn: async () => {
-      const { data } = await supabase.from("enrollments").select("id, user_id, course_id, payment_status, created_at, progress_percentage").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>(
+        "enrollments",
+        "id, user_id, course_id, payment_status, created_at, progress_percentage",
+      );
     },
     refetchInterval: 30000,
   });
@@ -72,8 +74,7 @@ export default function AdminLeadsHub() {
   const { data: businessLeads = [], isLoading: l3 } = useQuery({
     queryKey: ["hub-business-leads"],
     queryFn: async () => {
-      const { data } = await supabase.from("business_leads").select("*").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>("business_leads", "*");
     },
     refetchInterval: 30000,
   });
@@ -94,13 +95,12 @@ export default function AdminLeadsHub() {
     queryKey: ["hub-lead-sources"],
     queryFn: async () => {
       const since = new Date(Date.now() - 90 * 86400000).toISOString();
-      const { data } = await supabase
-        .from("lead_sources")
-        .select("user_id, utm_source, utm_medium, utm_campaign, referrer, form_data, created_at")
-        .gte("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      return data ?? [];
+      // Paginate so we don't lose attribution beyond the first 1000 rows.
+      const all = await fetchAllRows<any>(
+        "lead_sources",
+        "user_id, utm_source, utm_medium, utm_campaign, referrer, form_data, created_at",
+      );
+      return all.filter((r: any) => r.created_at >= since);
     },
     refetchInterval: 60000,
   });
