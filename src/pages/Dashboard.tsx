@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
-import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
