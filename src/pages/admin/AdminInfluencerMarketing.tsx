@@ -17,6 +17,7 @@ import {
   Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2, MousePointerClick
 } from "lucide-react";
 import { format } from "date-fns";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 // Canonical public URL — always use the published domain for shareable
 // influencer/UTM links so testers don't hit the preview-domain auth gate.
@@ -57,6 +58,7 @@ function buildUtmUrl(origin: string, path: string, utm: { source?: string; mediu
 export default function AdminInfluencerMarketing() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { format: fmtMoney } = useLocalizedPrice();
   const [createOpen, setCreateOpen] = useState(false);
   const [detailCode, setDetailCode] = useState<any>(null);
 
