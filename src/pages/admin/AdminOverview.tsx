@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 import { useEffect, useState } from "react";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 const CHART_COLORS = [
   "hsl(276, 100%, 62%)",
@@ -114,6 +115,7 @@ const ChartCard = ({ title, subtitle, icon: Icon, children, delay = 0 }: { title
 }
 
 export default function AdminOverview() {
+  const { format: fmtMoney } = useLocalizedPrice();
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
