@@ -71,7 +71,11 @@ export default function AdminAnalytics() {
 
       const courseMap = new Map(courses.map(c => [c.id, c]));
       let totalEstRevenue = 0;
+      // `free` payment_status rows come from webinar registrations (auto-created
+      // alongside course_registrations). Excluding them prevents the same lead
+      // being counted as both a webinar registration and a paid course sale.
       const paidEnrollments = enrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid");
+      const freeEnrollments = enrollments.filter(e => e.payment_status === "free");
       paidEnrollments.forEach(e => {
         const course = courseMap.get(e.course_id);
         if (course) totalEstRevenue += Number(course.price ?? 0);
@@ -105,17 +109,22 @@ export default function AdminAnalytics() {
       const catRevenueData = Object.entries(catRevenue).map(([name, revenue]) => ({ name, revenue }));
 
       const courseEnrMap: Record<string, number> = {};
-      enrollments.forEach(e => { courseEnrMap[e.course_id] = (courseEnrMap[e.course_id] ?? 0) + 1; });
+      // Top-courses chart should reflect *paid* enrollment demand only,
+      // otherwise webinar-only sign-ups inflate course numbers.
+      paidEnrollments.forEach(e => { courseEnrMap[e.course_id] = (courseEnrMap[e.course_id] ?? 0) + 1; });
       const topCourses = Object.entries(courseEnrMap)
         .sort((a, b) => b[1] - a[1]).slice(0, 5)
-        .map(([id, count]) => { const c = courseMap.get(id); return { name: c ? (c.category.length > 20 ? c.category.slice(0, 18) + "…" : c.category) : id.slice(0, 8), enrollments: count }; });
+        .map(([id, count]) => { const c = courseMap.get(id); return { name: c?.title ? (c.title.length > 26 ? c.title.slice(0, 24) + "…" : c.title) : id.slice(0, 8), enrollments: count }; });
 
-      const completedCount = enrollments.filter(e => e.is_completed).length;
-      const completionRate = enrollments.length > 0 ? Math.round((completedCount / enrollments.length) * 100) : 0;
-      const avgProgress = enrollments.length > 0 ? Math.round(enrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / enrollments.length) : 0;
+      // Completion / progress metrics only meaningful for actual paid course
+      // learners — webinar `free` rows have no curriculum to complete.
+      const learnerEnrollments = paidEnrollments.length > 0 ? paidEnrollments : enrollments.filter(e => e.payment_status !== "free");
+      const completedCount = learnerEnrollments.filter(e => e.is_completed).length;
+      const completionRate = learnerEnrollments.length > 0 ? Math.round((completedCount / learnerEnrollments.length) * 100) : 0;
+      const avgProgress = learnerEnrollments.length > 0 ? Math.round(learnerEnrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / learnerEnrollments.length) : 0;
       const topPromos = [...promos].sort((a, b) => Number(b.revenue_generated) - Number(a.revenue_generated)).slice(0, 5);
 
-      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos };
+      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos };
     },
   });
 
@@ -132,12 +141,12 @@ export default function AdminAnalytics() {
   }
 
   const kpis = [
-    { label: "Est. Revenue", value: data?.totalEstRevenue ?? 0, prefix: "$", icon: DollarSign, gradient: "from-green-500/15 to-emerald-500/5", accent: "text-green-500" },
+    { label: "Est. Revenue", value: data?.totalEstRevenue ?? 0, prefix: "₦", icon: DollarSign, gradient: "from-green-500/15 to-emerald-500/5", accent: "text-green-500" },
     { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Completion Rate", value: data?.completionRate ?? 0, suffix: "%", icon: TrendingUp, gradient: "from-amber-500/15 to-yellow-500/5", accent: "text-amber-500" },
     { label: "Avg Progress", value: data?.avgProgress ?? 0, suffix: "%", icon: BarChart3, gradient: "from-blue-500/15 to-cyan-500/5", accent: "text-blue-500" },
-    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "$", icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
-    { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "$", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
+    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "₦", icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
+    { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "₦", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
   ];
 
   const tooltipStyle = { fontSize: 11, borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 32px -8px hsl(var(--primary) / 0.1)" };
