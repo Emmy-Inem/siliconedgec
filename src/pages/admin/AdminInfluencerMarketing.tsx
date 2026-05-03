@@ -17,6 +17,7 @@ import {
   Loader2, RefreshCw, BarChart3, Eye, Link2, ExternalLink, AlertCircle, CheckCircle2, MousePointerClick
 } from "lucide-react";
 import { format } from "date-fns";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 // Canonical public URL — always use the published domain for shareable
 // influencer/UTM links so testers don't hit the preview-domain auth gate.
@@ -57,6 +58,7 @@ function buildUtmUrl(origin: string, path: string, utm: { source?: string; mediu
 export default function AdminInfluencerMarketing() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { format: fmtMoney } = useLocalizedPrice();
   const [createOpen, setCreateOpen] = useState(false);
   const [detailCode, setDetailCode] = useState<any>(null);
 
@@ -424,8 +426,8 @@ export default function AdminInfluencerMarketing() {
         <StatCard icon={MousePointerClick} label="Link Clicks" value={totalClicks} />
         <StatCard icon={Users} label="Webinar Regs" value={webinarRegs} />
         <StatCard icon={Users} label="Paid Conversions" value={paidConvs} />
-        <StatCard icon={DollarSign} label="Revenue Generated" value={`₦${totalRevenue.toLocaleString()}`} />
-        <StatCard icon={TrendingUp} label="Commission Owed" value={`₦${totalCommission.toLocaleString()}`} />
+        <StatCard icon={DollarSign} label="Revenue Generated" value={fmtMoney(totalRevenue)} />
+        <StatCard icon={TrendingUp} label="Commission Owed" value={fmtMoney(totalCommission)} />
       </div>
 
       {/* Tabs */}
@@ -483,7 +485,7 @@ export default function AdminInfluencerMarketing() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {pc.discount_type === "percentage" ? `${pc.discount_value}%` : `₦${pc.discount_value}`}
+                            {pc.discount_type === "percentage" ? `${pc.discount_value}%` : fmtMoney(Number(pc.discount_value))}
                           </TableCell>
                           <TableCell>{pc.commission_percentage}%</TableCell>
                           <TableCell className="text-center font-medium">{clicks}</TableCell>
@@ -492,7 +494,7 @@ export default function AdminInfluencerMarketing() {
                           <TableCell className="text-center">
                             {pc.usage_count}{pc.max_uses ? `/${pc.max_uses}` : ""}
                           </TableCell>
-                          <TableCell className="font-medium">₦{Number(pc.revenue_generated).toLocaleString()}</TableCell>
+                          <TableCell className="font-medium">{fmtMoney(Number(pc.revenue_generated))}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Switch
@@ -579,10 +581,10 @@ export default function AdminInfluencerMarketing() {
                         </TableCell>
                         <TableCell className="text-sm">{r.promo_codes?.influencer_name ?? r.utm_source ?? "—"}</TableCell>
                         <TableCell className="text-sm max-w-[200px] truncate">{r.courses?.title}</TableCell>
-                        <TableCell className="text-sm">₦{Number(r.original_price).toFixed(2)}</TableCell>
-                        <TableCell className="text-sm text-destructive">-₦{Number(r.discount_applied).toFixed(2)}</TableCell>
-                        <TableCell className="text-sm font-medium">₦{Number(r.final_price).toFixed(2)}</TableCell>
-                        <TableCell className="text-sm font-medium text-primary">₦{Number(r.commission_earned).toFixed(2)}</TableCell>
+                        <TableCell className="text-sm">{fmtMoney(Number(r.original_price))}</TableCell>
+                        <TableCell className="text-sm text-destructive">{`-${fmtMoney(Number(r.discount_applied))}`}</TableCell>
+                        <TableCell className="text-sm font-medium">{fmtMoney(Number(r.final_price))}</TableCell>
+                        <TableCell className="text-sm font-medium text-primary">{fmtMoney(Number(r.commission_earned))}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -630,7 +632,7 @@ export default function AdminInfluencerMarketing() {
                           <p className="text-xs text-muted-foreground font-mono">{pc.code}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-heading font-bold text-sm">₦{Number(pc.revenue_generated).toLocaleString()}</p>
+                          <p className="font-heading font-bold text-sm">{fmtMoney(Number(pc.revenue_generated))}</p>
                           <p className="text-xs text-muted-foreground">
                             {pc.clicks} clicks · {pc.webinar_count} webinar · {pc.paid_count} paid
                           </p>
@@ -732,10 +734,10 @@ export default function AdminInfluencerMarketing() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <DetailRow label="Discount" value={detailCode.discount_type === "percentage" ? `${detailCode.discount_value}%` : `₦${detailCode.discount_value}`} />
+                <DetailRow label="Discount" value={detailCode.discount_type === "percentage" ? `${detailCode.discount_value}%` : fmtMoney(Number(detailCode.discount_value))} />
                 <DetailRow label="Commission" value={`${detailCode.commission_percentage}%`} />
                 <DetailRow label="Uses" value={`${detailCode.usage_count}${detailCode.max_uses ? ` / ${detailCode.max_uses}` : ""}`} />
-                <DetailRow label="Revenue" value={`₦${Number(detailCode.revenue_generated).toLocaleString()}`} />
+                <DetailRow label="Revenue" value={fmtMoney(Number(detailCode.revenue_generated))} />
                 <DetailRow label="Created" value={format(new Date(detailCode.created_at), "MMM d, yyyy")} />
                 <DetailRow label="Expires" value={detailCode.expires_at ? format(new Date(detailCode.expires_at), "MMM d, yyyy") : "Never"} />
               </div>

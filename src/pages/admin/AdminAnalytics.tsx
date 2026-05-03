@@ -11,6 +11,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
 import { useEffect, useState } from "react";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 const COLORS = [
   "hsl(276, 100%, 62%)",
@@ -21,7 +22,7 @@ const COLORS = [
   "hsl(280, 65%, 60%)",
 ];
 
-function AnimatedNumber({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
+function AnimatedNumber({ value, prefix = "", suffix = "", formatter }: { value: number; prefix?: string; suffix?: string; formatter?: (n: number) => string }) {
   const [display, setDisplay] = useState(0);
   useEffect(() => {
     let start = 0;
@@ -35,6 +36,7 @@ function AnimatedNumber({ value, prefix = "", suffix = "" }: { value: number; pr
     }, 1000 / 60);
     return () => clearInterval(timer);
   }, [value]);
+  if (formatter) return <>{formatter(display)}</>;
   return <>{prefix}{display.toLocaleString()}{suffix}</>;
 }
 
@@ -51,6 +53,7 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 
 export default function AdminAnalytics() {
   const { toast } = useToast();
+  const { format: fmtMoney } = useLocalizedPrice();
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics"],
     queryFn: async () => {
@@ -140,13 +143,13 @@ export default function AdminAnalytics() {
     );
   }
 
-  const kpis = [
-    { label: "Est. Revenue", value: data?.totalEstRevenue ?? 0, prefix: "₦", icon: DollarSign, gradient: "from-green-500/15 to-emerald-500/5", accent: "text-green-500" },
+  const kpis: Array<{ label: string; value: number; prefix?: string; suffix?: string; formatter?: (n: number) => string; icon: any; gradient: string; accent: string }> = [
+    { label: "Est. Revenue", value: data?.totalEstRevenue ?? 0, formatter: fmtMoney, icon: DollarSign, gradient: "from-green-500/15 to-emerald-500/5", accent: "text-green-500" },
     { label: "Paid Enrollments", value: data?.paidCount ?? 0, icon: GraduationCap, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
     { label: "Completion Rate", value: data?.completionRate ?? 0, suffix: "%", icon: TrendingUp, gradient: "from-amber-500/15 to-yellow-500/5", accent: "text-amber-500" },
     { label: "Avg Progress", value: data?.avgProgress ?? 0, suffix: "%", icon: BarChart3, gradient: "from-blue-500/15 to-cyan-500/5", accent: "text-blue-500" },
-    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, prefix: "₦", icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
-    { label: "Commission Paid", value: data?.totalCommission ?? 0, prefix: "₦", icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
+    { label: "Promo Revenue", value: data?.totalPromoRevenue ?? 0, formatter: fmtMoney, icon: Megaphone, gradient: "from-primary/15 to-accent/5", accent: "text-primary" },
+    { label: "Commission Paid", value: data?.totalCommission ?? 0, formatter: fmtMoney, icon: ArrowDownRight, gradient: "from-red-500/15 to-rose-500/5", accent: "text-red-400" },
   ];
 
   const tooltipStyle = { fontSize: 11, borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 32px -8px hsl(var(--primary) / 0.1)" };
@@ -201,7 +204,7 @@ export default function AdminAnalytics() {
                 <kpi.icon className={`h-4 w-4 ${kpi.accent}`} />
               </div>
               <p className="font-heading text-lg font-bold">
-                <AnimatedNumber value={kpi.value} prefix={kpi.prefix} suffix={kpi.suffix} />
+                <AnimatedNumber value={kpi.value} prefix={kpi.prefix} suffix={kpi.suffix} formatter={kpi.formatter} />
               </p>
               <p className="text-[10px] text-muted-foreground font-medium">{kpi.label}</p>
             </div>
@@ -269,7 +272,7 @@ export default function AdminAnalytics() {
                 <BarChart data={data?.catRevenueData ?? []} layout="vertical">
                   <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`₦${Number(v).toLocaleString()}`, "Revenue"]} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmtMoney(Number(v)), "Revenue"]} />
                   <Bar dataKey="revenue" fill="hsl(197, 100%, 47%)" radius={[0, 6, 6, 0]} animationDuration={800} />
                 </BarChart>
               </ResponsiveContainer>
@@ -372,7 +375,7 @@ export default function AdminAnalytics() {
                     <p className="text-[10px] text-muted-foreground">{p.usage_count} uses</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-semibold tabular-nums">₦{Number(p.revenue_generated).toLocaleString()}</p>
+                    <p className="text-xs font-semibold tabular-nums">{fmtMoney(Number(p.revenue_generated))}</p>
                     <span className={`text-[10px] font-medium ${p.is_active ? "text-green-500" : "text-muted-foreground"}`}>
                       {p.is_active ? "● Active" : "○ Inactive"}
                     </span>

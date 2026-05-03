@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   classifyChannel, CHANNEL_BADGE, DIRECT_EXPLANATION, type Channel,
 } from "@/lib/channel-attribution";
+import { fetchAllRows } from "@/lib/fetch-all";
 
 type UnifiedLead = {
   id: string;
@@ -54,8 +55,7 @@ export default function AdminLeadsHub() {
   const { data: registrations = [], isLoading: l1 } = useQuery({
     queryKey: ["hub-registrations"],
     queryFn: async () => {
-      const { data } = await (supabase.from("course_registrations") as any).select("*").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>("course_registrations", "*");
     },
     refetchInterval: 30000,
   });
@@ -63,8 +63,10 @@ export default function AdminLeadsHub() {
   const { data: enrollments = [], isLoading: l2 } = useQuery({
     queryKey: ["hub-enrollments"],
     queryFn: async () => {
-      const { data } = await supabase.from("enrollments").select("id, user_id, course_id, payment_status, created_at, progress_percentage").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>(
+        "enrollments",
+        "id, user_id, course_id, payment_status, created_at, progress_percentage",
+      );
     },
     refetchInterval: 30000,
   });
@@ -72,8 +74,7 @@ export default function AdminLeadsHub() {
   const { data: businessLeads = [], isLoading: l3 } = useQuery({
     queryKey: ["hub-business-leads"],
     queryFn: async () => {
-      const { data } = await supabase.from("business_leads").select("*").order("created_at", { ascending: false }).limit(500);
-      return data ?? [];
+      return await fetchAllRows<any>("business_leads", "*");
     },
     refetchInterval: 30000,
   });
@@ -94,22 +95,39 @@ export default function AdminLeadsHub() {
     queryKey: ["hub-lead-sources"],
     queryFn: async () => {
       const since = new Date(Date.now() - 90 * 86400000).toISOString();
-      const { data } = await supabase
-        .from("lead_sources")
-        .select("user_id, utm_source, utm_medium, utm_campaign, referrer, form_data, created_at")
-        .gte("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      return data ?? [];
+      // Paginate so we don't lose attribution beyond the first 1000 rows.
+      const all = await fetchAllRows<any>(
+        "lead_sources",
+        "user_id, utm_source, utm_medium, utm_campaign, referrer, form_data, created_at",
+      );
+      return all.filter((r: any) => r.created_at >= since);
     },
     refetchInterval: 60000,
   });
 
-  // Build O(1) lookup maps: email → most-recent attribution, user_id → same.
+  // Build O(1) lookup maps. Prefer the EARLIEST visit that carries any
+  // attribution signal (utm OR referrer) so we don't overwrite the original
+  // acquisition source with a later "Direct" pageview. Fall back to the
+  // earliest visit overall if nothing carries attribution.
   const { byEmail, byUser } = useMemo(() => {
     const e = new Map<string, any>();
     const u = new Map<string, any>();
-    (leadSources as any[]).forEach((row) => {
+    const hasSignal = (r: any) =>
+      !!(r.utm_source || r.utm_medium || r.utm_campaign || (r.referrer && String(r.referrer).trim()));
+    // Sort ascending by created_at so first-write wins = earliest.
+    const rows = [...(leadSources as any[])].sort(
+      (a, b) => +new Date(a.created_at) - +new Date(b.created_at),
+    );
+    // First pass: only attribution-carrying rows.
+    rows.forEach((row) => {
+      if (!hasSignal(row)) return;
+      const fd = (row.form_data || {}) as Record<string, any>;
+      const em = (fd.email || "").toString().trim().toLowerCase();
+      if (em && !e.has(em)) e.set(em, row);
+      if (row.user_id && !u.has(row.user_id)) u.set(row.user_id, row);
+    });
+    // Second pass: any row, to fill gaps where we still know nothing.
+    rows.forEach((row) => {
       const fd = (row.form_data || {}) as Record<string, any>;
       const em = (fd.email || "").toString().trim().toLowerCase();
       if (em && !e.has(em)) e.set(em, row);

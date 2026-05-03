@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 import { useEffect, useState } from "react";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 const CHART_COLORS = [
   "hsl(276, 100%, 62%)",
@@ -114,6 +115,7 @@ const ChartCard = ({ title, subtitle, icon: Icon, children, delay = 0 }: { title
 }
 
 export default function AdminOverview() {
+  const { format: fmtMoney } = useLocalizedPrice();
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
@@ -210,7 +212,7 @@ export default function AdminOverview() {
     { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new · separate from paid`, icon: ClipboardCheck, href: "/admin/registrations" },
     { label: "Business Leads", value: stats?.businessLeads ?? 0, sub: "B2B inquiries", icon: Briefcase, href: "/admin/business-leads" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
-    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `₦${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
+    { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `${fmtMoney(stats?.promoRevenue ?? 0)} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
     { label: "Testimonials", value: stats?.testimonials ?? 0, sub: "published reviews", icon: MessageSquareQuote, href: "/admin/testimonials" },
   ];
 

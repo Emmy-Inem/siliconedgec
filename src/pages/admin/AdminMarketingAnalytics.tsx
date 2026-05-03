@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { classifyChannel, DIRECT_EXPLANATION } from "@/lib/channel-attribution";
+import { fetchAllRows } from "@/lib/fetch-all";
 
 const COLORS = [
   "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
@@ -56,21 +57,15 @@ export default function AdminMarketingAnalytics() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["admin-lead-sources"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lead_sources")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as any[];
+      // Paginate past the 1000-row PostgREST cap so KPIs reflect every visit.
+      return await fetchAllRows<any>("lead_sources", "*");
     },
   });
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-enrollments-analytics"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("enrollments").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as any[];
+      return await fetchAllRows<any>("enrollments", "*");
     },
   });
 
