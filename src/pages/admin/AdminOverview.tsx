@@ -137,7 +137,11 @@ export default function AdminOverview() {
       const allPromos = promoCodes.data ?? [];
 
       const publishedCount = allCourses.filter(c => c.is_published).length;
-      const totalRevenue = allEnrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid").length;
+      // Paid enrollments only — `free` payment_status rows are auto-created
+      // for every webinar registration, so they would double-count with the
+      // Webinar Registrations card if treated as paid course enrollments.
+      const paidEnrollments = allEnrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid");
+      const freeEnrollments = allEnrollments.filter(e => e.payment_status === "free");
       const promoRevenue = allPromos.reduce((sum, p) => sum + Number(p.revenue_generated ?? 0), 0);
       const activePromos = allPromos.filter(p => p.is_active).length;
 
@@ -180,10 +184,12 @@ export default function AdminOverview() {
         published: publishedCount,
         instructors: instructors.count ?? 0,
         enrollments: allEnrollments.length,
+        paidEnrollments: paidEnrollments.length,
+        freeEnrollments: freeEnrollments.length,
         testimonials: testimonials.count ?? 0,
         plans: plans.count ?? 0,
         users: allProfiles.length,
-        totalRevenue,
+        totalRevenue: paidEnrollments.length,
         promoRevenue,
         activePromos,
         categoryData,
@@ -200,8 +206,8 @@ export default function AdminOverview() {
   const statCards = [
     { label: "Total Courses", value: stats?.courses ?? 0, sub: `${stats?.published ?? 0} published`, icon: BookOpen, href: "/admin/courses" },
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
-    { label: "Enrollments", value: stats?.enrollments ?? 0, sub: `${stats?.totalRevenue ?? 0} paid`, icon: GraduationCap, href: "/admin/enrollments" },
-    { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new leads`, icon: ClipboardCheck, href: "/admin/registrations" },
+    { label: "Paid Enrollments", value: stats?.paidEnrollments ?? 0, sub: `${stats?.enrollments ?? 0} total seats incl. webinar`, icon: GraduationCap, href: "/admin/enrollments" },
+    { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new · separate from paid`, icon: ClipboardCheck, href: "/admin/registrations" },
     { label: "Business Leads", value: stats?.businessLeads ?? 0, sub: "B2B inquiries", icon: Briefcase, href: "/admin/business-leads" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
     { label: "Promo Codes", value: stats?.activePromos ?? 0, sub: `₦${(stats?.promoRevenue ?? 0).toLocaleString()} revenue`, icon: Megaphone, href: "/admin/influencers-marketing" },
