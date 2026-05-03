@@ -105,11 +105,29 @@ export default function AdminLeadsHub() {
     refetchInterval: 60000,
   });
 
-  // Build O(1) lookup maps: email → most-recent attribution, user_id → same.
+  // Build O(1) lookup maps. Prefer the EARLIEST visit that carries any
+  // attribution signal (utm OR referrer) so we don't overwrite the original
+  // acquisition source with a later "Direct" pageview. Fall back to the
+  // earliest visit overall if nothing carries attribution.
   const { byEmail, byUser } = useMemo(() => {
     const e = new Map<string, any>();
     const u = new Map<string, any>();
-    (leadSources as any[]).forEach((row) => {
+    const hasSignal = (r: any) =>
+      !!(r.utm_source || r.utm_medium || r.utm_campaign || (r.referrer && String(r.referrer).trim()));
+    // Sort ascending by created_at so first-write wins = earliest.
+    const rows = [...(leadSources as any[])].sort(
+      (a, b) => +new Date(a.created_at) - +new Date(b.created_at),
+    );
+    // First pass: only attribution-carrying rows.
+    rows.forEach((row) => {
+      if (!hasSignal(row)) return;
+      const fd = (row.form_data || {}) as Record<string, any>;
+      const em = (fd.email || "").toString().trim().toLowerCase();
+      if (em && !e.has(em)) e.set(em, row);
+      if (row.user_id && !u.has(row.user_id)) u.set(row.user_id, row);
+    });
+    // Second pass: any row, to fill gaps where we still know nothing.
+    rows.forEach((row) => {
       const fd = (row.form_data || {}) as Record<string, any>;
       const em = (fd.email || "").toString().trim().toLowerCase();
       if (em && !e.has(em)) e.set(em, row);
