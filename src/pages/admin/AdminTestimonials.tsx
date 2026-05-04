@@ -5,11 +5,24 @@ import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Testimonial = Tables<"testimonials">;
 
 const columns: Column<Testimonial>[] = [
+  {
+    key: "avatar_url",
+    label: "Photo",
+    render: (t) =>
+      t.avatar_url ? (
+        <img src={t.avatar_url} alt={t.name} className="h-9 w-9 rounded-full object-cover border border-border" />
+      ) : (
+        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
+          {t.name?.[0]?.toUpperCase() ?? "?"}
+        </div>
+      ),
+  },
   { key: "name", label: "Name" },
   { key: "role", label: "Role" },
   { key: "quote", label: "Quote", render: (t) => <span className="line-clamp-2 max-w-xs">{t.quote}</span> },
@@ -17,7 +30,7 @@ const columns: Column<Testimonial>[] = [
   { key: "order_index", label: "Order" },
 ];
 
-const emptyForm = { name: "", role: "", quote: "", rating: 5, order_index: 0 };
+const emptyForm = { name: "", role: "", quote: "", rating: 5, order_index: 0, avatar_url: "" };
 
 export default function AdminTestimonials() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,13 +71,22 @@ export default function AdminTestimonials() {
     <>
       <AdminCrudTable title="Testimonials" data={data} columns={columns} isLoading={isLoading} addLabel="Add Testimonial"
         onAdd={() => { setEditing(null); setForm(emptyForm); setDialogOpen(true); }}
-        onEdit={(t) => { setEditing(t); setForm({ name: t.name, role: t.role ?? "", quote: t.quote, rating: t.rating ?? 5, order_index: t.order_index ?? 0 }); setDialogOpen(true); }}
+        onEdit={(t) => { setEditing(t); setForm({ name: t.name, role: t.role ?? "", quote: t.quote, rating: t.rating ?? 5, order_index: t.order_index ?? 0, avatar_url: t.avatar_url ?? "" }); setDialogOpen(true); }}
         onDelete={(id) => del.mutate(id)}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editing ? "Edit Testimonial" : "Add Testimonial"}</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Display Picture</label>
+              <ImageUploader
+                value={form.avatar_url}
+                onChange={(url) => setForm({ ...form, avatar_url: url })}
+                folder="testimonials"
+                rounded
+              />
+            </div>
             <div><label className="text-sm font-medium block mb-1">Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
             <div><label className="text-sm font-medium block mb-1">Role</label><input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
             <div><label className="text-sm font-medium block mb-1">Quote</label><textarea value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })} required rows={4} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
