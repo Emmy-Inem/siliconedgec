@@ -16,6 +16,7 @@ import jsPDF from "jspdf";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { tikTokEvent, metaCustomEvent } from "@/lib/analytics";
+import { usePageImage } from "@/hooks/usePageImage";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -26,6 +27,7 @@ const fadeUp = {
 
 export default function Certificates() {
   const { user } = useAuth();
+  const heroPhoto = usePageImage("page_image_certificate_hero", certificateCelebration);
 
   // Real DB-backed certificates (auto-issued via trigger when course completed)
   const { data: certificates = [], isLoading } = useQuery({
