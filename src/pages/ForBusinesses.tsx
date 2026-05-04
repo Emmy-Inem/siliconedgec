@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
 import { SEO } from "@/components/SEO";
+import { usePageImage } from "@/hooks/usePageImage";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -50,6 +51,7 @@ const testimonials = [
 ];
 
 export default function ForBusinesses() {
+  const heroImage = usePageImage("page_image_business_hero", businessTraining);
   const [formData, setFormData] = useState({
     company_name: "",
     contact_name: "",
