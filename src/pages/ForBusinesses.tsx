@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
 import { SEO } from "@/components/SEO";
+import { usePageImage } from "@/hooks/usePageImage";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -50,6 +51,7 @@ const testimonials = [
 ];
 
 export default function ForBusinesses() {
+  const heroImage = usePageImage("page_image_business_hero", businessTraining);
   const [formData, setFormData] = useState({
     company_name: "",
     contact_name: "",
@@ -156,7 +158,7 @@ export default function ForBusinesses() {
             >
               <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
               <img
-                src={businessTraining}
+                src={heroImage}
                 alt="Corporate team upskilling with Silicon Edge"
                 className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-lg ml-auto object-cover aspect-[5/4]"
                 loading="eager"

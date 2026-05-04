@@ -5,6 +5,7 @@ import AdminPages from "../AdminPages";
 import AdminBlog from "../AdminBlog";
 import AdminTestimonials from "../AdminTestimonials";
 import AdminMedia from "../AdminMedia";
+import AdminPageImages from "../AdminPageImages";
 
 export default function AdminContentHub() {
   return (
@@ -15,6 +16,7 @@ export default function AdminContentHub() {
         { value: "home", label: "Home Page", content: <AdminHomeContent /> },
         { value: "site", label: "Site Content", content: <AdminSiteContent /> },
         { value: "pages", label: "Pages", content: <AdminPages /> },
+        { value: "page-images", label: "Page Images", content: <AdminPageImages /> },
         { value: "blog", label: "Blog", content: <AdminBlog /> },
         { value: "testimonials", label: "Testimonials", content: <AdminTestimonials /> },
         { value: "media", label: "Media Library", content: <AdminMedia /> },
