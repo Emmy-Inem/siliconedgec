@@ -118,7 +118,7 @@ export default function Certificates() {
             >
               <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
               <img
-                src={certificateCelebration}
+                src={heroPhoto}
                 alt="Student celebrating certificate"
                 className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-md ml-auto"
               />
