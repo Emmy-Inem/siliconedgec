@@ -158,7 +158,7 @@ export default function ForBusinesses() {
             >
               <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
               <img
-                src={businessTraining}
+                src={heroImage}
                 alt="Corporate team upskilling with Silicon Edge"
                 className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-lg ml-auto object-cover aspect-[5/4]"
                 loading="eager"
