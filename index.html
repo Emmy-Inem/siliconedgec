@@ -121,6 +121,9 @@
 
       var META_PIXEL_ID = '802223455823137';
       fbq('init', META_PIXEL_ID);
+      // Additional Meta Pixel for Meta Ads tracking
+      var META_PIXEL_ID_2 = '1307808714777123';
+      fbq('init', META_PIXEL_ID_2);
       fbq('track', 'PageView');
 
       // ───── In-app browser hardening (mirrors TikTok pixel logic) ─────
@@ -232,6 +235,9 @@
     <!-- Meta Pixel <noscript> fallback (must live in <body> per HTML5) -->
     <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=802223455823137&ev=PageView&noscript=1"
+      alt="" /></noscript>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1307808714777123&ev=PageView&noscript=1"
       alt="" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
