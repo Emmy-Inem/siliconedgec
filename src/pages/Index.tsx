@@ -601,7 +601,9 @@ export default function Index() {
   const { user } = useAuth();
   const reduce = useReducedMotion();
   const { data: settings } = useSiteSettings();
-  const communityUrl = settings?.whatsapp_community_url || (settings?.whatsapp_number ? `https://wa.me/${settings.whatsapp_number}` : "#");
+  const communityUrl =
+    settings?.whatsapp_community_url ||
+    "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
 
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
@@ -1163,7 +1165,7 @@ export default function Index() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x mask-fade-x"
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x"
             style={{ scrollbarWidth: "none" }}
           >
             {instructors.map((inst) => (
@@ -1174,7 +1176,12 @@ export default function Index() {
                 className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-2xl overflow-hidden border border-border/60 bg-card relative shadow-sm hover:shadow-xl transition-shadow duration-300"
               >
                 <div className="aspect-[4/5] overflow-hidden">
-                  <img src={inst.image} alt={inst.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img
+                    src={inst.image}
+                    alt={inst.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105"
+                  />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                   <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
@@ -1278,7 +1285,9 @@ export default function Index() {
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Just now</p>
-                  <p className="text-xs font-semibold">Job offer received 🎉</p>
+                  <p className="text-xs font-semibold flex items-center gap-1">
+                    Job offer received <PartyPopper className="h-3 w-3 text-primary" />
+                  </p>
                 </div>
               </motion.div>
               <motion.div
