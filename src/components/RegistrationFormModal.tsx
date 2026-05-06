@@ -195,7 +195,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
 
       setDone(true);
       toast({
-        title: existingReg ? "You're already registered ✓" : "You're in! 🎉",
+        title: existingReg ? "You're already registered" : "You're in!",
         description: existingReg
           ? `You're confirmed for ${courseTitle}. Joining link is in your email.`
           : `Confirmed for ${courseTitle}. Check your email & WhatsApp.`,
@@ -215,7 +215,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
         <DialogHeader>
           <DialogTitle className="font-heading">
             {done
-              ? alreadyRegistered ? "You're already registered ✓" : "You're in! 🎉"
+              ? alreadyRegistered ? "You're already registered" : "You're in!"
               : !user
                 ? "Sign in to register"
                 : `Register for ${courseTitle}`}
@@ -264,7 +264,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
             <CheckCircle2 className="h-14 w-14 mx-auto text-primary" />
             <div className="space-y-1">
               <p className="font-heading font-semibold text-lg">
-                {alreadyRegistered ? `You're already confirmed for ${courseTitle}` : `You're confirmed for ${courseTitle} 🎉`}
+                {alreadyRegistered ? `You're already confirmed for ${courseTitle}` : `You're confirmed for ${courseTitle}`}
               </p>
               <p className="text-sm text-muted-foreground">
                 We've sent the joining link and reminder details to your email and WhatsApp.

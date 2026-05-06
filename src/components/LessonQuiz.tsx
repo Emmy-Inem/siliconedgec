@@ -83,7 +83,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
       setSubmitted(res);
       queryClient.invalidateQueries({ queryKey: ["quiz-attempt", quiz?.id, user?.id] });
       if (res.passed) {
-        toast({ title: `🎉 Passed with ${res.score}%!`, description: "Next lesson unlocked." });
+        toast({ title: `Passed with ${res.score}%!`, description: "Next lesson unlocked." });
         onPass?.();
       } else {
         toast({ title: `Score: ${res.score}%`, description: `You need ${quiz?.passing_score}% to pass. Try again.`, variant: "destructive" });
@@ -136,7 +136,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
           )}
           <p className="text-2xl font-heading font-bold">{submitted.score}%</p>
           <p className="text-sm text-muted-foreground">
-            {submitted.passed ? "You passed! 🎉" : `You need ${quiz.passing_score}% to pass.`}
+            {submitted.passed ? "You passed!" : `You need ${quiz.passing_score}% to pass.`}
           </p>
           {!submitted.passed && (
             <Button variant="outline" size="sm" onClick={() => { setSubmitted(null); setAnswers({}); }}>
