@@ -84,40 +84,57 @@ export default function AdminEmail() {
         }
       }
 
-      // Trigger the actual email broadcast — uses service role to read
-      // emails from auth.users (not exposed to the client) and send via Resend.
+      // Fetch recipient emails (server-side, since auth.users isn't client-exposed),
+      // then open Gmail's compose window with all addresses pre-filled in BCC.
       const { data: bulk, error: bulkErr } = await supabase.functions.invoke("send-bulk-announcement", {
         body: {
           announcement_id: inserted.id,
-          subject: form.subject,
-          body: form.body,
           audience: form.target_audience,
         },
       });
       if (bulkErr) throw bulkErr;
 
+      const emails: string[] = bulk?.emails ?? [];
+      // Gmail's URL-based compose has a practical query-string length limit
+      // (~2000 chars). Chunk the BCC list and open one tab per chunk so no
+      // recipients are silently dropped.
+      const chunks: string[][] = [];
+      const CHUNK = 90; // ~90 emails per tab keeps URL well under the limit
+      for (let i = 0; i < emails.length; i += CHUNK) chunks.push(emails.slice(i, i + CHUNK));
+      const total = chunks.length;
+      chunks.forEach((chunk, idx) => {
+        const subj = total > 1 ? `${form.subject} (${idx + 1}/${total})` : form.subject;
+        const url =
+          "https://mail.google.com/mail/?view=cm&fs=1" +
+          `&bcc=${encodeURIComponent(chunk.join(","))}` +
+          `&su=${encodeURIComponent(subj)}` +
+          `&body=${encodeURIComponent(form.body)}`;
+        // Stagger so popup blockers are less likely to suppress later tabs.
+        setTimeout(() => window.open(url, "_blank", "noopener,noreferrer"), idx * 250);
+      });
+
       await logAdminActivity("create", "email", inserted.id, {
         subject: form.subject,
         audience: form.target_audience,
         recipients: bulk?.recipients ?? 0,
-        sent: bulk?.sent ?? 0,
-        failed: bulk?.failed ?? 0,
+        delivery: "gmail-compose",
+        gmail_drafts: total,
       });
 
-      return bulk;
+      return { ...bulk, total };
     },
     onSuccess: (bulk: any) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
       setComposeOpen(false);
       setForm({ subject: "", body: "", target_audience: "all" });
       const recipients = bulk?.recipients ?? 0;
-      const status = bulk?.status ?? "queued";
+      const total = bulk?.total ?? 0;
       toast({
-        title: status === "queued" ? "Announcement queued" : "Announcement sent!",
+        title: recipients > 0 ? "Gmail opened" : "No recipients",
         description:
-          status === "queued"
-            ? `In-app notifications delivered. Email sending is pending (RESEND_API_KEY not configured).`
-            : `Emails dispatched to ${recipients.toLocaleString()} registered account${recipients === 1 ? "" : "s"} and in-app notifications delivered.`,
+          recipients > 0
+            ? `Opened ${total} Gmail draft${total === 1 ? "" : "s"} with ${recipients.toLocaleString()} recipient${recipients === 1 ? "" : "s"} pre-filled in BCC. Allow pop-ups if a tab didn't open.`
+            : "No registered accounts matched this audience.",
       });
     },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
