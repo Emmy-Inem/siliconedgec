@@ -603,7 +603,7 @@ export default function Index() {
   const { data: settings } = useSiteSettings();
   const communityUrl =
     settings?.whatsapp_community_url ||
-    "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
+    "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X";
 
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
