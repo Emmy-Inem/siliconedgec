@@ -47,29 +47,17 @@ export default function AdminEmail() {
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
 
-      // Get recipient count
-      let recipientCount = 0;
-      if (form.target_audience === "all") {
-        const { count } = await supabase.from("profiles").select("id", { count: "exact", head: true });
-        recipientCount = count ?? 0;
-      } else {
-        const { data: enrolledUsers } = await supabase.from("enrollments").select("user_id");
-        const unique = new Set((enrolledUsers ?? []).map(e => e.user_id));
-        recipientCount = unique.size;
-      }
-
-      // Store the announcement
-      const { error } = await supabase.from("email_announcements").insert({
+      // Store the announcement first so we have an id to update once the
+      // bulk-send completes (real recipient count comes from auth.users).
+      const { data: inserted, error } = await supabase.from("email_announcements").insert({
         subject: form.subject,
         body: form.body,
         target_audience: form.target_audience,
         sent_by: user.id,
-        recipient_count: recipientCount,
+        recipient_count: 0,
         status: "queued",
-      });
+      }).select("id").single();
       if (error) throw error;
-
-      await logAdminActivity("create", "email", undefined, { subject: form.subject, audience: form.target_audience, recipients: recipientCount });
 
       // Create in-app notifications for all target users
       let userIds: string[] = [];
@@ -95,12 +83,42 @@ export default function AdminEmail() {
           await supabase.from("notifications").insert(notifs.slice(i, i + 100));
         }
       }
+
+      // Trigger the actual email broadcast — uses service role to read
+      // emails from auth.users (not exposed to the client) and send via Resend.
+      const { data: bulk, error: bulkErr } = await supabase.functions.invoke("send-bulk-announcement", {
+        body: {
+          announcement_id: inserted.id,
+          subject: form.subject,
+          body: form.body,
+          audience: form.target_audience,
+        },
+      });
+      if (bulkErr) throw bulkErr;
+
+      await logAdminActivity("create", "email", inserted.id, {
+        subject: form.subject,
+        audience: form.target_audience,
+        recipients: bulk?.recipients ?? 0,
+        sent: bulk?.sent ?? 0,
+        failed: bulk?.failed ?? 0,
+      });
+
+      return bulk;
     },
-    onSuccess: () => {
+    onSuccess: (bulk: any) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
       setComposeOpen(false);
       setForm({ subject: "", body: "", target_audience: "all" });
-      toast({ title: "Announcement sent!", description: "In-app notifications delivered to all targeted users." });
+      const recipients = bulk?.recipients ?? 0;
+      const status = bulk?.status ?? "queued";
+      toast({
+        title: status === "queued" ? "Announcement queued" : "Announcement sent!",
+        description:
+          status === "queued"
+            ? `In-app notifications delivered. Email sending is pending (RESEND_API_KEY not configured).`
+            : `Emails dispatched to ${recipients.toLocaleString()} registered account${recipients === 1 ? "" : "s"} and in-app notifications delivered.`,
+      });
     },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
