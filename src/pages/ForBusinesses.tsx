@@ -73,13 +73,36 @@ export default function ForBusinesses() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("business_leads").insert({
-      company_name: formData.company_name,
-      contact_name: formData.contact_name,
-      email: formData.email,
-      company_size: formData.company_size,
-      training_needs: formData.training_needs,
-    });
+    const { data: inserted, error } = await supabase
+      .from("business_leads")
+      .insert({
+        company_name: formData.company_name,
+        contact_name: formData.contact_name,
+        email: formData.email,
+        company_size: formData.company_size,
+        training_needs: formData.training_needs,
+      })
+      .select("id")
+      .single();
+    // Fan out: notify admins in-app and forward a copy to info@siliconedgec.com
+    // (the lead row above is the on-site copy). Failures here must not block
+    // the submitter — we've already saved the lead.
+    if (!error && inserted?.id) {
+      try {
+        await supabase.functions.invoke("notify-business-lead", {
+          body: {
+            lead_id: inserted.id,
+            company_name: formData.company_name,
+            contact_name: formData.contact_name,
+            email: formData.email,
+            company_size: formData.company_size,
+            training_needs: formData.training_needs,
+          },
+        });
+      } catch (e) {
+        console.warn("notify-business-lead failed", e);
+      }
+    }
     setSubmitting(false);
     if (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
