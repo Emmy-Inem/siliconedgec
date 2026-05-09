@@ -132,6 +132,10 @@ export default function AdminOverview() {
         fetchAllRows<any>("profiles", "id, created_at"),
         fetchAllRows<any>("promo_codes", "id, usage_count, revenue_generated, is_active"),
       ]);
+      const [allRegs, allBizLeads] = await Promise.all([
+        fetchAllRows<any>("course_registrations", "id, status, created_at"),
+        fetchAllRows<any>("business_leads", "id, status, created_at"),
+      ]);
 
       const publishedCount = allCourses.filter(c => c.is_published).length;
       // Paid enrollments only — `free` payment_status rows are auto-created
@@ -193,9 +197,9 @@ export default function AdminOverview() {
         monthlyEnrollments,
         monthlySignups,
         recentEnrollments,
-        registrations: (regsRes.data ?? []).length,
-        newRegistrations: (regsRes.data ?? []).filter((r: any) => r.status === "new").length,
-        businessLeads: (leadsRes.data ?? []).length,
+        registrations: allRegs.length,
+        newRegistrations: allRegs.filter((r: any) => r.status === "new").length,
+        businessLeads: allBizLeads.length,
       };
     },
   });
