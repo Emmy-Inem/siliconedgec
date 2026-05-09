@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import {
   BookOpen, Users, GraduationCap, MessageSquareQuote, CreditCard, UserCheck,
   TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity, ClipboardCheck, Briefcase
@@ -119,24 +120,18 @@ export default function AdminOverview() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [courses, instructors, enrollments, testimonials, plans, profiles, promoCodes] = await Promise.all([
-        supabase.from("courses").select("id, title, is_published, category, price, students_enrolled, created_at"),
+      // Use fetchAllRows for tables that can grow past 1000 rows
+      // (lead_sources, enrollments, profiles), keeping totals in sync with
+      // Platform & Marketing analytics views.
+      const [allCourses, instructors, allEnrollments, testimonials, plans, allProfiles, allPromos] = await Promise.all([
+        fetchAllRows<any>("courses", "id, title, is_published, category, price, students_enrolled, created_at"),
         supabase.from("instructors").select("id", { count: "exact", head: true }),
-        supabase.from("enrollments").select("id, payment_status, created_at, course_id"),
+        fetchAllRows<any>("enrollments", "id, payment_status, created_at, course_id"),
         supabase.from("testimonials").select("id", { count: "exact", head: true }),
         supabase.from("pricing_plans").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id, created_at"),
-        supabase.from("promo_codes").select("id, usage_count, revenue_generated, is_active"),
+        fetchAllRows<any>("profiles", "id, created_at"),
+        fetchAllRows<any>("promo_codes", "id, usage_count, revenue_generated, is_active"),
       ]);
-      const [regsRes, leadsRes] = await Promise.all([
-        (supabase.from("course_registrations") as any).select("id, status, created_at"),
-        supabase.from("business_leads").select("id, status, created_at"),
-      ]);
-
-      const allCourses = courses.data ?? [];
-      const allEnrollments = enrollments.data ?? [];
-      const allProfiles = profiles.data ?? [];
-      const allPromos = promoCodes.data ?? [];
 
       const publishedCount = allCourses.filter(c => c.is_published).length;
       // Paid enrollments only — `free` payment_status rows are auto-created
