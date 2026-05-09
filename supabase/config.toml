@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.send-bulk-announcement]
 verify_jwt = true
+
+[functions.notify-business-lead]
+verify_jwt = false
