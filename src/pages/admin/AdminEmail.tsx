@@ -7,7 +7,7 @@ import { logAdminActivity } from "@/lib/admin-logger";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle, BadgeDollarSign, ClipboardList, Briefcase, BookOpen, Eye, Loader2 } from "lucide-react";
 
 interface Announcement {
   id: string;
@@ -20,8 +20,12 @@ interface Announcement {
 }
 
 const AUDIENCE_OPTIONS = [
-  { value: "all", label: "All Users", icon: Users, desc: "Send to every registered user" },
-  { value: "enrolled", label: "Enrolled Users", icon: GraduationCap, desc: "Users with at least one enrollment" },
+  { value: "all", label: "All Users", icon: Users, desc: "Every registered user" },
+  { value: "enrolled", label: "Enrolled", icon: GraduationCap, desc: "Users with ≥1 enrollment" },
+  { value: "paid", label: "Paid Customers", icon: BadgeDollarSign, desc: "Paid / confirmed enrollments" },
+  { value: "registrants", label: "Webinar Registrants", icon: ClipboardList, desc: "Course / webinar registrants" },
+  { value: "business_leads", label: "Business Leads", icon: Briefcase, desc: "B2B inquiry contacts" },
+  { value: "course", label: "Specific Course", icon: BookOpen, desc: "Students of one course" },
 ];
 
 export default function AdminEmail() {
@@ -29,7 +33,37 @@ export default function AdminEmail() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [composeOpen, setComposeOpen] = useState(false);
-  const [form, setForm] = useState({ subject: "", body: "", target_audience: "all" });
+  const [form, setForm] = useState({ subject: "", body: "", target_audience: "all", course_id: "" });
+  const [preview, setPreview] = useState<{ count: number; sample: string[] } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const { data: courseOptions = [] } = useQuery({
+    queryKey: ["admin-email-course-options"],
+    queryFn: async () => {
+      const { data } = await supabase.from("courses").select("id, title").order("title");
+      return (data ?? []) as { id: string; title: string }[];
+    },
+  });
+
+  const refreshPreview = async () => {
+    if (form.target_audience === "course" && !form.course_id) {
+      setPreview({ count: 0, sample: [] });
+      return;
+    }
+    setPreviewLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-bulk-announcement", {
+        body: { preview: true, audience: form.target_audience, course_id: form.course_id || undefined, announcement_id: "" },
+      });
+      if (error) throw error;
+      setPreview({ count: data?.recipients ?? 0, sample: data?.sample ?? [] });
+    } catch (e: any) {
+      toast({ title: "Preview failed", description: e.message, variant: "destructive" });
+      setPreview(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["admin-announcements"],
@@ -90,6 +124,7 @@ export default function AdminEmail() {
         body: {
           announcement_id: inserted.id,
           audience: form.target_audience,
+          course_id: form.course_id || undefined,
         },
       });
       if (bulkErr) throw bulkErr;
@@ -126,7 +161,8 @@ export default function AdminEmail() {
     onSuccess: (bulk: any) => {
       qc.invalidateQueries({ queryKey: ["admin-announcements"] });
       setComposeOpen(false);
-      setForm({ subject: "", body: "", target_audience: "all" });
+      setForm({ subject: "", body: "", target_audience: "all", course_id: "" });
+      setPreview(null);
       const recipients = bulk?.recipients ?? 0;
       const total = bulk?.total ?? 0;
       toast({
@@ -272,12 +308,12 @@ export default function AdminEmail() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-2">Target Audience</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {AUDIENCE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setForm({ ...form, target_audience: opt.value })}
+                    onClick={() => { setForm({ ...form, target_audience: opt.value }); setPreview(null); }}
                     className={`flex items-start gap-2 p-3 rounded-lg border text-left transition-all ${
                       form.target_audience === opt.value
                         ? "border-primary bg-primary/10 ring-2 ring-primary/20"
@@ -292,6 +328,37 @@ export default function AdminEmail() {
                   </button>
                 ))}
               </div>
+              {form.target_audience === "course" && (
+                <select
+                  value={form.course_id}
+                  onChange={(e) => { setForm({ ...form, course_id: e.target.value }); setPreview(null); }}
+                  className="mt-2 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">Pick a course…</option>
+                  {courseOptions.map((c) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Eye className="h-3.5 w-3.5" />
+                  Recipient preview
+                  {preview && (
+                    <span className="text-foreground font-medium">{preview.count.toLocaleString()} recipients</span>
+                  )}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={refreshPreview} disabled={previewLoading}>
+                  {previewLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Preview"}
+                </Button>
+              </div>
+              {preview && preview.sample.length > 0 && (
+                <p className="mt-2 text-[11px] text-muted-foreground line-clamp-3 break-all">
+                  {preview.sample.slice(0, 8).join(", ")}{preview.count > 8 ? `, +${preview.count - 8} more` : ""}
+                </p>
+              )}
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" type="button" onClick={() => setComposeOpen(false)}>Cancel</Button>
