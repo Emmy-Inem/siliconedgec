@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
   Megaphone, BarChart3, Activity, Zap, Download
@@ -57,19 +58,16 @@ export default function AdminAnalytics() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics"],
     queryFn: async () => {
-      const [coursesRes, enrollmentsRes, profilesRes, promosRes, referralsRes] = await Promise.all([
-        supabase.from("courses").select("id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
-        supabase.from("enrollments").select("id, payment_status, progress_percentage, is_completed, created_at, course_id"),
-        supabase.from("profiles").select("id, created_at"),
-        supabase.from("promo_codes").select("id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
-        supabase.from("influencer_referrals").select("id, commission_earned, final_price, original_price, discount_applied, created_at"),
+      // Use fetchAllRows so we never silently drop rows past the 1000-row
+      // PostgREST cap — keeps Platform Analytics consistent with Marketing
+      // Analytics and Overview.
+      const [courses, enrollments, profiles, promos, referrals] = await Promise.all([
+        fetchAllRows<any>("courses", "id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
+        fetchAllRows<any>("enrollments", "id, payment_status, progress_percentage, is_completed, created_at, course_id"),
+        fetchAllRows<any>("profiles", "id, created_at"),
+        fetchAllRows<any>("promo_codes", "id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
+        fetchAllRows<any>("influencer_referrals", "id, commission_earned, final_price, original_price, discount_applied, created_at"),
       ]);
-
-      const courses = coursesRes.data ?? [];
-      const enrollments = enrollmentsRes.data ?? [];
-      const profiles = profilesRes.data ?? [];
-      const promos = promosRes.data ?? [];
-      const referrals = referralsRes.data ?? [];
       const now = new Date();
 
       const courseMap = new Map(courses.map(c => [c.id, c]));

@@ -13,7 +13,9 @@ const corsHeaders = {
 
 interface Payload {
   announcement_id: string;
-  audience: "all" | "enrolled";
+  audience: "all" | "enrolled" | "paid" | "registrants" | "business_leads" | "course";
+  course_id?: string;
+  preview?: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -34,33 +36,70 @@ Deno.serve(async (req) => {
     const { data: isAdm } = await admin.rpc("has_role", { _user_id: callerId, _role: "admin" });
     if (!isAdm) return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { announcement_id, audience } = (await req.json()) as Payload;
-    if (!announcement_id) {
+    const { announcement_id, audience, course_id, preview } = (await req.json()) as Payload;
+    if (!announcement_id && !preview) {
       return new Response(JSON.stringify({ error: "missing-fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Build the recipient list.
+    // Build the user-id allow list, depending on audience.
     let allowedUserIds: Set<string> | null = null;
     if (audience === "enrolled") {
       const { data: enr } = await admin.from("enrollments").select("user_id");
       allowedUserIds = new Set((enr ?? []).map((r: any) => r.user_id));
+    } else if (audience === "paid") {
+      const { data: enr } = await admin
+        .from("enrollments")
+        .select("user_id, payment_status")
+        .in("payment_status", ["paid", "confirmed"]);
+      allowedUserIds = new Set((enr ?? []).map((r: any) => r.user_id));
+    } else if (audience === "registrants") {
+      const { data: regs } = await admin.from("course_registrations").select("user_id");
+      allowedUserIds = new Set((regs ?? []).map((r: any) => r.user_id).filter(Boolean));
+    } else if (audience === "course") {
+      if (!course_id) {
+        return new Response(JSON.stringify({ error: "missing-course-id" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data: enr } = await admin.from("enrollments").select("user_id").eq("course_id", course_id);
+      allowedUserIds = new Set((enr ?? []).map((r: any) => r.user_id));
     }
 
     const recipients: string[] = [];
-    let page = 1;
-    const perPage = 1000;
-    while (true) {
-      const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
-      if (error) throw error;
-      const users = data?.users ?? [];
-      for (const u of users) {
-        if (!u.email) continue;
-        if (allowedUserIds && !allowedUserIds.has(u.id)) continue;
-        recipients.push(u.email);
+    const seen = new Set<string>();
+
+    if (audience === "business_leads") {
+      // business_leads.email is a free-text contact form, not auth.users.
+      const { data: leads } = await admin.from("business_leads").select("email");
+      for (const l of leads ?? []) {
+        const e = (l as any).email?.trim()?.toLowerCase();
+        if (e && !seen.has(e)) { seen.add(e); recipients.push(e); }
       }
-      if (users.length < perPage) break;
-      page += 1;
-      if (page > 50) break; // safety cap
+    } else {
+      let page = 1;
+      const perPage = 1000;
+      while (true) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+        if (error) throw error;
+        const users = data?.users ?? [];
+        for (const u of users) {
+          if (!u.email) continue;
+          if (allowedUserIds && !allowedUserIds.has(u.id)) continue;
+          const e = u.email.trim().toLowerCase();
+          if (seen.has(e)) continue;
+          seen.add(e);
+          recipients.push(e);
+        }
+        if (users.length < perPage) break;
+        page += 1;
+        if (page > 50) break; // safety cap
+      }
+    }
+
+    // Preview-only requests just return the count + first 50 addresses.
+    if (preview) {
+      return new Response(
+        JSON.stringify({ ok: true, recipients: recipients.length, sample: recipients.slice(0, 50) }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     await admin
