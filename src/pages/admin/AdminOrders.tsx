@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import {
   Receipt, Search, Loader2, Download, DollarSign, ShoppingBag, RefreshCw, CheckCircle2, XCircle,
@@ -37,9 +38,7 @@ export default function AdminOrders() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(1000);
-      if (error) throw error;
-      return data ?? [];
+      return await fetchAllRows<any>("orders", "*");
     },
   });
 
