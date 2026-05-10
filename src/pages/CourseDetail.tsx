@@ -91,6 +91,12 @@ export default function CourseDetail() {
         if (data?.verified) {
           toast({ title: "Payment confirmed", description: "You're now enrolled. Welcome aboard!" });
           qc.invalidateQueries({ queryKey: ["enrollment", courseId] });
+          // Internal attribution event so Marketing Analytics can credit the
+          // originating UTM source for this paid conversion.
+          void trackLead({
+            formType: "paid_enrollment",
+            formData: { course_id: courseId, order_ref: reference },
+          }).catch(() => {});
         } else {
           toast({ title: "Payment not confirmed", description: data?.message ?? "Please contact support.", variant: "destructive" });
         }
