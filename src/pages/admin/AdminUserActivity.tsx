@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { Activity, LogIn, UserPlus, FileEdit, Search, ChevronRight, ArrowLeft, BookOpen, GraduationCap, ClipboardCheck, Eye, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
