@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -25,10 +26,11 @@ const columns: Column<EnrollmentRow>[] = [
   { key: "course_title", label: "Course", render: (e) => e.course_title || <span className="font-mono text-xs text-muted-foreground">{e.course_id.slice(0, 8)}...</span> },
   { key: "payment_status", label: "Payment", render: (e) => (
     <span className={`text-xs px-2 py-0.5 rounded-full ${
-      e.payment_status === "paid" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+      (e.payment_status === "paid" || e.payment_status === "confirmed") ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+      e.payment_status === "free" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
       e.payment_status === "refunded" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
       "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-    }`}>{e.payment_status}</span>
+    }`}>{e.payment_status}{e.payment_status === "free" ? " · webinar" : ""}</span>
   )},
   { key: "progress_percentage", label: "Progress", render: (e) => (
     <div className="flex items-center gap-2">
@@ -52,19 +54,18 @@ export default function AdminEnrollments() {
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-enrollments"],
     queryFn: async () => {
-      const [enrollmentsRes, profilesRes, coursesRes] = await Promise.all([
-        supabase.from("enrollments").select("*").order("created_at", { ascending: false }),
+      const [enrollments, profilesRes, coursesRes] = await Promise.all([
+        fetchAllRows<any>("enrollments", "*"),
         supabase.from("profiles").select("user_id, full_name"),
         supabase.from("courses").select("id, title"),
       ]);
-      if (enrollmentsRes.error) throw enrollmentsRes.error;
 
       const profileMap = new Map<string, string>();
       (profilesRes.data ?? []).forEach((p) => profileMap.set(p.user_id, p.full_name ?? ""));
       const courseMap = new Map<string, string>();
       (coursesRes.data ?? []).forEach((c) => courseMap.set(c.id, c.title));
 
-      return (enrollmentsRes.data ?? []).map((e) => ({
+      return (enrollments ?? []).map((e) => ({
         ...e,
         user_name: profileMap.get(e.user_id) ?? "",
         course_title: courseMap.get(e.course_id) ?? "",
@@ -112,6 +113,8 @@ export default function AdminEnrollments() {
               <select value={form.payment_status} onChange={(e) => setForm({ ...form, payment_status: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm">
                 <option value="pending">Pending</option>
                 <option value="paid">Paid</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="free">Free (Webinar)</option>
                 <option value="refunded">Refunded</option>
               </select>
             </div>
