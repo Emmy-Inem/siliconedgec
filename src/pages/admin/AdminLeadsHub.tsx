@@ -21,6 +21,7 @@ import {
   classifyChannel, CHANNEL_BADGE, DIRECT_EXPLANATION, type Channel,
 } from "@/lib/channel-attribution";
 import { fetchAllRows } from "@/lib/fetch-all";
+import { isPaidEnrollment, isFreeEnrollment, dedupeFreeShadowEnrollments } from "@/lib/analytics-helpers";
 
 type UnifiedLead = {
   id: string;
@@ -169,6 +170,13 @@ export default function AdminLeadsHub() {
     id ? (profiles.find((p: any) => p.user_id === id)?.full_name ?? "Unknown user") : "Guest";
 
   const unified: UnifiedLead[] = useMemo(() => {
+    // Webinar registrations auto-create a `free` enrollment row. Drop those
+    // shadow rows from the enrollment list so the same person isn't shown
+    // twice in the unified timeline.
+    const enrollmentsDeduped = dedupeFreeShadowEnrollments(
+      enrollments as any[],
+      registrations as any[],
+    );
     const r: UnifiedLead[] = (registrations as any[]).map((x) => ({
       id: `reg-${x.id}`,
       source: "registration",
@@ -181,7 +189,7 @@ export default function AdminLeadsHub() {
       created_at: x.created_at,
       channel: resolveChannel(x.email, x.user_id),
     }));
-    const e: UnifiedLead[] = (enrollments as any[]).map((x) => ({
+    const e: UnifiedLead[] = enrollmentsDeduped.map((x) => ({
       id: `enr-${x.id}`,
       source: "enrollment",
       name: profileName(x.user_id),
@@ -242,7 +250,9 @@ export default function AdminLeadsHub() {
   const stats = useMemo(() => ({
     total: unified.length,
     registrations: registrations.length,
-    enrollments: enrollments.length,
+    // Show only paid enrollments here so the KPI matches Overview/Analytics
+    // and isn't inflated by webinar shadow rows.
+    enrollments: (enrollments as any[]).filter(isPaidEnrollment).length,
     business: businessLeads.length,
   }), [unified, registrations, enrollments, businessLeads]);
 
@@ -353,7 +363,7 @@ export default function AdminLeadsHub() {
         {[
           { label: "All", value: stats.total, Icon: Users, source: "all" },
           { label: "Webinars", value: stats.registrations, Icon: ClipboardCheck, source: "registration" },
-          { label: "Enrollments", value: stats.enrollments, Icon: GraduationCap, source: "enrollment" },
+          { label: "Paid Enrollments", value: stats.enrollments, Icon: GraduationCap, source: "enrollment" },
           { label: "B2B", value: stats.business, Icon: Briefcase, source: "business" },
         ].map((c) => (
           <button key={c.source} onClick={() => setSourceFilter(c.source)}

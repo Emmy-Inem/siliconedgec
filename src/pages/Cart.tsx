@@ -95,6 +95,14 @@ export default function Cart() {
           transaction_id: reference,
           items: lines.map((l, i) => ({ id: courseIds[i], name: l.title, price: l.amount })),
         });
+        // Internal attribution: log a paid_enrollment lead per course so
+        // Marketing Analytics can attribute paid conversions to UTM source.
+        for (const cid of courseIds) {
+          await trackLead({
+            formType: "paid_enrollment",
+            formData: { course_id: cid, order_ref: reference, amount: data.total },
+          }).catch(() => {});
+        }
         await refresh();
         toast({
           title: "Payment confirmed",

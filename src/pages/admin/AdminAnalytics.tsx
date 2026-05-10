@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
+import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
   Megaphone, BarChart3, Activity, Zap, Download
@@ -75,8 +76,8 @@ export default function AdminAnalytics() {
       // `free` payment_status rows come from webinar registrations (auto-created
       // alongside course_registrations). Excluding them prevents the same lead
       // being counted as both a webinar registration and a paid course sale.
-      const paidEnrollments = enrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid");
-      const freeEnrollments = enrollments.filter(e => e.payment_status === "free");
+      const paidEnrollments = enrollments.filter(isPaidEnrollment);
+      const freeEnrollments = enrollments.filter(isFreeEnrollment);
       paidEnrollments.forEach(e => {
         const course = courseMap.get(e.course_id);
         if (course) totalEstRevenue += Number(course.price ?? 0);

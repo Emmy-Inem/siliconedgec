@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
+import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
 import {
   BookOpen, Users, GraduationCap, MessageSquareQuote, CreditCard, UserCheck,
   TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity, ClipboardCheck, Briefcase
@@ -141,8 +142,8 @@ export default function AdminOverview() {
       // Paid enrollments only — `free` payment_status rows are auto-created
       // for every webinar registration, so they would double-count with the
       // Webinar Registrations card if treated as paid course enrollments.
-      const paidEnrollments = allEnrollments.filter(e => e.payment_status === "confirmed" || e.payment_status === "paid");
-      const freeEnrollments = allEnrollments.filter(e => e.payment_status === "free");
+      const paidEnrollments = allEnrollments.filter(isPaidEnrollment);
+      const freeEnrollments = allEnrollments.filter(isFreeEnrollment);
       const promoRevenue = allPromos.reduce((sum, p) => sum + Number(p.revenue_generated ?? 0), 0);
       const activePromos = allPromos.filter(p => p.is_active).length;
 
@@ -175,7 +176,10 @@ export default function AdminOverview() {
       const courseMap = new Map<string, string>();
       allCourses.forEach(c => courseMap.set(c.id, c.title));
 
-      const recentEnrollments = allEnrollments.slice(0, 5).map(e => ({
+      // Recent Enrollments should reflect *paid* course activity only —
+      // free webinar shadow rows already show on the Webinar Registrations
+      // tile and would otherwise double-feed this list.
+      const recentEnrollments = allEnrollments.filter(isPaidEnrollment).slice(0, 5).map(e => ({
         ...e,
         course_title: courseMap.get(e.course_id) ?? e.course_id?.slice(0, 8) + "...",
       }));
@@ -190,7 +194,7 @@ export default function AdminOverview() {
         testimonials: testimonials.count ?? 0,
         plans: plans.count ?? 0,
         users: allProfiles.length,
-        totalRevenue: paidEnrollments.length,
+        paidEnrollmentsCount: paidEnrollments.length,
         promoRevenue,
         activePromos,
         categoryData,
@@ -207,7 +211,7 @@ export default function AdminOverview() {
   const statCards = [
     { label: "Total Courses", value: stats?.courses ?? 0, sub: `${stats?.published ?? 0} published`, icon: BookOpen, href: "/admin/courses" },
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
-    { label: "Paid Enrollments", value: stats?.paidEnrollments ?? 0, sub: `${stats?.enrollments ?? 0} total seats incl. webinar`, icon: GraduationCap, href: "/admin/enrollments" },
+    { label: "Paid Enrollments", value: stats?.paidEnrollments ?? 0, sub: `${stats?.freeEnrollments ?? 0} free webinar seats (separate)`, icon: GraduationCap, href: "/admin/enrollments" },
     { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new · separate from paid`, icon: ClipboardCheck, href: "/admin/registrations" },
     { label: "Business Leads", value: stats?.businessLeads ?? 0, sub: "B2B inquiries", icon: Briefcase, href: "/admin/business-leads" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },

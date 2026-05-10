@@ -1,101 +1,74 @@
-## Goal
 
-Polish the homepage hero (cleaner, more like the quso.ai reference), tighten the header, localize course pricing by visitor country, gate certificate downloads behind course completion, replace AI-generated imagery with professional stock photos, and wire community/lifetime CTAs to real destinations.
+# Fix Admin Analytics Inconsistencies
 
----
+## What's wrong today (verified against the live database)
 
-## 1. Hero section refresh (Index.tsx)
+The admin dashboard pulls the same underlying tables (`enrollments`, `lead_sources`, `course_registrations`, `business_leads`, `orders`, `profiles`, `cart_items`) from many different screens, each with **slightly different rules**. The result: the same metric reads differently depending on which page you open. There is also genuine **double-counting** because every webinar registration auto-creates a `free` enrollment row.
 
-- Remove the dotted SVG radial connector lines from `FloatingTechLogos` (the "lines on the hero").
-- Lighten the background — reduce purple radial intensity (lower opacity stops) and remove the bottom purple gradient band so it reads as a clean white canvas with only a soft top-center hue, matching the reference image.
-- Keep the floating tech logos but space them further toward the edges (avoid crowding the headline area), shrink mid-area logos, and ensure they don't appear behind the CTA stack.
-- **Center brand mark**: replace the "SE" gradient square with the actual Silicon Edge favicon (`/public/favicon.png`) inside the white rounded card.
-- **Mobile hero layout**:
-  - Reduce hero top/bottom padding on mobile (`pt-24 pb-14`).
-  - Smaller headline clamp floor (`clamp(1.85rem, 8vw, 4.75rem)`).
-  - Show a *condensed* version of floating logos on mobile (4–6 logos, smaller, edges only) instead of `hidden md:block` — keeps the premium feel without clutter.
-  - Tighten social-proof pill spacing on small screens.
+DB sample (now): 72 enrollments, ALL `payment_status='free'`; 71 webinar registrations; 5,149 `pageview` + 1,479 `page_visit` rows; 0 paid enrollments yet.
 
-## 2. Header refresh (Header.tsx)
+### Inconsistencies found
 
-- Add a soft white border + subtle shadow even when transparent over hero pages, so the header is always visible: when `!scrolled && isHeroPage`, use `bg-white/70 backdrop-blur-md border-b border-white/60 shadow-sm`.
-- Make nav links bolder and clearer: bump from `text-[13px] font-medium` to `text-sm font-semibold`, and over hero pages use `text-foreground/80 hover:text-primary` (drop the muted hero-muted color now that the header has a white background).
-- Active route gets a primary-color text with a small underline.
+1. **Webinar registrations are double-counted as enrollments.** Every `course_registrations` row triggers a matching `enrollments` row with `payment_status='free'`. Leads Hub adds them together (`stats.total = registrations + enrollments + business`), so today's "143 total leads" is really ~71 unique people.
+2. **Hidden 1000-row cap.** Overview, Platform Analytics, Marketing Analytics, and Leads Hub use `fetchAllRows`, but **AdminEnrollments, AdminOrders, AdminBusinessLeads, AdminStudents, AdminCartAbandonment, AdminWishlistInsights, AdminCourseHealth, AdminUserActivity, AdminInfluencerMarketing, AdminTrackingQA, AdminAuthReplay** all use the default PostgREST cap (1000) or hard-coded `.limit(2000–5000)`. Once data crosses that line totals silently diverge.
+3. **`payment_status` semantics drift.** Analytics treats `paid` and `confirmed` as paid; AdminEnrollments badge only colors `paid` (so `confirmed` shows yellow/pending); AdminEnrollments edit dropdown is missing `confirmed` and `free`; `send-bulk-announcement` filters on `["paid","confirmed"]`.
+4. **No tracking event when a paid enrollment happens.** Paystack functions write to `enrollments`/`orders` but never `trackLead`. So `courseRegs` in Marketing Analytics is permanently 0 even after real purchases, and conversion rate is wrong.
+5. **`page_visit` vs `pageview` confusion.** UtmTracker writes `page_visit` only when a UTM is present and `pageview` otherwise. Some screens count one, some count both — Marketing Analytics counts both for `Page Visits` but classifies neither as a conversion (correct), while older code paths still treat `page_visit` as a "lead". Needs one canonical rule.
+6. **Influencer referrals can double-count.** `auto_record_influencer_referral` (free) and `auto_record_influencer_referral_order` (paid) both write to `influencer_referrals`. If the same person webinar-registers and later buys, they appear as two referrals for the same promo. Conversion counts on AdminInfluencerMarketing inherit this.
+7. **Recent Enrollments on Overview** uses `slice(0, 5)` on a list ordered by `fetchAllRows` default (desc by created_at) — fine — but mixes free webinar rows in with "Recent Enrollments", confusing course vs webinar activity.
+8. **Channel attribution coverage**: `AdminLeadsHub` joins lead_sources by email or user_id but enrollments rows have no email — only `user_id`. For paid checkouts where the order carries no UTM stamp, attribution is lost. The trigger uses 30-day window for paid, 90 for free — inconsistent.
 
-## 3. Location-based currency for course prices
+## What we'll change
 
-New utility `src/lib/currency.ts`:
-- Detect visitor country via `Intl.DateTimeFormat().resolvedOptions().timeZone` mapped to country (lightweight, no network) plus `navigator.language` as fallback.
-- If country is NG → display Naira (₦, no conversion).
-- Otherwise convert from NGN to the local currency using a static FX table for major currencies (USD, EUR, GBP, CAD, GHS, KES, ZAR, INR, AUD) with a daily-cached rate fetched from a free endpoint (`https://open.er-api.com/v6/latest/NGN`) via React Query (24 h staleTime). Fallback to bundled rates if the request fails.
-- Format using `Intl.NumberFormat(locale, { style: "currency", currency })`.
+### A. Single source of truth helpers (`src/lib/analytics-helpers.ts`, new)
+- `isPaidEnrollment(e)` → `payment_status in ['paid','confirmed']`.
+- `isFreeEnrollment(e)` → `payment_status === 'free'` (i.e. webinar shadow row).
+- `isWebinarFormType(ft)` / `isCourseConversionFormType(ft)`.
+- `dedupeLeads({ registrations, enrollments, businessLeads })` → returns unified leads where a registration + its matching free enrollment count as ONE lead (matched by `user_id` + `course_id`).
+- Every dashboard imports from here. No more inline rules.
 
-New hook `useLocalizedPrice(amountNgn)` returning `{ formatted, currency, isNgn }`.
+### B. Pagination consistency
+Replace `.select("*").limit(...)` and unbounded queries with `fetchAllRows` in: AdminEnrollments, AdminOrders, AdminBusinessLeads, AdminStudents, AdminCartAbandonment, AdminWishlistInsights, AdminCourseHealth, AdminUserActivity, AdminInfluencerMarketing (`promo_codes`, `influencer_referrals`), AdminTrackingQA, AdminAuthReplay.
 
-Refactor every public-facing price display to go through this hook (admin/order/receipt screens stay in Naira since those are the merchant's books):
-- `src/components/CourseCard.tsx`
-- `src/pages/CourseDetail.tsx`
-- `src/pages/Pricing.tsx`
-- `src/pages/Cart.tsx` (display only — checkout still charges NGN via Paystack with a small "Charged in ₦X,XXX" note)
-- `src/pages/Jobs.tsx`, `src/pages/JobDetail.tsx` (salary ranges)
+### C. Stop double-counting in Leads Hub
+- Total = unique people (dedupe registration ↔ free enrollment).
+- KPI cards: "Webinars", "Paid Enrollments" (only `paid|confirmed`), "B2B" — never sum free+webinar.
+- Channel breakdown computed on deduped set.
 
-## 4. Replace circular selection indicator with underline
+### D. Fix Overview & Platform Analytics labelling
+- "Recent Enrollments" filters to paid only; add a separate "Recent Webinar Registrations" tile.
+- KPI subtitles clarify "incl. webinar shadow rows" → just remove that confusing total and show paid + webinar separately.
+- Rename internal `totalRevenue: paidEnrollments.length` to `paidEnrollmentsCount` (it's a count, not money).
 
-In the courses category pill row (Index.tsx line ~941–957), drop the `motion.span` pill background. Instead render text-only buttons with a `motion.span layoutId="cat-underline"` — a 2px primary underline that animates between active items. Apply the same pattern anywhere else circular selectors are used in public pages (verify Courses.tsx filters too).
+### E. Track paid conversions properly
+- Add `trackLead({ formType: 'paid_enrollment', formData: { course_id, order_ref, amount } })` calls to `paystack-verify` and `paystack-cart-verify` callback flow on the client side (`Cart.tsx` / enroll callback). Server-side functions already write the enrollment; we add the lead_sources event from the success page so attribution joins correctly.
+- Marketing Analytics `courseRegs` then reflects real purchases.
 
-## 5. Wire CTAs to real destinations
+### F. AdminEnrollments UX
+- Add `confirmed` and `free` to the status dropdown.
+- Color `paid` AND `confirmed` green; `free` blue (webinar); `refunded` red; `pending` amber.
+- Show a small "webinar" badge when status=free.
 
-Use `useSiteSettings().whatsapp_community_url` (already exists in DB):
-- "Meet them all" link in the instructors section (line 1053) → opens WhatsApp community URL in new tab.
-- "Community" bento card (line 893) → wrap `AvatarStackTile` content in an anchor to the WhatsApp community URL.
-- "Lifetime" bento card (line 902) → make the whole card link to `/courses` (lifetime access ties to enrolled courses).
+### G. Influencer referrals dedupe
+- On `AdminInfluencerMarketing` stats, show `unique_referrals = distinct (user_id, course_id)` so a webinar→paid upgrade doesn't double-count.
+- Keep raw rows visible in the referrals table.
 
-Fallback: if `whatsapp_community_url` is empty, link defaults to `/contact` and admin can fill it in Site Settings.
+### H. Single page-view rule
+- Marketing Analytics: `Page Visits` = `pageview ∪ page_visit` (already correct) — document via tooltip.
+- Conversion rate denominator = unique sessions (best effort: distinct `user_id` + anonymous id); numerator = deduped paid_enrollment + webinar_registration. Same rule everywhere.
 
-## 6. Fix broken alumni logos (Index.tsx line 774–793)
+### I. Verification
+After edits, query the DB with `psql` to confirm: Overview total users == Analytics total users, Leads Hub paid count == Analytics paid count, Marketing Analytics totalVisits == sum of timeline visits.
 
-Replace the unreliable Wikipedia URLs with stable Simple Icons CDN equivalents:
-- Meta → `https://cdn.simpleicons.org/meta/0668E1`
-- Andela → use a working hosted SVG or replace with another reputable employer (Spotify, Uber, Stripe).
-- Flutterwave → `https://cdn.simpleicons.org/flutterwave/F5A623`.
-- Add an `onError` handler that hides any logo that still fails so we never render a broken image icon.
+## Files to touch
 
-## 7. Certificates page (Certificates.tsx)
+- **New**: `src/lib/analytics-helpers.ts`
+- **Edit (logic + pagination)**: `src/pages/admin/AdminOverview.tsx`, `AdminAnalytics.tsx`, `AdminMarketingAnalytics.tsx`, `AdminLeadsHub.tsx`, `AdminEnrollments.tsx`, `AdminOrders.tsx`, `AdminBusinessLeads.tsx`, `AdminStudents.tsx`, `AdminCartAbandonment.tsx`, `AdminWishlistInsights.tsx`, `AdminCourseHealth.tsx`, `AdminUserActivity.tsx`, `AdminInfluencerMarketing.tsx`, `AdminTrackingQA.tsx`, `AdminAuthReplay.tsx`
+- **Edit (track paid conversions)**: `src/pages/Cart.tsx` (post-verify), `src/pages/CourseDetail.tsx` enroll callback (wherever paystack-verify is called)
 
-- **Gate the download button**: in `CertificateCardWithDownload` and the sample preview, only show the download button if `cert.completion_status === 'completed'` (or whatever flag exists on the certificates row — check schema; if not present, key off the existence of a real DB row, since certs are auto-issued only on completion). For the sample card shown to non-completers, replace the download button with a disabled "Complete a course to download" tooltip + lock icon.
-- **More realistic sample certificate**: redesign `BrandedCertificate` / `CertificateForPDF`:
-  - Use the actual Silicon Edge logo at higher resolution.
-  - Add a signature line with an instructor name + signature image.
-  - Add a subtle watermark seal in the background.
-  - Use deeper navy + gold accent colors consistent with brand.
-  - Include "Hours of training", "Skills covered" pill row, and a serial number in monospaced font.
-- **Replace AI hero image**: swap `certificate-celebration.jpg` (AI-generated) with a professional Unsplash stock image of a graduate holding a certificate (download a CC0 image, save to `src/assets/certificate-graduate.jpg`).
+## Out of scope
 
-## 8. Replace AI imagery on the home page
-
-Swap the following AI-generated assets with curated Unsplash stock photos (free, attribution-free) — download to `src/assets/`:
-- `instructor-1.jpg` … `instructor-4.jpg` → 4 professional headshot stock photos (diverse, business casual).
-- `mentor` image (referenced via `home.mentor_image` fallback `instructor1`) → a stock photo of a mentor reviewing code on a laptop with a student.
-- `hero-team.jpg`, `student-learning.jpg`, `business-training.jpg` → professional stock equivalents.
-
-Will fetch via `curl` from Unsplash source URLs (e.g. `https://images.unsplash.com/photo-XXXX?w=800`) at build time and commit to `src/assets/`.
-
-## 9. Technical notes
-
-- New file: `src/lib/currency.ts` (timezone→country map for ~30 countries, FX fallback table).
-- New file: `src/hooks/useLocalizedPrice.ts`.
-- Edit `src/lib/format-currency.ts` to add `formatLocalized(amountNgn, currency, rate, locale)`.
-- All currency conversions are display-only; orders/receipts/Paystack stay in NGN. Add a small "(charged in ₦)" hint near non-Naira prices on CourseDetail and Cart.
-- Header changes apply to *all* `darkHeroPages` (Home, Pricing, Certificates, For Businesses).
-- No DB migrations needed — `whatsapp_community_url` already exists in `site_content`.
-
----
-
-## Files to change
-
-- `src/pages/Index.tsx` (hero + alumni logos + category pills + CTA links + AI image swaps)
-- `src/components/Header.tsx` (border, bolder nav)
-- `src/pages/Certificates.tsx` (gate download, redesign sample, swap hero image)
-- `src/components/CourseCard.tsx`, `src/pages/CourseDetail.tsx`, `src/pages/Pricing.tsx`, `src/pages/Cart.tsx`, `src/pages/Jobs.tsx`, `src/pages/JobDetail.tsx` (localized prices)
-- `src/lib/currency.ts`, `src/lib/format-currency.ts`, `src/hooks/useLocalizedPrice.ts` (new helpers)
-- `src/assets/*` (replace AI imagery with stock photos via curl)
+- No database schema changes.
+- No new tables or RLS policies.
+- No changes to GA4 / Meta Pixel / Paystack server-side logic — only client-side `trackLead` additions for paid conversions.
+- Visual chart styling stays the same; only the numbers and labels they show are corrected.

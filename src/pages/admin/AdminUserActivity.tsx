@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { Activity, LogIn, UserPlus, FileEdit, Search, ChevronRight, ArrowLeft, BookOpen, GraduationCap, ClipboardCheck, Eye, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -48,22 +49,14 @@ export default function AdminUserActivity() {
   const { data: profiles = [], isLoading: loadingProfiles } = useQuery({
     queryKey: ["all-user-profiles"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, created_at, avatar_url")
-        .order("created_at", { ascending: false });
-      return (data ?? []) as ProfileRow[];
+      return (await fetchAllRows<any>("profiles", "user_id, full_name, created_at, avatar_url")) as ProfileRow[];
     },
   });
 
   const { data: activities = [], isLoading: loadingActivities } = useQuery({
     queryKey: ["all-user-activity"],
     queryFn: async () => {
-      const { data } = await (supabase.from("user_activity_log") as any)
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      return (data ?? []) as ActivityRow[];
+      return (await fetchAllRows<any>("user_activity_log", "*", { max: 5000 })) as ActivityRow[];
     },
     refetchInterval: 15000,
     refetchOnWindowFocus: true,

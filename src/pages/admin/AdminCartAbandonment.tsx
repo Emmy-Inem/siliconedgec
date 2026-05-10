@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { ShoppingCart, Search, Loader2, Mail, Clock, Download, ExternalLink, Eye, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ export default function AdminCartAbandonment() {
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["admin-cart-items"],
-    queryFn: async () => (await supabase.from("cart_items").select("*").order("created_at", { ascending: false }).limit(1000)).data ?? [],
+    queryFn: async () => await fetchAllRows<any>("cart_items", "*"),
   });
   const { data: courses = [] } = useQuery({
     queryKey: ["admin-cart-courses"],

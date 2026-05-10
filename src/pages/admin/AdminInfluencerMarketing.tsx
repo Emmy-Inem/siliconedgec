@@ -1,6 +1,7 @@
 import { useState, forwardRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,24 +106,31 @@ export default function AdminInfluencerMarketing() {
   const { data: promoCodes = [], isLoading } = useQuery({
     queryKey: ["admin-promo-codes"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("promo_codes")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      return await fetchAllRows<any>("promo_codes", "*");
     },
   });
 
   const { data: referrals = [] } = useQuery({
     queryKey: ["admin-referrals"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("influencer_referrals")
-        .select("*, promo_codes(code, influencer_name), courses(title)")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      // PostgREST cap is 1000 rows. We page manually because fetchAllRows
+      // doesn't pass through nested joins.
+      const out: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("influencer_referrals")
+          .select("*, promo_codes(code, influencer_name), courses(title)")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        out.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return out;
     },
   });
 

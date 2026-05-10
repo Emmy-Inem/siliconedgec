@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { Bookmark, Loader2, Download, TrendingUp, Eye, Copy, ExternalLink, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ export default function AdminWishlistInsights() {
   const { toast } = useToast();
   const { data: bookmarks = [], isLoading } = useQuery({
     queryKey: ["admin-bookmarks"],
-    queryFn: async () => (await supabase.from("bookmarks").select("*").order("created_at", { ascending: false }).limit(2000)).data ?? [],
+    queryFn: async () => await fetchAllRows<any>("bookmarks", "*"),
   });
   const { data: courses = [] } = useQuery({
     queryKey: ["admin-bm-courses"],
@@ -28,7 +29,7 @@ export default function AdminWishlistInsights() {
   });
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-bm-enrollments"],
-    queryFn: async () => (await supabase.from("enrollments").select("user_id, course_id")).data ?? [],
+    queryFn: async () => await fetchAllRows<any>("enrollments", "user_id, course_id"),
   });
 
   const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
