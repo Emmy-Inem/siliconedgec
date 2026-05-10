@@ -113,10 +113,24 @@ export default function AdminInfluencerMarketing() {
   const { data: referrals = [] } = useQuery({
     queryKey: ["admin-referrals"],
     queryFn: async () => {
-      // fetchAllRows doesn't support nested joins, but referrals are small and
-      // we want full coverage past the 1000-row cap. Drop joins and resolve
-      // promo_code/course names from the already-loaded promo & course lists.
-      return await fetchAllRows<any>("influencer_referrals", "*");
+      // PostgREST cap is 1000 rows. We page manually because fetchAllRows
+      // doesn't pass through nested joins.
+      const out: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("influencer_referrals")
+          .select("*, promo_codes(code, influencer_name), courses(title)")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        out.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      return out;
     },
   });
 
