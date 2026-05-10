@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { classifyChannel, DIRECT_EXPLANATION } from "@/lib/channel-attribution";
 import { fetchAllRows } from "@/lib/fetch-all";
+import { isWebinarFormType, isCourseConversionFormType, isPageViewFormType } from "@/lib/analytics-helpers";
 
 const COLORS = [
   "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
@@ -148,12 +149,8 @@ export default function AdminMarketingAnalytics() {
   // Distinguish webinar registrations from course/paid enrollments so the
   // same person doesn't get counted twice and so admins can see at a glance
   // which funnel is producing.
-  const isWebinarRow = (ft?: string | null) =>
-    !!ft && (ft.startsWith("webinar") || ft === "webinar_registration");
-  const isCourseRow = (ft?: string | null) =>
-    !!ft && (ft === "enrollment" || ft === "purchase" || ft === "paid_enrollment" ||
-             ft === "free_enrollment" || ft === "checkout_complete" ||
-             ft === "course_registration");
+  const isWebinarRow = isWebinarFormType;
+  const isCourseRow = isCourseConversionFormType;
   const webinarRegs = filtered.filter(l => isWebinarRow(l.form_type)).length;
   const courseRegs = filtered.filter(l => isCourseRow(l.form_type)).length;
 
