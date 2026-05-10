@@ -106,24 +106,17 @@ export default function AdminInfluencerMarketing() {
   const { data: promoCodes = [], isLoading } = useQuery({
     queryKey: ["admin-promo-codes"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("promo_codes")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      return await fetchAllRows<any>("promo_codes", "*");
     },
   });
 
   const { data: referrals = [] } = useQuery({
     queryKey: ["admin-referrals"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("influencer_referrals")
-        .select("*, promo_codes(code, influencer_name), courses(title)")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      // fetchAllRows doesn't support nested joins, but referrals are small and
+      // we want full coverage past the 1000-row cap. Drop joins and resolve
+      // promo_code/course names from the already-loaded promo & course lists.
+      return await fetchAllRows<any>("influencer_referrals", "*");
     },
   });
 
