@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { Search, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -18,15 +19,19 @@ export default function AdminStudents() {
   const { data: students = [], isLoading } = useQuery({
     queryKey: ["admin-students"],
     queryFn: async () => {
-      const { data: profiles, error: pErr } = await supabase.from("profiles").select("user_id, full_name, avatar_url");
-      if (pErr) throw pErr;
-
-      const { data: enrollments, error: eErr } = await supabase.from("enrollments").select("user_id, course_id, progress_percentage, is_completed, courses(title)");
-      if (eErr) throw eErr;
+      const [profiles, enrollments] = await Promise.all([
+        fetchAllRows<any>("profiles", "user_id, full_name, avatar_url"),
+        // courses(title) join via fetchAllRows works — PostgREST embed is just
+        // a column expression in the select string.
+        fetchAllRows<any>(
+          "enrollments",
+          "user_id, course_id, progress_percentage, is_completed, courses(title)",
+        ),
+      ]);
 
       const enrolledUserIds = new Set(enrollments.map((e) => e.user_id));
 
-      return (profiles || [])
+      return (profiles ?? [])
         .filter((p) => enrolledUserIds.has(p.user_id))
         .map((p) => ({
           user_id: p.user_id,
