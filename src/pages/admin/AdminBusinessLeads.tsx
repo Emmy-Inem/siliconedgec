@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { Briefcase, Mail, Phone, Users, Clock, Eye, GripVertical, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,12 +30,7 @@ export default function AdminBusinessLeads() {
   const { data: leads, isLoading } = useQuery({
     queryKey: ["admin-business-leads"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("business_leads")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      return await fetchAllRows<any>("business_leads", "*");
     },
   });
 
