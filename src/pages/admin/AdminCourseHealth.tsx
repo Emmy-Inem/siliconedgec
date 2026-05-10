@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
 import { Activity, Loader2, TrendingDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 export default function AdminCourseHealth() {
   const { data: enrollments = [], isLoading } = useQuery({
     queryKey: ["health-enrollments"],
-    queryFn: async () => (await supabase.from("enrollments").select("course_id, progress_percentage, is_completed").limit(5000)).data ?? [],
+    queryFn: async () => await fetchAllRows<any>("enrollments", "course_id, progress_percentage, is_completed"),
   });
   const { data: courses = [] } = useQuery({
     queryKey: ["health-courses"],
@@ -17,7 +18,7 @@ export default function AdminCourseHealth() {
   });
   const { data: progress = [] } = useQuery({
     queryKey: ["health-progress"],
-    queryFn: async () => (await supabase.from("lesson_progress").select("lesson_id, is_completed").limit(10000)).data ?? [],
+    queryFn: async () => await fetchAllRows<any>("lesson_progress", "lesson_id, is_completed"),
   });
   const { data: lessons = [] } = useQuery({
     queryKey: ["health-lessons"],
