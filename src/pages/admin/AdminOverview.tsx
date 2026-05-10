@@ -211,7 +211,7 @@ export default function AdminOverview() {
   const statCards = [
     { label: "Total Courses", value: stats?.courses ?? 0, sub: `${stats?.published ?? 0} published`, icon: BookOpen, href: "/admin/courses" },
     { label: "Total Users", value: stats?.users ?? 0, sub: "registered accounts", icon: Users, href: "/admin/users" },
-    { label: "Paid Enrollments", value: stats?.paidEnrollments ?? 0, sub: `${stats?.enrollments ?? 0} total seats incl. webinar`, icon: GraduationCap, href: "/admin/enrollments" },
+    { label: "Paid Enrollments", value: stats?.paidEnrollments ?? 0, sub: `${stats?.freeEnrollments ?? 0} free webinar seats (separate)`, icon: GraduationCap, href: "/admin/enrollments" },
     { label: "Webinar Registrations", value: stats?.registrations ?? 0, sub: `${stats?.newRegistrations ?? 0} new · separate from paid`, icon: ClipboardCheck, href: "/admin/registrations" },
     { label: "Business Leads", value: stats?.businessLeads ?? 0, sub: "B2B inquiries", icon: Briefcase, href: "/admin/business-leads" },
     { label: "Instructors", value: stats?.instructors ?? 0, sub: "active mentors", icon: UserCheck, href: "/admin/instructors" },
