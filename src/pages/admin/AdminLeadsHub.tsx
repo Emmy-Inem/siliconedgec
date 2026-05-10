@@ -363,7 +363,7 @@ export default function AdminLeadsHub() {
         {[
           { label: "All", value: stats.total, Icon: Users, source: "all" },
           { label: "Webinars", value: stats.registrations, Icon: ClipboardCheck, source: "registration" },
-          { label: "Enrollments", value: stats.enrollments, Icon: GraduationCap, source: "enrollment" },
+          { label: "Paid Enrollments", value: stats.enrollments, Icon: GraduationCap, source: "enrollment" },
           { label: "B2B", value: stats.business, Icon: Briefcase, source: "business" },
         ].map((c) => (
           <button key={c.source} onClick={() => setSourceFilter(c.source)}
