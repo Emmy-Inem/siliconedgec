@@ -319,17 +319,13 @@ export default function AdminLiveClasses() {
                 </Select>
               </div>
             </div>
-            <div>
-              <Label>Date & Time</Label>
-              <Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Times are saved in your browser timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone}).
-              </p>
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Date & Time</Label>
                 <Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Saved in {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                </p>
               </div>
               <div>
                 <Label>Duration (min)</Label>
