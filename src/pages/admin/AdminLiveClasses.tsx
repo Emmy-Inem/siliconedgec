@@ -18,6 +18,21 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+const PROVIDER_PATTERNS: Record<string, RegExp> = {
+  zoom: /^https?:\/\/([a-z0-9-]+\.)?zoom\.us\//i,
+  google_meet: /^https?:\/\/meet\.google\.com\//i,
+  teams: /^https?:\/\/(teams\.microsoft\.com|teams\.live\.com)\//i,
+};
+
+function detectProvider(url: string): string | null {
+  const u = url.trim();
+  if (!u) return null;
+  for (const [key, re] of Object.entries(PROVIDER_PATTERNS)) {
+    if (re.test(u)) return key;
+  }
+  return null;
+}
+
 interface LiveClass {
   id: string;
   course_id: string;
@@ -51,6 +66,15 @@ export default function AdminLiveClasses() {
   const [editing, setEditing] = useState<LiveClass | null>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [view, setView] = useState<"list" | "calendar">("list");
+
+  // URL warning if it doesn't match the chosen provider (Zoom/Meet/Teams).
+  const urlMismatch = (() => {
+    const detected = detectProvider(form.meeting_url);
+    if (!form.meeting_url || form.meeting_provider === "other") return null;
+    if (!detected) return `This doesn't look like a ${form.meeting_provider.replace("_", " ")} link.`;
+    if (detected !== form.meeting_provider) return `URL looks like ${detected.replace("_", " ")} — switch the provider above to match.`;
+    return null;
+  })();
 
   const { data: classes, isLoading } = useQuery({
     queryKey: ["admin-live-classes"],
@@ -180,13 +204,19 @@ export default function AdminLiveClasses() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {classes.map((c) => {
             const dt = new Date(c.scheduled_at);
-            const isPast = dt < new Date();
+            const endMs = dt.getTime() + (c.duration_minutes ?? 60) * 60 * 1000;
+            const now = Date.now();
+            const isPast = now > endMs || c.status === "ended";
+            const isLiveNow = !isPast && c.status !== "cancelled" && (c.status === "live" || (now >= dt.getTime() && now <= endMs));
             return (
               <div key={c.id} className="bg-card border border-border rounded-2xl p-5 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <Badge variant={isPast ? "outline" : "default"} className="mb-2 capitalize text-xs">
-                      {isPast ? "Past" : c.status}
+                    <Badge
+                      variant={isPast ? "outline" : "default"}
+                      className={`mb-2 capitalize text-xs ${isLiveNow ? "bg-red-500/10 text-red-600 border-0" : ""}`}
+                    >
+                      {isLiveNow ? "● Live" : isPast ? "Past" : c.status}
                     </Badge>
                     <h3 className="font-heading font-bold leading-tight">{c.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1">{c.course?.title}</p>
@@ -242,7 +272,32 @@ export default function AdminLiveClasses() {
             </div>
             <div>
               <Label>Meeting URL</Label>
-              <Input placeholder="https://zoom.us/j/..." value={form.meeting_url} onChange={(e) => setForm({ ...form, meeting_url: e.target.value })} />
+                  <Input
+                    placeholder="https://zoom.us/j/...  ·  https://meet.google.com/abc-defg-hij"
+                    value={form.meeting_url}
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      const detected = detectProvider(url);
+                      setForm({
+                        ...form,
+                        meeting_url: url,
+                        // Auto-switch provider when a recognised URL is pasted.
+                        meeting_provider: detected ?? form.meeting_provider,
+                      });
+                    }}
+                  />
+                  {urlMismatch && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{urlMismatch}</p>
+                  )}
+                  {form.meeting_provider === "google_meet" && !form.meeting_url && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Need a link?{" "}
+                      <a href="https://meet.new" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        Open meet.new
+                      </a>{" "}
+                      to create one instantly, then paste it here.
+                    </p>
+                  )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -274,6 +329,9 @@ export default function AdminLiveClasses() {
               <div>
                 <Label>Date & Time</Label>
                 <Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Saved in {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                </p>
               </div>
               <div>
                 <Label>Duration (min)</Label>
