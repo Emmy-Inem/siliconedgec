@@ -204,13 +204,19 @@ export default function AdminLiveClasses() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {classes.map((c) => {
             const dt = new Date(c.scheduled_at);
-            const isPast = dt < new Date();
+            const endMs = dt.getTime() + (c.duration_minutes ?? 60) * 60 * 1000;
+            const now = Date.now();
+            const isPast = now > endMs || c.status === "ended";
+            const isLiveNow = !isPast && c.status !== "cancelled" && (c.status === "live" || (now >= dt.getTime() && now <= endMs));
             return (
               <div key={c.id} className="bg-card border border-border rounded-2xl p-5 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <Badge variant={isPast ? "outline" : "default"} className="mb-2 capitalize text-xs">
-                      {isPast ? "Past" : c.status}
+                    <Badge
+                      variant={isPast ? "outline" : "default"}
+                      className={`mb-2 capitalize text-xs ${isLiveNow ? "bg-red-500/10 text-red-600 border-0" : ""}`}
+                    >
+                      {isLiveNow ? "● Live" : isPast ? "Past" : c.status}
                     </Badge>
                     <h3 className="font-heading font-bold leading-tight">{c.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1">{c.course?.title}</p>
