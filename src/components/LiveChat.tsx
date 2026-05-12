@@ -30,7 +30,9 @@ export function LiveChat() {
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
-  // Load or create conversation when opening
+  // Load or create conversation when opening. Re-runs whenever the widget
+  // opens so we always reset `unread_user_count` (otherwise a reply that
+  // arrived while the widget was closed keeps the unread badge stuck).
   useEffect(() => {
     if (!open || !user) return;
     (async () => {

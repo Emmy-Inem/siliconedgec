@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, Activity, Link2, MapPin, Clock } from "lucide-react";
@@ -79,13 +80,9 @@ export default function AdminTrackingQA() {
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-tracking-qa"],
     queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase
-        .from("lead_sources")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as Row[];
+      // Pull a healthy window so QA reflects real coverage, not a 200-row slice.
+      const rows = await fetchAllRows<Row>("lead_sources", "*", { pageSize: 1000, max: 5000 });
+      return rows;
     },
     refetchInterval: 15_000,
   });
