@@ -23,10 +23,11 @@ Deno.serve(async (req) => {
 
     const { data: classes, error } = await supabase
       .from("live_classes")
-      .select("id, course_id, title, scheduled_at, meeting_url, instructor_name")
+      .select("id, course_id, title, scheduled_at, meeting_url, instructor_name, reminder_sent_at")
       .gte("scheduled_at", start)
       .lte("scheduled_at", end)
-      .neq("status", "cancelled");
+      .neq("status", "cancelled")
+      .is("reminder_sent_at", null);
     if (error) throw error;
     if (!classes || classes.length === 0) {
       return new Response(JSON.stringify({ ok: true, sent: 0 }), {
@@ -77,8 +78,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Mark class as reminded so we don't double-send if cron jitters
-      await supabase.from("live_classes").update({ status: "reminded" }).eq("id", cls.id).eq("status", "scheduled");
+      // Mark reminder as sent so we don't double-send if cron jitters.
+      // We deliberately do NOT mutate `status` so admins/students still see Scheduled / Live / Ended correctly.
+      await supabase
+        .from("live_classes")
+        .update({ reminder_sent_at: new Date().toISOString() })
+        .eq("id", cls.id);
     }
 
     return new Response(JSON.stringify({ ok: true, sent, classes: classes.length }), {
