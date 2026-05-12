@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MessageSquare, Send, User } from "lucide-react";
+import { MessageSquare, Send, User, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 
@@ -96,6 +96,18 @@ export default function AdminChat() {
     if (error) toast({ title: "Send failed", description: error.message, variant: "destructive" });
   };
 
+  const closeConversation = async () => {
+    if (!activeId) return;
+    const { error } = await supabase
+      .from("chat_conversations")
+      .update({ status: "closed", unread_admin_count: 0 })
+      .eq("id", activeId);
+    if (error) return toast({ title: "Failed to close", description: error.message, variant: "destructive" });
+    toast({ title: "Conversation closed" });
+    setActiveId(null);
+    loadConversations();
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -130,6 +142,16 @@ export default function AdminChat() {
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">Select a conversation</div>
           ) : (
             <>
+              <div className="px-3 py-2 border-b border-border flex items-center justify-between bg-muted/30">
+                <span className="text-xs text-muted-foreground">
+                  {conversations.find(c => c.id === activeId)?.status === "closed" ? "Closed" : "Open"}
+                </span>
+                {conversations.find(c => c.id === activeId)?.status !== "closed" && (
+                  <button onClick={closeConversation} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Close conversation
+                  </button>
+                )}
+              </div>
               <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map(m => (
                   <div key={m.id} className={`flex ${m.sender_role === "admin" ? "justify-end" : "justify-start"}`}>

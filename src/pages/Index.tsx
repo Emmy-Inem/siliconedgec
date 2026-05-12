@@ -1175,22 +1175,24 @@ export default function Index() {
                 whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
                 className="group min-w-[260px] max-w-[280px] snap-start flex-shrink-0 rounded-2xl overflow-hidden border border-border/60 bg-card relative shadow-sm hover:shadow-xl transition-shadow duration-300"
               >
-                <div className="aspect-[4/5] overflow-hidden">
-                  <img
-                    src={inst.image}
-                    alt={inst.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105"
-                  />
-                </div>
-                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                  <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
-                  <p className="text-white/75 text-sm mt-0.5">{inst.role}</p>
-                  <div className="flex items-center gap-1 mt-2">
-                    <Star className="h-4 w-4 fill-gold text-gold" />
-                    <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                <Link to={`/instructors/${inst.id}`} className="block" aria-label={`View ${inst.name}'s profile`}>
+                  <div className="aspect-[4/5] overflow-hidden">
+                    <img
+                      src={inst.image}
+                      alt={inst.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105"
+                    />
                   </div>
-                </div>
+                  <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
+                    <p className="text-white/75 text-sm mt-0.5">{inst.role}</p>
+                    <div className="flex items-center gap-1 mt-2">
+                      <Star className="h-4 w-4 fill-gold text-gold" />
+                      <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </motion.div>
