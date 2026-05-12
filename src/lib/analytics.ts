@@ -198,9 +198,11 @@ export function gaEvent(name: string, params: Record<string, unknown> = {}) {
 export function gaSetUserId(userId: string | null) {
   safeGtag("set", { user_id: userId ?? undefined });
   if (userId) safeTtq("identify", { external_id: userId });
-  // Meta advanced matching — passing an external_id helps Meta tie
-  // conversions to the same user across devices when cookies are blocked.
-  if (userId) safeFbq("init", META_PIXEL_ID, { external_id: userId });
+  // Meta advanced matching — push external_id without re-initialising the
+  // pixel (re-init triggers a "Duplicate Pixel ID" warning and breaks
+  // attribution dedupe). `set` updates the already-initialised pixel's
+  // user data; on older SDKs this is a safe no-op.
+  if (userId) safeFbq("set", "userData", { external_id: userId });
 }
 
 /** TikTok-specific event helper for conversion tracking

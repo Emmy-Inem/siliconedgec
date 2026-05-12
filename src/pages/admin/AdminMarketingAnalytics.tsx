@@ -124,7 +124,7 @@ export default function AdminMarketingAnalytics() {
       if (!l.utm_campaign) return;
       if (!map[l.utm_campaign]) map[l.utm_campaign] = { visits: 0, conversions: 0 };
       map[l.utm_campaign].visits++;
-      if (l.form_type && l.form_type !== "page_visit") map[l.utm_campaign].conversions++;
+      if (l.form_type && !isPageViewFormType(l.form_type)) map[l.utm_campaign].conversions++;
     });
     return Object.entries(map).map(([name, d]) => ({
       name, visits: d.visits, conversions: d.conversions,
@@ -162,7 +162,7 @@ export default function AdminMarketingAnalytics() {
       filtered.forEach(l => {
         const h = getHour(l.created_at);
         hourMap[h].visits++;
-        if (l.form_type && l.form_type !== "page_visit") hourMap[h].conversions++;
+        if (l.form_type && !isPageViewFormType(l.form_type)) hourMap[h].conversions++;
       });
       return Object.entries(hourMap).map(([h, d]) => ({
         date: `${String(h).padStart(2, "0")}:00`, visits: d.visits, conversions: d.conversions,
@@ -173,7 +173,7 @@ export default function AdminMarketingAnalytics() {
       const d = formatDate(l.created_at);
       if (!dateMap[d]) dateMap[d] = { visits: 0, conversions: 0 };
       dateMap[d].visits++;
-      if (l.form_type && l.form_type !== "page_visit") dateMap[d].conversions++;
+      if (l.form_type && !isPageViewFormType(l.form_type)) dateMap[d].conversions++;
     });
     return Object.entries(dateMap)
       .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
@@ -187,7 +187,7 @@ export default function AdminMarketingAnalytics() {
       const p = l.landing_page || "/";
       if (!map[p]) map[p] = { views: 0, conversions: 0 };
       map[p].views++;
-      if (l.form_type && l.form_type !== "page_visit") map[p].conversions++;
+      if (l.form_type && !isPageViewFormType(l.form_type)) map[p].conversions++;
     });
     return Object.entries(map)
       .map(([page, d]) => ({ page, ...d, rate: d.views > 0 ? Math.round((d.conversions / d.views) * 100) : 0 }))
@@ -1029,9 +1029,9 @@ export default function AdminMarketingAnalytics() {
                 <motion.div key={lead.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                   className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                    lead.form_type === "page_visit" ? "bg-blue-500" : lead.form_type === "enrollment" ? "bg-green-500" : "bg-primary"
+                    isPageViewFormType(lead.form_type) ? "bg-blue-500" : isCourseConversionFormType(lead.form_type) ? "bg-green-500" : "bg-primary"
                   }`}>
-                    {lead.form_type === "page_visit" ? <Eye className="h-3.5 w-3.5" /> : <MousePointerClick className="h-3.5 w-3.5" />}
+                    {isPageViewFormType(lead.form_type) ? <Eye className="h-3.5 w-3.5" /> : <MousePointerClick className="h-3.5 w-3.5" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
