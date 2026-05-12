@@ -1317,6 +1317,7 @@ export type Database = {
           instructor_name: string | null
           meeting_provider: string
           meeting_url: string
+          reminder_sent_at: string | null
           scheduled_at: string
           status: string
           title: string
@@ -1332,6 +1333,7 @@ export type Database = {
           instructor_name?: string | null
           meeting_provider?: string
           meeting_url: string
+          reminder_sent_at?: string | null
           scheduled_at: string
           status?: string
           title: string
@@ -1347,6 +1349,7 @@ export type Database = {
           instructor_name?: string | null
           meeting_provider?: string
           meeting_url?: string
+          reminder_sent_at?: string | null
           scheduled_at?: string
           status?: string
           title?: string

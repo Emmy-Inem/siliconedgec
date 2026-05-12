@@ -1,0 +1,1 @@
+ALTER TABLE public.live_classes ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ;
