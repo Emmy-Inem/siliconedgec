@@ -18,6 +18,7 @@ Disallow: /dashboard
 Disallow: /cart
 Disallow: /sign-in
 Disallow: /sign-up
+Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-receipt/
 Disallow: /r/

@@ -43,8 +43,6 @@ Deno.serve(async (req) => {
       { path: "/for-businesses", priority: "0.8", changefreq: "weekly" },
       { path: "/certificates", priority: "0.7", changefreq: "weekly" },
       { path: "/jobs", priority: "0.7", changefreq: "daily" },
-      { path: "/sign-in", priority: "0.3", changefreq: "monthly" },
-      { path: "/sign-up", priority: "0.5", changefreq: "monthly" },
     ];
 
     const entry = (loc: string, lastmod: string, changefreq: string, priority: string) =>
