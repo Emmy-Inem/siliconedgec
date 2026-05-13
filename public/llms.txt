@@ -1,0 +1,19 @@
+# Silicon Edge Consulting
+
+> Job-ready, instructor-led training in AI, Cloud, DevOps, Data and Cybersecurity. Live cohorts, verified certificates, and a job board for graduates.
+
+## Pages
+
+- [Home](/): Overview of programs, instructors, and outcomes.
+- [Courses](/courses): Browse all live and self-paced training programs.
+- [Pricing](/pricing): Beginner, Intermediate and Advanced tiers (Naira pricing).
+- [For Businesses](/for-businesses): Team training and B2B enablement.
+- [Certificates](/certificates): How verified certificates work and how to verify one.
+- [Jobs](/jobs): Open roles for graduates and partners.
+
+## Optional
+
+- [About](/p/about): Company background.
+- [Privacy](/p/privacy): Privacy policy.
+- [Terms](/p/terms): Terms of service.
+- [Refund](/p/refund): Refund policy.
