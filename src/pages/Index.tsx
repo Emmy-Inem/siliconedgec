@@ -740,8 +740,8 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Silicon Edge Consulting — Job-Ready Tech Training in AI, Cloud & DevOps"
-        description="Master AI, Cloud, DevOps, Cybersecurity & Web Development through live, instructor-led training. Earn verified certificates and build real projects with industry veterans."
+        title="Silicon Edge — Job-Ready AI, Cloud & DevOps Training"
+        description="Live, instructor-led training in AI, Cloud, DevOps, Cybersecurity & Web. Earn verified certificates and build real projects with industry veterans."
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "EducationalOrganization",
