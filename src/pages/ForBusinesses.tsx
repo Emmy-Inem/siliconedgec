@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
   Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Sparkles,
+  Users, Building2, Rocket,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
@@ -47,6 +51,54 @@ const testimonials = [
     quote: "We engaged Silicon Edge for a cybersecurity training program, and the experience was seamless. The courses were highly practical, with real-world applications, and their dedicated support ensured our team got the most out of every session. A great partner for corporate learning.",
     name: "Bernhard Müller",
     role: "CTO, Global Innovations Ltd.",
+  },
+];
+
+const packages = [
+  {
+    icon: Users,
+    name: "Team Sprint",
+    size: "5–15 learners",
+    desc: "A focused 4–6 week cohort to upskill a single team on one stack.",
+    points: ["1 curriculum track", "Live instructor sessions", "Slack/Teams support", "Completion certificates"],
+  },
+  {
+    icon: Building2,
+    name: "Department Rollout",
+    size: "15–60 learners",
+    desc: "Multi-track program with role-based learning paths and reporting.",
+    points: ["Up to 3 tracks", "Custom learning paths", "Manager progress dashboards", "Capstone projects"],
+    featured: true,
+  },
+  {
+    icon: Rocket,
+    name: "Enterprise Academy",
+    size: "60+ learners",
+    desc: "An always-on internal academy with onboarding, upskilling, and reskilling.",
+    points: ["Unlimited tracks", "Dedicated success manager", "SSO + custom branding", "Quarterly skill audits"],
+  },
+];
+
+const faqs = [
+  {
+    q: "How are the trainings delivered?",
+    a: "Live instructor-led classes (Zoom or Google Meet) plus on-demand recordings, hands-on labs, and projects accessible from any device.",
+  },
+  {
+    q: "Can the curriculum be tailored to our stack?",
+    a: "Yes. Every engagement starts with a discovery call where we map your team's current skills, target roles, and tech stack to a custom syllabus.",
+  },
+  {
+    q: "How is progress tracked and reported?",
+    a: "Managers get a dashboard with per-learner progress, quiz scores, attendance, and final project grades. Monthly summary reports are emailed automatically.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Pricing scales with cohort size, number of tracks, and program length. Submit the form below and we'll send a tailored quote within 24 hours.",
+  },
+  {
+    q: "Do learners receive certificates?",
+    a: "Yes — every learner who completes a track receives a verifiable Silicon Edge certificate with a unique verification code.",
   },
 ];
 
@@ -341,6 +393,83 @@ export default function ForBusinesses() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── Programs / Packages ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">Programs</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-3 leading-tight">
+              Pick a starting point. We'll tailor the rest.
+            </h2>
+            <p className="text-muted-foreground text-base">
+              Three flexible engagement models, every one customised to your team's roles, stack, and goals.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {packages.map((p, i) => (
+              <motion.div
+                key={p.name}
+                {...fadeUp}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className={`relative rounded-2xl border p-6 flex flex-col transition-all ${
+                  p.featured
+                    ? "border-primary/40 bg-gradient-to-br from-primary/5 to-transparent shadow-lg shadow-primary/10"
+                    : "border-border/60 bg-card/40 hover:border-primary/30"
+                }`}
+              >
+                {p.featured && (
+                  <span className="absolute -top-3 left-6 px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase bg-primary text-primary-foreground">
+                    Most popular
+                  </span>
+                )}
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
+                  <p.icon className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <h3 className="font-heading font-bold text-lg mb-1">{p.name}</h3>
+                <p className="text-xs text-primary font-medium mb-3">{p.size}</p>
+                <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{p.desc}</p>
+                <ul className="space-y-2 mb-6 flex-1">
+                  {p.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild variant={p.featured ? "default" : "outline"} className="w-full">
+                  <a href="#contact-form">Request a quote</a>
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FAQ ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">FAQ</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-3 leading-tight">
+              Everything you might be wondering
+            </h2>
+          </motion.div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((f, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/60">
+                <AccordionTrigger className="text-left font-medium hover:no-underline">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
