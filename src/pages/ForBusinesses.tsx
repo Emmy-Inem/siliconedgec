@@ -396,6 +396,83 @@ export default function ForBusinesses() {
         </div>
       </section>
 
+      {/* ─── Programs / Packages ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">Programs</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-3 leading-tight">
+              Pick a starting point. We'll tailor the rest.
+            </h2>
+            <p className="text-muted-foreground text-base">
+              Three flexible engagement models, every one customised to your team's roles, stack, and goals.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {packages.map((p, i) => (
+              <motion.div
+                key={p.name}
+                {...fadeUp}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className={`relative rounded-2xl border p-6 flex flex-col transition-all ${
+                  p.featured
+                    ? "border-primary/40 bg-gradient-to-br from-primary/5 to-transparent shadow-lg shadow-primary/10"
+                    : "border-border/60 bg-card/40 hover:border-primary/30"
+                }`}
+              >
+                {p.featured && (
+                  <span className="absolute -top-3 left-6 px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase bg-primary text-primary-foreground">
+                    Most popular
+                  </span>
+                )}
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
+                  <p.icon className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <h3 className="font-heading font-bold text-lg mb-1">{p.name}</h3>
+                <p className="text-xs text-primary font-medium mb-3">{p.size}</p>
+                <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{p.desc}</p>
+                <ul className="space-y-2 mb-6 flex-1">
+                  {p.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild variant={p.featured ? "default" : "outline"} className="w-full">
+                  <a href="#contact-form">Request a quote</a>
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FAQ ─── */}
+      <section className="py-20 border-t border-border">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <p className="text-primary font-medium text-xs tracking-[0.25em] uppercase mb-4">FAQ</p>
+            <h2 className="font-heading text-2xl md:text-4xl font-bold mb-3 leading-tight">
+              Everything you might be wondering
+            </h2>
+          </motion.div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((f, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/60">
+                <AccordionTrigger className="text-left font-medium hover:no-underline">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       {/* ─── CTA + Contact Form ─── */}
       <section id="contact-form" className="py-20 bg-hero">
         <div className="container mx-auto px-4 text-center">
