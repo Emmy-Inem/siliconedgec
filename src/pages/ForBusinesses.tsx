@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
   Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Sparkles,
-  Users, Building2, Rocket, ChevronDown,
+  Users, Building2, Rocket,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
