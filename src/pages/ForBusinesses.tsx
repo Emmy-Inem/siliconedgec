@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
   Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Sparkles,
+  Users, Building2, Rocket, ChevronDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
@@ -47,6 +51,54 @@ const testimonials = [
     quote: "We engaged Silicon Edge for a cybersecurity training program, and the experience was seamless. The courses were highly practical, with real-world applications, and their dedicated support ensured our team got the most out of every session. A great partner for corporate learning.",
     name: "Bernhard Müller",
     role: "CTO, Global Innovations Ltd.",
+  },
+];
+
+const packages = [
+  {
+    icon: Users,
+    name: "Team Sprint",
+    size: "5–15 learners",
+    desc: "A focused 4–6 week cohort to upskill a single team on one stack.",
+    points: ["1 curriculum track", "Live instructor sessions", "Slack/Teams support", "Completion certificates"],
+  },
+  {
+    icon: Building2,
+    name: "Department Rollout",
+    size: "15–60 learners",
+    desc: "Multi-track program with role-based learning paths and reporting.",
+    points: ["Up to 3 tracks", "Custom learning paths", "Manager progress dashboards", "Capstone projects"],
+    featured: true,
+  },
+  {
+    icon: Rocket,
+    name: "Enterprise Academy",
+    size: "60+ learners",
+    desc: "An always-on internal academy with onboarding, upskilling, and reskilling.",
+    points: ["Unlimited tracks", "Dedicated success manager", "SSO + custom branding", "Quarterly skill audits"],
+  },
+];
+
+const faqs = [
+  {
+    q: "How are the trainings delivered?",
+    a: "Live instructor-led classes (Zoom or Google Meet) plus on-demand recordings, hands-on labs, and projects accessible from any device.",
+  },
+  {
+    q: "Can the curriculum be tailored to our stack?",
+    a: "Yes. Every engagement starts with a discovery call where we map your team's current skills, target roles, and tech stack to a custom syllabus.",
+  },
+  {
+    q: "How is progress tracked and reported?",
+    a: "Managers get a dashboard with per-learner progress, quiz scores, attendance, and final project grades. Monthly summary reports are emailed automatically.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Pricing scales with cohort size, number of tracks, and program length. Submit the form below and we'll send a tailored quote within 24 hours.",
+  },
+  {
+    q: "Do learners receive certificates?",
+    a: "Yes — every learner who completes a track receives a verifiable Silicon Edge certificate with a unique verification code.",
   },
 ];
 
