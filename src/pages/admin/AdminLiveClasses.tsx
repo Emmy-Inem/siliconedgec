@@ -76,15 +76,31 @@ export default function AdminLiveClasses() {
     return null;
   })();
 
-  const { data: classes, isLoading } = useQuery({
+  const { data: classes, isLoading, error, refetch } = useQuery({
     queryKey: ["admin-live-classes"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("live_classes")
-        .select("*, course:courses(id, title)")
-        .order("scheduled_at", { ascending: true });
-      if (error) throw error;
-      return data as any[];
+      const [{ data: liveClasses, error: classesError }, { data: coursesData, error: coursesError }] = await Promise.all([
+        supabase
+          .from("live_classes")
+          .select("*")
+          .order("scheduled_at", { ascending: true }),
+        supabase
+          .from("courses")
+          .select("id, title"),
+      ]);
+
+      if (classesError) throw classesError;
+      if (coursesError) throw coursesError;
+
+      const courseTitleById = new Map((coursesData ?? []).map((course) => [course.id, course.title]));
+
+      return (liveClasses ?? []).map((liveClass) => ({
+        ...liveClass,
+        course: {
+          id: liveClass.course_id,
+          title: courseTitleById.get(liveClass.course_id) ?? "Course unavailable",
+        },
+      })) as any[];
     },
   });
 
@@ -221,6 +237,17 @@ export default function AdminLiveClasses() {
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading...</div>
+      ) : error ? (
+        <div className="text-center py-16 bg-card rounded-2xl border border-border space-y-3 px-6">
+          <Video className="h-12 w-12 text-destructive/70 mx-auto" />
+          <div>
+            <p className="font-medium">Couldn't load live classes</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {(error as Error).message || "Please try again."}
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+        </div>
       ) : !classes?.length ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <Video className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />

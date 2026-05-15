@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Video, Calendar as CalIcon, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,11 +22,23 @@ interface Props {
 }
 
 export function LiveClassCalendar({ classes, showJoin = true }: Props) {
-  const [cursor, setCursor] = useState(() => {
-    const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1);
-  });
+  const nextClassDate = useMemo(() => {
+    const now = Date.now();
+    const sorted = [...classes].sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+    return sorted.find((item) => new Date(item.scheduled_at).getTime() >= now)
+      ? new Date(sorted.find((item) => new Date(item.scheduled_at).getTime() >= now)!.scheduled_at)
+      : sorted[0]
+        ? new Date(sorted[0].scheduled_at)
+        : new Date();
+  }, [classes]);
+
+  const [cursor, setCursor] = useState(() => new Date(nextClassDate.getFullYear(), nextClassDate.getMonth(), 1));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setCursor(new Date(nextClassDate.getFullYear(), nextClassDate.getMonth(), 1));
+    setSelectedDay(new Date(nextClassDate.getFullYear(), nextClassDate.getMonth(), nextClassDate.getDate()));
+  }, [nextClassDate]);
 
   const monthLabel = cursor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
