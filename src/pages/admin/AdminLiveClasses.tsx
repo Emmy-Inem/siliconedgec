@@ -98,25 +98,53 @@ export default function AdminLiveClasses() {
 
   const save = useMutation({
     mutationFn: async () => {
+      if (!user?.id) throw new Error("You must be signed in as an admin to schedule a class.");
+      if (!form.course_id) throw new Error("Please select a course.");
+      if (!form.title.trim()) throw new Error("Please enter a title.");
+      if (!form.meeting_url.trim()) throw new Error("Please paste a meeting URL (Zoom, Google Meet, Teams or other).");
+      if (!form.scheduled_at) throw new Error("Please pick a date & time.");
+      const when = new Date(form.scheduled_at);
+      if (isNaN(when.getTime())) throw new Error("Invalid date & time.");
       const payload = {
         ...form,
-        scheduled_at: new Date(form.scheduled_at).toISOString(),
+        scheduled_at: when.toISOString(),
+        duration_minutes: Number(form.duration_minutes) || 60,
+        description: form.description?.trim() || null,
+        instructor_name: form.instructor_name?.trim() || null,
         created_by: user!.id,
       };
       if (editing) {
         const { error } = await supabase.from("live_classes").update(payload).eq("id", editing.id);
         if (error) throw error;
+        return { id: editing.id, kind: "updated" as const, rescheduled: editing.scheduled_at !== payload.scheduled_at };
       } else {
-        const { error } = await supabase.from("live_classes").insert(payload);
+        const { data, error } = await supabase.from("live_classes").insert(payload).select("id").single();
         if (error) throw error;
+        return { id: data.id, kind: "new" as const, rescheduled: true };
       }
     },
-    onSuccess: () => {
+    onSuccess: async (result) => {
       qc.invalidateQueries({ queryKey: ["admin-live-classes"] });
-      toast({ title: editing ? "Class updated" : "Class scheduled" });
+      toast({ title: result.kind === "new" ? "Class scheduled" : "Class updated" });
       setOpen(false); setEditing(null); setForm(empty);
+      // Email all enrolled students immediately (only on new or reschedule).
+      if (result.rescheduled) {
+        try {
+          const { data, error } = await supabase.functions.invoke("live-class-notify", {
+            body: { live_class_id: result.id, kind: result.kind },
+          });
+          if (error) throw error;
+          toast({ title: "Students notified", description: `Emailed ${data?.sent ?? 0} of ${data?.enrolled ?? 0} enrolled students.` });
+        } catch (e: any) {
+          toast({ title: "Class saved, but email failed", description: e?.message ?? String(e), variant: "destructive" });
+        }
+      }
     },
-    onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({
+      title: "Save failed",
+      description: e?.message || e?.details || e?.hint || "Unknown error — please try again.",
+      variant: "destructive",
+    }),
   });
 
   const del = useMutation({
