@@ -18,6 +18,9 @@ verify_jwt = false
 [functions.live-class-reminder]
 verify_jwt = false
 
+[functions.live-class-notify]
+verify_jwt = false
+
 [functions.generate-sitemap]
 verify_jwt = false
 
