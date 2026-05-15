@@ -60,6 +60,18 @@ interface JobApplicationRow {
   job: { id: string; title: string; company: string; location: string | null } | null;
 }
 
+interface LiveClassRow {
+  id: string;
+  course_id: string;
+  title: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  meeting_url: string;
+  meeting_provider: string;
+  status: string;
+  instructor_name?: string | null;
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const { data: siteSettings } = useSiteSettings();
@@ -67,7 +79,7 @@ export default function Dashboard() {
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [applications, setApplications] = useState<JobApplicationRow[]>([]);
-  const [liveClasses, setLiveClasses] = useState<any[]>([]);
+  const [liveClasses, setLiveClasses] = useState<LiveClassRow[]>([]);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
   const [webinarRegCourseIds, setWebinarRegCourseIds] = useState<Set<string>>(new Set());
@@ -130,11 +142,12 @@ export default function Dashboard() {
       // Load live classes for enrolled courses
       const enrolledIds = (enrollRes.data as any[] | null)?.map((e) => e.course_id) ?? [];
       if (enrolledIds.length) {
-        const { data: lcs } = await supabase
+        const { data: lcs, error: lcsError } = await supabase
           .from("live_classes")
           .select("*")
           .in("course_id", enrolledIds)
           .order("scheduled_at", { ascending: true });
+        if (lcsError) throw lcsError;
         setLiveClasses(lcs ?? []);
       }
       setFetching(false);
