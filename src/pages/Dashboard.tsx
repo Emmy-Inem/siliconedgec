@@ -10,10 +10,11 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink, Calendar } from "lucide-react";
+import { BookOpen, Award, Clock, Download, TrendingUp, GraduationCap, Bookmark, Trash2, Briefcase, ExternalLink, Calendar, Video } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
+import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
 import { Settings, MessageCircle, Sparkles } from "lucide-react";
@@ -238,7 +239,7 @@ export default function Dashboard() {
               <TabsList className="mb-6 w-full sm:w-auto h-auto flex-wrap justify-start gap-1">
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar ({liveClasses.length})</TabsTrigger>
+                <TabsTrigger value="calendar">Live Classes ({liveClasses.length})</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
                 <TabsTrigger value="receipts">Receipts</TabsTrigger>
                 <TabsTrigger value="profile"><Settings className="h-3.5 w-3.5 mr-1" />Profile</TabsTrigger>
@@ -423,11 +424,89 @@ export default function Dashboard() {
                   <div className="text-center py-20">
                     <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
                     <h2 className="font-heading text-xl font-semibold mb-2">No live classes scheduled</h2>
-                    <p className="text-muted-foreground mb-6">Live classes for your enrolled courses will appear here.</p>
+                    <p className="text-muted-foreground mb-6">Sessions for courses you've enrolled in or registered for will appear here.</p>
                     <Button asChild><Link to="/courses">Browse Courses</Link></Button>
                   </div>
                 ) : (
-                  <LiveClassCalendar classes={liveClasses as any} />
+                  <div className="grid lg:grid-cols-5 gap-6">
+                    <div className="lg:col-span-3 space-y-3">
+                      <h2 className="font-heading text-xl font-bold flex items-center gap-2">
+                        <Video className="h-5 w-5 text-primary" /> Upcoming Sessions
+                      </h2>
+                      {(() => {
+                        const now = Date.now();
+                        const upcoming = [...liveClasses]
+                          .filter((c) => new Date(c.scheduled_at).getTime() + c.duration_minutes * 60000 >= now && c.status !== "cancelled")
+                          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+                        const past = [...liveClasses]
+                          .filter((c) => new Date(c.scheduled_at).getTime() + c.duration_minutes * 60000 < now || c.status === "cancelled")
+                          .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+                        const render = (c: LiveClassRow) => {
+                          const dt = new Date(c.scheduled_at);
+                          const startMs = dt.getTime();
+                          const endMs = startMs + c.duration_minutes * 60000;
+                          const isCancelled = c.status === "cancelled";
+                          const isPast = now > endMs;
+                          const isLive = !isCancelled && !isPast && now >= startMs && now <= endMs;
+                          const canJoin = !isCancelled && !isPast && now >= startMs - 10 * 60 * 1000;
+                          return (
+                            <div key={c.id} className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {isCancelled ? <Badge variant="outline" className="text-xs">Cancelled</Badge>
+                                    : isLive ? <Badge className="bg-red-500/10 text-red-600 border-0 text-xs">● Live now</Badge>
+                                    : isPast ? <Badge variant="outline" className="text-xs">Past</Badge>
+                                    : <Badge variant="secondary" className="text-xs">Upcoming</Badge>}
+                                  <Badge variant="outline" className="text-xs uppercase">{c.meeting_provider}</Badge>
+                                </div>
+                                <p className="font-medium text-sm truncate">{c.title}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {dt.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })} · {c.duration_minutes}m
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {!isPast && !isCancelled && (
+                                  <>
+                                    <Button size="icon" variant="ghost" title="Download .ics"
+                                      onClick={() => downloadIcs(`${c.title.replace(/[^\w]+/g, "-").toLowerCase()}.ics`,
+                                        buildIcsFile({ uid: c.id, title: c.title, description: `Live class · ${c.meeting_provider}`, url: c.meeting_url, start: dt, durationMinutes: c.duration_minutes }))}>
+                                      <Download className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button size="icon" variant="ghost" title="Add to Google Calendar" asChild>
+                                      <a href={googleCalendarUrl({ title: c.title, description: `Live class · ${c.meeting_provider}`, url: c.meeting_url, start: dt, durationMinutes: c.duration_minutes })} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-3.5 w-3.5" />
+                                      </a>
+                                    </Button>
+                                  </>
+                                )}
+                                <Button size="sm" disabled={!canJoin} asChild={canJoin} className="gap-1">
+                                  {canJoin
+                                    ? <a href={c.meeting_url} target="_blank" rel="noopener noreferrer"><Video className="h-3 w-3" /> Join</a>
+                                    : <span>{isPast ? "Ended" : isCancelled ? "Cancelled" : "Not yet"}</span>}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        };
+                        return (
+                          <>
+                            {upcoming.length === 0
+                              ? <p className="text-sm text-muted-foreground py-4">No upcoming sessions. Check back soon.</p>
+                              : upcoming.map(render)}
+                            {past.length > 0 && (
+                              <div className="pt-6">
+                                <h3 className="text-sm font-medium text-muted-foreground mb-2">Past sessions</h3>
+                                <div className="space-y-3 opacity-70">{past.slice(0, 5).map(render)}</div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <div className="lg:col-span-2">
+                      <LiveClassCalendar classes={liveClasses as any} />
+                    </div>
+                  </div>
                 )}
               </TabsContent>
 
