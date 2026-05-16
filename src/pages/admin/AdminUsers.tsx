@@ -43,6 +43,7 @@ export default function AdminUsers() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ProfileWithRole | null>(null);
   const [form, setForm] = useState({ full_name: "", bio: "", role: "user" });
+  const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -89,10 +90,47 @@ export default function AdminUsers() {
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const exportEmails = async () => {
+    setExporting(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-export-users`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || `Export failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `users-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+      await logAdminActivity("export", "users", "csv", { count: data.length });
+      toast({ title: "Export ready", description: "User emails CSV downloaded." });
+    } catch (e: any) {
+      toast({ title: "Export failed", description: e.message, variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <>
-      <AdminCrudTable title="Users" data={data} columns={columns} isLoading={isLoading} addLabel="(Users self-register)"
-        onAdd={() => toast({ title: "Info", description: "Users create accounts via the Sign Up page." })}
+      <AdminCrudTable title="Users" data={data} columns={columns} isLoading={isLoading}
+        addLabel={exporting ? "Exporting..." : "Export Emails CSV"}
+        onAdd={() => { if (!exporting) exportEmails(); }}
         onEdit={(p) => { setEditing(p); setForm({ full_name: p.full_name ?? "", bio: p.bio ?? "", role: p.role ?? "user" }); setDialogOpen(true); }}
         onDelete={() => toast({ title: "Not allowed", description: "User profiles cannot be deleted from the admin panel for security reasons.", variant: "destructive" })}
       />
