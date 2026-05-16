@@ -139,13 +139,15 @@ export default function Dashboard() {
       if (webinarRegRes?.data) {
         setWebinarRegCourseIds(new Set((webinarRegRes.data as any[]).map((r) => r.course_id)));
       }
-      // Load live classes for enrolled courses
+      // Load live classes for enrolled OR webinar-registered courses
       const enrolledIds = (enrollRes.data as any[] | null)?.map((e) => e.course_id) ?? [];
-      if (enrolledIds.length) {
+      const regIds = (webinarRegRes?.data as any[] | null)?.map((r) => r.course_id) ?? [];
+      const courseIds = Array.from(new Set([...enrolledIds, ...regIds]));
+      if (courseIds.length) {
         const { data: lcs, error: lcsError } = await supabase
           .from("live_classes")
           .select("*")
-          .in("course_id", enrolledIds)
+          .in("course_id", courseIds)
           .order("scheduled_at", { ascending: true });
         if (lcsError) throw lcsError;
         setLiveClasses(lcs ?? []);
