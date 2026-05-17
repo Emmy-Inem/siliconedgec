@@ -11,11 +11,8 @@ export default function RedirectInfluencer() {
   useEffect(() => {
     const run = async () => {
       if (!slug) { navigate("/courses", { replace: true }); return; }
-      const { data } = await (supabase.from("promo_codes") as any)
-        .select("code, influencer_name, is_active, landing_path, utm_source, utm_medium, utm_campaign, utm_content")
-        .eq("slug", slug.toLowerCase())
-        .eq("is_active", true)
-        .maybeSingle();
+      const { data: rows } = await (supabase.rpc as any)("resolve_promo_slug", { p_slug: slug.toLowerCase() });
+      const data = Array.isArray(rows) ? rows[0] : rows;
 
       if (data) {
         // Store UTMs in BOTH the legacy key and the unified key the rest of
