@@ -16,8 +16,39 @@ interface CmsPage {
   updated_at?: string;
 }
 
+// Realistic stock hero imagery per page (Unsplash, broad-license).
+// Falls back to a generic professional banner if the slug isn't mapped.
+const HERO_IMAGES: Record<string, { src: string; alt: string; eyebrow?: string }> = {
+  about: {
+    src: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=2000&q=80",
+    alt: "Silicon Edge instructors collaborating with students in a modern training studio",
+    eyebrow: "Who we are",
+  },
+  privacy: {
+    src: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=2000&q=80",
+    alt: "Secured digital interface representing user privacy",
+    eyebrow: "Your data, protected",
+  },
+  terms: {
+    src: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=2000&q=80",
+    alt: "Legal documents and notebook on a clean desk",
+    eyebrow: "The fine print",
+  },
+  refund: {
+    src: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=2000&q=80",
+    alt: "Person reviewing finance and refund details on a laptop",
+    eyebrow: "Fair, transparent refunds",
+  },
+};
+const DEFAULT_HERO = {
+  src: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=2000&q=80",
+  alt: "Professional team working together",
+  eyebrow: "Silicon Edge Consulting",
+};
+
 export default function CmsPagePublic() {
   const { slug } = useParams();
+  const hero = (slug && HERO_IMAGES[slug]) || DEFAULT_HERO;
   const [page, setPage] = useState<CmsPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -63,11 +94,20 @@ export default function CmsPagePublic() {
           </div>
         ) : page && (
           <>
-            {/* Hero band */}
+            {/* Hero band with realistic stock image */}
             <section className="relative bg-hero overflow-hidden">
-              <div className="absolute inset-0 gradient-mesh" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.18),transparent_60%)]" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.10),transparent_55%)]" />
+              <div className="absolute inset-0">
+                <img
+                  src={hero.src}
+                  alt={hero.alt}
+                  loading="eager"
+                  className="w-full h-full object-cover opacity-30"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
+              <div className="absolute inset-0 gradient-mesh opacity-60" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.20),transparent_60%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.12),transparent_55%)]" />
               <div className="container mx-auto px-4 pt-32 pb-16 md:pt-40 md:pb-24 relative">
                 <nav aria-label="Breadcrumb" className="mb-6 text-sm text-hero-muted">
                   <Link to="/" className="hover:text-hero transition-colors">Home</Link>
@@ -75,7 +115,7 @@ export default function CmsPagePublic() {
                   <span className="text-hero">{page.title}</span>
                 </nav>
                 <p className="text-primary font-medium text-xs sm:text-sm tracking-[0.2em] uppercase mb-4">
-                  Silicon Edge Consulting
+                  {hero.eyebrow ?? "Silicon Edge Consulting"}
                 </p>
                 <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-hero leading-tight max-w-3xl">
                   <span className="text-gradient">{page.title}</span>
@@ -94,8 +134,23 @@ export default function CmsPagePublic() {
               </div>
             </section>
 
+            {/* Editorial image strip - reinforces premium look across cms pages */}
+            <section aria-hidden className="relative -mt-1">
+              <div className="container mx-auto px-4">
+                <div className="relative rounded-2xl overflow-hidden border border-border shadow-xl -translate-y-10 md:-translate-y-16">
+                  <img
+                    src={hero.src}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-44 sm:h-56 md:h-72 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+                </div>
+              </div>
+            </section>
+
             {/* Content */}
-            <section className="container mx-auto px-4 py-16 md:py-24">
+            <section className="container mx-auto px-4 pb-16 md:pb-24 -mt-4 md:-mt-8">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 max-w-6xl mx-auto">
                 <article className="glass-card border border-border rounded-2xl p-6 sm:p-10 md:p-14 shadow-lg">
                   <div className="prose prose-neutral dark:prose-invert max-w-none
