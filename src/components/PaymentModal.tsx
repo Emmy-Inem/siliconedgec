@@ -56,13 +56,9 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
     setPromoLoading(true);
     setPromoError("");
     try {
-      const { data, error } = await supabase
-        .from("promo_codes")
-        .select("id, code, discount_type, discount_value, influencer_name, max_uses, usage_count, expires_at, is_active")
-        .eq("code", code)
-        .eq("is_active", true)
-        .maybeSingle();
+      const { data: rows, error } = await (supabase.rpc as any)("validate_promo_code", { p_code: code });
       if (error) throw error;
+      const data = Array.isArray(rows) ? rows[0] : rows;
       if (!data) { setPromoError("Invalid or expired promo code"); return; }
       if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
       if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }

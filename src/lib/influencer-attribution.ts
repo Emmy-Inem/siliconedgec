@@ -13,7 +13,6 @@ export type ConversionType = "webinar_registration" | "free_enrollment" | "paid_
 export async function resolveInfluencerPromoFromUtm(): Promise<{
   id: string;
   code: string;
-  commission_percentage: number;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
@@ -22,24 +21,18 @@ export async function resolveInfluencerPromoFromUtm(): Promise<{
   const utm = getStoredUtmParams();
   if (!utm.utm_source && !utm.utm_campaign && !utm.utm_content) return null;
 
-  // First try campaign === code
+  // First try campaign === code (via SECURITY DEFINER RPC; promo_codes table is no longer publicly readable)
   if (utm.utm_campaign) {
-    const { data } = await (supabase.from("promo_codes") as any)
-      .select("id, code, commission_percentage, utm_source, utm_medium, utm_campaign, utm_content, slug, is_active")
-      .ilike("code", utm.utm_campaign)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (data) return data;
+    const { data } = await (supabase.rpc as any)("validate_promo_code", { p_code: utm.utm_campaign });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) return row as any;
   }
 
   // Then by slug == utm_source
   if (utm.utm_source) {
-    const { data } = await (supabase.from("promo_codes") as any)
-      .select("id, code, commission_percentage, utm_source, utm_medium, utm_campaign, utm_content, slug, is_active")
-      .ilike("slug", utm.utm_source)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (data) return data;
+    const { data } = await (supabase.rpc as any)("resolve_promo_slug", { p_slug: utm.utm_source.toLowerCase() });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) return row as any;
   }
 
   return null;

@@ -16,19 +16,22 @@ export default function VerifyCertificate() {
     queryKey: ["verify-cert", code],
     queryFn: async () => {
       if (!code) return null;
-      const { data: cert } = await supabase
-        .from("certificates")
-        .select("id, user_id, course_id, verification_code, issued_at")
-        .eq("verification_code", code.toUpperCase())
-        .maybeSingle();
-      if (!cert) return null;
-
-      const [{ data: course }, { data: profile }] = await Promise.all([
-        supabase.from("courses").select("title, category, duration_hours").eq("id", cert.course_id).maybeSingle(),
-        supabase.from("profiles").select("full_name").eq("user_id", cert.user_id).maybeSingle(),
-      ]);
-
-      return { cert, course, recipient: profile?.full_name ?? "Verified Student" };
+      const { data: rows } = await (supabase.rpc as any)("verify_certificate", { p_code: code });
+      const row = Array.isArray(rows) ? rows[0] : rows;
+      if (!row) return null;
+      return {
+        cert: {
+          id: row.id,
+          user_id: row.user_id,
+          course_id: row.course_id,
+          verification_code: row.verification_code,
+          issued_at: row.issued_at,
+        },
+        course: row.course_title
+          ? { title: row.course_title, category: row.course_category, duration_hours: row.course_duration_hours }
+          : null,
+        recipient: row.recipient_name ?? "Verified Student",
+      };
     },
     enabled: !!code,
   });
