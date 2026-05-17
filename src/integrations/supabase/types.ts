@@ -2098,10 +2098,59 @@ export type Database = {
         Args: { _email: string; _ip: string }
         Returns: boolean
       }
+      resolve_promo_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          code: string
+          id: string
+          influencer_name: string
+          is_active: boolean
+          landing_path: string
+          slug: string
+          utm_campaign: string
+          utm_content: string
+          utm_medium: string
+          utm_source: string
+        }[]
+      }
       slugify: { Args: { _text: string }; Returns: string }
       unique_course_slug: {
         Args: { _base: string; _id: string }
         Returns: string
+      }
+      validate_promo_code: {
+        Args: { p_code: string }
+        Returns: {
+          code: string
+          discount_type: string
+          discount_value: number
+          expires_at: string
+          id: string
+          influencer_name: string
+          is_active: boolean
+          landing_path: string
+          max_uses: number
+          slug: string
+          usage_count: number
+          utm_campaign: string
+          utm_content: string
+          utm_medium: string
+          utm_source: string
+        }[]
+      }
+      verify_certificate: {
+        Args: { p_code: string }
+        Returns: {
+          course_category: string
+          course_duration_hours: number
+          course_id: string
+          course_title: string
+          id: string
+          issued_at: string
+          recipient_name: string
+          user_id: string
+          verification_code: string
+        }[]
       }
     }
     Enums: {
