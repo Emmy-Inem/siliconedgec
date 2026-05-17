@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Video, Calendar as CalIcon, Download, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Video, Calendar as CalIcon, Download, ExternalLink, Copy, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
+import { useToast } from "@/hooks/use-toast";
 
 interface LiveClassItem {
   id: string;
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export function LiveClassCalendar({ classes, showJoin = true }: Props) {
+  const { toast } = useToast();
+  const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const nextClassDate = useMemo(() => {
     const now = Date.now();
     const sorted = [...classes].sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
@@ -70,6 +73,15 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
 
   const selectedClasses = selectedDay ? classesByDay.get(keyOf(selectedDay)) ?? [] : [];
 
+  const copyLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Meeting link copied", description: "Paste it into your browser if the Join button doesn't open." });
+    } catch {
+      window.prompt("Copy the meeting link:", url);
+    }
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -89,6 +101,10 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
           </Button>
         </div>
       </div>
+
+      <p className="text-[11px] text-muted-foreground -mt-1">
+        All times shown in your timezone · <span className="font-medium">{userTz}</span>
+      </p>
 
       <div className="grid grid-cols-7 gap-1 text-xs text-center text-muted-foreground font-medium">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => <div key={d} className="py-1">{d}</div>)}
@@ -131,18 +147,19 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
           {selectedClasses.length === 0 ? (
             <p className="text-sm text-muted-foreground">No live classes scheduled.</p>
           ) : selectedClasses.map((c) => (
-            <div key={c.id} className="flex items-center justify-between bg-muted/40 rounded-lg p-3">
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{c.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(c.scheduled_at).toLocaleString(undefined, {
-                    hour: "2-digit", minute: "2-digit",
-                    timeZoneName: "short",
-                  })}
-                  {" · "}{c.duration_minutes} min · {c.meeting_provider}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
+            <div key={c.id} className="bg-muted/40 rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{c.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(c.scheduled_at).toLocaleString(undefined, {
+                      hour: "2-digit", minute: "2-digit",
+                      timeZoneName: "short",
+                    })}
+                    {" · "}{c.duration_minutes} min · {c.meeting_provider}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
                 <Button
                   size="icon"
                   variant="ghost"
@@ -190,7 +207,23 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
                     </a>
                   </Button>
                 )}
+                </div>
               </div>
+              {showJoin && c.status !== "cancelled" && (
+                <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground border-t border-border/60 pt-2">
+                  <span className="flex items-center gap-1.5">
+                    <HelpCircle className="h-3 w-3" />
+                    Join button not opening?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyLink(c.meeting_url)}
+                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                  >
+                    <Copy className="h-3 w-3" /> Copy meeting link
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
