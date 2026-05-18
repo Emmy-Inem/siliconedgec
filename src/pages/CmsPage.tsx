@@ -7,6 +7,8 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Loader2, ArrowLeft, FileText, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
 interface CmsPage {
   title: string;
@@ -94,63 +96,68 @@ export default function CmsPagePublic() {
           </div>
         ) : page && (
           <>
-            {/* Hero band with realistic stock image */}
-            <section className="relative bg-hero overflow-hidden">
-              <div className="absolute inset-0">
-                <img
-                  src={hero.src}
-                  alt={hero.alt}
-                  loading="eager"
-                  className="w-full h-full object-cover opacity-30"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
-              <div className="absolute inset-0 gradient-mesh opacity-60" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.20),transparent_60%)]" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--accent)/0.12),transparent_55%)]" />
-              <div className="container mx-auto px-4 pt-32 pb-16 md:pt-40 md:pb-24 relative">
-                <nav aria-label="Breadcrumb" className="mb-6 text-sm text-hero-muted">
-                  <Link to="/" className="hover:text-hero transition-colors">Home</Link>
+            {/* Hero — matches Business / Certificates pattern */}
+            <section className="relative overflow-hidden bg-white pt-28 pb-20 border-b border-border/40">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_55%)]" />
+              <div
+                className="absolute inset-0 opacity-[0.18]"
+                style={{
+                  backgroundImage: "radial-gradient(hsl(var(--primary) / 0.16) 1px, transparent 1px)",
+                  backgroundSize: "22px 22px",
+                  maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+                  WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
+                }}
+              />
+              <div className="absolute -top-40 -right-40 w-[28rem] h-[28rem] rounded-full opacity-20 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
+              <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: "hsl(var(--gold))" }} />
+              <div className="container mx-auto px-4 relative">
+                <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">
+                  <Link to="/" className="hover:text-primary transition-colors">Home</Link>
                   <span className="mx-2 opacity-50">/</span>
-                  <span className="text-hero">{page.title}</span>
+                  <span className="text-foreground font-medium">{page.title}</span>
                 </nav>
-                <p className="text-primary font-medium text-xs sm:text-sm tracking-[0.2em] uppercase mb-4">
-                  {hero.eyebrow ?? "Silicon Edge Consulting"}
-                </p>
-                <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-hero leading-tight max-w-3xl">
-                  <span className="text-gradient">{page.title}</span>
-                  <span className="text-gold">.</span>
-                </h1>
-                {page.meta_description && (
-                  <p className="mt-6 text-hero-muted text-base sm:text-lg max-w-2xl leading-relaxed">
-                    {page.meta_description}
-                  </p>
-                )}
-                {updatedLabel && (
-                  <p className="mt-6 text-xs uppercase tracking-widest text-hero-muted/70">
-                    Last updated · {updatedLabel}
-                  </p>
-                )}
-              </div>
-            </section>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
+                      <Sparkles className="h-3 w-3" />
+                      {hero.eyebrow ?? "Silicon Edge Consulting"}
+                    </div>
+                    <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
+                      <span className="text-gradient">{page.title}</span>
+                      <span className="text-gold">.</span>
+                    </h1>
+                    {page.meta_description && (
+                      <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed mb-6">
+                        {page.meta_description}
+                      </p>
+                    )}
+                    {updatedLabel && (
+                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground/80">
+                        Last updated · {updatedLabel}
+                      </p>
+                    )}
+                  </motion.div>
 
-            {/* Editorial image strip - reinforces premium look across cms pages */}
-            <section aria-hidden className="relative -mt-1">
-              <div className="container mx-auto px-4">
-                <div className="relative rounded-2xl overflow-hidden border border-border shadow-xl -translate-y-10 md:-translate-y-16">
-                  <img
-                    src={hero.src}
-                    alt=""
-                    loading="lazy"
-                    className="w-full h-44 sm:h-56 md:h-72 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94, rotate: 2 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 2 }}
+                    transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+                    className="relative hidden lg:block"
+                  >
+                    <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
+                    <img
+                      src={hero.src}
+                      alt={hero.alt}
+                      loading="eager"
+                      className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-lg ml-auto object-cover aspect-[5/4]"
+                    />
+                  </motion.div>
                 </div>
               </div>
             </section>
 
             {/* Content */}
-            <section className="container mx-auto px-4 pb-16 md:pb-24 -mt-4 md:-mt-8">
+            <section className="container mx-auto px-4 py-16 md:py-20">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10 max-w-6xl mx-auto">
                 <article className="glass-card border border-border rounded-2xl p-6 sm:p-10 md:p-14 shadow-lg">
                   <div className="prose prose-neutral dark:prose-invert max-w-none

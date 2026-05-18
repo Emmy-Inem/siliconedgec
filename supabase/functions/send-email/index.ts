@@ -14,6 +14,7 @@ interface EmailPayload {
   subject: string;
   html: string;
   from?: string;
+  attachments?: { filename: string; content: string }[];
 }
 
 // Hard fallback in case the admin hasn't customised a template yet.
@@ -141,6 +142,10 @@ Deno.serve(async (req) => {
     } else {
       payload = body as EmailPayload;
     }
+    // Preserve attachments passed in via the raw payload or alongside template_key
+    if (!payload.attachments && Array.isArray((body as any).attachments)) {
+      payload.attachments = (body as any).attachments;
+    }
 
     const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_KEY) {
@@ -161,6 +166,9 @@ Deno.serve(async (req) => {
         to: [payload.to],
         subject: payload.subject,
         html: payload.html,
+        ...(payload.attachments && payload.attachments.length
+          ? { attachments: payload.attachments }
+          : {}),
       }),
     });
 
