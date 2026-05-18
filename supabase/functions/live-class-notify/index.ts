@@ -9,6 +9,39 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Build calendar artefacts so the email syncs with both Gmail (inline link) and
+// Google Calendar / Apple Calendar / Outlook (via .ics attachment).
+function fmtUtc(d: Date) {
+  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+function buildCalendar(opts: { id: string; title: string; description?: string; location: string; start: Date; durationMin: number }) {
+  const end = new Date(opts.start.getTime() + opts.durationMin * 60_000);
+  const ics = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Silicon Edge//Live Class//EN",
+    "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${opts.id}@siliconedgec.com`,
+    `DTSTAMP:${fmtUtc(new Date())}`,
+    `DTSTART:${fmtUtc(opts.start)}`,
+    `DTEND:${fmtUtc(end)}`,
+    `SUMMARY:${opts.title.replace(/\n/g, " ")}`,
+    `DESCRIPTION:${(opts.description ?? "").replace(/\n/g, "\\n")}\\n\\nJoin: ${opts.location}`,
+    `LOCATION:${opts.location}`,
+    `URL:${opts.location}`,
+    "END:VEVENT", "END:VCALENDAR",
+  ].join("\r\n");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: opts.title,
+    dates: `${fmtUtc(opts.start)}/${fmtUtc(end)}`,
+    details: `${opts.description ?? ""}\n\nJoin: ${opts.location}`,
+    location: opts.location,
+  });
+  const gcalUrl = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  const b64 = btoa(unescape(encodeURIComponent(ics)));
+  return { ics, gcalUrl, b64 };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -69,6 +102,14 @@ Deno.serve(async (req) => {
 
     const when = new Date(cls.scheduled_at).toLocaleString("en-NG", { timeZone: "Africa/Lagos" });
     const action = kind === "updated" ? "rescheduled" : "scheduled";
+    const cal = buildCalendar({
+      id: cls.id,
+      title: cls.title,
+      description: cls.description ?? "",
+      location: cls.meeting_url,
+      start: new Date(cls.scheduled_at),
+      durationMin: cls.duration_minutes ?? 60,
+    });
     let sent = 0;
 
     for (const uid of userIds) {
@@ -94,9 +135,12 @@ Deno.serve(async (req) => {
                 <div style="font-size:13px;color:#cbd5e1">⏱️ ${cls.duration_minutes} minutes · ${String(cls.meeting_provider).replace("_", " ")}</div>
                 ${cls.instructor_name ? `<div style="font-size:13px;color:#cbd5e1">👤 ${cls.instructor_name}</div>` : ""}
               </div>
-              <a href="${cls.meeting_url}" style="display:inline-block;padding:12px 22px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Join the class</a>
+              <a href="${cls.meeting_url}" style="display:inline-block;padding:12px 22px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;margin-right:8px">Join the class</a>
+              <a href="${cal.gcalUrl}" style="display:inline-block;padding:12px 22px;background:#1e293b;border:1px solid #334155;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">📅 Add to Google Calendar</a>
+              <p style="font-size:12px;color:#94a3b8;margin-top:14px">An .ics calendar invite is attached — opening it adds the class to Apple Calendar, Outlook, or any calendar app.</p>
               <p style="font-size:12px;color:#94a3b8;margin-top:24px">You'll also get a reminder 1 hour before the class begins.</p>
             </div>`,
+            attachments: [{ filename: `${cls.title.replace(/[^a-z0-9]+/gi, "-")}.ics`, content: cal.b64 }],
           }),
         }).catch((e) => console.error("send-email failed", e));
         sent += 1;
