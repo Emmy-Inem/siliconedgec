@@ -7,6 +7,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function fmtUtc(d: Date) {
+  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+function buildCalendar(opts: { id: string; title: string; description?: string; location: string; start: Date; durationMin: number }) {
+  const end = new Date(opts.start.getTime() + opts.durationMin * 60_000);
+  const ics = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Silicon Edge//Live Class//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${opts.id}@siliconedgec.com`,
+    `DTSTAMP:${fmtUtc(new Date())}`,
+    `DTSTART:${fmtUtc(opts.start)}`,
+    `DTEND:${fmtUtc(end)}`,
+    `SUMMARY:${opts.title.replace(/\n/g, " ")}`,
+    `DESCRIPTION:${(opts.description ?? "").replace(/\n/g, "\\n")}\\n\\nJoin: ${opts.location}`,
+    `LOCATION:${opts.location}`,
+    `URL:${opts.location}`,
+    "END:VEVENT","END:VCALENDAR",
+  ].join("\r\n");
+  const params = new URLSearchParams({
+    action: "TEMPLATE", text: opts.title,
+    dates: `${fmtUtc(opts.start)}/${fmtUtc(end)}`,
+    details: `${opts.description ?? ""}\n\nJoin: ${opts.location}`,
+    location: opts.location,
+  });
+  return { ics, gcalUrl: `https://calendar.google.com/calendar/render?${params.toString()}`, b64: btoa(unescape(encodeURIComponent(ics))) };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -40,6 +67,10 @@ Deno.serve(async (req) => {
     let sent = 0;
 
     for (const cls of classes) {
+      const cal = buildCalendar({
+        id: cls.id, title: cls.title, location: cls.meeting_url,
+        start: new Date(cls.scheduled_at), durationMin: 60,
+      });
       // Find enrolled users for the class' course
       const { data: enrollments } = await supabase
         .from("enrollments")
@@ -67,9 +98,11 @@ Deno.serve(async (req) => {
                 instructor: cls.instructor_name ?? "your instructor",
                 start_time: when,
                 join_url: cls.meeting_url,
+                gcal_url: cal.gcalUrl,
               },
               fallback_subject: `Reminder: ${cls.title} starts in 1 hour`,
-              fallback_body: `Hi ${profile?.full_name || ""},\n\nYour live class "${cls.title}" with ${cls.instructor_name ?? "your instructor"} starts at ${when}.\n\nJoin here: ${cls.meeting_url}\n\nSee you there!`,
+              fallback_body: `Hi ${profile?.full_name || ""},\n\nYour live class "${cls.title}" with ${cls.instructor_name ?? "your instructor"} starts at ${when}.\n\nJoin here: ${cls.meeting_url}\nAdd to Google Calendar: ${cal.gcalUrl}\n\nSee you there!`,
+              attachments: [{ filename: `${cls.title.replace(/[^a-z0-9]+/gi, "-")}.ics`, content: cal.b64 }],
             }),
           }).catch((e) => console.error("reminder send-email failed", e));
           sent += 1;
