@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { formatNaira } from "@/lib/format-currency";
 import { LiveClassCalendar } from "@/components/LiveClassCalendar";
 import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
+import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
 import { Settings, MessageCircle, Sparkles } from "lucide-react";
@@ -420,6 +421,9 @@ export default function Dashboard() {
               </TabsContent>
 
               <TabsContent value="calendar">
+                <div className="mb-6">
+                  <GoogleCalendarConnect />
+                </div>
                 {liveClasses.length === 0 ? (
                   <div className="text-center py-20">
                     <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />

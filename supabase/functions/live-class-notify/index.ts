@@ -149,6 +149,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Fire-and-forget: push the event to every connected user's Google Calendar.
+    fetch(`${supabaseUrl}/functions/v1/google-calendar-sync`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""}`,
+      },
+      body: JSON.stringify({ action: "upsert_class", live_class_id: cls.id, user_ids: userIds }),
+    }).catch((e) => console.error("calendar sync failed", e));
+
     return new Response(JSON.stringify({ ok: true, sent, enrolled: userIds.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
