@@ -57,11 +57,6 @@ export function GoogleCalendarConnect() {
   const connect = async () => {
     setBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("google-calendar-oauth", {
-        method: "GET",
-        body: undefined,
-      } as any);
-      // supabase-js doesn't expose query params via invoke for GET; call the URL directly.
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(
