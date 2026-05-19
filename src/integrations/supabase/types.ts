@@ -844,6 +844,45 @@ export type Database = {
         }
         Relationships: []
       }
+      google_calendar_tokens: {
+        Row: {
+          access_token: string | null
+          connected_at: string
+          expires_at: string | null
+          google_email: string | null
+          id: string
+          refresh_token: string
+          scope: string | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string
+          expires_at?: string | null
+          google_email?: string | null
+          id?: string
+          refresh_token: string
+          scope?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string
+          expires_at?: string | null
+          google_email?: string | null
+          id?: string
+          refresh_token?: string
+          scope?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       influencer_referrals: {
         Row: {
           commission_earned: number
@@ -1305,6 +1344,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_class_calendar_events: {
+        Row: {
+          created_at: string
+          google_event_id: string
+          id: string
+          live_class_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          google_event_id: string
+          id?: string
+          live_class_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          google_event_id?: string
+          id?: string
+          live_class_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       live_classes: {
         Row: {
