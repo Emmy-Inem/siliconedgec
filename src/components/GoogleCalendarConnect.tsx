@@ -59,10 +59,7 @@ export function GoogleCalendarConnect() {
     try {
       const returnTo = window.location.href.split("?")[0];
       const { data, error } = await supabase.functions.invoke("google-calendar-oauth", {
-        method: "GET",
-        // invoke serializes query params via body for GET? Use the path query instead:
-        // We pass via headers since invoke doesn't natively add query strings.
-        headers: { "x-return-to": returnTo, "x-action": "start" },
+        body: { action: "start", return_to: returnTo },
       });
       if (error) throw error;
       if (!data?.url) throw new Error(data?.error ?? "Couldn't start OAuth");
