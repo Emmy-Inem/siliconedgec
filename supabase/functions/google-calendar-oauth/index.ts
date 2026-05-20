@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
 
   const url = new URL(req.url);
   const isCallback = url.pathname.endsWith("/callback");
+  const APP_ORIGIN = Deno.env.get("APP_PUBLIC_URL") ?? "https://siliconedgec.com";
 
   try {
     // ---- CALLBACK: exchange code for tokens ----
@@ -40,7 +41,7 @@ Deno.serve(async (req) => {
       const returnTo = rest.join("|") || "/dashboard";
 
       if (err || !code || !userId) {
-        return Response.redirect(`${returnTo}?gcal=error`, 302);
+        return Response.redirect(absUrl(returnTo, APP_ORIGIN, "error"), 302);
       }
 
       const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
       const tokens = await tokenRes.json();
       if (!tokens.refresh_token) {
         console.error("No refresh_token in Google response", tokens);
-        return Response.redirect(`${returnTo}?gcal=no_refresh`, 302);
+        return Response.redirect(absUrl(returnTo, APP_ORIGIN, "no_refresh"), 302);
       }
 
       // Fetch the user's email from the id_token (basic decode, no signature check needed — it's our own flow).
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ user_id: userId, action: "sync_upcoming" }),
       }).catch((e) => console.error("background sync failed", e));
 
-      return Response.redirect(`${returnTo}?gcal=connected`, 302);
+      return Response.redirect(absUrl(returnTo, APP_ORIGIN, "connected"), 302);
     }
 
     // ---- START: build consent URL ----
@@ -109,7 +110,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const returnTo = url.searchParams.get("return_to") ?? "/dashboard";
+    const returnTo =
+      url.searchParams.get("return_to") ??
+      req.headers.get("x-return-to") ??
+      `${APP_ORIGIN}/dashboard`;
     const consent = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     consent.searchParams.set("client_id", CLIENT_ID);
     consent.searchParams.set("redirect_uri", REDIRECT_URI);
@@ -130,3 +134,14 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function absUrl(returnTo: string, origin: string, status: string): string {
+  try {
+    const u = new URL(returnTo);
+    u.searchParams.set("gcal", status);
+    return u.toString();
+  } catch {
+    const path = returnTo.startsWith("/") ? returnTo : `/${returnTo}`;
+    return `${origin}${path}?gcal=${status}`;
+  }
+}
