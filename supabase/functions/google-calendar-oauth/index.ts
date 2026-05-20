@@ -110,10 +110,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const returnTo =
-      url.searchParams.get("return_to") ??
-      req.headers.get("x-return-to") ??
-      `${APP_ORIGIN}/dashboard`;
+    // Accept return_to from query string OR JSON body (POST from supabase-js invoke).
+    let returnTo = url.searchParams.get("return_to") ?? `${APP_ORIGIN}/dashboard`;
+    if (req.method === "POST") {
+      try {
+        const body = await req.json();
+        if (body?.return_to) returnTo = body.return_to as string;
+      } catch (_) { /* ignore */ }
+    }
     const consent = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     consent.searchParams.set("client_id", CLIENT_ID);
     consent.searchParams.set("redirect_uri", REDIRECT_URI);
