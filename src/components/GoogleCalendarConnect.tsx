@@ -57,15 +57,16 @@ export function GoogleCalendarConnect() {
   const connect = async () => {
     setBusy(true);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/google-calendar-oauth?action=start&return_to=${encodeURIComponent(window.location.href.split("?")[0])}`,
-        { headers: { Authorization: `Bearer ${session?.access_token ?? ""}` } },
-      );
-      const payload = await res.json();
-      if (!res.ok || !payload.url) throw new Error(payload.error ?? "Couldn't start OAuth");
-      window.location.href = payload.url;
+      const returnTo = window.location.href.split("?")[0];
+      const { data, error } = await supabase.functions.invoke("google-calendar-oauth", {
+        method: "GET",
+        // invoke serializes query params via body for GET? Use the path query instead:
+        // We pass via headers since invoke doesn't natively add query strings.
+        headers: { "x-return-to": returnTo, "x-action": "start" },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error(data?.error ?? "Couldn't start OAuth");
+      window.location.href = data.url;
     } catch (e: any) {
       console.error(e);
       toast({ title: "Couldn't open Google", description: e.message ?? String(e), variant: "destructive" });
