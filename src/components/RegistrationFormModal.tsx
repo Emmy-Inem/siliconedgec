@@ -16,8 +16,7 @@ import { logUserActivity } from "@/lib/user-activity";
 import { trackLead } from "@/lib/track-lead";
 import { recordInfluencerConversion } from "@/lib/influencer-attribution";
 import { googleAdsConversion, setGoogleAdsUserData, tikTokEvent, metaEvent } from "@/lib/analytics";
-
-const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
+import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
 
 const schema = z.object({
   full_name: z.string().trim().min(2, "Name is required").max(100),
@@ -65,7 +64,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user?.email]);
 
-  const whatsappUrl = (settings as any)?.whatsapp_community_url || DEFAULT_WHATSAPP_COMMUNITY;
+  const whatsappUrl = getWhatsAppCommunityUrl(settings);
 
   const update = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
 

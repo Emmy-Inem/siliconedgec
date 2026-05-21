@@ -237,27 +237,54 @@ export default function Cart() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="bg-hero pt-28 pb-10">
+      <section className="bg-hero gradient-mesh pt-28 pb-12 relative overflow-hidden">
+        <div className="noise-overlay" />
         <div className="container mx-auto px-4">
-          <Link to="/courses" className="inline-flex items-center text-hero-muted hover:text-primary text-sm mb-4 transition-colors">
+          <Link to="/courses" className="inline-flex items-center text-hero-muted hover:text-primary text-sm mb-5 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-1" /> Continue Shopping
           </Link>
-          <h1 className="font-heading text-3xl md:text-4xl font-bold text-hero flex items-center gap-3">
-            <ShoppingCart className="h-8 w-8" />
-            Your Cart
-            {count > 0 && <span className="text-lg text-hero-muted font-normal">({count} course{count !== 1 ? "s" : ""})</span>}
-          </h1>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)] lg:items-end">
+            <div>
+              <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero flex flex-wrap items-center gap-3">
+                <ShoppingCart className="h-8 w-8" />
+                Your Cart
+                {count > 0 && <span className="text-lg text-hero-muted font-normal">({count} course{count !== 1 ? "s" : ""})</span>}
+              </h1>
+              <p className="text-hero-muted text-lg mt-3 max-w-2xl">Review your selected programs, confirm pricing in Naira, and head to checkout when you’re ready.</p>
+            </div>
+            <div className="glass-card rounded-2xl border border-white/10 p-5 md:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Order snapshot</p>
+                  <p className="font-heading text-2xl text-hero">{formatPrice(total)}</p>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                  <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Items</p>
+                  <p className="mt-1 font-heading text-xl text-hero">{count}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                  <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Currency</p>
+                  <p className="mt-1 font-heading text-xl text-hero">NGN</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="py-10">
+      <section className="py-10 page-transition">
         <div className="container mx-auto px-4">
           {loading ? (
             <div className="text-center py-20">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
             </div>
           ) : count === 0 ? (
-            <div className="text-center py-20">
+            <div className="text-center py-20 glass-card rounded-3xl border border-border/60 shadow-[0_18px_50px_-24px_hsl(var(--foreground)/0.35)]">
               <ShoppingBag className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
               <h2 className="font-heading text-xl font-semibold mb-2">Your cart is empty</h2>
               <p className="text-muted-foreground mb-6">Browse our courses and add some to your cart.</p>
@@ -273,7 +300,7 @@ export default function Cart() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex gap-4 bg-card rounded-xl border border-border p-4 hover:shadow-md transition-shadow"
+                      className="flex gap-4 glass-card rounded-2xl border border-border/60 p-4 hover:shadow-[0_18px_50px_-24px_hsl(var(--foreground)/0.35)] transition-shadow"
                   >
                     <div className="w-28 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       {item.course?.thumbnail_url ? (
@@ -305,7 +332,7 @@ export default function Cart() {
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-card rounded-xl border border-border p-6 space-y-4 sticky top-24">
+                 <div className="glass-card rounded-2xl border border-border/60 p-6 space-y-4 sticky top-24 shadow-[0_18px_50px_-24px_hsl(var(--foreground)/0.35)]">
                   <h3 className="font-heading font-semibold text-lg">Order Summary</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
