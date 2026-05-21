@@ -17,7 +17,7 @@ interface TokenRow {
  * are automatically created and updated in their own calendar.
  */
 export function GoogleCalendarConnect() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const [row, setRow] = useState<TokenRow | null>(null);
@@ -96,7 +96,7 @@ export function GoogleCalendarConnect() {
     else toast({ title: "Calendar synced", description: "Upcoming live classes have been pushed to your Google Calendar." });
   };
 
-  if (loading) return null;
+  if (!isAdmin || loading) return null;
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
