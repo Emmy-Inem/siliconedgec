@@ -40,5 +40,5 @@ export function getWhatsAppCommunityUrl(
     return community.toString();
   }
 
-  return buildWhatsAppDirectUrl(settings?.whatsapp_number, fallbackMessage) ?? "/instructors";
+  return buildWhatsAppDirectUrl(settings?.whatsapp_number, fallbackMessage) ?? "/";
 }
