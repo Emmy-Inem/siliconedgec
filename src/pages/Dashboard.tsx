@@ -21,8 +21,7 @@ import { Receipts } from "@/components/Receipts";
 import { Settings, MessageCircle, Sparkles } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
-
-const DEFAULT_WHATSAPP_COMMUNITY = "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X?mode=gi_t";
+import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
 
 interface EnrolledCourse {
   id: string;
@@ -75,7 +74,7 @@ interface LiveClassRow {
 }
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const { data: siteSettings } = useSiteSettings();
   const { data: publicAccess } = usePublicAccessMode();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
@@ -182,7 +181,7 @@ export default function Dashboard() {
       : 0;
 
   const displayName = profile?.full_name || user.email?.split("@")[0] || "Student";
-  const whatsappUrl = (siteSettings as any)?.whatsapp_community_url || DEFAULT_WHATSAPP_COMMUNITY;
+  const whatsappUrl = getWhatsAppCommunityUrl(siteSettings);
   const nextLiveClassFor = (courseId: string) =>
     liveClasses
       .filter((lc) => lc.course_id === courseId && new Date(lc.scheduled_at) >= new Date())
@@ -192,19 +191,46 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <section className="bg-hero pt-28 pb-14">
+      <section className="bg-hero gradient-mesh pt-28 pb-14 relative overflow-hidden">
+        <div className="noise-overlay" />
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <p className="text-hero-muted text-sm mb-1">Welcome back,</p>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-2">{displayName}</h1>
-            <p className="text-hero-muted text-lg">Track your learning progress and download certificates.</p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)] lg:items-end">
+            <div>
+              <p className="text-hero-muted text-sm mb-3 uppercase tracking-[0.2em]">Student dashboard</p>
+              <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-3 text-balance">Welcome back, {displayName}</h1>
+              <p className="text-hero-muted text-lg max-w-2xl">Track your live sessions, continue coursework, review receipts, and keep your learning momentum in one place.</p>
+            </div>
+            <div className="glass-card rounded-2xl border border-white/10 p-5 md:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Learning snapshot</p>
+                  <p className="font-heading text-2xl text-hero">{avgProgress}% average progress</p>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                  <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Courses</p>
+                  <p className="mt-1 font-heading text-xl text-hero">{enrollments.length}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                  <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Live</p>
+                  <p className="mt-1 font-heading text-xl text-hero">{liveClasses.filter((c) => new Date(c.scheduled_at).getTime() + c.duration_minutes * 60000 >= Date.now() && c.status !== "cancelled").length}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                  <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Certs</p>
+                  <p className="mt-1 font-heading text-xl text-hero">{completed.length}</p>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="py-12">
+      <section className="py-12 page-transition">
         <div className="container mx-auto px-4">
-          {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
             {[
               { icon: BookOpen, label: "Enrolled", value: enrollments.length },
@@ -218,7 +244,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
               >
-                <Card>
+                <Card className="glass-card border-border/60 shadow-[0_18px_50px_-24px_hsl(var(--foreground)/0.35)]">
                   <CardContent className="flex items-center gap-3 p-4 md:p-6">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <stat.icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -236,8 +262,8 @@ export default function Dashboard() {
           {fetching ? (
             <div className="text-center py-20 text-muted-foreground">Loading your courses…</div>
           ) : (
-            <Tabs defaultValue="courses" className="w-full">
-              <TabsList className="mb-6 w-full sm:w-auto h-auto flex-wrap justify-start gap-1">
+              <Tabs defaultValue="courses" className="w-full space-y-6">
+                <TabsList className="mb-2 w-full h-auto flex-wrap justify-start gap-1 rounded-2xl border border-border/70 bg-card/70 p-1.5 backdrop-blur">
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Live Classes ({liveClasses.length})</TabsTrigger>
@@ -421,9 +447,11 @@ export default function Dashboard() {
               </TabsContent>
 
               <TabsContent value="calendar">
-                <div className="mb-6">
-                  <GoogleCalendarConnect />
-                </div>
+                {isAdmin && (
+                  <div className="mb-6">
+                    <GoogleCalendarConnect />
+                  </div>
+                )}
                 {liveClasses.length === 0 ? (
                   <div className="text-center py-20">
                     <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
