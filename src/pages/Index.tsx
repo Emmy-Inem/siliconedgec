@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -601,9 +602,7 @@ export default function Index() {
   const { user } = useAuth();
   const reduce = useReducedMotion();
   const { data: settings } = useSiteSettings();
-  const communityUrl =
-    settings?.whatsapp_community_url ||
-    "https://chat.whatsapp.com/Fk8RN2yDKS800vnIG8K98X";
+  const communityUrl = getWhatsAppCommunityUrl(settings);
 
   const { data: dbInstructors } = useQuery({
     queryKey: ["home-instructors"],
