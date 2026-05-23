@@ -216,6 +216,41 @@ export default function Courses() {
     return matchCategory && matchDifficulty && matchSearch;
   });
 
+  // Group courses by track (AWS, Azure, GCP, DevOps, Data, Cyber, Programming,
+  // AI/ML) so that every level of the same track sits side-by-side instead of
+  // all Beginners → Intermediates → Experts. Within a track we order by
+  // difficulty Beginner → Intermediate → Expert. Webinars float to the top.
+  const TRACK_RULES: Array<{ key: string; test: RegExp }> = [
+    { key: "AWS", test: /\baws\b/i },
+    { key: "Azure", test: /\bazure\b|\baz-?\d/i },
+    { key: "Google Cloud", test: /google cloud|gcp/i },
+    { key: "Cloud Engineering", test: /cloud engineering|cloud accelerator/i },
+    { key: "DevOps", test: /devops|kubernetes|docker|terraform|ansible|ci\/cd/i },
+    { key: "Data Engineering", test: /data engineering|spark|kafka|etl|warehous|lakehouse/i },
+    { key: "Cybersecurity", test: /cyber|security|red team|siem|ethical hack/i },
+    { key: "AI & ML", test: /\bai\b|machine learning|deep learning|mlops|nlp|computer vision|tensorflow|scikit/i },
+    { key: "Programming", test: /programming|software|algorithm|backend|web development|python|java/i },
+  ];
+  const DIFFICULTY_RANK: Record<string, number> = { Beginner: 0, Intermediate: 1, Expert: 2 };
+  const trackOf = (title: string, category: string): string => {
+    for (const r of TRACK_RULES) if (r.test.test(title)) return r.key;
+    return category || "Other";
+  };
+  const isWebinar = (c: typeof courses[number]) =>
+    (c.price ?? 0) === 0 || (c.title ?? "").toUpperCase().startsWith("FREE");
+  const sorted = [...filtered].sort((a, b) => {
+    const aw = isWebinar(a) ? 0 : 1;
+    const bw = isWebinar(b) ? 0 : 1;
+    if (aw !== bw) return aw - bw;
+    const ta = trackOf(a.title, a.category);
+    const tb = trackOf(b.title, b.category);
+    if (ta !== tb) return ta.localeCompare(tb);
+    const da = DIFFICULTY_RANK[a.difficulty] ?? 99;
+    const db = DIFFICULTY_RANK[b.difficulty] ?? 99;
+    if (da !== db) return da - db;
+    return (a.price ?? 0) - (b.price ?? 0);
+  });
+
   const activeFilterCount =
     (activeCategory !== "All" ? 1 : 0) + (activeDifficulty !== "All Levels" ? 1 : 0);
 
@@ -400,7 +435,7 @@ export default function Courses() {
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {filtered.map((course, i) => (
+                {sorted.map((course, i) => (
                   <CourseCard key={course.id} course={course} index={i} />
                 ))}
               </div>
