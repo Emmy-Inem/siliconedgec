@@ -252,7 +252,7 @@ export default function Cart() {
               </h1>
               <p className="text-hero-muted text-lg mt-3 max-w-2xl">Review your selected programs, confirm pricing in Naira, and head to checkout when you’re ready.</p>
             </div>
-            <div className="glass-card rounded-2xl border border-white/10 p-5 md:p-6 space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Order snapshot</p>
@@ -263,11 +263,11 @@ export default function Cart() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Items</p>
                   <p className="mt-1 font-heading text-xl text-hero">{count}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Currency</p>
                   <p className="mt-1 font-heading text-xl text-hero">NGN</p>
                 </div>
