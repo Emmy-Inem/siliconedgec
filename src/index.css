@@ -167,7 +167,7 @@
     );
   }
   .gradient-mesh {
-    background:
+    background-image:
       radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
       radial-gradient(ellipse at 60% 80%, hsl(var(--gold) / 0.04) 0%, transparent 50%);

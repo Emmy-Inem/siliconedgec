@@ -200,7 +200,7 @@ export default function Dashboard() {
               <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-3 text-balance">Welcome back, {displayName}</h1>
               <p className="text-hero-muted text-lg max-w-2xl">Track your live sessions, continue coursework, review receipts, and keep your learning momentum in one place.</p>
             </div>
-            <div className="glass-card rounded-2xl border border-white/10 p-5 md:p-6 space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Learning snapshot</p>
@@ -211,15 +211,15 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3 text-sm">
-                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Courses</p>
                   <p className="mt-1 font-heading text-xl text-hero">{enrollments.length}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Live</p>
                   <p className="mt-1 font-heading text-xl text-hero">{liveClasses.filter((c) => new Date(c.scheduled_at).getTime() + c.duration_minutes * 60000 >= Date.now() && c.status !== "cancelled").length}</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-background/10 px-3 py-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Certs</p>
                   <p className="mt-1 font-heading text-xl text-hero">{completed.length}</p>
                 </div>
