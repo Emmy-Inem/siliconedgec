@@ -18,6 +18,7 @@ import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
 import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
+import { NextStepCard } from "@/components/ai/NextStepCard";
 import { Settings, MessageCircle, Sparkles } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
