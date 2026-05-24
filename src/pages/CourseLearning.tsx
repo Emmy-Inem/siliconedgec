@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { LiveClassesTab } from "@/components/LiveClassesTab";
 import { LessonQuiz } from "@/components/LessonQuiz";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
+import { LessonCompanion } from "@/components/ai/LessonCompanion";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
@@ -329,6 +330,7 @@ export default function CourseLearning() {
           )}
         </main>
       </div>
+      <LessonCompanion lessonId={currentLesson?.id} lessonTitle={currentLesson?.title} courseId={id} />
     </div>
   );
 }

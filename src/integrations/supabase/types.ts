@@ -44,6 +44,101 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          scope: string
+          scope_ref_id: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scope?: string
+          scope_ref_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scope?: string
+          scope_ref_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_quiz_attempts: {
+        Row: {
+          answers_json: Json | null
+          course_id: string | null
+          created_at: string
+          id: string
+          lesson_id: string | null
+          questions_json: Json
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          answers_json?: Json | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          questions_json?: Json
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          answers_json?: Json | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          questions_json?: Json
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       blocked_ips: {
         Row: {
           blocked_by: string | null
@@ -2028,6 +2123,39 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string | null
+        }
+        Relationships: []
+      }
+      study_plans: {
+        Row: {
+          course_id: string
+          created_at: string
+          hours_per_week: number
+          id: string
+          plan_json: Json
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          hours_per_week?: number
+          id?: string
+          plan_json?: Json
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          hours_per_week?: number
+          id?: string
+          plan_json?: Json
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
