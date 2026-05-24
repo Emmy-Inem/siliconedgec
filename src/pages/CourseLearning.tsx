@@ -330,6 +330,7 @@ export default function CourseLearning() {
           )}
         </main>
       </div>
+      <LessonCompanion lessonId={currentLesson?.id} lessonTitle={currentLesson?.title} courseId={id} />
     </div>
   );
 }
