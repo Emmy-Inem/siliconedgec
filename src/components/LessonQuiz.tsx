@@ -16,7 +16,6 @@ interface QuizQuestion {
   id: string;
   question_text: string;
   options: string[];
-  correct_answer: string;
   order_index: number;
 }
 
@@ -35,11 +34,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
         .eq("lesson_id", lessonId)
         .maybeSingle();
       if (!q) return null;
-      const { data: questions } = await supabase
-        .from("quiz_questions")
-        .select("id, question_text, options, correct_answer, order_index")
-        .eq("quiz_id", q.id)
-        .order("order_index");
+      const { data: questions } = await supabase.rpc("get_quiz_questions", { p_quiz_id: q.id });
       return { ...q, questions: (questions ?? []) as unknown as QuizQuestion[] };
     },
   });
@@ -63,21 +58,13 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   const submit = useMutation({
     mutationFn: async () => {
       if (!quiz || !user) throw new Error("Not ready");
-      const total = quiz.questions.length;
-      let correct = 0;
-      quiz.questions.forEach((q) => {
-        if (answers[q.id] && answers[q.id] === q.correct_answer) correct++;
-      });
-      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-      const passed = score >= quiz.passing_score;
-      const { error } = await supabase.from("quiz_attempts").insert({
-        user_id: user.id,
-        quiz_id: quiz.id,
-        score,
-        answers: Object.entries(answers).map(([qid, a]) => ({ question_id: qid, answer: a })) as any,
+      const { data, error } = await supabase.rpc("grade_quiz_submission", {
+        p_quiz_id: quiz.id,
+        p_answers: answers as any,
       });
       if (error) throw error;
-      return { score, passed };
+      const row: any = Array.isArray(data) ? data[0] : data;
+      return { score: row?.score ?? 0, passed: !!row?.passed };
     },
     onSuccess: (res) => {
       setSubmitted(res);
