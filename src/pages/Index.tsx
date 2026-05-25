@@ -630,12 +630,12 @@ export default function Index() {
     queryKey: ["home-stats"],
     queryFn: async () => {
       const [students, courses, instructors] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.rpc("get_profiles_count"),
         supabase.from("courses").select("id", { count: "exact", head: true }),
         supabase.from("instructors").select("id", { count: "exact", head: true }),
       ]);
       return {
-        students: Math.max(students.count ?? 0, 2000),
+        students: Math.max((students.data as number | null) ?? 0, 2000),
         courses: Math.max(courses.count ?? 0, 24),
         instructors: Math.max(instructors.count ?? 0, 30),
         countries: 18,

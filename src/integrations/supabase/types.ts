@@ -2273,6 +2273,33 @@ export type Database = {
     }
     Functions: {
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      get_profiles_count: { Args: never; Returns: number }
+      get_public_profiles: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          user_id: string
+        }[]
+      }
+      get_quiz_questions: {
+        Args: { p_quiz_id: string }
+        Returns: {
+          id: string
+          options: Json
+          order_index: number
+          question_text: string
+          quiz_id: string
+        }[]
+      }
+      grade_quiz_submission: {
+        Args: { p_answers: Json; p_quiz_id: string }
+        Returns: {
+          passed: boolean
+          passing_score: number
+          score: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
