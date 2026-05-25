@@ -32,10 +32,9 @@ export function useReviews(courseId: string | undefined) {
       const userIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
       if (userIds.length === 0) return [];
 
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, avatar_url")
-        .in("user_id", userIds);
+      const { data: profiles } = await supabase.rpc("get_public_profiles", {
+        p_user_ids: userIds as string[],
+      });
 
       const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
 
