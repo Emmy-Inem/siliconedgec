@@ -2269,10 +2269,67 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      quiz_questions_public: {
+        Row: {
+          id: string | null
+          options: Json | null
+          order_index: number | null
+          question_text: string | null
+          quiz_id: string | null
+        }
+        Insert: {
+          id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          question_text?: string | null
+          quiz_id?: string | null
+        }
+        Update: {
+          id?: string | null
+          options?: Json | null
+          order_index?: number | null
+          question_text?: string | null
+          quiz_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      grade_quiz_submission: {
+        Args: { p_answers: Json; p_quiz_id: string }
+        Returns: {
+          passed: boolean
+          passing_score: number
+          score: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
