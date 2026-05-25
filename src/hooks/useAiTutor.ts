@@ -72,13 +72,28 @@ export function useAiTutor(opts: { scope?: string; scopeRefId?: string } = {}) {
           if (j === "[DONE]") continue;
           try {
             const p = JSON.parse(j);
-            const c = p.choices?.[0]?.delta?.content;
-            if (c) pushAssistant(c);
+            const delta = p.choices?.[0]?.delta;
+            const c = delta?.content;
+            if (typeof c === "string") pushAssistant(c);
+            else if (Array.isArray(c)) {
+              for (const part of c) {
+                if (typeof part === "string") pushAssistant(part);
+                else if (part?.text) pushAssistant(part.text);
+              }
+            }
           } catch {
             buf = line + "\n" + buf;
             break;
           }
         }
+      }
+      // Flush any final assistant content if we never streamed anything
+      if (!acc) {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") return prev;
+          return [...prev, { role: "assistant", content: "I couldn't generate a response. Please try again." }];
+        });
       }
     } catch (e: any) {
       if (e.name !== "AbortError") toast({ title: "AI error", description: e.message, variant: "destructive" });
