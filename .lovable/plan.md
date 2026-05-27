@@ -1,97 +1,168 @@
-# Dashboard cleanup + AI Learning Companion
+# Silicon Edge Consulting — Full Audit
 
-## 1. Dashboard cleanup (quick)
+A scan of routes, components, edge functions, DB schema, secrets, and admin pages. Below is what's already shipped, what's partial, and what's missing — grouped so you can pick what to build next.
 
-Remove the 4 floating stat cards (Enrolled / Avg Progress / Certificates / Bookmarks) under the hero in `src/pages/Dashboard.tsx`. The same numbers already live in the "Learning Snapshot" panel inside the hero, so deleting them eliminates the repetition and tightens the page.
+---
 
-## 2. AI Learning Companion — vision
+## 1. LMS (Learning experience)
 
-Instead of a single "chatbot in a corner", embed AI at the exact moments a student needs help. One brain (`ai-tutor` edge function on Lovable AI Gateway, default `google/gemini-3-flash-preview`, streaming) powering several surfaces:
+**Working:** Course catalog, enrollment, video lessons, lesson progress + auto-progress trigger, quizzes (secure RPC), certificates (auto-issue + verify), bookmarks, reviews, Q&A, course announcements, live classes (Zoom links, reminders), study plan generator, AI lesson companion.
 
-### A. Lesson Companion (in-lesson side panel)
+**Partial / missing:**
+- **Assignments & file submissions** — `CurriculumBuilder` has an "assignment" lesson type, but there's no submission UI, no `assignment_submissions` table, no grading flow.
+- **Discussions per lesson** — Q&A exists at course level only; no threaded comments under each lesson.
+- **Notes & highlights** — students can't take in-lesson notes or highlight transcript passages.
+- **Resume-where-you-left-off** — `lesson_progress` is tracked but no "Continue learning" deep-link from Dashboard to the exact lesson + timestamp.
+- **Video transcripts / captions** — no transcript storage, so AI tutor lacks ground truth for "explain this section."
+- **Playback speed, picture-in-picture, keyboard shortcuts** — basic player only.
+- **Offline / downloadable lessons** — not implemented (course-resources bucket exists but no UI to bulk-download).
+- **Learning paths** — `AdminLearningPaths` exists; no student-facing path browser or progress meter.
+- **Prerequisites & locked lessons** — schema doesn't enforce sequential unlocking.
+- **Gamification** — no XP, streaks, badges, leaderboard.
+- **Mobile/PWA install** — no manifest + service worker for offline reading.
 
-- Always-present collapsible panel on `/courses/:slug/learn`.
-- Context-aware: receives the current lesson title, module, transcript/markdown content, and the student's recent questions.
-- Capabilities:
-  - **Explain this** — re-explain the current paragraph/timestamp in simpler terms.
-  - **Quiz me** — generate 3–5 questions from the lesson, grade answers, suggest review spots.
-  - **Summarize** — TL;DR + key takeaways for the lesson.
-  - **Code helper** — paste an error/snippet, get a fix grounded in the lesson stack (AWS / Azure / DevOps, etc.).
-  - **Ask anything** — free chat, scoped to the course material.
+---
 
-### B. Smart Course Recommender (Dashboard widget that replaces the removed strip)
+## 2. AI Integrations
 
-A single "Your next step" card under the hero that uses AI + enrollment/progress data to suggest:
+**Working:** `ai-tutor` (streaming chat), `ai-quiz` (generate + grade), `ai-study-plan`, `ai-recommend` (Next Step card), `generate-quiz` (admin), `QuizAIGenerator`.
 
-- the next lesson to resume,
-- the next course in the same track (Beginner → Intermediate → Expert),
-- a relevant upcoming live class.
-Feels personal, not repetitive.
+**Missing (from the original plan in `.lovable/plan.md`):**
+- **AI Career Coach** — match completed courses → jobs on `/jobs`, gap analysis, 1-paragraph cover-letter draft. Planned but never built.
+- **AI Mock Interview / Practice mode** — per-track text interview with rubric scoring.
+- **Instructor Assist** — auto-draft lesson summaries, course descriptions, SEO meta inside the course wizard.
+- **AI search** across catalog ("show me beginner AWS courses under ₦50k").
+- **AI announcements/email drafting** in admin email composer.
+- **AI business-lead qualifier** — auto-score and reply-draft for `business_leads`.
+- **Lesson-aware context grounding** — `ai-tutor` doesn't actually load the lesson transcript/markdown server-side (system prompt is generic). Needs RAG-lite: pull lesson `content_url` content + module title.
+- **Conversation history UI** — `ai_conversations` table exists but no "previous chats" sidebar in `LessonCompanion`.
+- **Citations** — promised in plan, not rendered in MarkdownView.
 
-### C. Study Plan Generator
+---
 
-On any course detail page and from the dashboard: "Generate my study plan". AI returns a week-by-week plan based on the user's available hours/week (slider), target completion date, and difficulty — saved to a new `study_plans` table and shown as a checklist.
+## 3. Commerce & Payments
 
-### D. AI Career Coach (small, on `/jobs` and dashboard)
+**Working:** Paystack single + cart checkout, refunds, promo codes, influencer referrals, receipts, cart abandonment tracking, orders admin.
 
-- Reviews the student's completed courses + certificates.
-- Suggests jobs they qualify for, gaps to close, and tailors a 1-paragraph cover-letter draft per job.
+**Missing:**
+- **Stripe** — no international card payments. Only Paystack (NGN). The model recommends `payments--enable_stripe`.
+- **Subscriptions / payment plans** — courses are one-time only; no installments.
+- **Invoices (downloadable PDF)** for B2B leads — receipts exist but B2B invoicing doesn't.
+- **Tax/VAT handling** for non-Nigerian buyers.
+- **Wishlist → email reminder** — wishlist insights exist for admin, but no automated "price drop / back in stock" email to users.
+- **Bundles** — buy a learning path as a discounted bundle.
+- **Gift a course / team seats** purchase flow.
 
-### E. Practice & Mock Interview
+---
 
-- "Practice mode" button per course track: AI runs a mock technical interview (text first, optional voice later) and scores answers against a rubric.
+## 4. Authentication & Accounts
 
-### F. Instructor Assist (admin only, bonus)
+**Working:** Email/password, Google OAuth (per memory), password reset, role gating (admin/moderator), login lockout, IP block, profile settings.
 
-Auto-draft lesson summaries, generate quiz banks, suggest descriptions when admins create courses — wired into the existing course-creation wizard.
+**Missing:**
+- **Email verification enforcement** — confirm config matches policy (sign-up flow doesn't block unverified users from key actions).
+- **2FA / MFA** for admins.
+- **Magic-link sign-in** option.
+- **Social providers beyond Google** (LinkedIn would convert B2B leads).
+- **Account deletion confirmation flow** — `ProfileSettings` has DELETE input but no server-side cascade audit.
+- **Session management UI** — `AdminSessions` exists for admins; users can't see/revoke their own active sessions.
 
-## 3. Trust, safety & UX guardrails (the "users will love it" part)
+---
 
-- **Streaming responses** so first tokens appear in <1s.
-- **Source citing**: every answer in the Lesson Companion shows which lesson/section it pulled from.
-- **"I'm not sure"** fallback — model is instructed to say so and link to instructor chat instead of hallucinating.
-- **Rate-limit + credit messages** surfaced as friendly toasts (429 / 402 from the gateway).
-- **Per-user chat history** persisted in `ai_conversations` / `ai_messages` so context carries between sessions, with a "Clear chat" control.
-- **Privacy**: only the student and admins can read their conversations (RLS).
-- **No PII in prompts** beyond first name + course context.
+## 5. Jobs / Career
 
-## 4. Technical plan
+**Working:** Job listings, job detail, applications, admin management, resume uploads (`job-resumes` bucket).
 
-### New tables (one migration)
+**Missing:**
+- **Application status tracking for candidates** (trigger exists, but no candidate-facing timeline page).
+- **Saved jobs / job alerts by email.**
+- **Employer self-serve portal** — only admins can post jobs.
+- **AI résumé scoring / matching** against job descriptions.
+- **"Apply with profile"** auto-fill from completed courses + certificates.
 
-- `ai_conversations` — `id, user_id, scope` (`lesson` | `course` | `dashboard` | `career`), `scope_ref_id`, `title`, timestamps.
-- `ai_messages` — `id, conversation_id, role` (`user|assistant|system`), `content`, `created_at`.
-- `study_plans` — `id, user_id, course_id, plan_json, hours_per_week, target_date, created_at`.
-- `ai_quiz_attempts` — `id, user_id, lesson_id, questions_json, score, created_at`.
-- RLS: owner-only read/write; admins read all.
+---
 
-### Edge functions
+## 6. Communications
 
-- `ai-tutor` — streaming chat, accepts `{ conversationId, scope, scopeRefId, messages }`, loads lesson/course context server-side, prepends a tight system prompt, calls Lovable AI Gateway with `stream: true`. Handles 429/402 cleanly.
-- `ai-study-plan` — non-streaming, uses tool-calling for structured JSON, saves to `study_plans`.
-- `ai-quiz` — generates + grades quizzes via tool-calling.
-- `ai-recommend` — returns next-step recommendation for the dashboard widget.
+**Working:** In-app notifications, real-time bell, course announcements, bulk email, transactional `send-email`, live chat (user ↔ admin), live-class notifications.
 
-All functions: CORS, JWT verified in code, Zod input validation, no secrets in client.
+**Missing:**
+- **Email infrastructure / verified sending domain** — check `email_domain` status; transactional may be on the default sandbox.
+- **Email templates editor preview** — `AdminEmailTemplates` exists; verify render preview + test-send works.
+- **SMS / WhatsApp transactional** (only WhatsApp FAB exists; no automated triggers).
+- **Push notifications** (web push) for live-class start, new messages.
+- **Discussion replies → email digest.**
 
-### Frontend
+---
 
-- `src/components/ai/LessonCompanion.tsx` — collapsible right-rail panel with tabs (Chat / Quiz / Summary).
-- `src/components/ai/NextStepCard.tsx` — replaces the deleted stat strip on the dashboard.
-- `src/components/ai/StudyPlanDialog.tsx` — modal launched from course pages.
-- `src/components/ai/CareerCoachCard.tsx` — small dashboard + `/jobs` widget.
-- `src/hooks/useAiTutor.ts` — SSE streaming helper following the project's existing pattern (line-by-line SSE parser, append-to-last-assistant rendering).
-- Markdown rendering via `react-markdown` for all AI output.
+## 7. Marketing & Analytics
 
-### Phasing (so it ships in usable chunks)
+**Working:** UTM tracking, influencer attribution, GA4, cart abandonment, marketing analytics dashboard, lead sources, promo codes.
 
-1. **Phase 1 (this PR):** Dashboard cleanup + `ai-tutor` function + Lesson Companion (chat + summarize) + persisted conversations.
-2. **Phase 2:** Quiz me + Study Plan generator.
-3. **Phase 3:** Career Coach + Next-Step recommender + Instructor Assist.
+**Missing:**
+- **Funnel visualization** beyond raw events.
+- **A/B testing framework** for hero/CTA.
+- **Conversion pixel manager UI** — `CustomScripts` covers raw scripts, but no per-event Meta/TikTok pixel mapper.
+- **Referral program for students** (separate from influencers).
+- **Newsletter / blog subscription** — Footer has email input but no list storage / double opt-in.
+- **Blog comments / social share counts.**
 
-## 5. Open questions before I build
+---
 
-1. Phase 1 only now, or do you want me to ship Phases 1 + 2 in this round? Build all now 
-2. Default AI model: keep `google/gemini-3-flash-preview` (fast + cheap, great for tutoring) or go premium `openai/gpt-5` for harder reasoning?
-3. Should the Lesson Companion be **open by default** on desktop, or collapsed behind a floating button?
-4. For the dashboard, after removing the 4 stat cards, do you want the AI "Next step" card to take their place, or leave the space empty and keep the page tighter?
+## 8. Admin / Ops
+
+**Working:** ~50 admin pages including hubs, course health, wishlist insights, login security, activity log, auth replay, sessions, brands, media, pages CMS.
+
+**Missing / partial:**
+- **Bulk import/export** — `admin-export-users` exists; no bulk course/CSV import.
+- **Audit trail diff view** — activity log shows events, no before/after.
+- **Scheduled tasks dashboard** — `live-class-reminder` runs (logs show shutdowns), but no cron management UI.
+- **Backup status** — `backup-to-drive` function exists; no admin page showing last successful backup.
+- **Feature flags / kill switches** beyond Public Access Mode.
+- **Help center / knowledge base** for students.
+
+---
+
+## 9. Connectors & External Integrations
+
+**Currently wired:** Google OAuth, Google Calendar (sync edge fn), Google Drive (backup, key managed), Google Search Console (key managed), Paystack.
+
+**Missing / recommended:**
+- **Stripe** — international payments (use `payments--enable_stripe`).
+- **Resend / SendGrid verified domain** — confirm email delivery infra.
+- **Zoom API** (currently just stored links) — auto-create meetings + recordings ingestion.
+- **YouTube unlisted upload** integration for lesson hosting.
+- **Slack / Discord** webhooks for new lead, new enrollment, failed payments.
+- **HubSpot / CRM sync** for `business_leads`.
+- **Cloudflare R2 / image CDN** for hero images (currently public Supabase buckets).
+- **OpenAI Whisper** edge fn for auto-transcripts (feeds AI tutor grounding).
+
+---
+
+## 10. Configuration & Hardening
+
+- `supabase/config.toml` does **not** declare `verify_jwt` for the four `ai-*` functions — defaults to verifying, fine, but should be explicit.
+- No `import_map.json` for edge functions (each redeclares deps).
+- **PWA manifest + icons** missing.
+- **robots.txt / sitemap.xml** exist; verify dynamic sitemap covers all blog/course slugs.
+- **CSP headers** — none set (would require edge middleware).
+- **Rate limiting** — only on login; AI endpoints rely on gateway limits.
+- **Accessibility audit** — no automated a11y tests; suggest adding `vitest-axe`.
+- **Lighthouse / performance budget** — no CI check.
+- **Error monitoring** (Sentry) — not installed.
+- **Security memory** is current; re-run `security--run_security_scan` to confirm zero open findings.
+
+---
+
+## Suggested next-build batches
+
+Pick any of these and I'll build it:
+
+1. **Finish the AI vision** — Career Coach + Mock Interview + Instructor Assist + lesson-context grounding for `ai-tutor` (+ citations + chat history sidebar).
+2. **Complete LMS depth** — Assignments + submissions, lesson notes, resume-where-you-left-off, learning-path student view, gamification (XP/streaks/badges).
+3. **Global payments** — Enable Stripe, add subscriptions/installments, B2B invoices.
+4. **Email + comms infra** — Verify sending domain, push notifications, Slack webhooks for ops events.
+5. **Connector expansion** — Zoom API, Whisper transcripts, HubSpot CRM sync, Sentry.
+6. **Hardening** — PWA, CSP, Sentry, a11y tests, Lighthouse CI, backup status page.
+
+Tell me which batch (or specific items) to build, and I'll switch to build mode and ship it.
