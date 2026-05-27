@@ -13,6 +13,7 @@ import { LiveClassesTab } from "@/components/LiveClassesTab";
 import { LessonQuiz } from "@/components/LessonQuiz";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
+import { LessonNotes } from "@/components/ai/LessonNotes";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
@@ -313,6 +314,9 @@ export default function CourseLearning() {
                   onPass={() => markComplete.mutate(currentLesson.id)}
                 />
               </div>
+
+              {/* Personal notes */}
+              <LessonNotes lessonId={currentLesson.id} />
             </motion.div>
           ) : (
             <div className="text-center py-20">
