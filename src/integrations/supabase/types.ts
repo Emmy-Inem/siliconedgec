@@ -139,6 +139,86 @@ export type Database = {
         }
         Relationships: []
       }
+      assignment_submissions: {
+        Row: {
+          assignment_id: string
+          content: string
+          feedback: string | null
+          file_url: string | null
+          grade: number | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          content?: string
+          feedback?: string | null
+          file_url?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          content?: string
+          feedback?: string | null
+          file_url?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignments: {
+        Row: {
+          created_at: string
+          due_at: string | null
+          id: string
+          instructions: string
+          lesson_id: string
+          max_points: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string
+          lesson_id: string
+          max_points?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          instructions?: string
+          lesson_id?: string
+          max_points?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blocked_ips: {
         Row: {
           blocked_by: string | null
@@ -883,6 +963,8 @@ export type Database = {
           created_at: string
           id: string
           is_completed: boolean | null
+          last_lesson_id: string | null
+          last_seen_at: string | null
           payment_status: string | null
           progress_percentage: number | null
           updated_at: string
@@ -893,6 +975,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean | null
+          last_lesson_id?: string | null
+          last_seen_at?: string | null
           payment_status?: string | null
           progress_percentage?: number | null
           updated_at?: string
@@ -903,6 +987,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean | null
+          last_lesson_id?: string | null
+          last_seen_at?: string | null
           payment_status?: string | null
           progress_percentage?: number | null
           updated_at?: string
@@ -1325,6 +1411,33 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lesson_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           completed_at: string | null
@@ -1396,6 +1509,30 @@ export type Database = {
           id?: string
           lesson_id?: string
           order_index?: number
+        }
+        Relationships: []
+      }
+      lesson_transcripts: {
+        Row: {
+          created_at: string
+          language: string | null
+          lesson_id: string
+          transcript: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          language?: string | null
+          lesson_id: string
+          transcript?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          language?: string | null
+          lesson_id?: string
+          transcript?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2267,6 +2404,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          points: number
+          ref_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          points?: number
+          ref_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          points?: number
+          ref_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2290,6 +2454,13 @@ export type Database = {
           order_index: number
           question_text: string
           quiz_id: string
+        }[]
+      }
+      get_user_xp: {
+        Args: { p_user_id: string }
+        Returns: {
+          level: number
+          total_points: number
         }[]
       }
       grade_quiz_submission: {
