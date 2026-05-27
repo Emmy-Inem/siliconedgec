@@ -73,7 +73,7 @@ export function CareerCoachCard({ jobId }: { jobId?: string }) {
                     {showLetter ? <ChevronUp className="h-4 w-4 mr-1" /> : <ChevronDown className="h-4 w-4 mr-1" />} Cover-letter draft
                   </Button>
                   {showLetter && (
-                    <div className="text-sm bg-muted/40 rounded-lg p-3 mt-2"><MarkdownView text={result.cover_letter} /></div>
+                    <div className="text-sm bg-muted/40 rounded-lg p-3 mt-2"><MarkdownView>{result.cover_letter}</MarkdownView></div>
                   )}
                 </div>
               )}
