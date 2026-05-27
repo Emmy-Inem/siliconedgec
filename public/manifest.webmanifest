@@ -1,0 +1,12 @@
+{
+  "name": "Silicon Edge Consulting",
+  "short_name": "Silicon Edge",
+  "description": "Job-Ready IT training in AI, Cloud, DevOps and Data Engineering.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b1a",
+  "theme_color": "#0b0b1a",
+  "icons": [
+    { "src": "/placeholder.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
