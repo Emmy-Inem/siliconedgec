@@ -45,7 +45,10 @@ Deno.serve(async (req) => {
       if (lesson) {
         const { data: mod } = await admin.from("modules").select("title, course_id").eq("id", lesson.module_id).maybeSingle();
         const { data: course } = mod ? await admin.from("courses").select("title, category, difficulty, learning_outcomes").eq("id", mod.course_id).maybeSingle() : { data: null };
+        const { data: transcript } = await admin.from("lesson_transcripts").select("transcript").eq("lesson_id", scopeRefId).maybeSingle();
+        const tx = (transcript?.transcript ?? "").slice(0, 12000);
         contextBlock = `\n\nCURRENT LESSON CONTEXT:\nCourse: ${course?.title ?? ""} (${course?.category ?? ""} · ${course?.difficulty ?? ""})\nModule: ${mod?.title ?? ""}\nLesson: ${lesson.title}\nLearning outcomes: ${(course?.learning_outcomes ?? []).join("; ")}`;
+        if (tx) contextBlock += `\n\nLESSON TRANSCRIPT (cite as [Lesson: ${lesson.title}] when you use it):\n"""\n${tx}\n"""`;
       }
     } else if (scope === "course" && scopeRefId) {
       const { data: course } = await admin.from("courses").select("title, category, difficulty, description, learning_outcomes").eq("id", scopeRefId).maybeSingle();
