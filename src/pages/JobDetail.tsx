@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { motion } from "framer-motion";
 import { Upload, Loader2, FileText } from "lucide-react";
+import { CareerCoachCard } from "@/components/ai/CareerCoachCard";
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -178,6 +179,12 @@ export default function JobDetail() {
               )}
             </div>
           </motion.div>
+
+          {user && id && (
+            <div className="max-w-4xl mx-auto mt-6">
+              <CareerCoachCard jobId={id} />
+            </div>
+          )}
 
           {showApply && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-background/80 backdrop-blur flex items-center justify-center p-4">
