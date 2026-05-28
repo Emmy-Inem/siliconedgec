@@ -37,6 +37,8 @@ import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { HelmetProvider } from "react-helmet-async";
 import CmsPagePublic from "./pages/CmsPage";
 import InstructorDetail from "./pages/InstructorDetail";
+import LearningPaths from "./pages/LearningPaths";
+import LearningPathDetail from "./pages/LearningPathDetail";
 
 // Code-split admin pages — they only load when an admin route is visited
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -141,6 +143,8 @@ const App = () => (
               <Route path="/r/:slug" element={<RedirectInfluencer />} />
               <Route path="/p/:slug" element={<CmsPagePublic />} />
               <Route path="/instructors/:id" element={<InstructorDetail />} />
+              <Route path="/paths" element={<LearningPaths />} />
+              <Route path="/paths/:id" element={<LearningPathDetail />} />
 
               <Route
                 path="/admin"
