@@ -20,6 +20,7 @@ import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
 import { NextStepCard } from "@/components/ai/NextStepCard";
 import { CareerCoachCard } from "@/components/ai/CareerCoachCard";
+import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
 import { Settings, MessageCircle, Sparkles } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
