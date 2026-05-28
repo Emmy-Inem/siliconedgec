@@ -80,6 +80,7 @@ export default function Dashboard() {
   const { user, loading, isAdmin } = useAuth();
   const { data: siteSettings } = useSiteSettings();
   const { data: publicAccess } = usePublicAccessMode();
+  const { data: hasJobs } = useHasPublishedJobs();
   const [enrollments, setEnrollments] = useState<EnrolledCourse[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [applications, setApplications] = useState<JobApplicationRow[]>([]);
@@ -237,7 +238,7 @@ export default function Dashboard() {
           {user && (
             <div className="mb-10">
               <NextStepCard userId={user.id} />
-              <div className="mt-4"><CareerCoachCard /></div>
+              {hasJobs && <div className="mt-4"><CareerCoachCard /></div>}
             </div>
           )}
 
