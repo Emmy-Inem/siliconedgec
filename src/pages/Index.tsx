@@ -777,7 +777,7 @@ export default function Index() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="container mx-auto px-4 pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32 relative"
+          className="container mx-auto px-5 sm:px-6 pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32 relative"
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
@@ -891,7 +891,7 @@ export default function Index() {
 
       {/* ───────────────── ALUMNI MARQUEE ───────────────── */}
       <section className="border-y border-border/40 bg-card/40 backdrop-blur-sm py-7 relative">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-5">
             {home?.alumni_label ?? "Our alumni now work at"}
           </p>
@@ -901,7 +901,7 @@ export default function Index() {
 
       {/* ───────────────── STATS BAND ───────────────── */}
       <section className="py-12 md:py-16 relative">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
@@ -938,7 +938,7 @@ export default function Index() {
 
       {/* ───────────────── BENTO — WHY ───────────────── */}
       <section className="py-20 md:py-24 relative">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="text-center mb-14 max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.why_eyebrow ?? "Why Silicon Edge"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
@@ -1031,7 +1031,7 @@ export default function Index() {
 
       {/* ───────────────── COURSES ───────────────── */}
       <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal}>
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.categories_eyebrow ?? "Browse Categories"}</p>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -1084,7 +1084,7 @@ export default function Index() {
       {/* ───────────────── HOW IT WORKS — scroll timeline ───────────────── */}
       <section ref={timelineRef} className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-5 sm:px-6 relative">
           <motion.div {...sectionReveal} className="text-center mb-16 max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.how_eyebrow ?? "How it works"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
@@ -1144,7 +1144,7 @@ export default function Index() {
 
       {/* ───────────────── INSTRUCTORS RAIL ───────────────── */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
               <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
@@ -1202,7 +1202,7 @@ export default function Index() {
       <section className="py-20 bg-hero relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh opacity-30" />
         <div className="noise-overlay" />
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-5 sm:px-6 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div {...sectionReveal}>
               <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.mentors_eyebrow ?? "Meet your mentors"}</p>
@@ -1311,7 +1311,7 @@ export default function Index() {
 
       {/* ───────────────── TRUST + TESTIMONIALS (masonry) ───────────────── */}
       <section className="py-20 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
@@ -1360,7 +1360,7 @@ export default function Index() {
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           style={{ willChange: "opacity" }}
         />
-        <div className="container mx-auto px-4 text-center relative">
+        <div className="container mx-auto px-5 sm:px-6 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Your edge starts now"}</p>
             <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">

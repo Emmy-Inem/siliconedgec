@@ -238,7 +238,13 @@ export default function Courses() {
   };
   const isWebinar = (c: typeof courses[number]) =>
     (c.price ?? 0) === 0 || (c.title ?? "").toUpperCase().startsWith("FREE");
+  const PINNED_SLUGS = new Set<string>([
+    "cloud-engineering-accelerator-4-week-hands-on-bootcamp",
+  ]);
   const sorted = [...filtered].sort((a, b) => {
+    const ap = a.slug && PINNED_SLUGS.has(a.slug) ? 0 : 1;
+    const bp = b.slug && PINNED_SLUGS.has(b.slug) ? 0 : 1;
+    if (ap !== bp) return ap - bp;
     const aw = isWebinar(a) ? 0 : 1;
     const bw = isWebinar(b) ? 0 : 1;
     if (aw !== bw) return aw - bw;

@@ -44,8 +44,16 @@ export function isWebinarCourse(c: Pick<DbCourse, "price" | "title">): boolean {
   return (c.price ?? 0) === 0 || (c.title ?? "").toUpperCase().startsWith("FREE");
 }
 
+// Always-pin slugs at the absolute top of every public listing (home, /courses).
+const PINNED_SLUGS = new Set<string>([
+  "cloud-engineering-accelerator-4-week-hands-on-bootcamp",
+]);
+
 function sortWebinarsFirst(list: DbCourse[]): DbCourse[] {
   return [...list].sort((a, b) => {
+    const ap = a.slug && PINNED_SLUGS.has(a.slug) ? 1 : 0;
+    const bp = b.slug && PINNED_SLUGS.has(b.slug) ? 1 : 0;
+    if (ap !== bp) return bp - ap; // pinned first
     const aw = isWebinarCourse(a) ? 1 : 0;
     const bw = isWebinarCourse(b) ? 1 : 0;
     if (aw !== bw) return bw - aw; // webinars first
