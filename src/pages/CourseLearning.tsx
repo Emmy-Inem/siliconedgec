@@ -169,6 +169,11 @@ export default function CourseLearning() {
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-heading font-semibold text-sm truncate flex-1">{course?.title}</h1>
+        <nav className="hidden sm:flex items-center gap-1 text-xs">
+          <Link to={`/courses/${id}/quizzes`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Quizzes</Link>
+          <Link to={`/courses/${id}/assignments`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Assignments</Link>
+          <Link to={`/courses/${id}/related`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Related</Link>
+        </nav>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{progressPct}% complete</span>
           <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
