@@ -54,7 +54,7 @@ export default function CourseQuizzes() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SEO title={`Quizzes · ${course?.title ?? "Course"}`} description="Practice every lesson quiz and track your scores." noindex />
+      <SEO title={`Quizzes · ${course?.title ?? "Course"}`} description="Practice every lesson quiz and track your scores." />
       <Header />
       <main className="flex-1 container mx-auto px-5 sm:px-6 py-8 max-w-4xl">
         <Button variant="ghost" size="sm" asChild className="mb-4">
