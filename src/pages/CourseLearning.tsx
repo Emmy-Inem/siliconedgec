@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,7 @@ export default function CourseLearning() {
   const { data: publicAccess } = usePublicAccessMode();
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Check enrollment
   const { data: enrollment, isLoading: enrollLoading } = useQuery({
@@ -75,7 +76,8 @@ export default function CourseLearning() {
 
   // Fetch lesson progress
   const { data: progress } = useQuery({
-    queryKey: ["lesson-progress", id, user?.id],
+    queryKey: ["lesson-progress", id, user?.id, course?.modules?.length ?? 0],
+    enabled: !!user && !!course?.modules?.length,
     queryFn: async () => {
       if (!user) return [];
       const allLessonIds = course?.modules?.flatMap((m: any) => m.lessons.map((l: any) => l.id)) ?? [];
@@ -110,10 +112,20 @@ export default function CourseLearning() {
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
 
   useEffect(() => {
-    if (!selectedLessonId && allLessons.length) {
-      setSelectedLessonId(allLessons[0].id);
-    }
-  }, [allLessons, selectedLessonId]);
+    if (selectedLessonId || !allLessons.length) return;
+    const fromUrl = searchParams.get("lesson");
+    const target = fromUrl && allLessons.some((l: any) => l.id === fromUrl) ? fromUrl : allLessons[0].id;
+    setSelectedLessonId(target);
+  }, [allLessons, selectedLessonId, searchParams]);
+
+  // Keep URL in sync so lessons are deep-linkable / shareable.
+  useEffect(() => {
+    if (!selectedLessonId) return;
+    if (searchParams.get("lesson") === selectedLessonId) return;
+    const next = new URLSearchParams(searchParams);
+    next.set("lesson", selectedLessonId);
+    setSearchParams(next, { replace: true });
+  }, [selectedLessonId, searchParams, setSearchParams]);
 
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
@@ -169,6 +181,11 @@ export default function CourseLearning() {
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-heading font-semibold text-sm truncate flex-1">{course?.title}</h1>
+        <nav className="hidden sm:flex items-center gap-1 text-xs">
+          <Link to={`/courses/${id}/quizzes`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Quizzes</Link>
+          <Link to={`/courses/${id}/assignments`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Assignments</Link>
+          <Link to={`/courses/${id}/related`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Related</Link>
+        </nav>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{progressPct}% complete</span>
           <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
