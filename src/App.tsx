@@ -12,33 +12,38 @@ import { RequireAdmin } from "@/components/RequireAdmin";
 import { UtmTracker } from "@/components/UtmTracker";
 import { InfluencerSignupPrompt } from "@/components/InfluencerSignupPrompt";
 import Index from "./pages/Index";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-import Cart from "./pages/Cart";
-import ForBusinesses from "./pages/ForBusinesses";
-import Certificates from "./pages/Certificates";
-import Pricing from "./pages/Pricing";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import ResetPassword from "./pages/ResetPassword";
-import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
-import CourseLearning from "./pages/CourseLearning";
-import VerifyCertificate from "./pages/VerifyCertificate";
-import VerifyReceipt from "./pages/VerifyReceipt";
-import Jobs from "./pages/Jobs";
-import JobDetail from "./pages/JobDetail";
-import RedirectInfluencer from "./pages/RedirectInfluencer";
+// Public routes are code-split to keep the initial JS bundle small and the
+// home page snappy. Only Index (LCP) loads eagerly.
+const Courses = lazy(() => import("./pages/Courses"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const ForBusinesses = lazy(() => import("./pages/ForBusinesses"));
+const Certificates = lazy(() => import("./pages/Certificates"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const CourseLearning = lazy(() => import("./pages/CourseLearning"));
+const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
+const VerifyReceipt = lazy(() => import("./pages/VerifyReceipt"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const JobDetail = lazy(() => import("./pages/JobDetail"));
+const RedirectInfluencer = lazy(() => import("./pages/RedirectInfluencer"));
+const CmsPagePublic = lazy(() => import("./pages/CmsPage"));
+const InstructorDetail = lazy(() => import("./pages/InstructorDetail"));
+const LearningPaths = lazy(() => import("./pages/LearningPaths"));
+const LearningPathDetail = lazy(() => import("./pages/LearningPathDetail"));
+const CourseQuizzes = lazy(() => import("./pages/CourseQuizzes"));
+const CourseAssignments = lazy(() => import("./pages/CourseAssignments"));
+const RelatedCourses = lazy(() => import("./pages/RelatedCourses"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
 import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { HelmetProvider } from "react-helmet-async";
-import CmsPagePublic from "./pages/CmsPage";
-import InstructorDetail from "./pages/InstructorDetail";
-import LearningPaths from "./pages/LearningPaths";
-import LearningPathDetail from "./pages/LearningPathDetail";
 
 // Code-split admin pages — they only load when an admin route is visited
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -109,7 +114,24 @@ const AdminFallback = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Cache aggressively — most catalog/content data changes rarely.
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      retry: 1,
+    },
+  },
+});
+
+const PublicFallback = () => (
+  <div className="flex min-h-[60vh] items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -122,6 +144,7 @@ const App = () => (
           <ScrollToTop />
           <UtmTracker />
           <CartProvider>
+            <Suspense fallback={<PublicFallback />}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/courses" element={<Courses />} />
@@ -136,6 +159,9 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
+              <Route path="/courses/:id/quizzes" element={<CourseQuizzes />} />
+              <Route path="/courses/:id/assignments" element={<CourseAssignments />} />
+              <Route path="/courses/:id/related" element={<RelatedCourses />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
               <Route path="/verify-receipt/:reference" element={<VerifyReceipt />} />
               <Route path="/jobs" element={<Jobs />} />
@@ -231,6 +257,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
             <LiveChat />
             <CustomScripts />
             <CookieBanner />
