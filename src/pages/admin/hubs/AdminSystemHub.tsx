@@ -6,6 +6,7 @@ import AdminSessions from "../AdminSessions";
 import AdminActivityLog from "../AdminActivityLog";
 import AdminSEO from "../AdminSEO";
 import AdminCustomScripts from "../AdminCustomScripts";
+import AdminBackupStatus from "../AdminBackupStatus";
 
 export default function AdminSystemHub() {
   return (
@@ -20,6 +21,7 @@ export default function AdminSystemHub() {
         { value: "activity-log", label: "Activity Log", content: <AdminActivityLog /> },
         { value: "seo", label: "SEO", content: <AdminSEO /> },
         { value: "custom-scripts", label: "Custom Scripts", content: <AdminCustomScripts /> },
+        { value: "backups", label: "Backups", content: <AdminBackupStatus /> },
       ]}
     />
   );

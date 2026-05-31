@@ -118,8 +118,8 @@ Deno.serve(async (req) => {
   }
 
   const { data: backupRow, error: insertErr } = await admin
-    .from("site_backups")
-    .insert({ status: "running", triggered_by: triggeredBy })
+    .from("backup_runs")
+    .insert({ status: "running", destination: "google_drive", details: { triggered_by: triggeredBy } })
     .select()
     .single();
   if (insertErr) {
@@ -160,14 +160,19 @@ Deno.serve(async (req) => {
     const filename = `siliconedge-backup-${stamp}.json`;
     const file = await uploadJson(folderId, filename, payload);
 
-    await admin.from("site_backups").update({
-      status: "completed",
-      drive_file_id: file.id,
-      drive_file_url: file.webViewLink ?? `https://drive.google.com/file/d/${file.id}/view`,
-      drive_folder_id: folderId,
-      size_bytes: sizeBytes,
-      table_count: okTables,
-      row_count: totalRows,
+    await admin.from("backup_runs").update({
+      status: "success",
+      finished_at: new Date().toISOString(),
+      tables_backed_up: okTables,
+      total_rows: totalRows,
+      bytes_uploaded: sizeBytes,
+      details: {
+        triggered_by: triggeredBy,
+        drive_file_id: file.id,
+        drive_file_url: file.webViewLink ?? `https://drive.google.com/file/d/${file.id}/view`,
+        drive_folder_id: folderId,
+        filename,
+      },
     }).eq("id", backupRow.id);
 
     return new Response(JSON.stringify({
@@ -181,7 +186,11 @@ Deno.serve(async (req) => {
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    await admin.from("site_backups").update({ status: "failed", error: msg }).eq("id", backupRow.id);
+    await admin.from("backup_runs").update({
+      status: "failed",
+      finished_at: new Date().toISOString(),
+      error_message: msg,
+    }).eq("id", backupRow.id);
     return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
