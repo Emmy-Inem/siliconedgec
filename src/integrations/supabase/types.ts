@@ -219,6 +219,48 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_runs: {
+        Row: {
+          bytes_uploaded: number | null
+          created_at: string
+          destination: string | null
+          details: Json | null
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          started_at: string
+          status: string
+          tables_backed_up: number | null
+          total_rows: number | null
+        }
+        Insert: {
+          bytes_uploaded?: number | null
+          created_at?: string
+          destination?: string | null
+          details?: Json | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tables_backed_up?: number | null
+          total_rows?: number | null
+        }
+        Update: {
+          bytes_uploaded?: number | null
+          created_at?: string
+          destination?: string | null
+          details?: Json | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tables_backed_up?: number | null
+          total_rows?: number | null
+        }
+        Relationships: []
+      }
       blocked_ips: {
         Row: {
           blocked_by: string | null
