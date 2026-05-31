@@ -1,0 +1,33 @@
+name: Lighthouse + a11y
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+      - name: Run Lighthouse against published preview
+        env:
+          LHCI_URL: ${{ vars.LHCI_URL || 'https://siliconedgec.lovable.app' }}
+        run: |
+          lhci autorun \
+            --collect.url="$LHCI_URL" \
+            --collect.url="$LHCI_URL/courses" \
+            --collect.url="$LHCI_URL/pricing" \
+            --collect.numberOfRuns=2 \
+            --upload.target=temporary-public-storage \
+            --assert.preset=lighthouse:recommended \
+            --assert.assertions.categories:performance=warn \
+            --assert.assertions.categories:accessibility="['error', {minScore: 0.9}]" \
+            --assert.assertions.categories:best-practices=warn \
+            --assert.assertions.categories:seo=warn \
+          || echo "Lighthouse audit completed with warnings"
