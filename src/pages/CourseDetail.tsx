@@ -42,7 +42,7 @@ const difficultyIcon: Record<string, string> = {
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -715,8 +715,8 @@ export default function CourseDetail() {
           courseId={course.id}
           courseTitle={course.title}
           onSuccess={() => {
-            qc.invalidateQueries({ queryKey: ["enrollment", id] });
-            qc.invalidateQueries({ queryKey: ["webinar-registration", id] });
+            qc.invalidateQueries({ queryKey: ["enrollment", course.id] });
+            qc.invalidateQueries({ queryKey: ["webinar-registration", course.id] });
           }}
         />
       )}
