@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,47 +14,34 @@ import { LessonQuiz } from "@/components/LessonQuiz";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
+import { courseHref, courseSectionHref } from "@/lib/course-url";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const { data: publicAccess } = usePublicAccessMode();
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Check enrollment
-  const { data: enrollment, isLoading: enrollLoading } = useQuery({
-    queryKey: ["enrollment-check", id, user?.id],
-    queryFn: async () => {
-      if (!user || !id) return null;
-      const { data } = await supabase
-        .from("enrollments")
-        .select("*")
-        .eq("course_id", id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user && !!id,
-  });
+  const routeLooksLikeUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   // Fetch course with modules and lessons
-  const { data: course } = useQuery({
+  const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course-learn", id],
     queryFn: async () => {
       if (!id) return null;
+      const courseColumn = routeLooksLikeUuid ? "id" : "slug";
       const { data: courseData } = await supabase
         .from("courses")
-        .select("id, title, description")
-        .eq("id", id)
-        .single();
+        .select("id, slug, title, description")
+        .eq(courseColumn, id)
+        .maybeSingle();
       if (!courseData) return null;
 
       const { data: modules } = await supabase
         .from("modules")
         .select("id, title, order_index")
-        .eq("course_id", id)
+        .eq("course_id", courseData.id)
         .order("order_index");
 
       const { data: lessons } = await supabase
@@ -72,6 +59,24 @@ export default function CourseLearning() {
       };
     },
     enabled: !!id,
+  });
+
+  const courseId = course?.id;
+  const hasAdminAccess = !!user && isAdmin;
+
+  const { data: enrollment, isLoading: enrollLoading } = useQuery({
+    queryKey: ["enrollment-check", courseId, user?.id],
+    queryFn: async () => {
+      if (!user || !courseId) return null;
+      const { data } = await supabase
+        .from("enrollments")
+        .select("id, course_id, user_id, payment_status")
+        .eq("course_id", courseId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!courseId && !hasAdminAccess,
   });
 
   // Fetch lesson progress
