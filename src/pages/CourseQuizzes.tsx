@@ -10,7 +10,7 @@ import { LessonQuiz } from "@/components/LessonQuiz";
 import { useCourse } from "@/hooks/useCourses";
 import { ClipboardCheck, ChevronLeft, Loader2, Trophy } from "lucide-react";
 import { useState } from "react";
-import { courseHref } from "@/lib/course-url";
+import { courseHref, courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
 
 export default function CourseQuizzes() {
@@ -68,6 +68,18 @@ export default function CourseQuizzes() {
             <h1 className="font-heading text-2xl font-bold">Quizzes</h1>
             <p className="text-sm text-muted-foreground">{course?.title ?? "Loading course…"}</p>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button variant="outline" size="sm" asChild>
+            <Link to={courseLearnHref(course)}>Open lessons</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={courseSectionHref(course, "assignments")}>Assignments</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={courseSectionHref(course, "related")}>Related courses</Link>
+          </Button>
         </div>
 
         {(isLoading || courseLoading) ? (
