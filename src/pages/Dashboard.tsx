@@ -25,6 +25,7 @@ import { Settings, MessageCircle, Sparkles } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
+import { courseHref, courseLearnHref } from "@/lib/course-url";
 
 interface EnrolledCourse {
   id: string;
@@ -305,7 +306,7 @@ export default function Dashboard() {
                                       </a>
                                     </Button>
                                     <Button size="sm" variant="outline" className="w-full" asChild>
-                                      <Link to={`/courses/${enroll.course_id}`}>Open Course</Link>
+                                       <Link to={courseLearnHref({ id: enroll.course_id, slug: null })}>Open course hub</Link>
                                     </Button>
                                   </CardContent>
                                 </Card>
@@ -346,7 +347,7 @@ export default function Dashboard() {
                                     {enroll.course?.duration_hours}h total
                                   </div>
                                   <Button size="sm" className="w-full" asChild>
-                                    <Link to={`/courses/${enroll.course_id}`}>Continue Learning</Link>
+                                     <Link to={courseLearnHref({ id: enroll.course_id, slug: null })}>Continue Learning</Link>
                                   </Button>
                                 </CardContent>
                               </Card>
@@ -377,7 +378,7 @@ export default function Dashboard() {
                                       <Download className="h-3.5 w-3.5" /> Certificate
                                     </Button>
                                     <Button size="sm" variant="ghost" asChild className="flex-1">
-                                      <Link to={`/courses/${enroll.course_id}`}>Review</Link>
+                                      <Link to={courseHref({ id: enroll.course_id, slug: null })}>Review</Link>
                                     </Button>
                                   </div>
                                 </CardContent>
@@ -415,7 +416,7 @@ export default function Dashboard() {
                             <p className="font-heading font-bold text-primary">{formatNaira(bm.course?.price ?? 0)}</p>
                             <div className="flex gap-2">
                               <Button size="sm" className="flex-1" asChild>
-                                <Link to={`/courses/${bm.course_id}`}>View Course</Link>
+                                <Link to={courseHref({ id: bm.course_id, slug: null })}>View Course</Link>
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => removeBookmark(bm.id)} className="text-muted-foreground hover:text-destructive">
                                 <Trash2 className="h-4 w-4" />
