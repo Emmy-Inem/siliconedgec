@@ -32,6 +32,7 @@ import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
+import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
@@ -272,6 +273,7 @@ export default function CourseDetail() {
   const originalPrice = Math.round(course.price * 1.2);
   const hours = Math.floor(course.duration_hours);
   const minutes = Math.round((course.duration_hours - hours) * 60);
+  const canOpenStudentArea = isEnrolled || (!!user && isAdmin);
 
   return (
     <div className="min-h-screen bg-background">
@@ -392,6 +394,22 @@ export default function CourseDetail() {
                       </Accordion>
                     ) : (
                       <p className="text-muted-foreground text-sm py-6 text-center">Curriculum coming soon.</p>
+                    )}
+
+                    {course.modules.length > 0 && (
+                      <div className="mt-6 border-t border-border pt-4">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <Button variant={canOpenStudentArea ? "default" : "outline"} className="w-full" asChild>
+                            <Link to={courseLearnHref(course)}>{canOpenStudentArea ? "Open lessons" : "Preview lessons"}</Link>
+                          </Button>
+                          <Button variant="outline" className="w-full" asChild>
+                            <Link to={courseSectionHref(course, "quizzes")}>Open quizzes</Link>
+                          </Button>
+                          <Button variant="outline" className="w-full" asChild>
+                            <Link to={courseSectionHref(course, "assignments")}>Open assignments</Link>
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </TabsContent>
                   <TabsContent value="description" className="mt-0">
