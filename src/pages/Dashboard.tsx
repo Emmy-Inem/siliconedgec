@@ -307,7 +307,7 @@ export default function Dashboard() {
                                       </a>
                                     </Button>
                                     <Button size="sm" variant="outline" className="w-full" asChild>
-                                       <Link to={courseLearnHref({ id: enroll.course_id, slug: null })}>Open course hub</Link>
+                                       <Link to={courseLearnHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Open course hub</Link>
                                     </Button>
                                   </CardContent>
                                 </Card>
@@ -348,7 +348,7 @@ export default function Dashboard() {
                                     {enroll.course?.duration_hours}h total
                                   </div>
                                   <Button size="sm" className="w-full" asChild>
-                                     <Link to={courseLearnHref({ id: enroll.course_id, slug: null })}>Continue Learning</Link>
+                                     <Link to={courseLearnHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Continue Learning</Link>
                                   </Button>
                                 </CardContent>
                               </Card>
@@ -379,7 +379,7 @@ export default function Dashboard() {
                                       <Download className="h-3.5 w-3.5" /> Certificate
                                     </Button>
                                     <Button size="sm" variant="ghost" asChild className="flex-1">
-                                      <Link to={courseHref({ id: enroll.course_id, slug: null })}>Review</Link>
+                                      <Link to={courseHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Review</Link>
                                     </Button>
                                   </div>
                                 </CardContent>
