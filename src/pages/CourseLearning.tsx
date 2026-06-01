@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,47 +14,34 @@ import { LessonQuiz } from "@/components/LessonQuiz";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
+import { courseHref, courseSectionHref } from "@/lib/course-url";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const { data: publicAccess } = usePublicAccessMode();
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Check enrollment
-  const { data: enrollment, isLoading: enrollLoading } = useQuery({
-    queryKey: ["enrollment-check", id, user?.id],
-    queryFn: async () => {
-      if (!user || !id) return null;
-      const { data } = await supabase
-        .from("enrollments")
-        .select("*")
-        .eq("course_id", id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user && !!id,
-  });
+  const routeLooksLikeUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   // Fetch course with modules and lessons
-  const { data: course } = useQuery({
+  const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course-learn", id],
     queryFn: async () => {
       if (!id) return null;
+      const courseColumn = routeLooksLikeUuid ? "id" : "slug";
       const { data: courseData } = await supabase
         .from("courses")
-        .select("id, title, description")
-        .eq("id", id)
-        .single();
+        .select("id, slug, title, description")
+        .eq(courseColumn, id)
+        .maybeSingle();
       if (!courseData) return null;
 
       const { data: modules } = await supabase
         .from("modules")
         .select("id, title, order_index")
-        .eq("course_id", id)
+        .eq("course_id", courseData.id)
         .order("order_index");
 
       const { data: lessons } = await supabase
@@ -72,6 +59,24 @@ export default function CourseLearning() {
       };
     },
     enabled: !!id,
+  });
+
+  const courseId = course?.id;
+  const hasAdminAccess = !!user && isAdmin;
+
+  const { data: enrollment, isLoading: enrollLoading } = useQuery({
+    queryKey: ["enrollment-check", courseId, user?.id],
+    queryFn: async () => {
+      if (!user || !courseId) return null;
+      const { data } = await supabase
+        .from("enrollments")
+        .select("id, course_id, user_id, payment_status")
+        .eq("course_id", courseId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user && !!courseId && !hasAdminAccess,
   });
 
   // Fetch lesson progress
@@ -127,6 +132,13 @@ export default function CourseLearning() {
     setSearchParams(next, { replace: true });
   }, [selectedLessonId, searchParams, setSearchParams]);
 
+  const canAccessCourse = useMemo(() => {
+    if (publicAccess) return true;
+    if (!user) return false;
+    if (hasAdminAccess) return true;
+    return !!enrollment;
+  }, [publicAccess, user, hasAdminAccess, enrollment]);
+
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
       if (!user) return;
@@ -155,16 +167,18 @@ export default function CourseLearning() {
     },
   });
 
+  if (authLoading || courseLoading || (user && !hasAdminAccess && !publicAccess && enrollLoading)) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+  }
   if (!user && !publicAccess) return <Navigate to="/sign-in" replace />;
-  if (enrollLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
-  if (!enrollment) return (
+  if (!canAccessCourse) return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-20 text-center">
         <Lock className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
         <h1 className="font-heading text-2xl font-bold mb-2">Not Enrolled</h1>
         <p className="text-muted-foreground mb-6">You need to enroll in this course to access lessons.</p>
-        <Button asChild><Link to={`/courses/${id}`}>View Course</Link></Button>
+        <Button asChild><Link to={courseHref(course ?? (id ? { id, slug: routeLooksLikeUuid ? null : id } : null))}>View Course</Link></Button>
       </div>
     </div>
   );
@@ -177,14 +191,14 @@ export default function CourseLearning() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
       <div className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 shrink-0">
-        <Link to={`/courses/${id}`} className="text-muted-foreground hover:text-foreground transition-colors">
+        <Link to={courseHref(course ?? (id ? { id, slug: routeLooksLikeUuid ? null : id } : null))} className="text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-heading font-semibold text-sm truncate flex-1">{course?.title}</h1>
         <nav className="hidden sm:flex items-center gap-1 text-xs">
-          <Link to={`/courses/${id}/quizzes`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Quizzes</Link>
-          <Link to={`/courses/${id}/assignments`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Assignments</Link>
-          <Link to={`/courses/${id}/related`} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Related</Link>
+          <Link to={courseSectionHref(course, "quizzes")} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Quizzes</Link>
+          <Link to={courseSectionHref(course, "assignments")} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Assignments</Link>
+          <Link to={courseSectionHref(course, "related")} className="px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Related</Link>
         </nav>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{progressPct}% complete</span>
@@ -346,12 +360,12 @@ export default function CourseLearning() {
           {id && (
             <div className="max-w-3xl mx-auto mt-10 pt-6 border-t border-border">
               <h3 className="font-heading font-semibold text-sm mb-4">Live Sessions</h3>
-              <LiveClassesTab courseId={id} />
+              <LiveClassesTab courseId={courseId ?? id} />
             </div>
           )}
         </main>
       </div>
-      <LessonCompanion lessonId={currentLesson?.id} lessonTitle={currentLesson?.title} courseId={id} />
+      <LessonCompanion lessonId={currentLesson?.id} lessonTitle={currentLesson?.title} courseId={courseId ?? id} />
     </div>
   );
 }

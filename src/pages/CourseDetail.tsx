@@ -32,6 +32,7 @@ import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
+import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
@@ -41,7 +42,7 @@ const difficultyIcon: Record<string, string> = {
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -272,6 +273,7 @@ export default function CourseDetail() {
   const originalPrice = Math.round(course.price * 1.2);
   const hours = Math.floor(course.duration_hours);
   const minutes = Math.round((course.duration_hours - hours) * 60);
+  const canOpenStudentArea = isEnrolled || (!!user && isAdmin);
 
   return (
     <div className="min-h-screen bg-background">
@@ -392,6 +394,22 @@ export default function CourseDetail() {
                       </Accordion>
                     ) : (
                       <p className="text-muted-foreground text-sm py-6 text-center">Curriculum coming soon.</p>
+                    )}
+
+                    {course.modules.length > 0 && (
+                      <div className="mt-6 border-t border-border pt-4">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <Button variant={canOpenStudentArea ? "default" : "outline"} className="w-full" asChild>
+                            <Link to={courseLearnHref(course)}>{canOpenStudentArea ? "Open lessons" : "Preview lessons"}</Link>
+                          </Button>
+                          <Button variant="outline" className="w-full" asChild>
+                            <Link to={courseSectionHref(course, "quizzes")}>Open quizzes</Link>
+                          </Button>
+                          <Button variant="outline" className="w-full" asChild>
+                            <Link to={courseSectionHref(course, "assignments")}>Open assignments</Link>
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </TabsContent>
                   <TabsContent value="description" className="mt-0">
@@ -529,22 +547,20 @@ export default function CourseDetail() {
                   {isEnrolled ? (
                     isFreeWebinar ? (
                       <div className="space-y-2">
-                        <Button
-                          size="lg"
-                          className="w-full gap-2 cursor-default"
-                          disabled
-                        >
-                          <CheckCircle2 className="h-4 w-4" /> Registered
+                        <Button size="lg" className="w-full gap-2" asChild>
+                          <Link to={courseLearnHref(course)}>
+                            <CheckCircle2 className="h-4 w-4" /> Enter webinar course
+                          </Link>
                         </Button>
                         <Button size="sm" variant="link" className="w-full" asChild>
-                          <Link to="/dashboard">View in Dashboard →</Link>
+                          <Link to={courseSectionHref(course, "assignments")}>Assignments & quizzes →</Link>
                         </Button>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
-                          <Link to="/dashboard">
-                            <CheckCircle2 className="h-4 w-4" /> Go to Dashboard
+                          <Link to={courseLearnHref(course)}>
+                            <CheckCircle2 className="h-4 w-4" /> Continue course
                           </Link>
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
@@ -697,8 +713,8 @@ export default function CourseDetail() {
           courseId={course.id}
           courseTitle={course.title}
           onSuccess={() => {
-            qc.invalidateQueries({ queryKey: ["enrollment", id] });
-            qc.invalidateQueries({ queryKey: ["webinar-registration", id] });
+            qc.invalidateQueries({ queryKey: ["enrollment", course.id] });
+            qc.invalidateQueries({ queryKey: ["webinar-registration", course.id] });
           }}
         />
       )}
