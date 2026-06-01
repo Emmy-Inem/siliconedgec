@@ -36,6 +36,7 @@ interface EnrolledCourse {
   created_at: string;
   course: {
     id: string;
+    slug?: string | null;
     title: string;
     thumbnail_url: string | null;
     category: string;
@@ -97,7 +98,7 @@ export default function Dashboard() {
       const [enrollRes, profileRes, bookmarkRes, appsRes, webinarRegRes] = await Promise.all([
         supabase
           .from("enrollments")
-          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, title, thumbnail_url, category, difficulty, duration_hours, price)")
+          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, slug, title, thumbnail_url, category, difficulty, duration_hours, price)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
