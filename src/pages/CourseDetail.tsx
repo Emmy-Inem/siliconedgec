@@ -547,22 +547,20 @@ export default function CourseDetail() {
                   {isEnrolled ? (
                     isFreeWebinar ? (
                       <div className="space-y-2">
-                        <Button
-                          size="lg"
-                          className="w-full gap-2 cursor-default"
-                          disabled
-                        >
-                          <CheckCircle2 className="h-4 w-4" /> Registered
+                        <Button size="lg" className="w-full gap-2" asChild>
+                          <Link to={courseLearnHref(course)}>
+                            <CheckCircle2 className="h-4 w-4" /> Enter webinar course
+                          </Link>
                         </Button>
                         <Button size="sm" variant="link" className="w-full" asChild>
-                          <Link to="/dashboard">View in Dashboard →</Link>
+                          <Link to={courseSectionHref(course, "assignments")}>Assignments & quizzes →</Link>
                         </Button>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
-                          <Link to="/dashboard">
-                            <CheckCircle2 className="h-4 w-4" /> Go to Dashboard
+                          <Link to={courseLearnHref(course)}>
+                            <CheckCircle2 className="h-4 w-4" /> Continue course
                           </Link>
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
