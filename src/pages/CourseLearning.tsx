@@ -136,7 +136,9 @@ export default function CourseLearning() {
     if (publicAccess) return true;
     if (!user) return false;
     if (hasAdminAccess) return true;
-    return !!enrollment;
+    if (!enrollment) return false;
+    const paid = ["paid","success","completed","confirmed"];
+    return paid.includes(String(enrollment.payment_status ?? "").toLowerCase());
   }, [publicAccess, user, hasAdminAccess, enrollment]);
 
   const markComplete = useMutation({
