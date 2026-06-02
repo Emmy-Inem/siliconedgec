@@ -11,6 +11,7 @@ import { useCourse } from "@/hooks/useCourses";
 import { FileCheck2, ChevronLeft, Loader2 } from "lucide-react";
 import { courseHref, courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
+import { CourseAccessGate } from "@/components/learning/CourseAccessGate";
 
 export default function CourseAssignments() {
   const { id } = useParams<{ id: string }>();
@@ -78,12 +79,8 @@ export default function CourseAssignments() {
           </Button>
         </div>
 
-        {!user ? (
-          <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-            <p className="text-muted-foreground mb-3">Sign in to view and submit assignments.</p>
-            <Button asChild><Link to="/sign-in">Sign in</Link></Button>
-          </div>
-        ) : (isLoading || courseLoading) ? (
+        <CourseAccessGate course={course}>
+        {(isLoading || courseLoading) ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (data?.assignments ?? []).length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
@@ -120,6 +117,7 @@ export default function CourseAssignments() {
             })}
           </div>
         )}
+        </CourseAccessGate>
       </main>
       <Footer />
     </div>
