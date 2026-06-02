@@ -2532,6 +2532,7 @@ export type Database = {
         Args: { _email: string; _ip: string }
         Returns: boolean
       }
+      is_paid_enrolled: { Args: { _course_id: string }; Returns: boolean }
       resolve_promo_slug: {
         Args: { p_slug: string }
         Returns: {
