@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { course_ids, callback_url, utm } = await req.json();
+    const { course_ids, callback_url, utm, promo_code_id } = await req.json();
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -57,20 +57,50 @@ Deno.serve(async (req) => {
     }
 
     const valid = courses.filter((c) => c.is_published);
-    const total = valid.reduce((s, c) => s + Number(c.discount_price ?? c.price), 0);
+    const subtotal = valid.reduce((s, c) => s + Number(c.discount_price ?? c.price), 0);
+
+    // Apply promo if provided
+    let discount = 0;
+    let validPromoId: string | null = null;
+    if (promo_code_id) {
+      const { data: promo } = await supabase
+        .from("promo_codes")
+        .select("id, discount_type, discount_value, is_active, expires_at, max_uses, usage_count")
+        .eq("id", promo_code_id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (promo) {
+        const expired = promo.expires_at && new Date(promo.expires_at) < new Date();
+        const usedUp = promo.max_uses && promo.usage_count >= promo.max_uses;
+        if (!expired && !usedUp) {
+          discount = promo.discount_type === "percentage"
+            ? Math.round((subtotal * Number(promo.discount_value)) / 100 * 100) / 100
+            : Math.min(Number(promo.discount_value), subtotal);
+          validPromoId = promo.id;
+        }
+      }
+    }
+
+    const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
     const reference = `SE-CART-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     const currency = valid[0]?.currency ?? "NGN";
 
     // Create one pending order per course sharing the same reference (allows verification later)
+    // Distribute the discount proportionally across line items
     for (const c of valid) {
       const lineRef = `${reference}--${c.id.slice(0, 8)}`;
+      const lineSubtotal = Number(c.discount_price ?? c.price);
+      const lineDiscount = subtotal > 0 ? Math.round((lineSubtotal / subtotal) * discount * 100) / 100 : 0;
+      const lineAmount = Math.max(0, Math.round((lineSubtotal - lineDiscount) * 100) / 100);
       await supabase.from("orders").insert({
         user_id: user.id,
         course_id: c.id,
         reference: lineRef,
-        amount: Number(c.discount_price ?? c.price),
+        amount: lineAmount,
         currency,
         status: "pending",
+        promo_code_id: validPromoId,
+        discount_amount: lineDiscount,
         metadata: { cart_reference: reference, course_title: c.title, utm: utm ?? null },
       });
     }
