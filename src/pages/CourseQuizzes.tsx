@@ -12,6 +12,7 @@ import { ClipboardCheck, ChevronLeft, Loader2, Trophy } from "lucide-react";
 import { useState } from "react";
 import { courseHref, courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
+import { CourseAccessGate } from "@/components/learning/CourseAccessGate";
 
 export default function CourseQuizzes() {
   const { id } = useParams<{ id: string }>();
@@ -82,6 +83,7 @@ export default function CourseQuizzes() {
           </Button>
         </div>
 
+        <CourseAccessGate course={course}>
         {(isLoading || courseLoading) ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (data?.quizzes ?? []).length === 0 ? (
@@ -135,6 +137,7 @@ export default function CourseQuizzes() {
             })}
           </div>
         )}
+        </CourseAccessGate>
       </main>
       <Footer />
     </div>
