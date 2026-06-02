@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
@@ -26,6 +27,51 @@ export default function Cart() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
+
+  // Promo code state
+  const [promoInput, setPromoInput] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    id: string; code: string; discount_type: string; discount_value: number;
+  } | null>(null);
+
+  const discountAmount = appliedPromo
+    ? appliedPromo.discount_type === "percentage"
+      ? Math.round((total * appliedPromo.discount_value) / 100 * 100) / 100
+      : Math.min(appliedPromo.discount_value, total)
+    : 0;
+  const finalTotal = Math.max(0, Math.round((total - discountAmount) * 100) / 100);
+
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError("");
+    try {
+      const { data: rows, error } = await (supabase.rpc as any)("validate_promo_code", { p_code: code });
+      if (error) throw error;
+      const data = Array.isArray(rows) ? rows[0] : rows;
+      if (!data) { setPromoError("Invalid or expired promo code"); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
+      if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }
+      setAppliedPromo({
+        id: data.id, code: data.code,
+        discount_type: data.discount_type, discount_value: data.discount_value,
+      });
+      toast({ title: "Promo applied", description: `Code ${data.code} unlocked.` });
+    } catch {
+      setPromoError("Failed to validate promo code");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput("");
+    setPromoError("");
+  };
 
   // After Paystack redirect: ?reference=... -> verify and issue receipt
   useEffect(() => {
@@ -125,7 +171,7 @@ export default function Cart() {
       navigate("/sign-in");
       return;
     }
-    if (total === 0) { handleFreeEnroll(); return; }
+    if (finalTotal === 0) { handleFreeEnroll(); return; }
     handlePaidCheckout();
   };
 
@@ -159,6 +205,7 @@ export default function Cart() {
           course_ids: items.map((i) => i.course_id),
           callback_url: `${window.location.origin}/cart`,
           utm,
+          promo_code_id: appliedPromo?.id ?? null,
         },
       });
       if (error) throw error;
@@ -339,14 +386,57 @@ export default function Cart() {
                       <span className="text-muted-foreground">Subtotal ({count} course{count !== 1 ? "s" : ""})</span>
                       <span>{formatPrice(total)}</span>
                     </div>
+                    {appliedPromo && (
+                      <div className="flex justify-between text-primary">
+                        <span>Discount ({appliedPromo.code})</span>
+                        <span>-{formatPrice(discountAmount)}</span>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Promo code */}
+                  <div className="space-y-2">
+                    {appliedPromo ? (
+                      <div className="flex items-center justify-between bg-accent/40 border border-accent rounded-lg px-3 py-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="text-sm font-medium truncate">
+                            {appliedPromo.code} — {appliedPromo.discount_type === "percentage"
+                              ? `${appliedPromo.discount_value}% off`
+                              : `${formatPrice(appliedPromo.discount_value)} off`}
+                          </span>
+                        </div>
+                        <button onClick={removePromo} className="text-muted-foreground hover:text-foreground flex-shrink-0">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Promo code"
+                            value={promoInput}
+                            onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
+                            className="pl-9 uppercase"
+                            onKeyDown={(e) => e.key === "Enter" && applyPromo()}
+                          />
+                        </div>
+                        <Button variant="outline" onClick={applyPromo} disabled={!promoInput.trim() || promoLoading}>
+                          {promoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                        </Button>
+                      </div>
+                    )}
+                    {promoError && <p className="text-xs text-destructive">{promoError}</p>}
+                  </div>
+
                   <Separator />
                   <div className="flex justify-between font-heading font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-primary">{formatPrice(total)}</span>
+                    <span className="text-primary">{formatPrice(finalTotal)}</span>
                   </div>
-                  {!isNgn && total > 0 && (
-                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(total)} (NGN) at checkout.</p>
+                  {!isNgn && finalTotal > 0 && (
+                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(finalTotal)} (NGN) at checkout.</p>
                   )}
                   <Button
                     size="lg"
@@ -355,7 +445,7 @@ export default function Cart() {
                     disabled={processing}
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                    {processing ? "Processing..." : "Checkout"}
+                    {processing ? "Processing..." : finalTotal === 0 ? "Enroll for Free" : "Checkout"}
                   </Button>
                 </div>
               </div>
