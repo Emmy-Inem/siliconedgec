@@ -55,6 +55,15 @@ export default function Cart() {
       if (!data) { setPromoError("Invalid or expired promo code"); return; }
       if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
       if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }
+      const scope: string[] = Array.isArray(data.course_ids) ? data.course_ids : [];
+      if (scope.length > 0) {
+        const cartCourseIds = items.map((i) => i.course_id);
+        const allInScope = cartCourseIds.every((id) => scope.includes(id));
+        if (!allInScope) {
+          setPromoError("This promo code doesn't apply to one or more courses in your cart");
+          return;
+        }
+      }
       setAppliedPromo({
         id: data.id, code: data.code,
         discount_type: data.discount_type, discount_value: data.discount_value,
