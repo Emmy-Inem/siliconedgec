@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { LiveClassesTab } from "@/components/LiveClassesTab";
 import { LessonQuiz } from "@/components/LessonQuiz";
+import { AssignmentPanel } from "@/components/learning/AssignmentPanel";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
@@ -346,6 +347,14 @@ export default function CourseLearning() {
                   lessonId={currentLesson.id}
                   onPass={() => markComplete.mutate(currentLesson.id)}
                 />
+              </div>
+
+              {/* Assignments for this lesson */}
+              <div className="pt-6 border-t border-border space-y-3">
+                <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" /> Assignments
+                </h3>
+                <AssignmentPanel lessonId={currentLesson.id} />
               </div>
 
               {/* Personal notes */}
