@@ -65,14 +65,24 @@ Deno.serve(async (req) => {
     if (promo_code_id) {
       const { data: promo } = await supabase
         .from("promo_codes")
-        .select("id, discount_type, discount_value, is_active, expires_at, max_uses, usage_count")
+        .select("id, discount_type, discount_value, is_active, expires_at, max_uses, usage_count, course_ids")
         .eq("id", promo_code_id)
         .eq("is_active", true)
         .maybeSingle();
       if (promo) {
         const expired = promo.expires_at && new Date(promo.expires_at) < new Date();
         const usedUp = promo.max_uses && promo.usage_count >= promo.max_uses;
+        const scoped = Array.isArray((promo as any).course_ids) && (promo as any).course_ids.length > 0;
+        const cartIds = valid.map((c) => c.id);
+        const allInScope = !scoped || cartIds.every((id) => (promo as any).course_ids.includes(id));
+        if (!allInScope) {
+          return new Response(
+            JSON.stringify({ error: "This promo code does not apply to one or more courses in your cart." }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
         if (!expired && !usedUp) {
+          // If scoped, discount only applies to the eligible subtotal (which is everything when allInScope)
           discount = promo.discount_type === "percentage"
             ? Math.round((subtotal * Number(promo.discount_value)) / 100 * 100) / 100
             : Math.min(Number(promo.discount_value), subtotal);
