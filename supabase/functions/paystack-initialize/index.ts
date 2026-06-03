@@ -71,13 +71,21 @@ Deno.serve(async (req) => {
     if (promo_code_id) {
       const { data: promo } = await supabase
         .from("promo_codes")
-        .select("id, discount_type, discount_value, is_active, expires_at, max_uses, usage_count")
+        .select("id, discount_type, discount_value, is_active, expires_at, max_uses, usage_count, course_ids")
         .eq("id", promo_code_id)
         .eq("is_active", true)
         .maybeSingle();
       if (promo) {
         const expired = promo.expires_at && new Date(promo.expires_at) < new Date();
         const usedUp = promo.max_uses && promo.usage_count >= promo.max_uses;
+        const scoped = Array.isArray((promo as any).course_ids) && (promo as any).course_ids.length > 0;
+        const inScope = !scoped || (promo as any).course_ids.includes(course_id);
+        if (!inScope) {
+          return new Response(
+            JSON.stringify({ error: "This promo code is not valid for this course." }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
         if (!expired && !usedUp) {
           discount = promo.discount_type === "percentage"
             ? Math.round((basePrice * Number(promo.discount_value)) / 100 * 100) / 100
