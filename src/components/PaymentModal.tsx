@@ -16,6 +16,7 @@ interface PromoResult {
   discount_type: string;
   discount_value: number;
   influencer_name: string;
+  course_ids?: string[] | null;
 }
 
 interface PaymentModalProps {
@@ -62,12 +63,18 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       if (!data) { setPromoError("Invalid or expired promo code"); return; }
       if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
       if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }
+      const scope: string[] = Array.isArray(data.course_ids) ? data.course_ids : [];
+      if (scope.length > 0 && !scope.includes(courseId)) {
+        setPromoError("This promo code isn't valid for this course");
+        return;
+      }
       const calcDiscount = data.discount_type === "percentage"
         ? Math.round((price * data.discount_value) / 100 * 100) / 100
         : Math.min(data.discount_value, price);
       setAppliedPromo({
         id: data.id, code: data.code, discount_type: data.discount_type,
         discount_value: data.discount_value, influencer_name: data.influencer_name,
+        course_ids: scope,
       });
       toast({ title: "Promo applied", description: `You saved ${formatNaira(calcDiscount)}` });
     } catch {

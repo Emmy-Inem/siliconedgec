@@ -379,12 +379,27 @@ export default function CourseDetail() {
                             <AccordionContent>
                               <ul className="space-y-0">
                                 {module.lessons.map((lesson) => (
-                                  <li key={lesson.id} className="flex items-center justify-between text-sm text-muted-foreground py-2.5 border-t border-border/50">
-                                    <span className="flex items-center gap-2">
-                                      <Lock className="h-3.5 w-3.5 flex-shrink-0" />
-                                      {lesson.title}
-                                    </span>
-                                    <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
+                                  <li key={lesson.id} className="border-t border-border/50">
+                                    {canOpenStudentArea ? (
+                                      <Link
+                                        to={`${courseLearnHref(course)}?lesson=${lesson.id}`}
+                                        className="flex items-center justify-between text-sm text-foreground hover:text-primary py-2.5 transition-colors"
+                                      >
+                                        <span className="flex items-center gap-2">
+                                          <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+                                          {lesson.title}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{lesson.duration}</span>
+                                      </Link>
+                                    ) : (
+                                      <div className="flex items-center justify-between text-sm text-muted-foreground py-2.5">
+                                        <span className="flex items-center gap-2">
+                                          <Lock className="h-3.5 w-3.5 flex-shrink-0" />
+                                          {lesson.title}
+                                        </span>
+                                        <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
+                                      </div>
+                                    )}
                                   </li>
                                 ))}
                               </ul>
@@ -396,19 +411,14 @@ export default function CourseDetail() {
                       <p className="text-muted-foreground text-sm py-6 text-center">Curriculum coming soon.</p>
                     )}
 
-                    {course.modules.length > 0 && (
+                    {course.modules.length > 0 && canOpenStudentArea && (
                       <div className="mt-6 border-t border-border pt-4">
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <Button variant={canOpenStudentArea ? "default" : "outline"} className="w-full" asChild>
-                            <Link to={courseLearnHref(course)}>{canOpenStudentArea ? "Open lessons" : "Preview lessons"}</Link>
-                          </Button>
-                          <Button variant="outline" className="w-full" asChild>
-                            <Link to={courseSectionHref(course, "quizzes")}>Open quizzes</Link>
-                          </Button>
-                          <Button variant="outline" className="w-full" asChild>
-                            <Link to={courseSectionHref(course, "assignments")}>Open assignments</Link>
-                          </Button>
-                        </div>
+                        <Button className="w-full sm:w-auto" asChild>
+                          <Link to={courseLearnHref(course)}>Open course</Link>
+                        </Button>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Each lesson opens with its quiz and assignments embedded.
+                        </p>
                       </div>
                     )}
                   </TabsContent>

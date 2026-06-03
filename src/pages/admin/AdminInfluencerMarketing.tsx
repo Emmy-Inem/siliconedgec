@@ -77,6 +77,8 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses", // courses | home | course | custom
     landing_course_id: "",
     landing_path: "",
+    scope_mode: "all" as "all" | "specific",
+    course_ids: [] as string[],
     utm_source: "",
     utm_medium: "influencer",
     utm_campaign: "",
@@ -96,6 +98,8 @@ export default function AdminInfluencerMarketing() {
     landing_target: "courses",
     landing_course_id: "",
     landing_path: "",
+    scope_mode: "all",
+    course_ids: [],
     utm_source: "",
     utm_medium: "influencer",
     utm_campaign: "",
@@ -188,6 +192,7 @@ export default function AdminInfluencerMarketing() {
         max_uses: form.max_uses ? Number(form.max_uses) : null,
         expires_at: form.expires_at || null,
         landing_path: computeLandingPath(form),
+        course_ids: form.scope_mode === "specific" ? form.course_ids : [],
         utm_source: form.utm_source || null,
         utm_medium: form.utm_medium || null,
         utm_campaign: form.utm_campaign || null,
@@ -375,6 +380,45 @@ export default function AdminInfluencerMarketing() {
                   </div>
                   <p className="text-[10px] text-muted-foreground">
                     Leave blank to use defaults: source = influencer name, medium = influencer, campaign = promo code.
+                  </p>
+                </div>
+
+                {/* Course Scope */}
+                <div className="mt-3 pt-3 border-t border-dashed border-border space-y-2">
+                  <Label className="text-xs flex items-center gap-1.5"><Ticket className="h-3 w-3" /> Apply to which courses?</Label>
+                  <Select value={form.scope_mode} onValueChange={(v: any) => setForm({ ...form, scope_mode: v, course_ids: v === "all" ? [] : form.course_ids })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All courses</SelectItem>
+                      <SelectItem value="specific">Specific courses only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.scope_mode === "specific" && (
+                    <div className="max-h-40 overflow-y-auto rounded-md border border-border p-2 space-y-1">
+                      {courseList.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">No published courses found.</p>
+                      ) : courseList.map((c: any) => {
+                        const checked = form.course_ids.includes(c.id);
+                        return (
+                          <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:bg-muted/40 px-1.5 py-1 rounded">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...form.course_ids, c.id]
+                                  : form.course_ids.filter((id) => id !== c.id);
+                                setForm({ ...form, course_ids: next });
+                              }}
+                            />
+                            <span className="truncate">{c.title}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <p className="text-[10px] text-muted-foreground">
+                    Choose "Specific courses only" to limit this promo to the selected course(s). Otherwise it works on every course.
                   </p>
                 </div>
 

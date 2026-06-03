@@ -1990,6 +1990,7 @@ export type Database = {
         Row: {
           code: string
           commission_percentage: number
+          course_ids: string[]
           created_at: string
           discount_type: string
           discount_value: number
@@ -2012,6 +2013,7 @@ export type Database = {
         Insert: {
           code: string
           commission_percentage?: number
+          course_ids?: string[]
           created_at?: string
           discount_type?: string
           discount_value?: number
@@ -2034,6 +2036,7 @@ export type Database = {
         Update: {
           code?: string
           commission_percentage?: number
+          course_ids?: string[]
           created_at?: string
           discount_type?: string
           discount_value?: number
@@ -2557,6 +2560,7 @@ export type Database = {
         Args: { p_code: string }
         Returns: {
           code: string
+          course_ids: string[]
           discount_type: string
           discount_value: number
           expires_at: string
