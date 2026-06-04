@@ -113,16 +113,47 @@ export default function CourseLearning() {
   });
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
-  const currentLesson = allLessons.find((l: any) => l.id === selectedLessonId) ?? allLessons[0];
-  const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson?.id);
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
+
+  // Sequential unlock: admins always pass; otherwise a lesson is unlocked
+  // only when the previous one in order has been completed.
+  const isLessonUnlocked = (lessonId: string): boolean => {
+    if (hasAdminAccess) return true;
+    const idx = allLessons.findIndex((l: any) => l.id === lessonId);
+    if (idx <= 0) return true;
+    return completedIds.has(allLessons[idx - 1].id);
+  };
+
+  const lastUnlockedLesson = (() => {
+    if (!allLessons.length) return null;
+    if (hasAdminAccess) return allLessons[0];
+    // Find the furthest unlocked lesson (= first incomplete after a completed chain,
+    // or the first lesson if nothing is completed).
+    let target = allLessons[0];
+    for (let i = 0; i < allLessons.length; i++) {
+      if (i === 0 || completedIds.has(allLessons[i - 1].id)) target = allLessons[i];
+      else break;
+    }
+    return target;
+  })();
+
+  const requestedLesson = allLessons.find((l: any) => l.id === selectedLessonId);
+  const currentLesson = requestedLesson && isLessonUnlocked(requestedLesson.id)
+    ? requestedLesson
+    : (lastUnlockedLesson ?? allLessons[0]);
+  const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson?.id);
 
   useEffect(() => {
     if (selectedLessonId || !allLessons.length) return;
     const fromUrl = searchParams.get("lesson");
-    const target = fromUrl && allLessons.some((l: any) => l.id === fromUrl) ? fromUrl : allLessons[0].id;
+    const requested = fromUrl && allLessons.find((l: any) => l.id === fromUrl);
+    const target =
+      requested && isLessonUnlocked(requested.id)
+        ? requested.id
+        : (lastUnlockedLesson?.id ?? allLessons[0].id);
     setSelectedLessonId(target);
-  }, [allLessons, selectedLessonId, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allLessons.length, selectedLessonId, searchParams, completedIds.size, hasAdminAccess]);
 
   // Keep URL in sync so lessons are deep-linkable / shareable.
   useEffect(() => {
@@ -224,17 +255,26 @@ export default function CourseLearning() {
                   {mod.lessons.map((lesson: any) => {
                     const isComplete = completedIds.has(lesson.id);
                     const isActive = lesson.id === currentLesson?.id;
+                    const unlocked = isLessonUnlocked(lesson.id);
                     return (
                       <button
                         key={lesson.id}
-                        onClick={() => setSelectedLessonId(lesson.id)}
+                        onClick={() => unlocked && setSelectedLessonId(lesson.id)}
+                        disabled={!unlocked}
+                        title={unlocked ? undefined : "Complete the previous lesson to unlock"}
                         className={cn(
                           "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-all",
-                          isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : unlocked
+                              ? "text-muted-foreground hover:bg-muted hover:text-foreground"
+                              : "text-muted-foreground/50 cursor-not-allowed"
                         )}
                       >
                         {isComplete ? (
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        ) : !unlocked ? (
+                          <Lock className="h-4 w-4 shrink-0" />
                         ) : (
                           <Circle className="h-4 w-4 shrink-0" />
                         )}
@@ -308,8 +348,14 @@ export default function CourseLearning() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={currentIndex >= allLessons.length - 1}
-                  onClick={() => setSelectedLessonId(allLessons[currentIndex + 1]?.id)}
+                  disabled={
+                    currentIndex >= allLessons.length - 1 ||
+                    !isLessonUnlocked(allLessons[currentIndex + 1]?.id)
+                  }
+                  onClick={() => {
+                    const next = allLessons[currentIndex + 1];
+                    if (next && isLessonUnlocked(next.id)) setSelectedLessonId(next.id);
+                  }}
                 >
                   Next <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
