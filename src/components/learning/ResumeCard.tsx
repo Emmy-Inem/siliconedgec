@@ -36,7 +36,9 @@ export function ResumeCard({ userId }: { userId: string }) {
         <p className="text-xs text-muted-foreground">{Math.round(Number(data.progress_percentage ?? 0))}% complete</p>
       </div>
       <Button asChild size="sm">
-        <Link to={`/courses/${c.slug ?? data.course_id}/learn`}><PlayCircle className="h-4 w-4 mr-1" />Continue<ArrowRight className="h-4 w-4 ml-1" /></Link>
+        <Link to={`/courses/${c.slug ?? data.course_id}/learn${data.last_lesson_id ? `?lesson=${data.last_lesson_id}` : ""}`}>
+          <PlayCircle className="h-4 w-4 mr-1" />Continue<ArrowRight className="h-4 w-4 ml-1" />
+        </Link>
       </Button>
     </motion.div>
   );

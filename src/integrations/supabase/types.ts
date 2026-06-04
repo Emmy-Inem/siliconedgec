@@ -1009,6 +1009,7 @@ export type Database = {
           last_seen_at: string | null
           payment_status: string | null
           progress_percentage: number | null
+          resume_position_seconds: number
           updated_at: string
           user_id: string
         }
@@ -1021,6 +1022,7 @@ export type Database = {
           last_seen_at?: string | null
           payment_status?: string | null
           progress_percentage?: number | null
+          resume_position_seconds?: number
           updated_at?: string
           user_id: string
         }
@@ -1033,6 +1035,7 @@ export type Database = {
           last_seen_at?: string | null
           payment_status?: string | null
           progress_percentage?: number | null
+          resume_position_seconds?: number
           updated_at?: string
           user_id?: string
         }

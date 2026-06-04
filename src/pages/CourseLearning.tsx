@@ -25,6 +25,8 @@ export default function CourseLearning() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeLessonRef = useRef<HTMLButtonElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const routeLooksLikeUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   // Fetch course with modules and lessons
@@ -72,7 +74,7 @@ export default function CourseLearning() {
       if (!user || !courseId) return null;
       const { data } = await supabase
         .from("enrollments")
-        .select("id, course_id, user_id, payment_status")
+        .select("id, course_id, user_id, payment_status, last_lesson_id, resume_position_seconds")
         .eq("course_id", courseId)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -152,7 +154,9 @@ export default function CourseLearning() {
   useEffect(() => {
     if (selectedLessonId || !allLessons.length) return;
     const fromUrl = searchParams.get("lesson");
-    const requested = fromUrl && allLessons.find((l: any) => l.id === fromUrl);
+    // Priority: URL ?lesson= → enrollment.last_lesson_id → furthest unlocked lesson.
+    const requestedId = fromUrl ?? (enrollment as any)?.last_lesson_id ?? null;
+    const requested = requestedId && allLessons.find((l: any) => l.id === requestedId);
     const target =
       requested && isLessonUnlocked(requested.id)
         ? requested.id
@@ -204,6 +208,15 @@ export default function CourseLearning() {
           })
         );
       } catch {}
+    },
+    onError: (e: any) => {
+      toast({
+        title: "Cannot mark complete yet",
+        description: e?.message?.includes("previous lesson")
+          ? "Finish the previous lesson first to unlock this one."
+          : e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -316,8 +329,41 @@ export default function CourseLearning() {
               {currentLesson.content_url ? (
                 <div className="aspect-video rounded-xl overflow-hidden bg-black">
                   <video
+                    ref={videoRef}
                     src={currentLesson.content_url}
                     controls
+                    onLoadedMetadata={() => {
+                      // Resume playback for the lesson that was active when the
+                      // student left off. Other lessons start at 0.
+                      const isResumeTarget =
+                        !!user &&
+                        !!videoRef.current &&
+                        (enrollment as any)?.last_lesson_id === currentLesson.id &&
+                        Number((enrollment as any)?.resume_position_seconds ?? 0) > 0;
+                      if (isResumeTarget) {
+                        try {
+                          videoRef.current!.currentTime = Number(
+                            (enrollment as any).resume_position_seconds,
+                          );
+                        } catch {}
+                      }
+                    }}
+                    onTimeUpdate={(e) => {
+                      if (!user || !courseId) return;
+                      const t = Math.floor((e.currentTarget as HTMLVideoElement).currentTime || 0);
+                      if (saveTimer.current) clearTimeout(saveTimer.current);
+                      saveTimer.current = setTimeout(() => {
+                        void supabase
+                          .from("enrollments")
+                          .update({
+                            last_lesson_id: currentLesson.id,
+                            resume_position_seconds: t,
+                            last_seen_at: new Date().toISOString(),
+                          })
+                          .eq("user_id", user.id)
+                          .eq("course_id", courseId);
+                      }, 3000);
+                    }}
                     onEnded={() => {
                       if (!completedIds.has(currentLesson.id)) markComplete.mutate(currentLesson.id);
                     }}
