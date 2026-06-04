@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ export default function CourseLearning() {
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const activeLessonRef = useRef<HTMLButtonElement | null>(null);
   const routeLooksLikeUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   // Fetch course with modules and lessons
@@ -143,6 +144,11 @@ export default function CourseLearning() {
     : (lastUnlockedLesson ?? allLessons[0]);
   const currentIndex = allLessons.findIndex((l: any) => l.id === currentLesson?.id);
 
+  // Smooth-scroll the sidebar to keep the active lesson visible after deep-link nav.
+  useEffect(() => {
+    activeLessonRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [currentLesson?.id]);
+
   useEffect(() => {
     if (selectedLessonId || !allLessons.length) return;
     const fromUrl = searchParams.get("lesson");
@@ -259,6 +265,7 @@ export default function CourseLearning() {
                     return (
                       <button
                         key={lesson.id}
+                        ref={isActive ? activeLessonRef : undefined}
                         onClick={() => unlocked && setSelectedLessonId(lesson.id)}
                         disabled={!unlocked}
                         title={unlocked ? undefined : "Complete the previous lesson to unlock"}
