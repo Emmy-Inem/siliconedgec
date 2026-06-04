@@ -209,6 +209,15 @@ export default function CourseLearning() {
         );
       } catch {}
     },
+    onError: (e: any) => {
+      toast({
+        title: "Cannot mark complete yet",
+        description: e?.message?.includes("previous lesson")
+          ? "Finish the previous lesson first to unlock this one."
+          : e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   if (authLoading || courseLoading || (user && !hasAdminAccess && !publicAccess && enrollLoading)) {
