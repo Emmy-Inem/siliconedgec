@@ -318,6 +318,9 @@ export default function CourseLearning() {
                   <video
                     src={currentLesson.content_url}
                     controls
+                    onEnded={() => {
+                      if (!completedIds.has(currentLesson.id)) markComplete.mutate(currentLesson.id);
+                    }}
                     className="w-full h-full"
                   />
                 </div>
