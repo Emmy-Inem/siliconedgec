@@ -33,6 +33,7 @@ import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
+import { useCourseAccess } from "@/hooks/useCourseAccess";
 
 const difficultyIcon: Record<string, string> = {
   Beginner: "▎",
@@ -54,12 +55,43 @@ export default function CourseDetail() {
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(course?.id);
   const { format: formatPrice, isNgn } = useLocalizedPrice();
+  const { canAccess: hasPaidAccess } = useCourseAccess(course?.id);
 
   // The URL param may be a UUID or a slug. The DB row id is always a UUID,
   // so use `courseId` for any database query. Use `courseSlug` (or fallback
   // to id) for any user-facing URL.
   const courseId = course?.id;
   const courseSlug = (course as any)?.slug ?? course?.id;
+
+  // Flattened ordered lesson list for sequential unlock logic.
+  const orderedLessons: { id: string; module_id: string }[] = (course?.modules ?? [])
+    .flatMap((m: any) => m.lessons.map((l: any) => ({ id: l.id, module_id: m.id })));
+
+  // Pull completed lessons for the current user (used to gate next lessons).
+  const { data: completedRows = [] } = useQuery({
+    queryKey: ["course-detail-progress", courseId, user?.id, orderedLessons.length],
+    queryFn: async () => {
+      if (!user || !orderedLessons.length) return [];
+      const { data } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id, is_completed")
+        .eq("user_id", user.id)
+        .in("lesson_id", orderedLessons.map((l) => l.id));
+      return data ?? [];
+    },
+    enabled: !!user && orderedLessons.length > 0,
+  });
+  const completedIds = new Set(
+    (completedRows as any[]).filter((r) => r.is_completed).map((r) => r.lesson_id),
+  );
+
+  const isLessonUnlocked = (lessonId: string): boolean => {
+    if (isAdmin) return true;
+    if (!hasPaidAccess) return false;
+    const idx = orderedLessons.findIndex((l) => l.id === lessonId);
+    if (idx <= 0) return true;
+    return completedIds.has(orderedLessons[idx - 1].id);
+  };
 
   // Canonicalize the URL: if the user landed via UUID but the course has a
   // slug, replace the URL with the slug version (no history entry).
@@ -378,30 +410,45 @@ export default function CourseDetail() {
                             </AccordionTrigger>
                             <AccordionContent>
                               <ul className="space-y-0">
-                                {module.lessons.map((lesson) => (
-                                  <li key={lesson.id} className="border-t border-border/50">
-                                    {canOpenStudentArea ? (
-                                      <Link
-                                        to={`${courseLearnHref(course)}?lesson=${lesson.id}`}
-                                        className="flex items-center justify-between text-sm text-foreground hover:text-primary py-2.5 transition-colors"
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
-                                          {lesson.title}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{lesson.duration}</span>
-                                      </Link>
-                                    ) : (
-                                      <div className="flex items-center justify-between text-sm text-muted-foreground py-2.5">
-                                        <span className="flex items-center gap-2">
-                                          <Lock className="h-3.5 w-3.5 flex-shrink-0" />
-                                          {lesson.title}
-                                        </span>
-                                        <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
-                                      </div>
-                                    )}
-                                  </li>
-                                ))}
+                                {module.lessons.map((lesson) => {
+                                  const unlocked = isLessonUnlocked(lesson.id);
+                                  const completed = completedIds.has(lesson.id);
+                                  return (
+                                    <li key={lesson.id} className="border-t border-border/50">
+                                      {unlocked ? (
+                                        <Link
+                                          to={`${courseLearnHref(course)}?lesson=${lesson.id}`}
+                                          className="flex items-center justify-between text-sm text-foreground hover:text-primary py-2.5 transition-colors"
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            {completed ? (
+                                              <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-green-500" />
+                                            ) : (
+                                              <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+                                            )}
+                                            {lesson.title}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{lesson.duration}</span>
+                                        </Link>
+                                      ) : (
+                                        <div
+                                          className="flex items-center justify-between text-sm text-muted-foreground py-2.5"
+                                          title={
+                                            hasPaidAccess
+                                              ? "Complete the previous lesson to unlock"
+                                              : "Enroll to unlock this lesson"
+                                          }
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            <Lock className="h-3.5 w-3.5 flex-shrink-0" />
+                                            {lesson.title}
+                                          </span>
+                                          <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
+                                        </div>
+                                      )}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             </AccordionContent>
                           </AccordionItem>
