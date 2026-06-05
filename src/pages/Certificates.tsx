@@ -562,7 +562,7 @@ function BrandedCertificate({
                 display: "inline-block",
               }}
             >
-              {instructorName ?? "Dr. A. Osei"}
+              {instructorName ?? "Ayodele Oluwatayo Olaniyi"}
             </p>
             <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
             <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
@@ -592,19 +592,21 @@ function BrandedCertificate({
 
           <div className="text-center">
             <p
-              className="text-xl md:text-2xl mb-1"
+              className="text-2xl md:text-3xl mb-1"
               style={{
                 color: "hsl(var(--navy))",
-                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
-                transform: "rotate(-1deg)",
+                fontFamily: "'Brush Script MT', 'Lucida Handwriting', 'Segoe Script', cursive",
+                fontStyle: "italic",
+                transform: "rotate(-4deg)",
                 display: "inline-block",
+                letterSpacing: "0.5px",
               }}
             >
-              E. Adeyemi
+              Tayo
             </p>
             <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
             <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
-              Director, Academy
+              Digital Signature
             </p>
           </div>
         </div>
