@@ -226,7 +226,7 @@ export default function Certificates() {
                   courseName="Cloud Engineering Crash Course"
                   date="March 7, 2026"
                   certId="SE-2026-A1B2C3"
-                  instructorName="Dr. Amara Osei"
+                  instructorName="Ayodele Oluwatayo Olaniyi"
                 />
               </div>
             </div>
