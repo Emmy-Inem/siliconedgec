@@ -39,6 +39,44 @@ Deno.serve(async (req) => {
 
     // Build context from scope
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // Harden access: lesson/course-scoped tutoring requires paid enrollment or admin/mod role
+    if ((scope === "lesson" || scope === "course") && scopeRefId) {
+      const { data: roleRows } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .in("role", ["admin", "moderator"]);
+      const isStaff = (roleRows?.length ?? 0) > 0;
+      if (!isStaff) {
+        let courseId: string | null = null;
+        if (scope === "course") {
+          courseId = scopeRefId;
+        } else {
+          const { data: lesson } = await admin.from("lessons").select("module_id").eq("id", scopeRefId).maybeSingle();
+          if (lesson?.module_id) {
+            const { data: mod } = await admin.from("modules").select("course_id").eq("id", lesson.module_id).maybeSingle();
+            courseId = mod?.course_id ?? null;
+          }
+        }
+        if (courseId) {
+          const { data: enr } = await admin
+            .from("enrollments")
+            .select("payment_status")
+            .eq("user_id", userId)
+            .eq("course_id", courseId)
+            .maybeSingle();
+          const paid = ["paid", "success", "completed", "confirmed"].includes((enr?.payment_status ?? "").toLowerCase());
+          if (!paid) {
+            return new Response(
+              JSON.stringify({ error: "AI tutor requires an active paid enrollment in this course." }),
+              { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+        }
+      }
+    }
+
     let contextBlock = "";
     if (scope === "lesson" && scopeRefId) {
       const { data: lesson } = await admin.from("lessons").select("title, content_url, content_type, module_id").eq("id", scopeRefId).maybeSingle();
