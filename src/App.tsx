@@ -28,6 +28,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CourseLearning = lazy(() => import("./pages/CourseLearning"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
+const VerifyCertificateLanding = lazy(() => import("./pages/VerifyCertificateLanding"));
 const VerifyReceipt = lazy(() => import("./pages/VerifyReceipt"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 const JobDetail = lazy(() => import("./pages/JobDetail"));
@@ -163,6 +164,7 @@ const App = () => (
               <Route path="/courses/:id/assignments" element={<CourseAssignments />} />
               <Route path="/courses/:id/related" element={<RelatedCourses />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
+              <Route path="/verify" element={<VerifyCertificateLanding />} />
               <Route path="/verify-receipt/:reference" element={<VerifyReceipt />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
