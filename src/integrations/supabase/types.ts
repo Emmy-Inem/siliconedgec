@@ -2142,6 +2142,7 @@ export type Database = {
           created_at: string
           id: string
           lesson_id: string
+          max_attempts: number | null
           passing_score: number
           title: string
           updated_at: string
@@ -2150,6 +2151,7 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_id: string
+          max_attempts?: number | null
           passing_score?: number
           title: string
           updated_at?: string
@@ -2158,6 +2160,7 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_id?: string
+          max_attempts?: number | null
           passing_score?: number
           title?: string
           updated_at?: string
