@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ interface Attempt { id: string; score: number; answers: Record<string,string>; c
 export default function QuizAttempts() {
   const { quizId } = useParams<{ quizId: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [openId, setOpenId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -44,8 +45,8 @@ export default function QuizAttempts() {
     <main className="min-h-screen bg-background">
       <SEO title={`Quiz attempts · ${quiz.title}`} description="Review your past quiz attempts" />
       <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to={-1 as any}><ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden /> Back</Link>
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} aria-label="Go back">
+          <ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden /> Back
         </Button>
 
         <header className="rounded-2xl border border-border bg-card p-5">
