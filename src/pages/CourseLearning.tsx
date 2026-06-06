@@ -244,8 +244,12 @@ export default function CourseLearning() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
       <div className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 shrink-0">
-        <Link to={courseHref(course ?? (id ? { id, slug: routeLooksLikeUuid ? null : id } : null))} className="text-muted-foreground hover:text-foreground transition-colors">
-          <ChevronLeft className="h-5 w-5" />
+        <Link
+          to={courseHref(course ?? (id ? { id, slug: routeLooksLikeUuid ? null : id } : null))}
+          className="text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-primary rounded"
+          aria-label="Back to course overview"
+        >
+          <ChevronLeft className="h-5 w-5" aria-hidden />
         </Link>
         <h1 className="font-heading font-semibold text-sm truncate flex-1">{course?.title}</h1>
         <nav className="hidden sm:flex items-center gap-1 text-xs">
