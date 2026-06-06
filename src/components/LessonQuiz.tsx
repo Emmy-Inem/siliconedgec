@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
     queryFn: async () => {
       const { data: q } = await supabase
         .from("quizzes")
-        .select("id, title, passing_score")
+        .select("id, title, passing_score, max_attempts")
         .eq("lesson_id", lessonId)
         .maybeSingle();
       if (!q) return null;
@@ -105,6 +106,9 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
 
   const allAnswered = quiz.questions.every((q) => answers[q.id]);
   const passed = !!attempts.find((a) => a.passed) || !!submitted?.passed;
+  const maxAttempts = (quiz as any).max_attempts as number | null | undefined;
+  const attemptsLeft = maxAttempts != null ? Math.max(0, maxAttempts - attempts.length) : null;
+  const retakeBlocked = !passed && attemptsLeft != null && attemptsLeft <= 0;
 
   return (
     <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
@@ -116,9 +120,18 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
         <div className="text-xs text-muted-foreground flex items-center gap-3">
           <span>Pass mark: {quiz.passing_score}%</span>
           {attempts.length > 0 && <span>Best: <strong className={cn(passed ? "text-green-600" : "text-foreground")}>{bestScore}%</strong></span>}
-          <span>Attempts: {attempts.length}</span>
+          <span>Attempts: {attempts.length}{maxAttempts ? ` / ${maxAttempts}` : ""}</span>
+          {attempts.length > 0 && (
+            <Link to={`/quizzes/${quiz.id}/attempts`} className="underline hover:text-foreground" aria-label="Open full attempt review page">Full review</Link>
+          )}
         </div>
       </div>
+
+      {retakeBlocked && (
+        <div role="alert" className="text-xs rounded-lg px-3 py-2 border border-destructive/40 bg-destructive/10 text-destructive">
+          You've used all {maxAttempts} attempts for this quiz. Contact your instructor for a reset.
+        </div>
+      )}
 
       {previousAttempt && !submitted && (
         <div className={cn(
@@ -211,7 +224,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
               {reviewMode ? "Reviewing a past attempt." : "Attempt saved to your history."}
             </p>
             <div className="flex gap-2">
-              {!submitted.passed && (
+              {!submitted.passed && !retakeBlocked && (
                 <Button variant="default" size="sm" onClick={() => { setSubmitted(null); setReviewMode(false); setAnswers({}); }}>
                   <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Retake quiz
                 </Button>
@@ -263,8 +276,9 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
           <div className="flex justify-end pt-2 border-t border-border">
             <Button
               size="sm"
-              disabled={!allAnswered || submit.isPending}
+              disabled={!allAnswered || submit.isPending || retakeBlocked}
               onClick={() => submit.mutate()}
+              aria-label={retakeBlocked ? "Maximum attempts reached" : "Submit quiz answers"}
             >
               {submit.isPending ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Submitting…</> : "Submit Answers"}
             </Button>

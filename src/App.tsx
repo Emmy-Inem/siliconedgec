@@ -39,6 +39,7 @@ const LearningPaths = lazy(() => import("./pages/LearningPaths"));
 const LearningPathDetail = lazy(() => import("./pages/LearningPathDetail"));
 const CourseQuizzes = lazy(() => import("./pages/CourseQuizzes"));
 const CourseAssignments = lazy(() => import("./pages/CourseAssignments"));
+const QuizAttempts = lazy(() => import("./pages/QuizAttempts"));
 const RelatedCourses = lazy(() => import("./pages/RelatedCourses"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
@@ -162,6 +163,7 @@ const App = () => (
               <Route path="/courses/:id/learn" element={<CourseLearning />} />
               <Route path="/courses/:id/quizzes" element={<CourseQuizzes />} />
               <Route path="/courses/:id/assignments" element={<CourseAssignments />} />
+              <Route path="/quizzes/:quizId/attempts" element={<QuizAttempts />} />
               <Route path="/courses/:id/related" element={<RelatedCourses />} />
               <Route path="/verify/:code" element={<VerifyCertificate />} />
               <Route path="/verify" element={<VerifyCertificateLanding />} />
