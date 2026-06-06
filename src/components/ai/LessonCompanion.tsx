@@ -47,8 +47,13 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
   const genQuiz = async () => {
     setQuizLoading(true); setResult(null);
     const { data, error } = await supabase.functions.invoke("ai-quiz", { body: { action: "generate", lessonId, courseId } });
-    if (error) toast({ title: "Quiz error", description: error.message, variant: "destructive" });
-    else { setQuiz(data); setAnswers(new Array(data.questions?.length ?? 0).fill(-1)); }
+    if (error) {
+      const msg = /402/.test(error.message) ? "AI credits are exhausted. Please contact support."
+        : /429/.test(error.message) ? "Too many requests — try again in a few seconds."
+        : /401|403/.test(error.message) ? "You need to be enrolled in this course to use the AI tutor."
+        : error.message;
+      toast({ title: "Couldn't build the quiz", description: msg, variant: "destructive" });
+    } else { setQuiz(data); setAnswers(new Array(data.questions?.length ?? 0).fill(-1)); }
     setQuizLoading(false);
   };
   const submitQuiz = async () => {
@@ -88,8 +93,8 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" onClick={reset} title="New chat"><RotateCcw className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => setOpen(false)}><X className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={reset} title="Start a new chat" aria-label="Start a new AI chat"><RotateCcw className="h-4 w-4" aria-hidden /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setOpen(false)} title="Close" aria-label="Close AI tutor"><X className="h-4 w-4" aria-hidden /></Button>
         </div>
       </div>
 
@@ -119,9 +124,11 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
               <div className="rounded-xl px-3 py-2 bg-muted mr-6 text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" />Thinking…</div>
             )}
           </div>
-          <form onSubmit={submit} className="p-2 border-t border-border flex gap-2">
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask anything…" disabled={loading} className="text-sm" />
-            <Button type="submit" size="icon" disabled={loading || !input.trim()}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
+          <form onSubmit={submit} className="p-2 border-t border-border flex gap-2" aria-label="Ask the AI tutor">
+            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask anything…" disabled={loading} className="text-sm" aria-label="Message" />
+            <Button type="submit" size="icon" disabled={loading || !input.trim()} aria-label="Send message">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Send className="h-4 w-4" aria-hidden />}
+            </Button>
           </form>
         </TabsContent>
 

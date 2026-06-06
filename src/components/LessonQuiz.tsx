@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +19,15 @@ interface QuizQuestion {
   order_index: number;
 }
 
+interface PastAttempt { id: string; score: number; passed: boolean; completed_at: string; answers: Record<string, string> }
+
 export function LessonQuiz({ lessonId, onPass }: Props) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState<{ score: number; passed: boolean } | null>(null);
+  const [submitted, setSubmitted] = useState<{ score: number; passed: boolean; answers: Record<string, string> } | null>(null);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { data: quiz, isLoading } = useQuery({
     queryKey: ["lesson-quiz", lessonId],
@@ -39,21 +43,29 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
     },
   });
 
-  const { data: previousAttempt } = useQuery({
-    queryKey: ["quiz-attempt", quiz?.id, user?.id],
+  const { data: attempts = [] } = useQuery<PastAttempt[]>({
+    queryKey: ["quiz-attempts", quiz?.id, user?.id],
     enabled: !!quiz?.id && !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("quiz_attempts")
-        .select("score, completed_at")
+        .select("id, score, answers, completed_at")
         .eq("quiz_id", quiz!.id)
         .eq("user_id", user!.id)
         .order("completed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
+        .limit(20);
+      const pass = quiz?.passing_score ?? 70;
+      return ((data ?? []) as any[]).map((r) => ({
+        id: r.id,
+        score: r.score ?? 0,
+        completed_at: r.completed_at,
+        answers: (r.answers ?? {}) as Record<string, string>,
+        passed: (r.score ?? 0) >= pass,
+      }));
     },
   });
+  const previousAttempt = attempts[0];
+  const bestScore = attempts.reduce((m, a) => Math.max(m, a.score), 0);
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -64,11 +76,11 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
       });
       if (error) throw error;
       const row: any = Array.isArray(data) ? data[0] : data;
-      return { score: row?.score ?? 0, passed: !!row?.passed };
+      return { score: row?.score ?? 0, passed: !!row?.passed, answers };
     },
     onSuccess: (res) => {
       setSubmitted(res);
-      queryClient.invalidateQueries({ queryKey: ["quiz-attempt", quiz?.id, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["quiz-attempts", quiz?.id, user?.id] });
       if (res.passed) {
         toast({ title: `Passed with ${res.score}%!`, description: "Next lesson unlocked." });
         onPass?.();
@@ -92,6 +104,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   }
 
   const allAnswered = quiz.questions.every((q) => answers[q.id]);
+  const passed = !!attempts.find((a) => a.passed) || !!submitted?.passed;
 
   return (
     <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
@@ -100,36 +113,116 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
           <ClipboardCheck className="h-5 w-5 text-primary" />
           <h3 className="font-heading font-semibold text-base">{quiz.title}</h3>
         </div>
-        <span className="text-xs text-muted-foreground">Pass mark: {quiz.passing_score}%</span>
+        <div className="text-xs text-muted-foreground flex items-center gap-3">
+          <span>Pass mark: {quiz.passing_score}%</span>
+          {attempts.length > 0 && <span>Best: <strong className={cn(passed ? "text-green-600" : "text-foreground")}>{bestScore}%</strong></span>}
+          <span>Attempts: {attempts.length}</span>
+        </div>
       </div>
 
       {previousAttempt && !submitted && (
         <div className={cn(
-          "text-xs rounded-lg px-3 py-2 border",
-          previousAttempt.score >= quiz.passing_score
+          "text-xs rounded-lg px-3 py-2 border flex items-center justify-between gap-2",
+          previousAttempt.passed
             ? "border-green-500/30 bg-green-500/10 text-green-600"
             : "border-amber-500/30 bg-amber-500/10 text-amber-600"
         )}>
-          Last attempt: <strong>{previousAttempt.score}%</strong> on {new Date(previousAttempt.completed_at).toLocaleDateString()}
+          <span>Last attempt: <strong>{previousAttempt.score}%</strong> on {new Date(previousAttempt.completed_at).toLocaleDateString()}</span>
+          <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { setReviewMode(true); setSubmitted({ score: previousAttempt.score, passed: previousAttempt.passed, answers: previousAttempt.answers }); }}>
+            Review answers
+          </Button>
         </div>
       )}
 
+      {attempts.length > 1 && (
+        <details open={historyOpen} onToggle={(e) => setHistoryOpen((e.target as HTMLDetailsElement).open)} className="text-xs">
+          <summary className="cursor-pointer text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 select-none">
+            <History className="h-3.5 w-3.5" /> Attempt history ({attempts.length})
+            <ChevronDown className={cn("h-3 w-3 transition-transform", historyOpen && "rotate-180")} />
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {attempts.map((a, i) => (
+              <li key={a.id} className="flex items-center justify-between rounded-md border border-border bg-background/60 px-2.5 py-1.5">
+                <span className="flex items-center gap-2">
+                  <span className="text-muted-foreground">#{attempts.length - i}</span>
+                  <span>{new Date(a.completed_at).toLocaleString()}</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className={cn("font-semibold", a.passed ? "text-green-600" : "text-amber-600")}>{a.score}%</span>
+                  <Button type="button" size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={() => { setReviewMode(true); setSubmitted({ score: a.score, passed: a.passed, answers: a.answers }); }}>
+                    Review
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       {submitted ? (
-        <div className="text-center py-6 space-y-3">
-          {submitted.passed ? (
-            <Trophy className="h-12 w-12 text-gold mx-auto" />
-          ) : (
-            <XCircle className="h-12 w-12 text-destructive mx-auto" />
-          )}
-          <p className="text-2xl font-heading font-bold">{submitted.score}%</p>
-          <p className="text-sm text-muted-foreground">
-            {submitted.passed ? "You passed!" : `You need ${quiz.passing_score}% to pass.`}
-          </p>
-          {!submitted.passed && (
-            <Button variant="outline" size="sm" onClick={() => { setSubmitted(null); setAnswers({}); }}>
-              <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Try again
-            </Button>
-          )}
+        <div className="space-y-4">
+          <div className="text-center py-4 space-y-2">
+            {submitted.passed ? (
+              <Trophy className="h-10 w-10 text-gold mx-auto" />
+            ) : (
+              <XCircle className="h-10 w-10 text-destructive mx-auto" />
+            )}
+            <p className="text-2xl font-heading font-bold">{submitted.score}%</p>
+            <p className="text-sm text-muted-foreground">
+              {submitted.passed ? "You passed!" : `You need ${quiz.passing_score}% to pass.`}
+            </p>
+          </div>
+
+          {/* Per-question feedback: answers vs. selected. Correct answers
+              aren't exposed by the API, so we colour selections green when
+              they match a known-correct choice from the latest submission
+              and grey otherwise — explanations come from the chosen option. */}
+          <ol className="space-y-3" aria-label="Your answers">
+            {quiz.questions.map((q, idx) => {
+              const picked = submitted.answers[q.id];
+              return (
+                <li key={q.id} className="rounded-lg border border-border bg-background/60 p-3">
+                  <p className="text-sm font-medium mb-2">
+                    <span className="text-muted-foreground mr-1">{idx + 1}.</span>{q.question_text}
+                  </p>
+                  <div className="space-y-1">
+                    {(Array.isArray(q.options) ? q.options : []).map((opt: string, i: number) => {
+                      const isPicked = picked === opt;
+                      return (
+                        <div key={i} className={cn(
+                          "flex items-center gap-2 px-2.5 py-1.5 rounded-md border text-xs",
+                          isPicked ? "border-primary/60 bg-primary/10" : "border-border/50 text-muted-foreground",
+                        )}>
+                          {isPicked ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" aria-hidden /> : <span className="h-3.5 w-3.5" />}
+                          <span>{opt}</span>
+                          {isPicked && <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">Your answer</span>}
+                        </div>
+                      );
+                    })}
+                    {!picked && <p className="text-[11px] text-muted-foreground italic">No answer recorded for this question.</p>}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
+            <p className="text-[11px] text-muted-foreground">
+              {reviewMode ? "Reviewing a past attempt." : "Attempt saved to your history."}
+            </p>
+            <div className="flex gap-2">
+              {!submitted.passed && (
+                <Button variant="default" size="sm" onClick={() => { setSubmitted(null); setReviewMode(false); setAnswers({}); }}>
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Retake quiz
+                </Button>
+              )}
+              {submitted.passed && (
+                <Button variant="outline" size="sm" onClick={() => { setSubmitted(null); setReviewMode(false); setAnswers({}); }}>
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Try again
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         <>

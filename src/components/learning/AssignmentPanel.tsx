@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileCheck2, Upload } from "lucide-react";
+import { Loader2, FileCheck2, Upload, CalendarClock, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -70,29 +70,72 @@ export function AssignmentPanel({ lessonId }: { lessonId: string }) {
     <div className="space-y-3">
       {assignments.map((a) => {
         const sub = subs[a.id];
+        const isGraded = sub?.grade != null;
+        const isSubmitted = !!sub && !isGraded;
+        const now = Date.now();
+        const due = a.due_at ? new Date(a.due_at).getTime() : null;
+        const overdue = !!due && !sub && due < now;
+        const status = isGraded ? "Graded" : isSubmitted ? "Submitted" : overdue ? "Overdue" : "To do";
         return (
-          <div key={a.id} className="rounded-2xl border border-border/60 bg-card p-4 space-y-2">
+          <div key={a.id} className="rounded-2xl border border-border/60 bg-card p-4 space-y-2" aria-label={`Assignment ${a.title}`}>
             <div className="flex items-center justify-between gap-2">
               <p className="font-semibold flex items-center gap-2"><FileCheck2 className="h-4 w-4 text-primary" />{a.title}</p>
-              {sub?.grade != null ? (
+              {isGraded ? (
                 <Badge>{sub.grade}/{a.max_points}</Badge>
-              ) : sub ? (
+              ) : isSubmitted ? (
                 <Badge variant="secondary">Submitted</Badge>
+              ) : overdue ? (
+                <Badge variant="destructive">Overdue</Badge>
               ) : (
                 <Badge variant="outline">Pending</Badge>
               )}
             </div>
+            {/* Workflow status timeline */}
+            <ol className="flex items-center gap-1.5 text-[10px] text-muted-foreground" aria-label="Submission status">
+              {(["To do", "Submitted", "Graded"] as const).map((s, i) => {
+                const reached =
+                  (s === "To do") ||
+                  (s === "Submitted" && (isSubmitted || isGraded)) ||
+                  (s === "Graded" && isGraded);
+                return (
+                  <li key={s} className="flex items-center gap-1.5">
+                    <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${reached ? "border-primary bg-primary text-primary-foreground" : "border-border"}`} aria-hidden>
+                      {reached ? <CheckCircle2 className="h-2.5 w-2.5" /> : null}
+                    </span>
+                    <span className={reached ? "text-foreground font-medium" : ""}>{s}</span>
+                    {i < 2 && <span className="w-3 h-px bg-border" aria-hidden />}
+                  </li>
+                );
+              })}
+              <li className="ml-auto sr-only">Current status: {status}</li>
+            </ol>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.instructions}</p>
-            {a.due_at && <p className="text-[11px] text-muted-foreground">Due: {new Date(a.due_at).toLocaleString()}</p>}
-            <Textarea rows={4} placeholder="Type your response…" defaultValue={sub?.content ?? ""} onChange={(e) => setDrafts((p) => ({ ...p, [a.id]: e.target.value }))} disabled={sub?.grade != null} />
+            {a.due_at && (
+              <p className={`text-[11px] flex items-center gap-1 ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                <CalendarClock className="h-3 w-3" aria-hidden /> Due: {new Date(a.due_at).toLocaleString()}
+              </p>
+            )}
+            <Textarea
+              rows={4}
+              placeholder="Type your response…"
+              defaultValue={sub?.content ?? ""}
+              onChange={(e) => setDrafts((p) => ({ ...p, [a.id]: e.target.value }))}
+              disabled={isGraded}
+              aria-label={`Response for ${a.title}`}
+            />
             {sub?.file_url && <p className="text-[11px] text-muted-foreground">📎 File attached</p>}
             {sub?.feedback && <div className="text-sm bg-muted/40 rounded p-2"><span className="font-semibold">Instructor feedback:</span> {sub.feedback}</div>}
             <div className="flex gap-2">
-              <Button size="sm" onClick={() => submit(a)} disabled={saving === a.id || sub?.grade != null}>{saving === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : sub ? "Update submission" : "Submit"}</Button>
+              <Button size="sm" onClick={() => submit(a)} disabled={saving === a.id || isGraded} aria-label={sub ? `Update submission for ${a.title}` : `Submit ${a.title}`}>
+                {saving === a.id ? <Loader2 className="h-3 w-3 animate-spin" aria-label="Saving" /> : sub ? "Update submission" : "Submit"}
+              </Button>
               <label className="inline-flex items-center gap-1 text-xs cursor-pointer rounded-md border border-border px-2 py-1 hover:bg-muted">
-                <Upload className="h-3 w-3" /> Attach file
-                <input type="file" hidden onChange={(e) => e.target.files?.[0] && upload(a, e.target.files[0])} disabled={sub?.grade != null} />
+                <Upload className="h-3 w-3" aria-hidden /> Attach file
+                <input type="file" hidden onChange={(e) => e.target.files?.[0] && upload(a, e.target.files[0])} disabled={isGraded} aria-label={`Attach a file to ${a.title}`} />
               </label>
+              {isGraded && (
+                <span className="text-[11px] text-muted-foreground self-center">Locked after grading.</span>
+              )}
             </div>
           </div>
         );
