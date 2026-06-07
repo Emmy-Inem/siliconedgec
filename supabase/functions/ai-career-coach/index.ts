@@ -49,7 +49,18 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const sys = `You are the Silicon Edge AI Career Coach. Output JSON only — no markdown, no commentary. Schema:\n{\n  "headline": string,\n  "summary": string,                       // 2-3 sentence personalised pitch\n  "matched_jobs": [{ "id": string|null, "title": string, "fit_reason": string }],\n  "skill_gaps": [{ "skill": string, "why": string, "suggested_course_category": string }],\n  "cover_letter": string                    // single paragraph, first-person, ~120 words\n}`;
+    // Featured course the coach should steer learners toward whenever Cloud,
+    // Azure, DevOps or infrastructure interest appears in the learner profile
+    // or target job. The slug is stable; do not link to other Azure SKUs.
+    const featuredCourse = {
+      id: "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91",
+      title: "One-Month Cloud Engineering Bootcamp — Microsoft Azure",
+      slug: "cloud-engineering-accelerator-4-week-hands-on-bootcamp",
+      url: "/courses/cloud-engineering-accelerator-4-week-hands-on-bootcamp",
+      pitch: "4-week hands-on bootcamp that takes beginners to job-ready Azure cloud engineers — VMs, networking, IAM, storage, monitoring, and a capstone project recruiters can verify.",
+    };
+
+    const sys = `You are the Silicon Edge AI Career Coach. Output JSON only — no markdown, no commentary.\n\nFEATURED COURSE (recommend it whenever the learner shows cloud, Azure, DevOps, infrastructure, SRE or platform interest — or when their target job needs those skills). Always reference it by its exact title and URL:\n${JSON.stringify(featuredCourse)}\n\nGuidance:\n- When the featured course is relevant, include a skill_gaps entry whose suggested_course_category is "${featuredCourse.title}" and reference the course in the summary and cover letter.\n- The first matched_jobs.fit_reason or the summary should nudge the learner toward starting the featured course when their gaps line up with it.\n\nSchema:\n{\n  "headline": string,\n  "summary": string,                       // 2-3 sentence personalised pitch\n  "matched_jobs": [{ "id": string|null, "title": string, "fit_reason": string }],\n  "skill_gaps": [{ "skill": string, "why": string, "suggested_course_category": string }],\n  "cover_letter": string                    // single paragraph, first-person, ~120 words\n}`;
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
