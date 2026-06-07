@@ -13,3 +13,16 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+// jsdom doesn't ship IntersectionObserver — required by embla-carousel.
+class IO {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return []; }
+  root = null;
+  rootMargin = "";
+  thresholds = [];
+}
+(globalThis as any).IntersectionObserver = (globalThis as any).IntersectionObserver ?? IO;
+(globalThis as any).ResizeObserver = (globalThis as any).ResizeObserver ?? IO;
