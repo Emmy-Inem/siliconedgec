@@ -2103,6 +2103,7 @@ export type Database = {
         Row: {
           correct_answer: string
           created_at: string
+          explanation: string | null
           id: string
           options: Json
           order_index: number
@@ -2112,6 +2113,7 @@ export type Database = {
         Insert: {
           correct_answer: string
           created_at?: string
+          explanation?: string | null
           id?: string
           options?: Json
           order_index?: number
@@ -2121,6 +2123,7 @@ export type Database = {
         Update: {
           correct_answer?: string
           created_at?: string
+          explanation?: string | null
           id?: string
           options?: Json
           order_index?: number
@@ -2500,6 +2503,8 @@ export type Database = {
       get_quiz_questions: {
         Args: { p_quiz_id: string }
         Returns: {
+          correct_answer: string
+          explanation: string
           id: string
           options: Json
           order_index: number
