@@ -64,28 +64,14 @@ export async function recordInfluencerConversion(opts: {
   // Only record if there is *some* attribution (promo OR UTM source/campaign/content)
   if (!promoId && !utm.utm_source && !utm.utm_campaign && !utm.utm_content) return;
 
-  const { error } = await (supabase.from("influencer_referrals") as any).upsert(
-    {
-      user_id: opts.userId,
-      course_id: opts.courseId,
-      conversion_type: opts.conversionType,
-      promo_code_id: promoId,
-      order_id: opts.orderId ?? null,
-      registration_id: opts.registrationId ?? null,
-      original_price: opts.originalPrice ?? 0,
-      discount_applied: opts.discountApplied ?? 0,
-      final_price: opts.finalPrice ?? 0,
-      commission_earned: opts.commissionEarned ?? 0,
-      utm_source: utm.utm_source ?? null,
-      utm_medium: utm.utm_medium ?? null,
-      utm_campaign: utm.utm_campaign ?? null,
-      utm_content: utm.utm_content ?? null,
-    },
-    { onConflict: "user_id,course_id,conversion_type", ignoreDuplicates: true },
-  );
-  if (error) {
-    // Surface to console so you can see attribution failures during testing,
-    // but never block the registration/checkout flow.
-    console.warn("[influencer-attribution] failed to record referral", error);
-  }
+  // SECURITY: Referral rows (with financial fields) are written exclusively
+  // server-side — by the auto_record_influencer_referral / _order triggers on
+  // the registrations and orders tables, and by paystack-verify / paystack-
+  // cart-verify edge functions using the service role. Clients are no longer
+  // permitted to INSERT into influencer_referrals so that users cannot
+  // fabricate commission, pricing, or promo references. This call is now a
+  // no-op kept for backwards-compatible callers.
+  void opts;
+  void promoId;
+  void utm;
 }
