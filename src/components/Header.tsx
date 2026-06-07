@@ -75,11 +75,12 @@ export function Header() {
           {/* Cart Icon */}
           <Link
             to="/cart"
+            aria-label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
             className={cn(
               "relative p-2 rounded-md transition-colors text-foreground hover:text-primary hover:bg-muted"
             )}
           >
-            <ShoppingCart className="h-[18px] w-[18px]" />
+            <ShoppingCart className="h-[18px] w-[18px]" aria-hidden="true" />
             {count > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4.5 w-4.5 min-w-[18px] flex items-center justify-center px-1">
                 {count}
@@ -115,8 +116,12 @@ export function Header() {
 
         {/* Mobile/Tablet: cart + menu toggle */}
         <div className="lg:hidden flex items-center gap-2">
-          <Link to="/cart" className="relative p-2 text-foreground">
-            <ShoppingCart className="h-5 w-5" />
+          <Link
+            to="/cart"
+            aria-label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
+            className="relative p-2 text-foreground"
+          >
+            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
             {count > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {count}

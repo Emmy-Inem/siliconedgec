@@ -18,6 +18,8 @@ interface QuizQuestion {
   question_text: string;
   options: string[];
   order_index: number;
+  correct_answer?: string | null;
+  explanation?: string | null;
 }
 
 interface PastAttempt { id: string; score: number; passed: boolean; completed_at: string; answers: Record<string, string> }
@@ -201,18 +203,54 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
                   <div className="space-y-1">
                     {(Array.isArray(q.options) ? q.options : []).map((opt: string, i: number) => {
                       const isPicked = picked === opt;
+                      const isCorrect = q.correct_answer != null && opt === q.correct_answer;
+                      const isWrongPick = isPicked && q.correct_answer != null && !isCorrect;
                       return (
                         <div key={i} className={cn(
                           "flex items-center gap-2 px-2.5 py-1.5 rounded-md border text-xs",
-                          isPicked ? "border-primary/60 bg-primary/10" : "border-border/50 text-muted-foreground",
+                          isCorrect
+                            ? "border-green-500/50 bg-green-500/10 text-green-700"
+                            : isWrongPick
+                              ? "border-destructive/50 bg-destructive/10 text-destructive"
+                              : isPicked
+                                ? "border-primary/60 bg-primary/10"
+                                : "border-border/50 text-muted-foreground",
                         )}>
-                          {isPicked ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" aria-hidden /> : <span className="h-3.5 w-3.5" />}
+                          {isCorrect ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-600" aria-hidden />
+                          ) : isWrongPick ? (
+                            <XCircle className="h-3.5 w-3.5 text-destructive" aria-hidden />
+                          ) : isPicked ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary" aria-hidden />
+                          ) : (
+                            <span className="h-3.5 w-3.5" />
+                          )}
                           <span>{opt}</span>
-                          {isPicked && <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">Your answer</span>}
+                          <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wide">
+                            {isPicked && <span className="text-muted-foreground">Your answer</span>}
+                            {isCorrect && <span className="text-green-700">Correct</span>}
+                          </span>
                         </div>
                       );
                     })}
                     {!picked && <p className="text-[11px] text-muted-foreground italic">No answer recorded for this question.</p>}
+                    {(q.explanation || q.correct_answer) && (
+                      <div className={cn(
+                        "mt-2 rounded-md border p-2.5 text-[11px] leading-relaxed",
+                        picked && q.correct_answer && picked === q.correct_answer
+                          ? "border-green-500/30 bg-green-500/5 text-green-800"
+                          : "border-amber-500/30 bg-amber-500/5 text-amber-900",
+                      )}>
+                        <p className="font-semibold mb-0.5">
+                          {picked && q.correct_answer && picked === q.correct_answer
+                            ? "Why this is correct"
+                            : `Why the correct answer is "${q.correct_answer ?? "—"}"`}
+                        </p>
+                        <p className="text-foreground/80">
+                          {q.explanation || "Revisit the lesson material above — this concept is covered in the preceding section."}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </li>
               );
