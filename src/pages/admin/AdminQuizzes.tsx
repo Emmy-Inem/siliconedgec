@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Check, Sparkles } from "lucide-react";
+import { Plus, Trash2, Check, Star } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { QuizAIGenerator, AIQuestion } from "@/components/admin/QuizAIGenerator";
 
@@ -200,7 +200,7 @@ export default function AdminQuizzes() {
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="manual">Manual</TabsTrigger>
                   <TabsTrigger value="ai">
-                    <Sparkles className="h-3.5 w-3.5 mr-1" /> Generate with AI
+                    <Star className="h-3.5 w-3.5 mr-1" /> Generate with AI
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual" className="space-y-3 pt-3">

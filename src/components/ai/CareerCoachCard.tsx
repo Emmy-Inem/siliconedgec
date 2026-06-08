@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, Loader2, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Briefcase, Loader2, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
@@ -39,7 +39,7 @@ export function CareerCoachCard({ jobId }: { jobId?: string }) {
               <h3 className="font-heading text-lg md:text-xl font-bold mb-1">{jobId ? "Should I apply?" : "Match me to jobs"}</h3>
               <p className="text-sm text-muted-foreground mb-3">{jobId ? "Get a fit summary, skill gaps, and a cover letter draft tailored to this role." : "Personalised job matches based on the courses you've completed."}</p>
               <Button size="sm" onClick={run} disabled={loading}>
-                {loading ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Analysing</> : <><Sparkles className="h-4 w-4 mr-1" />Run coach</>}
+                {loading ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Analysing</> : <><Star className="h-4 w-4 mr-1" />Run coach</>}
               </Button>
             </>
           )}

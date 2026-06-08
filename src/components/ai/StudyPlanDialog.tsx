@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Loader2, CalendarDays } from "lucide-react";
+import { Star, Loader2, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -24,9 +24,9 @@ export function StudyPlanDialog({ courseId, trigger }: { courseId: string; trigg
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger ?? <Button variant="outline"><Sparkles className="h-4 w-4 mr-2" />Generate study plan</Button>}</DialogTrigger>
+      <DialogTrigger asChild>{trigger ?? <Button variant="outline"><Star className="h-4 w-4 mr-2" />Generate study plan</Button>}</DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />AI Study Plan</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle className="flex items-center gap-2"><Star className="h-4 w-4 text-primary" />AI Study Plan</DialogTitle></DialogHeader>
         {!plan && (
           <div className="space-y-5">
             <div>

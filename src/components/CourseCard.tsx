@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Users, Sparkles } from "lucide-react";
+import { Clock, Users, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
@@ -69,7 +69,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             {isWebinar && (
               <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg">
-                <Sparkles className="h-3 w-3" />
+                <Star className="h-3 w-3" />
                 Free webinar
               </div>
             )}

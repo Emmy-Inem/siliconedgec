@@ -21,7 +21,7 @@ import { Receipts } from "@/components/Receipts";
 import { NextStepCard } from "@/components/ai/NextStepCard";
 import { CareerCoachCard } from "@/components/ai/CareerCoachCard";
 import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
-import { Settings, MessageCircle, Sparkles } from "lucide-react";
+import { Settings, MessageCircle, Star } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
@@ -270,7 +270,7 @@ export default function Dashboard() {
                     {webinars.length > 0 && (
                       <div>
                         <div className="flex items-center gap-2 mb-4">
-                          <Sparkles className="h-5 w-5 text-primary" />
+                          <Star className="h-5 w-5 text-primary" />
                           <h2 className="font-heading text-xl font-bold">Upcoming Webinars</h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -284,7 +284,7 @@ export default function Dashboard() {
                                   )}
                                   <CardHeader className="pb-2">
                                     <Badge className="bg-primary/10 text-primary border-0 text-xs w-fit mb-1">
-                                      <Sparkles className="h-3 w-3 mr-1" /> Free webinar
+                                      <Star className="h-3 w-3 mr-1" /> Free webinar
                                     </Badge>
                                     <CardTitle className="text-base leading-snug">{enroll.course?.title}</CardTitle>
                                   </CardHeader>

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Sparkles, FileText, Video } from "lucide-react";
+import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 import {
@@ -429,7 +429,7 @@ export function CurriculumBuilder({ courseId }: Props) {
             {lessonForm.content_type === "quiz" && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <Star className="h-3.5 w-3.5 text-primary" />
                   <p className="font-medium">Tip: build the quiz questions next</p>
                 </div>
                 <p className="text-[11px] text-muted-foreground">After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to add questions manually or generate them with AI.</p>

@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const FLAG_KEY = "sec_show_signup_prompt";
@@ -90,7 +90,7 @@ export function InfluencerSignupPrompt() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-6 w-6 text-primary" />
+            <Star className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center">
             Welcome — invited by {name}
