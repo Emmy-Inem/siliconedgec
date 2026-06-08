@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Sparkles, Clock4, Rocket, Trophy, Lock, PlayCircle, Users, Globe2, MessagesSquare, Quote, Target, Handshake, PartyPopper } from "lucide-react";
+import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Clock4, Rocket, Trophy, Lock, PlayCircle, Users, Globe2, MessagesSquare, Quote, Target, Handshake, PartyPopper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -787,7 +787,7 @@ export default function Index() {
               transition={{ delay: 0.15 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6"
             >
-              <Sparkles className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
+              <Star className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
             </motion.div>
 
             {/* center brand mark — favicon */}
@@ -1106,7 +1106,7 @@ export default function Index() {
             />
 
             {[
-              { n: "01", icon: Sparkles, title: home?.how_step1_title ?? "Apply & enroll",        desc: home?.how_step1_desc ?? "Pick your track. Pay flexibly. Get instant access to your cohort." },
+              { n: "01", icon: Star, title: home?.how_step1_title ?? "Apply & enroll",        desc: home?.how_step1_desc ?? "Pick your track. Pay flexibly. Get instant access to your cohort." },
               { n: "02", icon: Clock4,   title: home?.how_step2_title ?? "Learn live, weekly",    desc: home?.how_step2_desc ?? "Real instructor-led classes with Q&A. Recordings keep you on track." },
               { n: "03", icon: Rocket,   title: home?.how_step3_title ?? "Build real projects",   desc: home?.how_step3_desc ?? "Ship portfolio-grade work, reviewed by mentors actively working in tech." },
               { n: "04", icon: Trophy,   title: home?.how_step4_title ?? "Get job-ready",         desc: home?.how_step4_desc ?? "CV reviews, mock interviews, and intros to our hiring partner network." },

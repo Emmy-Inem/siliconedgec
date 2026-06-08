@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Star, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +26,7 @@ export function NextStepCard({ userId }: { userId: string }) {
       <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
       <div className="flex items-start gap-4 relative">
         <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary to-purple-600 text-white flex items-center justify-center shrink-0">
-          <Sparkles className="h-5 w-5" />
+          <Star className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary mb-1 font-semibold">AI Coach · Your next step</p>

@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/CourseCard";
 import { useCourse, useCourses } from "@/hooks/useCourses";
-import { ChevronLeft, Loader2, Sparkles } from "lucide-react";
+import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { courseHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
 
@@ -35,7 +35,7 @@ export default function RelatedCourses() {
         </Button>
         <div className="flex items-center gap-3 mb-6">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Star className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h1 className="font-heading text-2xl font-bold">Related courses</h1>

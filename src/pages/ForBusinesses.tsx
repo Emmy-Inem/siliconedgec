@@ -5,7 +5,7 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
-  Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Sparkles,
+  Cloud, Code, Shield, Palette, Globe, Brain, Quote, Loader2, Star,
   Users, Building2, Rocket,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -201,7 +201,7 @@ export default function ForBusinesses() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-                <Sparkles className="h-3 w-3" /> Corporate training partner
+                <Star className="h-3 w-3" /> Corporate training partner
               </div>
               <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
                 Give your workforce a <span className="text-gradient">winning edge</span><span className="text-gold">.</span>

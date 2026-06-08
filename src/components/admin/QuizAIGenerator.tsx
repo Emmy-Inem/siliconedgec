@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Loader2, Trash2, Plus, Check } from "lucide-react";
+import { Star, Loader2, Trash2, Plus, Check } from "lucide-react";
 
 export interface AIQuestion {
   question: string;
@@ -100,7 +100,7 @@ export function QuizAIGenerator({ onAccept, defaultTopic = "" }: Props) {
         </div>
         <div className="flex items-end">
           <Button onClick={generate} disabled={loading} className="w-full">
-            {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+            {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Star className="h-4 w-4 mr-1" />}
             {loading ? "Generating..." : "Generate"}
           </Button>
         </div>

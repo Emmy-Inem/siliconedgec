@@ -4,7 +4,7 @@ import { fetchAllRows } from "@/lib/fetch-all";
 import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
 import {
   BookOpen, Users, GraduationCap, MessageSquareQuote, CreditCard, UserCheck,
-  TrendingUp, ArrowUpRight, Megaphone, Clock, Sparkles, Activity, ClipboardCheck, Briefcase
+  TrendingUp, ArrowUpRight, Megaphone, Clock, Star, Activity, ClipboardCheck, Briefcase
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -229,7 +229,7 @@ export default function AdminOverview() {
         className="flex items-center gap-3"
       >
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <Star className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
           <h1 className="font-heading text-2xl font-bold">Dashboard Overview</h1>
@@ -385,7 +385,7 @@ export default function AdminOverview() {
         className="bg-card rounded-2xl border border-border p-5"
       >
         <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Star className="h-4 w-4 text-primary" />
           Quick Actions
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

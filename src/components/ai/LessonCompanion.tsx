@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles, Send, X, MessageSquare, BookCheck, FileText, Loader2, RotateCcw } from "lucide-react";
+import { Star, Send, X, MessageSquare, BookCheck, FileText, Loader2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiTutor } from "@/hooks/useAiTutor";
 import { MarkdownView } from "./MarkdownView";
@@ -71,7 +71,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
         className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-600 text-white shadow-2xl shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform"
         aria-label="Open AI tutor"
       >
-        <Sparkles className="h-6 w-6" />
+        <Star className="h-6 w-6" />
       </button>
     );
   }
@@ -85,7 +85,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
       <div className="flex items-center justify-between p-3 border-b border-border bg-gradient-to-r from-primary/10 via-purple-500/10 to-transparent">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-white" />
+            <Star className="h-4 w-4 text-white" />
           </div>
           <div>
             <p className="font-heading font-semibold text-sm leading-tight">Learning Companion</p>

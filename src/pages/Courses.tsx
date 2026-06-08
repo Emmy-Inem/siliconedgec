@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Sparkles, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
@@ -55,7 +55,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
             className="lg:col-span-6"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-foreground/15 text-foreground text-xs font-semibold mb-5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} /> Live, instructor-led tracks
+              <Star className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} /> Live, instructor-led tracks
             </div>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[4rem] font-bold text-foreground mb-5 leading-[1.05] tracking-tight">
               Find the course that{" "}

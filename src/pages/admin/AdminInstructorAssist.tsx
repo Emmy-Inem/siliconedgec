@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Sparkles, Copy } from "lucide-react";
+import { Loader2, Star, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const ACTIONS = [
@@ -34,7 +34,7 @@ export default function AdminInstructorAssist() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-heading text-2xl font-bold mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />Instructor Assist</h2>
+        <h2 className="font-heading text-2xl font-bold mb-1 flex items-center gap-2"><Star className="h-5 w-5 text-primary" />Instructor Assist</h2>
         <p className="text-sm text-muted-foreground">AI helpers for outlines, lesson scripts, Q&amp;A drafts and assignment grading.</p>
       </div>
       <Tabs value={action} onValueChange={(v) => setAction(v as any)}>
@@ -44,7 +44,7 @@ export default function AdminInstructorAssist() {
         {ACTIONS.map((a) => (
           <TabsContent key={a.id} value={a.id} className="space-y-3 mt-4">
             <Textarea rows={6} placeholder={a.ph} value={ctx} onChange={(e) => setCtx(e.target.value)} />
-            <Button onClick={run} disabled={loading || !ctx.trim()}>{loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}Generate</Button>
+            <Button onClick={run} disabled={loading || !ctx.trim()}>{loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Star className="h-4 w-4 mr-2" />}Generate</Button>
           </TabsContent>
         ))}
       </Tabs>
