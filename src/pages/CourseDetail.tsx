@@ -31,6 +31,7 @@ import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } fro
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
+import { requestSignup } from "@/components/SignupPromptModal";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
@@ -234,7 +235,7 @@ export default function CourseDetail() {
   });
 
   const handleAddToCart = () => {
-    if (!user) { navigate("/sign-in"); return; }
+    if (!user) { requestSignup("cart"); return; }
     if (courseId) {
       addToCart(courseId);
       // TikTok intent signal — fires on the "Enroll Now / Add to cart" CTA.
@@ -261,14 +262,14 @@ export default function CourseDetail() {
   };
 
   const handleBookmark = () => {
-    if (!user) { navigate("/sign-in"); return; }
+    if (!user) { requestSignup("bookmark"); return; }
     if (courseId) toggleBookmark(courseId);
   };
 
   const handlePaymentSuccess = () => { enroll.mutate(); };
 
   const handleSubmitReview = () => {
-    if (!user) { navigate("/sign-in"); return; }
+    if (!user) { requestSignup("review"); return; }
     submitReview.mutate({ rating: reviewRating, comment: reviewComment });
   };
 
@@ -633,7 +634,7 @@ export default function CourseDetail() {
                         className="w-full gap-2"
                         onClick={() => {
                           if (!user) {
-                            navigate(`/sign-in?next=/courses/${courseSlug}`);
+                            requestSignup("register");
                             return;
                           }
                           setRegisterOpen(true);

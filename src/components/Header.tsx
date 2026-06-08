@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
+import { UserNotificationBell } from "@/components/UserNotificationBell";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
 
@@ -90,6 +91,7 @@ export function Header() {
 
           {user ? (
             <>
+              <UserNotificationBell />
               {isAdmin && (
                 <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                   <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
