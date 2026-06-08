@@ -1,4 +1,5 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { GraduationCap, Shield, Download, ExternalLink, Award, CheckCircle2, Loader2 } from "lucide-react";
@@ -28,6 +29,8 @@ const fadeUp = {
 export default function Certificates() {
   const { user } = useAuth();
   const heroPhoto = usePageImage("page_image_certificate_hero", certificateCelebration);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoDownloadFlag = searchParams.get("download");
 
   // Real DB-backed certificates (auto-issued via trigger when course completed)
   const { data: certificates = [], isLoading } = useQuery({
@@ -184,6 +187,8 @@ export default function Certificates() {
                 {certificates.map((cert: any) => {
                   const certDate = new Date(cert.issued_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
                    const verifyUrl = siteUrl(`/verify/${cert.verification_code}`);
+                  const isLatest = certificates[0]?.id === cert.id;
+                  const shouldAutoDownload = autoDownloadFlag === "latest" && isLatest;
                   return (
                     <CertificateCardWithDownload
                       key={cert.id}
@@ -193,6 +198,12 @@ export default function Certificates() {
                       certId={cert.verification_code}
                       verifyUrl={verifyUrl}
                       instructorName={cert.course?.instructors?.name}
+                      autoDownload={shouldAutoDownload}
+                      onAutoDownloaded={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.delete("download");
+                        setSearchParams(next, { replace: true });
+                      }}
                     />
                   );
                 })}
@@ -250,9 +261,10 @@ export default function Certificates() {
 }
 
 function CertificateCardWithDownload({
-  courseName, studentName, date, certId, instructorName, verifyUrl,
+  courseName, studentName, date, certId, instructorName, verifyUrl, autoDownload, onAutoDownloaded,
 }: {
   courseName: string; studentName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
+  autoDownload?: boolean; onAutoDownloaded?: () => void;
 }) {
   const certRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -289,6 +301,18 @@ function CertificateCardWithDownload({
       setShowCert(false);
     }
   }, [certId]);
+
+  // Auto-trigger PDF generation once when the user lands here from the
+  // "Course completed!" notification.
+  useEffect(() => {
+    if (!autoDownload) return;
+    const t = setTimeout(() => {
+      handleDownload();
+      onAutoDownloaded?.();
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoDownload]);
 
   return (
     <>
