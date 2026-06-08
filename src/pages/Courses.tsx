@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Star, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
