@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anon can view reviews (no PII via view)" ON public.reviews;
