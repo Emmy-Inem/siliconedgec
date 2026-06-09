@@ -33,17 +33,17 @@ export function useReviews(courseId: string | undefined) {
 
       // Fetch profiles for reviewers
       const userIds = [...new Set((data ?? []).map((r: any) => r.user_id).filter(Boolean))];
-      if (userIds.length === 0) return [];
-
-      const { data: profiles } = await supabase.rpc("get_public_profiles", {
-        p_user_ids: userIds as string[],
-      });
-
-      const profileMap = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
+      const profileMap = new Map<string, any>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase.rpc("get_public_profiles", {
+          p_user_ids: userIds as string[],
+        });
+        (profiles ?? []).forEach((p: any) => profileMap.set(p.user_id, p));
+      }
 
       return (data ?? []).map((r: any) => ({
         ...r,
-        profile: profileMap.get(r.user_id) ?? null,
+        profile: r.user_id ? profileMap.get(r.user_id) ?? null : null,
       })) as Review[];
     },
     enabled: !!courseId,
