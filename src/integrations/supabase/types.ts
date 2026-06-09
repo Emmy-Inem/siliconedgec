@@ -2522,6 +2522,18 @@ export type Database = {
     }
     Functions: {
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      get_course_curriculum: {
+        Args: { p_course_id: string }
+        Returns: {
+          lesson_duration: string
+          lesson_id: string
+          lesson_order_index: number
+          lesson_title: string
+          module_id: string
+          module_order_index: number
+          module_title: string
+        }[]
+      }
       get_profiles_count: { Args: never; Returns: number }
       get_public_profiles: {
         Args: { p_user_ids: string[] }
