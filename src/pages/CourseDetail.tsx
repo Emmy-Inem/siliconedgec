@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
@@ -64,8 +64,76 @@ export default function CourseDetail() {
   const courseId = course?.id;
   const courseSlug = (course as any)?.slug ?? course?.id;
 
+  const { data: publicCurriculum = [] } = useQuery({
+    queryKey: ["course-public-curriculum", courseId],
+    queryFn: async () => {
+      if (!courseId) return [];
+      const { data, error } = await supabase.rpc("get_course_curriculum", { p_course_id: courseId });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!courseId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const curriculumModules = useMemo(() => {
+    if (!courseId) return [];
+
+    const sourceRows = publicCurriculum.length
+      ? publicCurriculum
+      : (course?.modules ?? []).flatMap((module: any) =>
+          (module.lessons?.length
+            ? module.lessons.map((lesson: any) => ({
+                module_id: module.id,
+                module_title: module.title,
+                module_order_index: module.order_index,
+                lesson_id: lesson.id,
+                lesson_title: lesson.title,
+                lesson_duration: lesson.duration,
+                lesson_order_index: lesson.order_index,
+              }))
+            : [{
+                module_id: module.id,
+                module_title: module.title,
+                module_order_index: module.order_index,
+                lesson_id: null,
+                lesson_title: null,
+                lesson_duration: null,
+                lesson_order_index: null,
+              }])
+        );
+
+    const moduleMap = new Map<string, any>();
+    sourceRows.forEach((row: any) => {
+      const existing = moduleMap.get(row.module_id) ?? {
+        id: row.module_id,
+        title: row.module_title,
+        order_index: row.module_order_index ?? 0,
+        lessons: [],
+      };
+
+      if (row.lesson_id) {
+        existing.lessons.push({
+          id: row.lesson_id,
+          title: row.lesson_title,
+          duration: row.lesson_duration,
+          order_index: row.lesson_order_index ?? 0,
+        });
+      }
+
+      moduleMap.set(row.module_id, existing);
+    });
+
+    return Array.from(moduleMap.values())
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((module) => ({
+        ...module,
+        lessons: module.lessons.sort((a: any, b: any) => a.order_index - b.order_index),
+      }));
+  }, [course?.modules, courseId, publicCurriculum]);
+
   // Flattened ordered lesson list for sequential unlock logic.
-  const orderedLessons: { id: string; module_id: string }[] = (course?.modules ?? [])
+  const orderedLessons: { id: string; module_id: string }[] = curriculumModules
     .flatMap((m: any) => m.lessons.map((l: any) => ({ id: l.id, module_id: m.id })));
 
   // Pull completed lessons for the current user (used to gate next lessons).
@@ -402,9 +470,9 @@ export default function CourseDetail() {
                 </TabsList>
                 <div className="border border-border rounded-b-lg p-4 md:p-6 bg-card">
                   <TabsContent value="curriculum" className="mt-0">
-                    {course.modules.length > 0 ? (
-                      <Accordion type="multiple" defaultValue={[course.modules[0]?.id]} className="space-y-0">
-                        {course.modules.map((module) => (
+                    {curriculumModules.length > 0 ? (
+                      <Accordion type="multiple" defaultValue={[curriculumModules[0]?.id]} className="space-y-0">
+                        {curriculumModules.map((module) => (
                           <AccordionItem key={module.id} value={module.id} className="border-b border-border last:border-0">
                             <AccordionTrigger className="hover:no-underline py-3">
                               <span className="font-heading font-semibold text-sm md:text-base text-left">{module.title}</span>
@@ -459,7 +527,7 @@ export default function CourseDetail() {
                       <p className="text-muted-foreground text-sm py-6 text-center">Curriculum coming soon.</p>
                     )}
 
-                    {course.modules.length > 0 && canOpenStudentArea && (
+                    {curriculumModules.length > 0 && canOpenStudentArea && (
                       <div className="mt-6 border-t border-border pt-4">
                         <Button className="w-full sm:w-auto" asChild>
                           <Link to={courseLearnHref(course)}>Open course</Link>

@@ -117,11 +117,15 @@ export default function CourseLearning() {
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
+  const hasPaidEnrollment = ["paid", "success", "completed", "confirmed"].includes(
+    String(enrollment?.payment_status ?? "").toLowerCase(),
+  );
 
   // Sequential unlock: admins always pass; otherwise a lesson is unlocked
   // only when the previous one in order has been completed.
   const isLessonUnlocked = (lessonId: string): boolean => {
     if (hasAdminAccess) return true;
+    if (!hasPaidEnrollment) return false;
     const idx = allLessons.findIndex((l: any) => l.id === lessonId);
     if (idx <= 0) return true;
     return completedIds.has(allLessons[idx - 1].id);
@@ -130,6 +134,7 @@ export default function CourseLearning() {
   const lastUnlockedLesson = (() => {
     if (!allLessons.length) return null;
     if (hasAdminAccess) return allLessons[0];
+    if (!hasPaidEnrollment) return null;
     // Find the furthest unlocked lesson (= first incomplete after a completed chain,
     // or the first lesson if nothing is completed).
     let target = allLessons[0];
@@ -163,7 +168,7 @@ export default function CourseLearning() {
         : (lastUnlockedLesson?.id ?? allLessons[0].id);
     setSelectedLessonId(target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allLessons.length, selectedLessonId, searchParams, completedIds.size, hasAdminAccess]);
+  }, [allLessons.length, selectedLessonId, searchParams, completedIds.size, hasAdminAccess, hasPaidEnrollment]);
 
   // Keep URL in sync so lessons are deep-linkable / shareable.
   useEffect(() => {
@@ -179,9 +184,8 @@ export default function CourseLearning() {
     if (!user) return false;
     if (hasAdminAccess) return true;
     if (!enrollment) return false;
-    const paid = ["paid","success","completed","confirmed"];
-    return paid.includes(String(enrollment.payment_status ?? "").toLowerCase());
-  }, [publicAccess, user, hasAdminAccess, enrollment]);
+    return hasPaidEnrollment;
+  }, [publicAccess, user, hasAdminAccess, enrollment, hasPaidEnrollment]);
 
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
@@ -396,7 +400,7 @@ export default function CourseLearning() {
                   variant={completedIds.has(currentLesson.id) ? "outline" : "default"}
                   size="sm"
                   onClick={() => markComplete.mutate(currentLesson.id)}
-                  disabled={completedIds.has(currentLesson.id)}
+                  disabled={completedIds.has(currentLesson.id) || !isLessonUnlocked(currentLesson.id)}
                 >
                   {completedIds.has(currentLesson.id) ? (
                     <><CheckCircle2 className="h-4 w-4 mr-1 text-green-500" /> Completed</>
