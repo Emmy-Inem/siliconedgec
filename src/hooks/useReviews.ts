@@ -21,15 +21,18 @@ export function useReviews(courseId: string | undefined) {
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["reviews", courseId],
     queryFn: async () => {
+      // Anonymous visitors read the PII-free view; signed-in users read the
+      // full table so we can identify their own review.
+      const table = user ? "reviews" : ("reviews_public" as const);
       const { data, error } = await supabase
-        .from("reviews")
+        .from(table as any)
         .select("*")
         .eq("course_id", courseId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
 
       // Fetch profiles for reviewers
-      const userIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
+      const userIds = [...new Set((data ?? []).map((r: any) => r.user_id).filter(Boolean))];
       if (userIds.length === 0) return [];
 
       const { data: profiles } = await supabase.rpc("get_public_profiles", {
