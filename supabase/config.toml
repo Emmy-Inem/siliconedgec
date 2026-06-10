@@ -15,6 +15,9 @@ verify_jwt = true
 [functions.paystack-cart-verify]
 verify_jwt = false
 
+[functions.paystack-webhook]
+verify_jwt = false
+
 [functions.live-class-reminder]
 verify_jwt = false
 
