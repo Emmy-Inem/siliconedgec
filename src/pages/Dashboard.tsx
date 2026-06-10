@@ -90,6 +90,8 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
   const [webinarRegCourseIds, setWebinarRegCourseIds] = useState<Set<string>>(new Set());
+  // course_id -> { done, total } for compact card indicator
+  const [lessonStats, setLessonStats] = useState<Record<string, { done: number; total: number }>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -159,6 +161,38 @@ export default function Dashboard() {
         if (lcsError) throw lcsError;
         setLiveClasses(lcs ?? []);
       }
+
+      // Per-course lesson stats (done/total) for the dashboard card indicator.
+      if (enrolledIds.length) {
+        const [modulesRes, progressRes] = await Promise.all([
+          supabase.from("modules").select("id, course_id").in("course_id", enrolledIds),
+          supabase
+            .from("lesson_progress")
+            .select("lesson_id, is_completed")
+            .eq("user_id", user.id)
+            .eq("is_completed", true),
+        ]);
+        const moduleIds = (modulesRes.data ?? []).map((m: any) => m.id);
+        const moduleToCourse = new Map<string, string>(
+          (modulesRes.data ?? []).map((m: any) => [m.id, m.course_id]),
+        );
+        const { data: lessonsRows } = moduleIds.length
+          ? await supabase.from("lessons").select("id, module_id").in("module_id", moduleIds)
+          : { data: [] as any[] };
+        const completedSet = new Set(
+          (progressRes.data ?? []).map((p: any) => p.lesson_id),
+        );
+        const stats: Record<string, { done: number; total: number }> = {};
+        for (const cid of enrolledIds) stats[cid] = { done: 0, total: 0 };
+        for (const l of (lessonsRows ?? []) as any[]) {
+          const cid = moduleToCourse.get(l.module_id);
+          if (!cid || !stats[cid]) continue;
+          stats[cid].total += 1;
+          if (completedSet.has(l.id)) stats[cid].done += 1;
+        }
+        setLessonStats(stats);
+      }
+
       setFetching(false);
     };
 
@@ -342,6 +376,12 @@ export default function Dashboard() {
                                       <span>{enroll.progress_percentage ?? 0}%</span>
                                     </div>
                                     <Progress value={enroll.progress_percentage ?? 0} className="h-2" />
+                                    {lessonStats[enroll.course_id]?.total > 0 && (
+                                      <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                                        <BookOpen className="h-3 w-3" />
+                                        {lessonStats[enroll.course_id].done}/{lessonStats[enroll.course_id].total} lessons completed
+                                      </p>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                     <Clock className="h-3 w-3" />
@@ -371,12 +411,20 @@ export default function Dashboard() {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                   <Progress value={100} className="h-2" />
+                                  {lessonStats[enroll.course_id]?.total > 0 && (
+                                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                      <BookOpen className="h-3 w-3" />
+                                      {lessonStats[enroll.course_id].total}/{lessonStats[enroll.course_id].total} lessons completed
+                                    </p>
+                                  )}
                                   <p className="text-xs text-muted-foreground">
                                     Completed on {new Date(enroll.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                                   </p>
                                   <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" className="flex-1 gap-1.5">
-                                      <Download className="h-3.5 w-3.5" /> Certificate
+                                    <Button size="sm" variant="outline" className="flex-1 gap-1.5" asChild>
+                                      <Link to="/certificates?download=latest">
+                                        <Download className="h-3.5 w-3.5" /> Certificate
+                                      </Link>
                                     </Button>
                                     <Button size="sm" variant="ghost" asChild className="flex-1">
                                       <Link to={courseHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Review</Link>
