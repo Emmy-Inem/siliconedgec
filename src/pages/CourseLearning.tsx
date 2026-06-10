@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, Link, Navigate, useSearchParams } from "react-router-dom";
+import { useParams, Link, Navigate, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,11 @@ import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
 import { courseHref, courseSectionHref } from "@/lib/course-url";
+import {
+  isLessonUnlocked as isLessonUnlockedHelper,
+  findResumeLesson,
+  isCourseComplete,
+} from "@/lib/lesson-progress";
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +29,7 @@ export default function CourseLearning() {
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const activeLessonRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -121,29 +127,14 @@ export default function CourseLearning() {
     String(enrollment?.payment_status ?? "").toLowerCase(),
   );
 
-  // Sequential unlock: admins always pass; otherwise a lesson is unlocked
-  // only when the previous one in order has been completed.
-  const isLessonUnlocked = (lessonId: string): boolean => {
-    if (hasAdminAccess) return true;
-    if (!hasPaidEnrollment) return false;
-    const idx = allLessons.findIndex((l: any) => l.id === lessonId);
-    if (idx <= 0) return true;
-    return completedIds.has(allLessons[idx - 1].id);
+  const unlockCtx = {
+    lessons: allLessons as { id: string }[],
+    completed: completedIds as Set<string>,
+    isStaff: hasAdminAccess,
+    hasPaid: hasPaidEnrollment,
   };
-
-  const lastUnlockedLesson = (() => {
-    if (!allLessons.length) return null;
-    if (hasAdminAccess) return allLessons[0];
-    if (!hasPaidEnrollment) return null;
-    // Find the furthest unlocked lesson (= first incomplete after a completed chain,
-    // or the first lesson if nothing is completed).
-    let target = allLessons[0];
-    for (let i = 0; i < allLessons.length; i++) {
-      if (i === 0 || completedIds.has(allLessons[i - 1].id)) target = allLessons[i];
-      else break;
-    }
-    return target;
-  })();
+  const isLessonUnlocked = (lessonId: string) => isLessonUnlockedHelper(lessonId, unlockCtx);
+  const lastUnlockedLesson = findResumeLesson(unlockCtx);
 
   const requestedLesson = allLessons.find((l: any) => l.id === selectedLessonId);
   const currentLesson = requestedLesson && isLessonUnlocked(requestedLesson.id)
@@ -195,10 +186,29 @@ export default function CourseLearning() {
         { onConflict: "lesson_id,user_id" }
       );
       if (error) throw error;
+      return lessonId;
     },
-    onSuccess: () => {
+    onSuccess: (completedLessonId) => {
       queryClient.invalidateQueries({ queryKey: ["lesson-progress"] });
       toast({ title: "Lesson marked as complete!" });
+      // If this completion finishes the course, auto-redirect to the
+      // certificate page with a download flag so the PDF is generated
+      // and downloaded immediately.
+      const nextCompleted = new Set(completedIds);
+      if (completedLessonId) nextCompleted.add(completedLessonId);
+      if (
+        isCourseComplete({
+          lessons: allLessons as { id: string }[],
+          completed: nextCompleted,
+          hasPaid: true,
+        })
+      ) {
+        toast({
+          title: "Course complete! 🎓",
+          description: "Generating your certificate…",
+        });
+        setTimeout(() => navigate("/certificates?download=latest"), 800);
+      }
       // Audit user activity for completion analytics
       try {
         const lesson = allLessons.find((l) => l.id === selectedLessonId);
