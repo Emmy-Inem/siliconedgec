@@ -35,14 +35,11 @@ describe("lesson unlock progression", () => {
   });
 
   it("does NOT unlock later lessons from out-of-order completions", () => {
-    // User somehow marks l3 done without l2 — l4 stays locked.
+    // User somehow marks l3 done without l2 — l3/l4 must still be locked.
     const ctx = { lessons, completed: new Set(["l1", "l3"]), hasPaid: true };
     expect(isLessonUnlocked("l2", ctx)).toBe(true);
-    expect(isLessonUnlocked("l3", ctx)).toBe(true); // l2 prior is missing, so locked
-    // l3's gate is l2. l2 not completed -> l3 actually locked.
-    const ctx2 = { lessons, completed: new Set(["l3"]), hasPaid: true };
-    expect(isLessonUnlocked("l3", ctx2)).toBe(false);
-    expect(isLessonUnlocked("l4", ctx2)).toBe(false);
+    expect(isLessonUnlocked("l3", ctx)).toBe(false);
+    expect(isLessonUnlocked("l4", ctx)).toBe(false);
   });
 
   it("staff/admins bypass unlock gating", () => {
