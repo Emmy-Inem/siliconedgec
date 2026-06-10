@@ -376,6 +376,12 @@ export default function Dashboard() {
                                       <span>{enroll.progress_percentage ?? 0}%</span>
                                     </div>
                                     <Progress value={enroll.progress_percentage ?? 0} className="h-2" />
+                                    {lessonStats[enroll.course_id]?.total > 0 && (
+                                      <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                                        <BookOpen className="h-3 w-3" />
+                                        {lessonStats[enroll.course_id].done}/{lessonStats[enroll.course_id].total} lessons completed
+                                      </p>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                     <Clock className="h-3 w-3" />
@@ -405,12 +411,20 @@ export default function Dashboard() {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                   <Progress value={100} className="h-2" />
+                                  {lessonStats[enroll.course_id]?.total > 0 && (
+                                    <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                      <BookOpen className="h-3 w-3" />
+                                      {lessonStats[enroll.course_id].total}/{lessonStats[enroll.course_id].total} lessons completed
+                                    </p>
+                                  )}
                                   <p className="text-xs text-muted-foreground">
                                     Completed on {new Date(enroll.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                                   </p>
                                   <div className="flex gap-2">
-                                    <Button size="sm" variant="outline" className="flex-1 gap-1.5">
-                                      <Download className="h-3.5 w-3.5" /> Certificate
+                                    <Button size="sm" variant="outline" className="flex-1 gap-1.5" asChild>
+                                      <Link to="/certificates?download=latest">
+                                        <Download className="h-3.5 w-3.5" /> Certificate
+                                      </Link>
                                     </Button>
                                     <Button size="sm" variant="ghost" asChild className="flex-1">
                                       <Link to={courseHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Review</Link>
