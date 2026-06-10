@@ -90,6 +90,8 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [fetching, setFetching] = useState(true);
   const [webinarRegCourseIds, setWebinarRegCourseIds] = useState<Set<string>>(new Set());
+  // course_id -> { done, total } for compact card indicator
+  const [lessonStats, setLessonStats] = useState<Record<string, { done: number; total: number }>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -159,6 +161,38 @@ export default function Dashboard() {
         if (lcsError) throw lcsError;
         setLiveClasses(lcs ?? []);
       }
+
+      // Per-course lesson stats (done/total) for the dashboard card indicator.
+      if (enrolledIds.length) {
+        const [modulesRes, progressRes] = await Promise.all([
+          supabase.from("modules").select("id, course_id").in("course_id", enrolledIds),
+          supabase
+            .from("lesson_progress")
+            .select("lesson_id, is_completed")
+            .eq("user_id", user.id)
+            .eq("is_completed", true),
+        ]);
+        const moduleIds = (modulesRes.data ?? []).map((m: any) => m.id);
+        const moduleToCourse = new Map<string, string>(
+          (modulesRes.data ?? []).map((m: any) => [m.id, m.course_id]),
+        );
+        const { data: lessonsRows } = moduleIds.length
+          ? await supabase.from("lessons").select("id, module_id").in("module_id", moduleIds)
+          : { data: [] as any[] };
+        const completedSet = new Set(
+          (progressRes.data ?? []).map((p: any) => p.lesson_id),
+        );
+        const stats: Record<string, { done: number; total: number }> = {};
+        for (const cid of enrolledIds) stats[cid] = { done: 0, total: 0 };
+        for (const l of (lessonsRows ?? []) as any[]) {
+          const cid = moduleToCourse.get(l.module_id);
+          if (!cid || !stats[cid]) continue;
+          stats[cid].total += 1;
+          if (completedSet.has(l.id)) stats[cid].done += 1;
+        }
+        setLessonStats(stats);
+      }
+
       setFetching(false);
     };
 
