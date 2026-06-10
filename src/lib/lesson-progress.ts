@@ -24,10 +24,14 @@ export function isLessonUnlocked(lessonId: string, ctx: UnlockContext): boolean 
   if (ctx.isStaff) return true;
   if (!ctx.hasPaid) return false;
   const idx = ctx.lessons.findIndex((l) => l.id === lessonId);
-  if (idx <= 0) return idx === 0;
-  // Out-of-order completions don't unlock later lessons:
-  // every previous lesson in the ordered list must be completed.
-  return ctx.completed.has(ctx.lessons[idx - 1].id);
+  if (idx < 0) return false;
+  if (idx === 0) return true;
+  // Out-of-order completions don't unlock later lessons: EVERY previous
+  // lesson in the ordered list must be completed.
+  for (let i = 0; i < idx; i++) {
+    if (!ctx.completed.has(ctx.lessons[i].id)) return false;
+  }
+  return true;
 }
 
 /**
