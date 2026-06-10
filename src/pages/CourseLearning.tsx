@@ -273,16 +273,36 @@ export default function CourseLearning() {
         {/* Sidebar - modules & lessons */}
         <aside className="w-72 border-r border-border bg-card overflow-y-auto shrink-0 hidden md:block">
           <div className="p-4 space-y-4">
-            {course?.modules?.map((mod: any) => (
+            {course?.modules?.map((mod: any) => {
+              const modLessons = mod.lessons ?? [];
+              const modDone = modLessons.filter((l: any) => completedIds.has(l.id)).length;
+              const modPct = modLessons.length ? Math.round((modDone / modLessons.length) * 100) : 0;
+              return (
               <div key={mod.id}>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 px-2 mb-2">
-                  {mod.title}
-                </p>
+                <div className="flex items-center justify-between px-2 mb-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                    {mod.title}
+                  </p>
+                  <span className="text-[10px] tabular-nums text-muted-foreground/60">
+                    {modDone}/{modLessons.length}
+                  </span>
+                </div>
+                <div className="mx-2 mb-2 h-1 rounded-full bg-muted overflow-hidden" aria-hidden>
+                  <div
+                    className="h-full bg-primary/70 transition-all"
+                    style={{ width: `${modPct}%` }}
+                  />
+                </div>
                 <div className="space-y-0.5">
-                  {mod.lessons.map((lesson: any) => {
+                  {modLessons.map((lesson: any) => {
                     const isComplete = completedIds.has(lesson.id);
                     const isActive = lesson.id === currentLesson?.id;
                     const unlocked = isLessonUnlocked(lesson.id);
+                    const isNextUp =
+                      !isComplete &&
+                      unlocked &&
+                      lastUnlockedLesson?.id === lesson.id &&
+                      !isActive;
                     return (
                       <button
                         key={lesson.id}
@@ -307,13 +327,18 @@ export default function CourseLearning() {
                           <Circle className="h-4 w-4 shrink-0" />
                         )}
                         <span className="truncate flex-1">{lesson.title}</span>
+                        {isNextUp && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary shrink-0">
+                            Next
+                          </span>
+                        )}
                         {lesson.duration && <span className="text-[10px] text-muted-foreground/60">{lesson.duration}</span>}
                       </button>
                     );
                   })}
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         </aside>
 
