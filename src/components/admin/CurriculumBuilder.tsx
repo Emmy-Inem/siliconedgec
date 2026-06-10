@@ -168,7 +168,13 @@ export function CurriculumBuilder({ courseId }: Props) {
         module_id: lessonForm.module_id,
       };
       if (editingLesson) {
-        const { error } = await supabase.from("lessons").update(payload).eq("id", editingLesson.id);
+        // If the module changed, place the lesson at the end of the new module.
+        const movingModule = editingLesson.module_id !== lessonForm.module_id;
+        const update: any = { ...payload };
+        if (movingModule) {
+          update.order_index = lessonsByModule(lessonForm.module_id).length;
+        }
+        const { error } = await supabase.from("lessons").update(update).eq("id", editingLesson.id);
         if (error) throw error;
       } else {
         const moduleLessons = lessonsByModule(lessonForm.module_id);
@@ -398,6 +404,24 @@ export function CurriculumBuilder({ courseId }: Props) {
             <div>
               <label className="text-sm font-medium block mb-1">Title</label>
               <input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} required className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1">Module</label>
+              <select
+                value={lessonForm.module_id}
+                onChange={(e) => setLessonForm({ ...lessonForm, module_id: e.target.value })}
+                required
+                className={inputClass}
+              >
+                {modules.map((m) => (
+                  <option key={m.id} value={m.id}>{m.title}</option>
+                ))}
+              </select>
+              {editingLesson && editingLesson.module_id !== lessonForm.module_id && (
+                <p className="text-[11px] text-primary mt-1">
+                  Lesson will be moved to the end of the selected module.
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
