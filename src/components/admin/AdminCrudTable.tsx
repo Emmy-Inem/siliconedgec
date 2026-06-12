@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface Column<T> {
   key: string;
@@ -25,6 +26,12 @@ export interface AdminCrudTableProps<T extends { id: string }> {
   addLabel?: string;
   extraActions?: (item: T) => React.ReactNode;
   pageSize?: number;
+  /** Field on each row that holds an ISO date string. Defaults to "created_at". */
+  dateFilterKey?: string;
+  /** Label shown above the timeframe filter. Defaults to "Created". */
+  dateFilterLabel?: string;
+  /** Disable the timeframe filter even when the field exists. */
+  hideDateFilter?: boolean;
 }
 
 const PAGE_SIZE_DEFAULT = 15;
@@ -40,17 +47,44 @@ export function AdminCrudTable<T extends { id: string }>({
   addLabel = "Add New",
   extraActions,
   pageSize = PAGE_SIZE_DEFAULT,
+  dateFilterKey = "created_at",
+  dateFilterLabel = "Created",
+  hideDateFilter = false,
 }: AdminCrudTableProps<T>) {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [range, setRange] = useState<string>("all");
 
-  const filtered = data.filter((item) =>
-    columns.some((col) => {
+  const hasDateField =
+    !hideDateFilter &&
+    data.length > 0 &&
+    (data[0] as Record<string, unknown>)[dateFilterKey] != null;
+
+  const cutoffMs = (() => {
+    const now = Date.now();
+    switch (range) {
+      case "24h": return now - 24 * 60 * 60 * 1000;
+      case "7d": return now - 7 * 24 * 60 * 60 * 1000;
+      case "30d": return now - 30 * 24 * 60 * 60 * 1000;
+      case "90d": return now - 90 * 24 * 60 * 60 * 1000;
+      case "year": return now - 365 * 24 * 60 * 60 * 1000;
+      default: return 0;
+    }
+  })();
+
+  const filtered = data.filter((item) => {
+    if (cutoffMs && hasDateField) {
+      const raw = (item as Record<string, unknown>)[dateFilterKey];
+      const t = raw ? new Date(raw as string).getTime() : 0;
+      if (!t || t < cutoffMs) return false;
+    }
+    if (!search) return true;
+    return columns.some((col) => {
       const val = (item as Record<string, unknown>)[col.key];
       return val && String(val).toLowerCase().includes(search.toLowerCase());
-    })
-  );
+    });
+  });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, totalPages - 1);
@@ -71,15 +105,32 @@ export function AdminCrudTable<T extends { id: string }>({
         </Button>
       </div>
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-        />
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+        {hasDateField && (
+          <Select value={range} onValueChange={(v) => { setRange(v); setPage(0); }}>
+            <SelectTrigger className="sm:w-[200px]">
+              <SelectValue placeholder="Timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{dateFilterLabel}: All time</SelectItem>
+              <SelectItem value="24h">Last 24 hours</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="year">Last 12 months</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {isLoading ? (
