@@ -577,8 +577,11 @@ export default function Dashboard() {
                 )}
               </TabsContent>
 
+              <TabsContent value="analytics">
+                <LearningAnalyticsCard userId={user.id} />
+              </TabsContent>
+
               <TabsContent value="applications">
-                {/* placeholder anchor */}
                 {applications.length === 0 ? (
                   <div className="text-center py-20">
                     <Briefcase className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
