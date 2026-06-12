@@ -13,7 +13,7 @@ import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const DISMISSED_KEY = "sec_signup_prompt_dismissed_until";
-const AUTO_TRIGGER_MS = 60_000; // 1 minute
+const AUTO_TRIGGER_MS = 20_000; // 20 seconds
 
 type Reason = "auto" | "enroll" | "register" | "bookmark" | "review" | "cart";
 
