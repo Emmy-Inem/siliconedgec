@@ -578,7 +578,13 @@ export default function Dashboard() {
               </TabsContent>
 
               <TabsContent value="analytics">
-                <LearningAnalyticsCard userId={user.id} />
+                {user ? (
+                  <LearningAnalyticsCard userId={user.id} />
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground text-sm">
+                    Sign in to see your learning analytics.
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="applications">
