@@ -13,7 +13,7 @@ const columns: Column<Plan>[] = [
   { key: "name", label: "Name" },
   { key: "price", label: "Price", render: (p) => p.price === 0 ? "Free" : `$${p.price}` },
   { key: "period", label: "Period" },
-  { key: "highlight", label: "Featured", render: (p) => p.highlight ? "⭐ Yes" : "No" },
+  { key: "highlight", label: "Featured", render: (p) => p.highlight ? "Yes" : "No" },
   { key: "order_index", label: "Order" },
 ];
 

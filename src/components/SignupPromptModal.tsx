@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const DISMISSED_KEY = "sec_signup_prompt_dismissed_until";
 const AUTO_TRIGGER_MS = 20_000; // 20 seconds
+const REPROMPT_AFTER_DISMISS_MS = 90_000; // 1.5 minutes
 
 type Reason = "auto" | "enroll" | "register" | "bookmark" | "review" | "cart";
 
@@ -28,6 +29,7 @@ export function SignupPromptModal() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<Reason>("auto");
+  const [recheckTick, setRecheckTick] = useState(0);
 
   const cooldownActive = () => {
     try {
@@ -48,13 +50,28 @@ export function SignupPromptModal() {
     return () => window.removeEventListener("sec:request-signup", handler as EventListener);
   }, [user]);
 
-  // Auto-show after 60s for anon visitors.
+  // Auto-show after 20s for anon visitors. After dismissal, re-prompt
+  // automatically once the 1.5-minute cooldown elapses.
   useEffect(() => {
     if (loading || user) return;
-    if (cooldownActive()) return;
     if (location.pathname.startsWith("/sign-in") || location.pathname.startsWith("/sign-up") ||
         location.pathname.startsWith("/reset-password") || location.pathname.startsWith("/forgot-password") ||
         location.pathname.startsWith("/r/")) return;
+    if (cooldownActive()) {
+      // Wait out the remaining cooldown, then show the prompt again.
+      let until = 0;
+      try { until = Number(localStorage.getItem(DISMISSED_KEY) || 0); } catch {}
+      const wait = Math.max(0, until - Date.now()) + 50;
+      const t = setTimeout(() => {
+        if (!user && !cooldownActive()) {
+          setReason("auto");
+          setOpen(true);
+        } else {
+          setRecheckTick((x) => x + 1);
+        }
+      }, wait);
+      return () => clearTimeout(t);
+    }
     const t = setTimeout(() => {
       if (!user && !cooldownActive()) {
         setReason("auto");
@@ -62,12 +79,19 @@ export function SignupPromptModal() {
       }
     }, AUTO_TRIGGER_MS);
     return () => clearTimeout(t);
-  }, [user, loading, location.pathname]);
+  }, [user, loading, location.pathname, recheckTick]);
 
   const handleClose = (next: boolean) => {
     setOpen(next);
     if (!next) {
-      try { localStorage.setItem(DISMISSED_KEY, String(Date.now() + 1000 * 60 * 60 * 24)); } catch {}
+      try {
+        localStorage.setItem(
+          DISMISSED_KEY,
+          String(Date.now() + REPROMPT_AFTER_DISMISS_MS),
+        );
+      } catch {}
+      // Schedule the next auto re-prompt after the cooldown elapses.
+      setRecheckTick((x) => x + 1);
     }
   };
 
