@@ -20,6 +20,7 @@ import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
 import { NextStepCard } from "@/components/ai/NextStepCard";
 import { CareerCoachCard } from "@/components/ai/CareerCoachCard";
+import { LearningAnalyticsCard } from "@/components/LearningAnalyticsCard";
 import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
 import { Settings, MessageCircle, Star } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -286,6 +287,7 @@ export default function Dashboard() {
                 <TabsTrigger value="courses">My Courses ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Live Classes ({liveClasses.length})</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
                 <TabsTrigger value="receipts">Receipts</TabsTrigger>
                 <TabsTrigger value="profile"><Settings className="h-3.5 w-3.5 mr-1" />Profile</TabsTrigger>
