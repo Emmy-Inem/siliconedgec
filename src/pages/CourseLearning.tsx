@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import { LiveClassesTab } from "@/components/LiveClassesTab";
 import { LessonQuiz } from "@/components/LessonQuiz";
 import { AssignmentPanel } from "@/components/learning/AssignmentPanel";
+import { LessonDiscussion } from "@/components/learning/LessonDiscussion";
+import { DownloadAllButton } from "@/components/learning/DownloadAllButton";
+import { EnhancedVideoPlayer, type EnhancedVideoPlayerHandle } from "@/components/learning/EnhancedVideoPlayer";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
@@ -31,7 +34,7 @@ export default function CourseLearning() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeLessonRef = useRef<HTMLButtonElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerRef = useRef<EnhancedVideoPlayerHandle | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const routeLooksLikeUuid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
@@ -119,6 +122,20 @@ export default function CourseLearning() {
       return data ?? [];
     },
     enabled: !!selectedLessonId,
+  });
+
+  // All resources for the course (for the bulk-download button).
+  const { data: courseResources = [] } = useQuery({
+    queryKey: ["course-resources-all", courseId],
+    queryFn: async () => {
+      if (!courseId) return [];
+      const { data } = await supabase
+        .from("lesson_resources")
+        .select("id, file_name, file_url")
+        .eq("course_id", courseId);
+      return data ?? [];
+    },
+    enabled: !!courseId && (hasAdminAccess || hasPaidEnrollment),
   });
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
