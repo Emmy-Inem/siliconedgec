@@ -135,7 +135,7 @@ export default function CourseLearning() {
         .eq("course_id", courseId);
       return data ?? [];
     },
-    enabled: !!courseId && (hasAdminAccess || hasPaidEnrollment),
+    enabled: !!courseId,
   });
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
@@ -387,28 +387,27 @@ export default function CourseLearning() {
 
               {/* Video player placeholder */}
               {currentLesson.content_url ? (
-                <div className="aspect-video rounded-xl overflow-hidden bg-black">
-                  <video
-                    ref={videoRef}
-                    src={currentLesson.content_url}
-                    controls
-                    onLoadedMetadata={() => {
-                      // Resume playback for the lesson that was active when the
-                      // student left off. Other lessons start at 0.
-                      const isResumeTarget =
-                        !!user &&
-                        !!videoRef.current &&
-                        (enrollment as any)?.last_lesson_id === currentLesson.id &&
-                        Number((enrollment as any)?.resume_position_seconds ?? 0) > 0;
-                      if (isResumeTarget) {
-                        try {
-                          videoRef.current!.currentTime = Number(
-                            (enrollment as any).resume_position_seconds,
-                          );
-                        } catch {}
-                      }
-                    }}
-                    onTimeUpdate={(e) => {
+                <EnhancedVideoPlayer
+                  ref={playerRef}
+                  src={currentLesson.content_url}
+                  onLoadedMetadata={() => {
+                    // Resume playback for the lesson that was active when the
+                    // student left off. Other lessons start at 0.
+                    const v = playerRef.current?.el();
+                    const isResumeTarget =
+                      !!user &&
+                      !!v &&
+                      (enrollment as any)?.last_lesson_id === currentLesson.id &&
+                      Number((enrollment as any)?.resume_position_seconds ?? 0) > 0;
+                    if (isResumeTarget && v) {
+                      try {
+                        v.currentTime = Number(
+                          (enrollment as any).resume_position_seconds,
+                        );
+                      } catch {}
+                    }
+                  }}
+                  onTimeUpdate={(e) => {
                       if (!user || !courseId) return;
                       const t = Math.floor((e.currentTarget as HTMLVideoElement).currentTime || 0);
                       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -423,13 +422,11 @@ export default function CourseLearning() {
                           .eq("user_id", user.id)
                           .eq("course_id", courseId);
                       }, 3000);
-                    }}
-                    onEnded={() => {
-                      if (!completedIds.has(currentLesson.id)) markComplete.mutate(currentLesson.id);
-                    }}
-                    className="w-full h-full"
-                  />
-                </div>
+                  }}
+                  onEnded={() => {
+                    if (!completedIds.has(currentLesson.id)) markComplete.mutate(currentLesson.id);
+                  }}
+                />
               ) : (
                 <div className="aspect-video rounded-xl bg-muted/30 border border-border flex flex-col items-center justify-center">
                   <Play className="h-12 w-12 text-muted-foreground/30 mb-2" />
@@ -480,9 +477,17 @@ export default function CourseLearning() {
               {/* Resources */}
               {resources.length > 0 && (
                 <div className="pt-6 border-t border-border">
-                  <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
-                    <Paperclip className="h-4 w-4 text-primary" /> Lesson Resources
-                  </h3>
+                  <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                    <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+                      <Paperclip className="h-4 w-4 text-primary" /> Lesson Resources
+                    </h3>
+                    {courseResources.length > 1 && (
+                      <DownloadAllButton
+                        courseTitle={course?.title ?? "course"}
+                        resources={courseResources as any}
+                      />
+                    )}
+                  </div>
                   <ul className="space-y-2">
                     {resources.map((r: any) => (
                       <li key={r.id}>
@@ -517,6 +522,11 @@ export default function CourseLearning() {
                   <FileText className="h-4 w-4 text-primary" /> Assignments
                 </h3>
                 <AssignmentPanel lessonId={currentLesson.id} />
+              </div>
+
+              {/* Threaded lesson discussion */}
+              <div className="pt-6 border-t border-border">
+                <LessonDiscussion lessonId={currentLesson.id} />
               </div>
 
               {/* Personal notes */}
