@@ -35,6 +35,7 @@ interface EnrolledCourse {
   is_completed: boolean;
   payment_status: string;
   created_at: string;
+  last_lesson_id?: string | null;
   course: {
     id: string;
     slug?: string | null;
@@ -101,7 +102,7 @@ export default function Dashboard() {
       const [enrollRes, profileRes, bookmarkRes, appsRes, webinarRegRes] = await Promise.all([
         supabase
           .from("enrollments")
-          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, course:courses(id, slug, title, thumbnail_url, category, difficulty, duration_hours, price)")
+          .select("id, course_id, progress_percentage, is_completed, payment_status, created_at, last_lesson_id, course:courses(id, slug, title, thumbnail_url, category, difficulty, duration_hours, price)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
         supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
@@ -390,7 +391,15 @@ export default function Dashboard() {
                                     {enroll.course?.duration_hours}h total
                                   </div>
                                   <Button size="sm" className="w-full" asChild>
-                                     <Link to={courseLearnHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}>Continue Learning</Link>
+                                     <Link
+                                       to={
+                                         enroll.last_lesson_id
+                                           ? `${courseLearnHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })}?lesson=${enroll.last_lesson_id}`
+                                           : courseLearnHref({ id: enroll.course_id, slug: enroll.course?.slug ?? null })
+                                       }
+                                     >
+                                       {enroll.last_lesson_id ? "Resume where you left off" : "Continue Learning"}
+                                     </Link>
                                   </Button>
                                 </CardContent>
                               </Card>

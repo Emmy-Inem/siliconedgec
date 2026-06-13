@@ -1,168 +1,164 @@
-# Silicon Edge Consulting — Full Audit
 
-A scan of routes, components, edge functions, DB schema, secrets, and admin pages. Below is what's already shipped, what's partial, and what's missing — grouped so you can pick what to build next.
+# Fix-All Plan — LMS, AI, Auth, PWA, Help Center
 
----
-
-## 1. LMS (Learning experience)
-
-**Working:** Course catalog, enrollment, video lessons, lesson progress + auto-progress trigger, quizzes (secure RPC), certificates (auto-issue + verify), bookmarks, reviews, Q&A, course announcements, live classes (Zoom links, reminders), study plan generator, AI lesson companion.
-
-**Partial / missing:**
-- **Assignments & file submissions** — `CurriculumBuilder` has an "assignment" lesson type, but there's no submission UI, no `assignment_submissions` table, no grading flow.
-- **Discussions per lesson** — Q&A exists at course level only; no threaded comments under each lesson.
-- **Notes & highlights** — students can't take in-lesson notes or highlight transcript passages.
-- **Resume-where-you-left-off** — `lesson_progress` is tracked but no "Continue learning" deep-link from Dashboard to the exact lesson + timestamp.
-- **Video transcripts / captions** — no transcript storage, so AI tutor lacks ground truth for "explain this section."
-- **Playback speed, picture-in-picture, keyboard shortcuts** — basic player only.
-- **Offline / downloadable lessons** — not implemented (course-resources bucket exists but no UI to bulk-download).
-- **Learning paths** — `AdminLearningPaths` exists; no student-facing path browser or progress meter.
-- **Prerequisites & locked lessons** — schema doesn't enforce sequential unlocking.
-- **Gamification** — no XP, streaks, badges, leaderboard.
-- **Mobile/PWA install** — no manifest + service worker for offline reading.
+This is a large scope. I'll ship it in 6 batches so each one is reviewable and the app stays stable between them. Each batch ends in a working, deployable state.
 
 ---
 
-## 2. AI Integrations
+## Batch 1 — LMS depth (student-facing)
 
-**Working:** `ai-tutor` (streaming chat), `ai-quiz` (generate + grade), `ai-study-plan`, `ai-recommend` (Next Step card), `generate-quiz` (admin), `QuizAIGenerator`.
+**Assignment submissions + grading**
+- New `AssignmentSubmissionPanel` on the lesson page for `lesson_type='assignment'`: text response + file upload to `course-resources/submissions/{user}/{assignment}/`.
+- Show submission status (submitted / graded / score / feedback).
+- Admin `AdminAssignmentSubmissions` page with rubric grading UI: score 0–100, written feedback, pass/fail; uses existing `notify_assignment_submission` trigger.
 
-**Missing (from the original plan in `.lovable/plan.md`):**
-- **AI Career Coach** — match completed courses → jobs on `/jobs`, gap analysis, 1-paragraph cover-letter draft. Planned but never built.
-- **AI Mock Interview / Practice mode** — per-track text interview with rubric scoring.
-- **Instructor Assist** — auto-draft lesson summaries, course descriptions, SEO meta inside the course wizard.
-- **AI search** across catalog ("show me beginner AWS courses under ₦50k").
-- **AI announcements/email drafting** in admin email composer.
-- **AI business-lead qualifier** — auto-score and reply-draft for `business_leads`.
-- **Lesson-aware context grounding** — `ai-tutor` doesn't actually load the lesson transcript/markdown server-side (system prompt is generic). Needs RAG-lite: pull lesson `content_url` content + module title.
-- **Conversation history UI** — `ai_conversations` table exists but no "previous chats" sidebar in `LessonCompanion`.
-- **Citations** — promised in plan, not rendered in MarkdownView.
+**Lesson discussions (threaded)**
+- New table `lesson_comments` (lesson_id, user_id, parent_id, body, created_at) with RLS: enrolled users can read/write on their courses; admins moderate.
+- `LessonDiscussion` component with reply nesting, edit/delete own, soft-delete by admin.
 
----
+**Resume CTA**
+- Dashboard course cards: when `enrollments.last_lesson_id` is set, "Continue" button links to `/courses/{slug}/learn?lesson={id}`. Falls back to first incomplete lesson.
 
-## 3. Commerce & Payments
+**Player upgrades**
+- Add playback speed (0.5–2x), Picture-in-Picture button, keyboard shortcuts (space=play, ←/→=10s seek, f=fullscreen, m=mute, ↑/↓=volume).
+- Persist last speed in localStorage per user.
 
-**Working:** Paystack single + cart checkout, refunds, promo codes, influencer referrals, receipts, cart abandonment tracking, orders admin.
-
-**Missing:**
-- **Stripe** — no international card payments. Only Paystack (NGN). The model recommends `payments--enable_stripe`.
-- **Subscriptions / payment plans** — courses are one-time only; no installments.
-- **Invoices (downloadable PDF)** for B2B leads — receipts exist but B2B invoicing doesn't.
-- **Tax/VAT handling** for non-Nigerian buyers.
-- **Wishlist → email reminder** — wishlist insights exist for admin, but no automated "price drop / back in stock" email to users.
-- **Bundles** — buy a learning path as a discounted bundle.
-- **Gift a course / team seats** purchase flow.
+**Offline / bulk download**
+- "Download all resources" button in course sidebar → zips signed URLs from `lesson_resources` via JSZip on the client.
+- Per-lesson transcript/notes export to .txt.
 
 ---
 
-## 4. Authentication & Accounts
+## Batch 2 — AI completeness
 
-**Working:** Email/password, Google OAuth (per memory), password reset, role gating (admin/moderator), login lockout, IP block, profile settings.
+**Lesson-aware grounding for ai-tutor**
+- Edge function fetches `lessons.content`, `lesson_transcripts.transcript`, and module title for the active `lesson_id` passed from the client; injects as system context with token budget.
+- Add citations: model is instructed to cite `[L1]`, `[L2]` referring to lesson sections; `MarkdownView` renders these as anchored chips that scroll to the source paragraph.
 
-**Missing:**
-- **Email verification enforcement** — confirm config matches policy (sign-up flow doesn't block unverified users from key actions).
-- **2FA / MFA** for admins.
-- **Magic-link sign-in** option.
-- **Social providers beyond Google** (LinkedIn would convert B2B leads).
-- **Account deletion confirmation flow** — `ProfileSettings` has DELETE input but no server-side cascade audit.
-- **Session management UI** — `AdminSessions` exists for admins; users can't see/revoke their own active sessions.
+**Conversation history sidebar**
+- `LessonCompanion` gets a collapsible left rail listing past `ai_conversations` for the current course, with new-chat + delete actions. Threads switch via URL param `?chat={id}`.
 
----
+**Whisper transcript ingestion**
+- New edge function `transcribe-lesson` uses Lovable AI Gateway (Gemini for speech-to-text not available — use Whisper via OpenAI-compatible path supported by gateway; if not supported, surface a clear message and queue a manual upload field instead).
+- Admin "Generate transcript" button on each video lesson. Stores in `lesson_transcripts`.
 
-## 5. Jobs / Career
+**AI catalog search**
+- `/courses` adds a natural-language search bar. Edge function `ai-course-search` returns ranked course IDs from a structured query (parses "beginner AWS under ₦50k" → filters: level, category, max_price) using `Output.object`.
 
-**Working:** Job listings, job detail, applications, admin management, resume uploads (`job-resumes` bucket).
+**AI announcement / email drafting**
+- "Draft with AI" button in `AdminEmail` and `AdminCourseAnnouncements`. Opens a dialog: tone, audience, key points → streams a draft into the editor.
 
-**Missing:**
-- **Application status tracking for candidates** (trigger exists, but no candidate-facing timeline page).
-- **Saved jobs / job alerts by email.**
-- **Employer self-serve portal** — only admins can post jobs.
-- **AI résumé scoring / matching** against job descriptions.
-- **"Apply with profile"** auto-fill from completed courses + certificates.
+**AI business-lead qualifier**
+- Edge function `ai-qualify-lead` scores each new `business_leads` row 1–100 with rationale (company size, intent signal, budget hints). Trigger runs on insert. Admin lead list shows score + rationale.
 
 ---
 
-## 6. Communications
+## Batch 3 — Auth & accounts hardening
 
-**Working:** In-app notifications, real-time bell, course announcements, bulk email, transactional `send-email`, live chat (user ↔ admin), live-class notifications.
+**Email verification enforcement**
+- `configure_auth` to require confirmed email.
+- Add `<RequireVerified>` wrapper around purchase, enrollment, and AI features; show a "Resend verification" banner if `user.email_confirmed_at` is null.
 
-**Missing:**
-- **Email infrastructure / verified sending domain** — check `email_domain` status; transactional may be on the default sandbox.
-- **Email templates editor preview** — `AdminEmailTemplates` exists; verify render preview + test-send works.
-- **SMS / WhatsApp transactional** (only WhatsApp FAB exists; no automated triggers).
-- **Push notifications** (web push) for live-class start, new messages.
-- **Discussion replies → email digest.**
+**Admin MFA (TOTP)**
+- Enable Supabase MFA factors. New `AdminMfaSetup` page: enroll TOTP, verify code, store factor.
+- Admin route guard requires `aal2` for users with admin role; if missing, redirect to MFA challenge.
 
----
+**Magic-link sign-in**
+- Add "Email me a magic link" tab on `/signin` using `supabase.auth.signInWithOtp`.
 
-## 7. Marketing & Analytics
+**LinkedIn OAuth**
+- LinkedIn isn't in Lovable Cloud's native providers. I'll wire it through the LinkedIn connector for sign-in: edge function `linkedin-oauth-callback` exchanges code, creates/updates a Supabase user via service role, then issues a session. (If the user prefers, they can instead connect external Supabase for native LinkedIn provider; I'll proceed with the connector path by default.)
 
-**Working:** UTM tracking, influencer attribution, GA4, cart abandonment, marketing analytics dashboard, lead sources, promo codes.
+**User session management UI**
+- `ProfileSettings` adds an "Active sessions" tab: lists rows from `auth.sessions` via a SECURITY DEFINER RPC scoped to `auth.uid()`; "Revoke" button calls `supabase.auth.admin.signOut(session_id)` from an edge function.
 
-**Missing:**
-- **Funnel visualization** beyond raw events.
-- **A/B testing framework** for hero/CTA.
-- **Conversion pixel manager UI** — `CustomScripts` covers raw scripts, but no per-event Meta/TikTok pixel mapper.
-- **Referral program for students** (separate from influencers).
-- **Newsletter / blog subscription** — Footer has email input but no list storage / double opt-in.
-- **Blog comments / social share counts.**
+**Account deletion cascade audit**
+- Add `delete-account` edge function that: anonymizes `profiles`, hard-deletes `enrollments/lesson_progress/notes/bookmarks/ai_conversations`, retains `orders/certificates` with a `deleted_user` flag for compliance, then deletes the auth user.
+- Document the audit in `docs/account-deletion.md`.
 
 ---
 
-## 8. Admin / Ops
+## Batch 4 — Learning paths (student view) + PWA
 
-**Working:** ~50 admin pages including hubs, course health, wishlist insights, login security, activity log, auth replay, sessions, brands, media, pages CMS.
+**Learning paths student-facing**
+- `/paths` index page: cards for each published path.
+- `/paths/:slug` detail: ordered courses, locked/unlocked indicator, aggregate progress bar from enrollments, "Start next course" CTA.
+- Path completion certificate (reuses certificate template).
 
-**Missing / partial:**
-- **Bulk import/export** — `admin-export-users` exists; no bulk course/CSV import.
-- **Audit trail diff view** — activity log shows events, no before/after.
-- **Scheduled tasks dashboard** — `live-class-reminder` runs (logs show shutdowns), but no cron management UI.
-- **Backup status** — `backup-to-drive` function exists; no admin page showing last successful backup.
-- **Feature flags / kill switches** beyond Public Access Mode.
-- **Help center / knowledge base** for students.
-
----
-
-## 9. Connectors & External Integrations
-
-**Currently wired:** Google OAuth, Google Calendar (sync edge fn), Google Drive (backup, key managed), Google Search Console (key managed), Paystack.
-
-**Missing / recommended:**
-- **Stripe** — international payments (use `payments--enable_stripe`).
-- **Resend / SendGrid verified domain** — confirm email delivery infra.
-- **Zoom API** (currently just stored links) — auto-create meetings + recordings ingestion.
-- **YouTube unlisted upload** integration for lesson hosting.
-- **Slack / Discord** webhooks for new lead, new enrollment, failed payments.
-- **HubSpot / CRM sync** for `business_leads`.
-- **Cloudflare R2 / image CDN** for hero images (currently public Supabase buckets).
-- **OpenAI Whisper** edge fn for auto-transcripts (feeds AI tutor grounding).
+**PWA**
+- Use the PWA skill's `vite-plugin-pwa` offline path since the user wants offline lessons in Batch 1.
+- `registerType: autoUpdate`, NetworkFirst for HTML, CacheFirst for hashed assets, exclude `/~oauth`.
+- Registration wrapper with the required Lovable-preview/iframe/dev guards and `?sw=off` kill switch.
+- iOS install hint card on first mobile visit.
 
 ---
 
-## 10. Configuration & Hardening
+## Batch 5 — Help Center / KB
 
-- `supabase/config.toml` does **not** declare `verify_jwt` for the four `ai-*` functions — defaults to verifying, fine, but should be explicit.
-- No `import_map.json` for edge functions (each redeclares deps).
-- **PWA manifest + icons** missing.
-- **robots.txt / sitemap.xml** exist; verify dynamic sitemap covers all blog/course slugs.
-- **CSP headers** — none set (would require edge middleware).
-- **Rate limiting** — only on login; AI endpoints rely on gateway limits.
-- **Accessibility audit** — no automated a11y tests; suggest adding `vitest-axe`.
-- **Lighthouse / performance budget** — no CI check.
-- **Error monitoring** (Sentry) — not installed.
-- **Security memory** is current; re-run `security--run_security_scan` to confirm zero open findings.
+- New tables: `kb_categories`, `kb_articles` (slug, title, body markdown, category_id, is_published, views, helpful/unhelpful counts).
+- Public `/help` index with search; `/help/:slug` article page.
+- Admin CRUD at `/admin/help` with markdown editor and AI "Improve article" button.
+- Floating help widget (bottom-right) with article search; falls back to "Contact support" → existing LiveChat.
 
 ---
 
-## Suggested next-build batches
+## Batch 6 — Hardening verification
 
-Pick any of these and I'll build it:
+- Run security scan; resolve any new findings introduced by the above migrations (RLS grants on `lesson_comments`, `kb_articles`, etc.).
+- Add a few targeted Vitest tests: lesson comments RLS, AI catalog search structured output, account deletion idempotency.
+- Smoke-test payments end-to-end (cart + single + webhook retry).
 
-1. **Finish the AI vision** — Career Coach + Mock Interview + Instructor Assist + lesson-context grounding for `ai-tutor` (+ citations + chat history sidebar).
-2. **Complete LMS depth** — Assignments + submissions, lesson notes, resume-where-you-left-off, learning-path student view, gamification (XP/streaks/badges).
-3. **Global payments** — Enable Stripe, add subscriptions/installments, B2B invoices.
-4. **Email + comms infra** — Verify sending domain, push notifications, Slack webhooks for ops events.
-5. **Connector expansion** — Zoom API, Whisper transcripts, HubSpot CRM sync, Sentry.
-6. **Hardening** — PWA, CSP, Sentry, a11y tests, Lighthouse CI, backup status page.
+---
 
-Tell me which batch (or specific items) to build, and I'll switch to build mode and ship it.
+## Technical details (one place)
+
+```text
+New tables
+  lesson_comments(id, lesson_id→lessons, user_id→auth.users, parent_id→lesson_comments, body, deleted_at)
+  kb_categories(id, slug, title, order_index)
+  kb_articles(id, category_id, slug, title, body_md, is_published, views, helpful, unhelpful)
+  mfa_required_roles (optional: role → require_aal2 bool)
+
+New edge functions
+  transcribe-lesson           (admin-triggered, service role, writes lesson_transcripts)
+  ai-course-search            (Output.object → {level, category, max_price, tokens})
+  ai-draft-announcement       (streaming text)
+  ai-draft-email              (streaming text)
+  ai-qualify-lead             (Output.object → {score, rationale}; trigger via DB → pg_net or admin button)
+  ai-tutor                    (UPDATED: load lesson context + transcripts; cite [L#])
+  linkedin-oauth-callback     (code exchange + session issuance)
+  delete-account              (cascade + anonymize, service role)
+  revoke-session              (service role admin.signOut(session_id) for caller's own sessions)
+
+Frontend additions
+  src/components/learning/AssignmentSubmissionPanel.tsx
+  src/components/learning/LessonDiscussion.tsx
+  src/components/learning/DownloadAllButton.tsx
+  src/components/player/EnhancedVideoPlayer.tsx        (speed/PiP/keys)
+  src/components/ai/ChatHistorySidebar.tsx             (wire to LessonCompanion)
+  src/components/ai/CourseSearchBar.tsx
+  src/components/help/HelpWidget.tsx
+  src/pages/LearningPaths.tsx / LearningPathDetail.tsx (student)
+  src/pages/Help.tsx / HelpArticle.tsx
+  src/pages/admin/AdminAssignmentSubmissions.tsx
+  src/pages/admin/AdminHelp.tsx
+  src/pages/admin/AdminMfaSetup.tsx
+  src/components/auth/MagicLinkTab.tsx
+  src/components/auth/LinkedInButton.tsx
+  src/components/account/ActiveSessionsTab.tsx
+  src/components/account/VerifyEmailBanner.tsx
+
+PWA
+  vite-plugin-pwa added with generateSW, guarded register wrapper
+  public/sw.js path reserved for kill-switch if needed
+```
+
+---
+
+## Order of operations
+
+I'll ship Batch 1 first end-to-end (DB migration → backend → UI → smoke test), then return for approval/feedback before starting Batch 2. This keeps each delivery reviewable instead of one giant change set.
+
+Two quick confirmations before I start:
+1. **LinkedIn OAuth path**: connector-based sign-in (works on Lovable Cloud) vs migrating auth to external Supabase for native provider. I'll default to **connector-based** unless you say otherwise.
+2. **Whisper transcripts**: Lovable AI Gateway doesn't currently expose Whisper. I'll add a **manual transcript upload + paste** path in admin and an "AI clean-up" pass instead of speech-to-text. OK?
