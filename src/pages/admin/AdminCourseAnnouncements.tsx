@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { Sparkles, Loader2 } from "lucide-react";
 
 interface Announcement {
   id: string;
@@ -25,6 +26,25 @@ export default function AdminCourseAnnouncements() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Announcement | null>(null);
   const [form, setForm] = useState({ title: "", content: "", course_id: "" });
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [drafting, setDrafting] = useState(false);
+
+  const draftWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-draft-content", {
+        body: { kind: "announcement", prompt: aiPrompt.trim() },
+      });
+      if (error) throw error;
+      setForm((f) => ({ ...f, title: data?.title ?? f.title, content: data?.content ?? f.content }));
+      toast({ title: "Draft ready" });
+    } catch (e: any) {
+      toast({ title: "Couldn't draft", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["admin-course-announcements"],
@@ -81,6 +101,16 @@ export default function AdminCourseAnnouncements() {
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? "Edit Announcement" : "New Announcement"}</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <label className="text-xs font-medium flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Draft with AI</label>
+              <div className="flex gap-2">
+                <input value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} placeholder="e.g. Module 3 is now unlocked" className={inputClass} />
+                <Button type="button" size="sm" variant="outline" onClick={draftWithAI} disabled={drafting || !aiPrompt.trim()}>
+                  {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  <span className="ml-1">Draft</span>
+                </Button>
+              </div>
+            </div>
             <div>
               <label className="text-sm font-medium block mb-1">Course</label>
               <select value={form.course_id} onChange={(e) => setForm({ ...form, course_id: e.target.value })} required className={inputClass}>
