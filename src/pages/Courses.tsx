@@ -269,6 +269,29 @@ export default function Courses() {
     setActiveCategory("All");
     setActiveDifficulty("All Levels");
     setSearch("");
+    setAiMaxPrice(null);
+  };
+
+  const runAiSearch = async () => {
+    const q = search.trim();
+    if (!q) return;
+    setAiSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-course-search", {
+        body: { query: q, categories: categories.filter((c) => c !== "All"), difficulties: difficulties.filter((d) => d !== "All Levels") },
+      });
+      if (error) throw error;
+      if (data?.category && categories.includes(data.category)) setActiveCategory(data.category);
+      if (data?.difficulty && difficulties.includes(data.difficulty)) setActiveDifficulty(data.difficulty);
+      setAiMaxPrice(typeof data?.maxPriceNgn === "number" ? data.maxPriceNgn : null);
+      const kw = Array.isArray(data?.keywords) && data.keywords.length ? data.keywords.join(" ") : q;
+      setSearch(kw);
+      toast({ title: "AI search applied", description: `Filtered by ${[data?.category, data?.difficulty, data?.maxPriceNgn ? `≤ ₦${data.maxPriceNgn.toLocaleString()}` : null].filter(Boolean).join(" · ") || "keywords"}` });
+    } catch (e: any) {
+      toast({ title: "AI search failed", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setAiSearching(false);
+    }
   };
 
   return (
