@@ -339,6 +339,17 @@ export default function Courses() {
             <Button
               variant="outline"
               size="default"
+              className="flex-shrink-0 hidden sm:inline-flex"
+              onClick={runAiSearch}
+              disabled={aiSearching || !search.trim()}
+              title="Smart search — e.g. 'beginner AWS under 50k'"
+            >
+              {aiSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              <span className="ml-1 hidden md:inline">Ask AI</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="default"
               className="md:hidden relative flex-shrink-0"
               onClick={() => setFiltersOpen(!filtersOpen)}
             >
