@@ -196,6 +196,8 @@ export default function Courses() {
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [aiSearching, setAiSearching] = useState(false);
+  const [aiMaxPrice, setAiMaxPrice] = useState<number | null>(null);
 
   // Allow deep-links like /courses?q=aws (used by the 404 cover-page search
   // fallback) to pre-fill the search input on arrival.
@@ -215,7 +217,8 @@ export default function Courses() {
     const matchSearch =
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       (c.description ?? "").toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchDifficulty && matchSearch;
+    const matchPrice = aiMaxPrice == null || (c.price ?? 0) <= aiMaxPrice;
+    return matchCategory && matchDifficulty && matchSearch && matchPrice;
   });
 
   // Group courses by track (AWS, Azure, GCP, DevOps, Data, Cyber, Programming,
