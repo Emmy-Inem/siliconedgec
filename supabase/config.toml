@@ -44,3 +44,12 @@ verify_jwt = false
 
 [functions.google-calendar-sync]
 verify_jwt = true
+
+[functions.ai-course-search]
+verify_jwt = true
+
+[functions.ai-draft-content]
+verify_jwt = true
+
+[functions.ai-qualify-lead]
+verify_jwt = true
