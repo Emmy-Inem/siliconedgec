@@ -7,7 +7,7 @@ import { logAdminActivity } from "@/lib/admin-logger";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle, BadgeDollarSign, ClipboardList, Briefcase, BookOpen, Eye, Loader2 } from "lucide-react";
+import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle, BadgeDollarSign, ClipboardList, Briefcase, BookOpen, Eye, Loader2, Sparkles } from "lucide-react";
 
 interface Announcement {
   id: string;
@@ -36,6 +36,25 @@ export default function AdminEmail() {
   const [form, setForm] = useState({ subject: "", body: "", target_audience: "all", course_id: "" });
   const [preview, setPreview] = useState<{ count: number; sample: string[] } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [drafting, setDrafting] = useState(false);
+
+  const draftWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-draft-content", {
+        body: { kind: "email", prompt: aiPrompt.trim(), audience: form.target_audience },
+      });
+      if (error) throw error;
+      setForm((f) => ({ ...f, subject: data?.subject ?? f.subject, body: data?.body ?? f.body }));
+      toast({ title: "Draft ready", description: "Review and edit before sending." });
+    } catch (e: any) {
+      toast({ title: "Couldn't draft", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const { data: courseOptions = [] } = useQuery({
     queryKey: ["admin-email-course-options"],
