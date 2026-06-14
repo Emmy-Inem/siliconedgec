@@ -304,6 +304,21 @@ export default function AdminEmail() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Compose Announcement</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); sendAnnouncement.mutate(); }} className="space-y-4">
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <label className="text-xs font-medium flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Draft with AI</label>
+              <div className="flex gap-2">
+                <input
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="e.g. Remind learners about next week's live Cloud session"
+                  className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <Button type="button" size="sm" variant="outline" onClick={draftWithAI} disabled={drafting || !aiPrompt.trim()}>
+                  {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  <span className="ml-1">Draft</span>
+                </Button>
+              </div>
+            </div>
             <div>
               <label className="text-sm font-medium block mb-1">Subject</label>
               <input
