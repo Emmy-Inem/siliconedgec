@@ -5,11 +5,13 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, Star, ArrowRight, PlayCircle, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -194,6 +196,8 @@ export default function Courses() {
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [aiSearching, setAiSearching] = useState(false);
+  const [aiMaxPrice, setAiMaxPrice] = useState<number | null>(null);
 
   // Allow deep-links like /courses?q=aws (used by the 404 cover-page search
   // fallback) to pre-fill the search input on arrival.
@@ -213,7 +217,8 @@ export default function Courses() {
     const matchSearch =
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       (c.description ?? "").toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchDifficulty && matchSearch;
+    const matchPrice = aiMaxPrice == null || (c.price ?? 0) <= aiMaxPrice;
+    return matchCategory && matchDifficulty && matchSearch && matchPrice;
   });
 
   // Group courses by track (AWS, Azure, GCP, DevOps, Data, Cyber, Programming,
@@ -264,6 +269,29 @@ export default function Courses() {
     setActiveCategory("All");
     setActiveDifficulty("All Levels");
     setSearch("");
+    setAiMaxPrice(null);
+  };
+
+  const runAiSearch = async () => {
+    const q = search.trim();
+    if (!q) return;
+    setAiSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-course-search", {
+        body: { query: q, categories: categories.filter((c) => c !== "All"), difficulties: difficulties.filter((d) => d !== "All Levels") },
+      });
+      if (error) throw error;
+      if (data?.category && categories.includes(data.category)) setActiveCategory(data.category);
+      if (data?.difficulty && difficulties.includes(data.difficulty)) setActiveDifficulty(data.difficulty);
+      setAiMaxPrice(typeof data?.maxPriceNgn === "number" ? data.maxPriceNgn : null);
+      const kw = Array.isArray(data?.keywords) && data.keywords.length ? data.keywords.join(" ") : q;
+      setSearch(kw);
+      toast({ title: "AI search applied", description: `Filtered by ${[data?.category, data?.difficulty, data?.maxPriceNgn ? `≤ ₦${data.maxPriceNgn.toLocaleString()}` : null].filter(Boolean).join(" · ") || "keywords"}` });
+    } catch (e: any) {
+      toast({ title: "AI search failed", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setAiSearching(false);
+    }
   };
 
   return (
@@ -308,6 +336,17 @@ export default function Courses() {
                 </button>
               )}
             </div>
+            <Button
+              variant="outline"
+              size="default"
+              className="flex-shrink-0 hidden sm:inline-flex"
+              onClick={runAiSearch}
+              disabled={aiSearching || !search.trim()}
+              title="Smart search — e.g. 'beginner AWS under 50k'"
+            >
+              {aiSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              <span className="ml-1 hidden md:inline">Ask AI</span>
+            </Button>
             <Button
               variant="outline"
               size="default"

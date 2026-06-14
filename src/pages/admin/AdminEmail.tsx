@@ -7,7 +7,7 @@ import { logAdminActivity } from "@/lib/admin-logger";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle, BadgeDollarSign, ClipboardList, Briefcase, BookOpen, Eye, Loader2 } from "lucide-react";
+import { Mail, Send, Users, GraduationCap, Clock, CheckCircle2, AlertCircle, BadgeDollarSign, ClipboardList, Briefcase, BookOpen, Eye, Loader2, Sparkles } from "lucide-react";
 
 interface Announcement {
   id: string;
@@ -36,6 +36,25 @@ export default function AdminEmail() {
   const [form, setForm] = useState({ subject: "", body: "", target_audience: "all", course_id: "" });
   const [preview, setPreview] = useState<{ count: number; sample: string[] } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [drafting, setDrafting] = useState(false);
+
+  const draftWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-draft-content", {
+        body: { kind: "email", prompt: aiPrompt.trim(), audience: form.target_audience },
+      });
+      if (error) throw error;
+      setForm((f) => ({ ...f, subject: data?.subject ?? f.subject, body: data?.body ?? f.body }));
+      toast({ title: "Draft ready", description: "Review and edit before sending." });
+    } catch (e: any) {
+      toast({ title: "Couldn't draft", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const { data: courseOptions = [] } = useQuery({
     queryKey: ["admin-email-course-options"],
@@ -285,6 +304,21 @@ export default function AdminEmail() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Compose Announcement</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); sendAnnouncement.mutate(); }} className="space-y-4">
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <label className="text-xs font-medium flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Draft with AI</label>
+              <div className="flex gap-2">
+                <input
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="e.g. Remind learners about next week's live Cloud session"
+                  className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <Button type="button" size="sm" variant="outline" onClick={draftWithAI} disabled={drafting || !aiPrompt.trim()}>
+                  {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  <span className="ml-1">Draft</span>
+                </Button>
+              </div>
+            </div>
             <div>
               <label className="text-sm font-medium block mb-1">Subject</label>
               <input

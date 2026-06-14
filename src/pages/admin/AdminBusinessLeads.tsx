@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { motion } from "framer-motion";
-import { Briefcase, Mail, Phone, Users, Clock, Eye, GripVertical, StickyNote } from "lucide-react";
+import { Briefcase, Mail, Phone, Users, Clock, Eye, GripVertical, StickyNote, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ export default function AdminBusinessLeads() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [scoring, setScoring] = useState(false);
+  const [aiResult, setAiResult] = useState<{ score?: number; tier?: string; rationale?: string; next_step?: string } | null>(null);
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ["admin-business-leads"],
@@ -69,6 +71,26 @@ export default function AdminBusinessLeads() {
   const openLead = (lead: any) => {
     setSelectedLead(lead);
     setNotes(lead.internal_notes ?? "");
+    setAiResult(null);
+  };
+
+  const scoreWithAI = async () => {
+    if (!selectedLead) return;
+    setScoring(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-qualify-lead", { body: { leadId: selectedLead.id } });
+      if (error) throw error;
+      setAiResult(data);
+      // refresh notes from server-side append
+      const { data: fresh } = await supabase.from("business_leads").select("internal_notes").eq("id", selectedLead.id).maybeSingle();
+      if (fresh?.internal_notes) setNotes(fresh.internal_notes);
+      queryClient.invalidateQueries({ queryKey: ["admin-business-leads"] });
+      toast({ title: `Lead scored ${data?.score ?? "?"}/100 (${data?.tier ?? "?"})` });
+    } catch (e: any) {
+      toast({ title: "AI qualify failed", description: e.message ?? "Try again", variant: "destructive" });
+    } finally {
+      setScoring(false);
+    }
   };
 
   return (
@@ -169,9 +191,22 @@ export default function AdminBusinessLeads() {
               <div>
                 <strong className="block mb-1">Internal Notes</strong>
                 <Textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Track conversations, next steps…" />
-                <Button size="sm" className="mt-2" onClick={() => updateNotes.mutate({ id: selectedLead.id, internal_notes: notes })} disabled={updateNotes.isPending}>
-                  Save Notes
-                </Button>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Button size="sm" onClick={() => updateNotes.mutate({ id: selectedLead.id, internal_notes: notes })} disabled={updateNotes.isPending}>
+                    Save Notes
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={scoreWithAI} disabled={scoring}>
+                    {scoring ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                    Score with AI
+                  </Button>
+                </div>
+                {aiResult && (
+                  <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                    <p className="font-semibold">{aiResult.score ?? "?"}/100 · <span className="capitalize">{aiResult.tier ?? "—"}</span></p>
+                    {aiResult.rationale && <p className="text-muted-foreground">{aiResult.rationale}</p>}
+                    {aiResult.next_step && <p><strong>Next:</strong> {aiResult.next_step}</p>}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <Clock className="h-4 w-4 text-muted-foreground" />

@@ -8,6 +8,7 @@ import { useAiTutor } from "@/hooks/useAiTutor";
 import { MarkdownView } from "./MarkdownView";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { ChatHistorySidebar } from "./ChatHistorySidebar";
 
 interface Props {
   lessonId?: string;
@@ -19,7 +20,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("chat");
   const [input, setInput] = useState("");
-  const { messages, send, loading, reset } = useAiTutor({
+  const { messages, send, loading, reset, loadConversation } = useAiTutor({
     scope: lessonId ? "lesson" : "course",
     scopeRefId: lessonId ?? courseId,
   });
@@ -93,6 +94,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <ChatHistorySidebar onSelect={(id) => { loadConversation(id); setTab("chat"); }} />
           <Button size="icon" variant="ghost" onClick={reset} title="Start a new chat" aria-label="Start a new AI chat"><RotateCcw className="h-4 w-4" aria-hidden /></Button>
           <Button size="icon" variant="ghost" onClick={() => setOpen(false)} title="Close" aria-label="Close AI tutor"><X className="h-4 w-4" aria-hidden /></Button>
         </div>

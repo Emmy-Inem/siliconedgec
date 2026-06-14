@@ -107,5 +107,19 @@ export function useAiTutor(opts: { scope?: string; scopeRefId?: string } = {}) {
     conversationId.current = null;
   }, []);
 
-  return { messages, send, loading, reset, setMessages };
+  const loadConversation = useCallback(async (id: string) => {
+    const { data } = await supabase
+      .from("ai_messages")
+      .select("role, content, created_at")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true });
+    conversationId.current = id;
+    setMessages(
+      ((data ?? []) as { role: string; content: string }[])
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+    );
+  }, []);
+
+  return { messages, send, loading, reset, setMessages, loadConversation };
 }
