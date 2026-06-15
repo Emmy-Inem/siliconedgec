@@ -1345,6 +1345,101 @@ export type Database = {
         }
         Relationships: []
       }
+      kb_articles: {
+        Row: {
+          body: string
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          helpful_no: number
+          helpful_yes: number
+          id: string
+          is_published: boolean
+          slug: string
+          summary: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          body?: string
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          helpful_no?: number
+          helpful_yes?: number
+          id?: string
+          is_published?: boolean
+          slug: string
+          summary?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          body?: string
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          helpful_no?: number
+          helpful_yes?: number
+          id?: string
+          is_published?: boolean
+          slug?: string
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "kb_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_published: boolean
+          order_index: number
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          order_index?: number
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          order_index?: number
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_sources: {
         Row: {
           created_at: string

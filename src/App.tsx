@@ -42,6 +42,8 @@ const CourseQuizzes = lazy(() => import("./pages/CourseQuizzes"));
 const CourseAssignments = lazy(() => import("./pages/CourseAssignments"));
 const QuizAttempts = lazy(() => import("./pages/QuizAttempts"));
 const RelatedCourses = lazy(() => import("./pages/RelatedCourses"));
+const Help = lazy(() => import("./pages/Help"));
+const HelpArticle = lazy(() => import("./pages/HelpArticle"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -99,6 +101,7 @@ const AdminCourseHealth = lazy(() => import("./pages/admin/AdminCourseHealth"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
 const AdminSessions = lazy(() => import("./pages/admin/AdminSessions"));
+const AdminHelp = lazy(() => import("./pages/admin/AdminHelp"));
 
 // Hub pages (consolidated tabbed views)
 const AdminAnalyticsHub = lazy(() => import("./pages/admin/hubs/AdminAnalyticsHub"));
@@ -176,6 +179,8 @@ const App = () => (
               <Route path="/instructors/:id" element={<InstructorDetail />} />
               <Route path="/paths" element={<LearningPaths />} />
               <Route path="/paths/:id" element={<LearningPathDetail />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/help/:slug" element={<HelpArticle />} />
 
               <Route
                 path="/admin"
@@ -254,6 +259,7 @@ const App = () => (
                 <Route path="activity-log" element={<Navigate to="/admin/system?tab=activity-log" replace />} />
                 <Route path="seo" element={<Navigate to="/admin/system?tab=seo" replace />} />
                 <Route path="custom-scripts" element={<Navigate to="/admin/system?tab=custom-scripts" replace />} />
+                <Route path="help" element={<AdminHelp />} />
 
                 <Route path="course-health" element={<Navigate to="/admin/analytics?tab=course-health" replace />} />
                 <Route path="user-activity" element={<Navigate to="/admin/analytics?tab=user-activity" replace />} />

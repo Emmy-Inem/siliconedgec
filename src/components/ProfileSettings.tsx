@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Save, Trash2, AlertTriangle, User } from "lucide-react";
+import { Loader2, Save, Trash2, AlertTriangle, User, LogOut } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
@@ -156,6 +156,24 @@ export function ProfileSettings() {
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save changes
+          </Button>
+        </div>
+
+        <div className="border-t border-border pt-5 mt-5">
+          <h4 className="font-heading font-semibold text-sm mb-1">Active sessions</h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            Lost a device? Sign out everywhere except this browser to protect your account.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const { error } = await supabase.auth.signOut({ scope: "others" });
+              if (error) toast({ title: "Couldn't sign out other sessions", description: error.message, variant: "destructive" });
+              else toast({ title: "Signed out of other devices" });
+            }}
+          >
+            <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign out other devices
           </Button>
         </div>
 

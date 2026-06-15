@@ -18,6 +18,7 @@ import { buildIcsFile, downloadIcs, googleCalendarUrl } from "@/lib/ics";
 import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { Receipts } from "@/components/Receipts";
+import { VerifyEmailBanner } from "@/components/VerifyEmailBanner";
 import { NextStepCard } from "@/components/ai/NextStepCard";
 import { CareerCoachCard } from "@/components/ai/CareerCoachCard";
 import { LearningAnalyticsCard } from "@/components/LearningAnalyticsCard";
@@ -273,6 +274,7 @@ export default function Dashboard() {
 
       <section className="py-12 page-transition">
         <div className="container mx-auto px-4">
+          <VerifyEmailBanner />
           {user && (
             <div className="mb-10">
               <NextStepCard userId={user.id} />

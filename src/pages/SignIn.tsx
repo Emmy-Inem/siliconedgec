@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Wand2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [magicSending, setMagicSending] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -117,6 +118,22 @@ export default function SignIn() {
     if (error) {
       toast({ title: "Apple sign in failed", description: String(error), variant: "destructive" });
     }
+  };
+
+  const handleMagicLink = async () => {
+    const parsed = signInSchema.shape.email.safeParse(email);
+    if (!parsed.success) {
+      setFieldErrors({ email: "Enter your email to receive a magic link" });
+      return;
+    }
+    setMagicSending(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + (redirectTo === "/" ? "" : redirectTo) },
+    });
+    setMagicSending(false);
+    if (error) toast({ title: "Couldn't send link", description: error.message, variant: "destructive" });
+    else toast({ title: "Check your email", description: "We sent a magic sign-in link to " + email });
   };
 
   return (
@@ -214,6 +231,11 @@ export default function SignIn() {
                   Apple
                 </Button>
               </div>
+
+              <Button type="button" variant="ghost" size="sm" className="w-full mt-2" onClick={handleMagicLink} disabled={magicSending}>
+                {magicSending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 mr-1.5" />}
+                Email me a magic link instead
+              </Button>
             </form>
 
             <div className="mt-6 text-center">
