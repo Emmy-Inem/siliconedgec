@@ -64,7 +64,7 @@ export default function HelpArticle() {
             <h1 className="font-heading text-3xl font-bold mb-2">{article.title}</h1>
             {article.summary && <p className="text-muted-foreground mb-6">{article.summary}</p>}
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <MarkdownView text={article.body || ""} />
+              <MarkdownView>{article.body || ""}</MarkdownView>
             </div>
             <div className="mt-10 pt-6 border-t border-border flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">Was this helpful?</p>
