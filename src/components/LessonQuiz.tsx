@@ -84,6 +84,9 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
     onSuccess: (res) => {
       setSubmitted(res);
       queryClient.invalidateQueries({ queryKey: ["quiz-attempts", quiz?.id, user?.id] });
+      // Refetch the quiz so correct_answer + explanation become available
+      // (get_quiz_questions only returns them once an attempt exists).
+      queryClient.invalidateQueries({ queryKey: ["lesson-quiz", lessonId] });
       if (res.passed) {
         toast({ title: `Passed with ${res.score}%!`, description: "Next lesson unlocked." });
         onPass?.();
