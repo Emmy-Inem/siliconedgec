@@ -81,12 +81,13 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
       const row: any = Array.isArray(data) ? data[0] : data;
       return { score: row?.score ?? 0, passed: !!row?.passed, answers };
     },
-    onSuccess: (res) => {
-      setSubmitted(res);
+    onSuccess: async (res) => {
+      // Refetch the quiz FIRST so correct_answer + explanation are present
+      // before we flip into the review UI (get_quiz_questions only returns
+      // them once an attempt exists).
+      await queryClient.refetchQueries({ queryKey: ["lesson-quiz", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["quiz-attempts", quiz?.id, user?.id] });
-      // Refetch the quiz so correct_answer + explanation become available
-      // (get_quiz_questions only returns them once an attempt exists).
-      queryClient.invalidateQueries({ queryKey: ["lesson-quiz", lessonId] });
+      setSubmitted(res);
       if (res.passed) {
         toast({ title: `Passed with ${res.score}%!`, description: "Next lesson unlocked." });
         onPass?.();
