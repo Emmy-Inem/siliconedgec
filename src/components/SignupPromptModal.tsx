@@ -13,8 +13,22 @@ import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const DISMISSED_KEY = "sec_signup_prompt_dismissed_until";
-const AUTO_TRIGGER_MS = 20_000; // 20 seconds
-const REPROMPT_AFTER_DISMISS_MS = 90_000; // 1.5 minutes
+const DISMISS_COUNT_KEY = "sec_signup_prompt_dismiss_count";
+const AUTO_TRIGGER_MS = 10_000; // 10 seconds for first prompt
+// Escalating re-prompt schedule after each dismissal. After the array is
+// exhausted, the last interval keeps repeating until the user signs up.
+const REPROMPT_SCHEDULE_MS = [
+  60_000,       // 1 minute after 1st dismissal
+  3 * 60_000,   // 3 minutes
+  5 * 60_000,   // 5 minutes
+  10 * 60_000,  // 10 minutes thereafter
+];
+
+const getRepromptDelay = (dismissCount: number) => {
+  if (dismissCount <= 0) return REPROMPT_SCHEDULE_MS[0];
+  const idx = Math.min(dismissCount - 1, REPROMPT_SCHEDULE_MS.length - 1);
+  return REPROMPT_SCHEDULE_MS[idx];
+};
 
 type Reason = "auto" | "enroll" | "register" | "bookmark" | "review" | "cart";
 
@@ -84,10 +98,13 @@ export function SignupPromptModal() {
   const handleClose = (next: boolean) => {
     setOpen(next);
     if (!next) {
+      let count = 0;
       try {
+        count = Number(localStorage.getItem(DISMISS_COUNT_KEY) || 0) + 1;
+        localStorage.setItem(DISMISS_COUNT_KEY, String(count));
         localStorage.setItem(
           DISMISSED_KEY,
-          String(Date.now() + REPROMPT_AFTER_DISMISS_MS),
+          String(Date.now() + getRepromptDelay(count)),
         );
       } catch {}
       // Schedule the next auto re-prompt after the cooldown elapses.
