@@ -330,6 +330,7 @@ export default function Courses() {
               {search && (
                 <button
                   onClick={() => setSearch("")}
+                  aria-label="Clear search"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
@@ -352,6 +353,8 @@ export default function Courses() {
               size="default"
               className="md:hidden relative flex-shrink-0"
               onClick={() => setFiltersOpen(!filtersOpen)}
+              aria-label={`Toggle filters${activeFilterCount > 0 ? `, ${activeFilterCount} active` : ""}`}
+              aria-expanded={filtersOpen}
             >
               <SlidersHorizontal className="h-4 w-4" />
               {activeFilterCount > 0 && (
