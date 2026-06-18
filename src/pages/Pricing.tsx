@@ -196,9 +196,9 @@ export default function Pricing() {
       {/* Choose Your Path */}
       <section className="py-8 bg-card border-y border-border">
         <div className="container mx-auto px-4 text-center">
-          <p className="font-heading font-semibold text-base text-foreground">
+          <h2 className="font-heading font-semibold text-base text-foreground">
             Choose Your Path to Mastery
-          </p>
+          </h2>
           <p className="text-muted-foreground text-sm max-w-2xl mx-auto mt-2 leading-relaxed">
             Select the learning track that aligns with your career goals. All
             plans include our signature instructor-led classes, real-life
