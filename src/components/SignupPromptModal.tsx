@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Dialog,
@@ -44,6 +44,7 @@ export function SignupPromptModal() {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<Reason>("auto");
   const [recheckTick, setRecheckTick] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cooldownActive = () => {
     try {
@@ -64,19 +65,23 @@ export function SignupPromptModal() {
     return () => window.removeEventListener("sec:request-signup", handler as EventListener);
   }, [user]);
 
-  // Auto-show after 20s for anon visitors. After dismissal, re-prompt
-  // automatically once the 1.5-minute cooldown elapses.
+  // Auto-show after 10s for anon visitors. After dismissal, re-prompt
+  // automatically once the cooldown elapses.
   useEffect(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     if (loading || user) return;
     if (location.pathname.startsWith("/sign-in") || location.pathname.startsWith("/sign-up") ||
         location.pathname.startsWith("/reset-password") || location.pathname.startsWith("/forgot-password") ||
         location.pathname.startsWith("/r/")) return;
     if (cooldownActive()) {
-      // Wait out the remaining cooldown, then show the prompt again.
       let until = 0;
       try { until = Number(localStorage.getItem(DISMISSED_KEY) || 0); } catch {}
       const wait = Math.max(0, until - Date.now()) + 50;
-      const t = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
         if (!user && !cooldownActive()) {
           setReason("auto");
           setOpen(true);
@@ -84,16 +89,34 @@ export function SignupPromptModal() {
           setRecheckTick((x) => x + 1);
         }
       }, wait);
-      return () => clearTimeout(t);
+    } else {
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        if (!user && !cooldownActive()) {
+          setReason("auto");
+          setOpen(true);
+        }
+      }, AUTO_TRIGGER_MS);
     }
-    const t = setTimeout(() => {
-      if (!user && !cooldownActive()) {
-        setReason("auto");
-        setOpen(true);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
-    }, AUTO_TRIGGER_MS);
-    return () => clearTimeout(t);
+    };
   }, [user, loading, location.pathname, recheckTick]);
+
+  // Kill-switch: if user logs in while a timer is pending, immediately
+  // close the modal and cancel any scheduled auto-show.
+  useEffect(() => {
+    if (user) {
+      setOpen(false);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [user]);
 
   const handleClose = (next: boolean) => {
     setOpen(next);
