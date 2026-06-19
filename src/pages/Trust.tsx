@@ -2,6 +2,12 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { ShieldCheck, Lock, Database, Cookie, UserCheck, Mail, Server, FileText } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -32,12 +38,79 @@ export default function Trust() {
   const brand = settings?.site_name || "Silicon Edge Consulting";
   const securityEmail = settings?.contact_email || "info@siliconedgec.com";
 
+  const faqs = [
+    {
+      q: "How do I sign in to the platform?",
+      a: `Learners and staff sign in with email and password or with Google. Passwords are handled by our managed authentication provider and are never stored in plain text by ${brand}.`,
+    },
+    {
+      q: "How is my data protected?",
+      a: `Row-level security policies are enabled on user-facing tables so learners can only read and modify their own records. Administrative actions are restricted to staff with the appropriate role, and sensitive operations such as payment confirmation run in server-side functions.`,
+    },
+    {
+      q: `What payment information does ${brand} store?`,
+      a: `Card and bank details are entered directly into our payment partners (Paystack and Stripe) and are not stored on our servers. We retain order references, amounts, and status to issue receipts and resolve disputes.`,
+    },
+    {
+      q: "Does the site use cookies?",
+      a: `We use a small number of cookies to keep you signed in, remember your cart, and measure how the site is used. A cookie banner lets you accept or decline non-essential analytics and marketing cookies.`,
+    },
+    {
+      q: "How can I request a copy of or delete my data?",
+      a: `Email ${securityEmail} to ask for access, correction, portability, or deletion. We will honour valid requests after verifying your identity and aim to acknowledge security and privacy reports within a few business days.`,
+    },
+  ];
+
+  const sameAs = [
+    settings?.social_facebook,
+    settings?.social_twitter,
+    settings?.social_instagram,
+    settings?.social_linkedin,
+    settings?.social_youtube,
+    settings?.social_tiktok,
+  ].filter(Boolean) as string[];
+
+  const origin = "https://siliconedgec.com";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${origin}/#organization`,
+        name: brand,
+        url: origin,
+        email: securityEmail,
+        description: `${brand} delivers live, instructor-led training in AI, Cloud, DevOps and more, helping professionals build job-ready tech skills.`,
+        ...(sameAs.length ? { sameAs } : {}),
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${origin}/trust`,
+        url: `${origin}/trust`,
+        name: `Trust, Security & Privacy | ${brand}`,
+        description: `How ${brand} protects your account, learning data, and payments — authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`,
+        isPartOf: { "@id": `${origin}/#organization` },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
         title="Trust, Security & Privacy"
         description={`How ${brand} protects your account, learning data, and payments — authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`}
+        jsonLd={jsonLd}
       />
+
       <Header />
 
       <main className="container mx-auto px-5 sm:px-6 pt-28 sm:pt-32 pb-20 max-w-4xl">
@@ -129,9 +202,28 @@ export default function Trust() {
           </Section>
         </div>
 
+        <section className="mt-14 sm:mt-16">
+          <h2 className="font-heading text-xl sm:text-2xl font-semibold text-foreground mb-4">
+            Common security and privacy questions
+          </h2>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((f, i) => (
+              <AccordionItem key={i} value={`item-${i}`} className="border-border/60">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-medium hover:no-underline">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+
         <p className="text-xs text-muted-foreground/80 mt-10 leading-relaxed">
           This page describes practices and controls currently in place at {brand}. It is not a regulatory certification and does not replace our terms of service or privacy policy. We update it as the platform evolves.
         </p>
+
       </main>
 
       <Footer />
