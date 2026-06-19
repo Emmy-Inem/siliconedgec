@@ -2,8 +2,15 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { ShieldCheck, Lock, Database, Cookie, UserCheck, Mail, Server, FileText } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+
 
 const Section = ({
   icon: Icon,
