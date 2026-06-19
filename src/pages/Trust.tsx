@@ -104,7 +104,6 @@ export default function Trust() {
   };
 
   return (
-
     <div className="min-h-screen bg-background">
       <SEO
         title="Trust, Security & Privacy"
