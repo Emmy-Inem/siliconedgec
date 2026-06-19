@@ -133,8 +133,17 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Pricing — Beginner to Advanced Tech Courses"
+        title="Course Pricing & Plans"
         description="Transparent pricing in Naira. Choose Beginner (₦100,000), Intermediate (₦600,000), or Advanced packages to match your career goals."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }}
       />
       <Header />
 

@@ -297,7 +297,7 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="All Courses — Live Instructor-Led Tech Training"
+        title="All Tech Courses & Bootcamps"
         description="Browse live, expert-led courses in Cloud, AI, DevOps, Cybersecurity, Web Development and more. Filter by category and difficulty to find the right path."
         jsonLd={{
           "@context": "https://schema.org",
