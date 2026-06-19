@@ -11,7 +11,6 @@ import {
 import { ShieldCheck, Lock, Database, Cookie, UserCheck, Mail, Server, FileText } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
-
 const Section = ({
   icon: Icon,
   title,
