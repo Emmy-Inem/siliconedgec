@@ -172,6 +172,15 @@ export default function ForBusinesses() {
       <SEO
         title="Corporate Tech Training for Businesses — Silicon Edge"
         description="Upskill your team with custom corporate training in Cloud, AI, DevOps, and Cybersecurity. Live instructor-led sessions, real projects, and verifiable certificates."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }}
       />
       <Header />
 
