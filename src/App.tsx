@@ -44,6 +44,7 @@ const QuizAttempts = lazy(() => import("./pages/QuizAttempts"));
 const RelatedCourses = lazy(() => import("./pages/RelatedCourses"));
 const Help = lazy(() => import("./pages/Help"));
 const HelpArticle = lazy(() => import("./pages/HelpArticle"));
+const Trust = lazy(() => import("./pages/Trust"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -181,6 +182,7 @@ const App = () => (
               <Route path="/paths/:id" element={<LearningPathDetail />} />
               <Route path="/help" element={<Help />} />
               <Route path="/help/:slug" element={<HelpArticle />} />
+              <Route path="/trust" element={<Trust />} />
 
               <Route
                 path="/admin"
