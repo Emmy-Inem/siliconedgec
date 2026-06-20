@@ -1,164 +1,115 @@
 
-# Fix-All Plan — LMS, AI, Auth, PWA, Help Center
+# Gap Audit — Missing Pages & Admin Functionality
 
-This is a large scope. I'll ship it in 6 batches so each one is reviewable and the app stays stable between them. Each batch ends in a working, deployable state.
-
----
-
-## Batch 1 — LMS depth (student-facing)
-
-**Assignment submissions + grading**
-- New `AssignmentSubmissionPanel` on the lesson page for `lesson_type='assignment'`: text response + file upload to `course-resources/submissions/{user}/{assignment}/`.
-- Show submission status (submitted / graded / score / feedback).
-- Admin `AdminAssignmentSubmissions` page with rubric grading UI: score 0–100, written feedback, pass/fail; uses existing `notify_assignment_submission` trigger.
-
-**Lesson discussions (threaded)**
-- New table `lesson_comments` (lesson_id, user_id, parent_id, body, created_at) with RLS: enrolled users can read/write on their courses; admins moderate.
-- `LessonDiscussion` component with reply nesting, edit/delete own, soft-delete by admin.
-
-**Resume CTA**
-- Dashboard course cards: when `enrollments.last_lesson_id` is set, "Continue" button links to `/courses/{slug}/learn?lesson={id}`. Falls back to first incomplete lesson.
-
-**Player upgrades**
-- Add playback speed (0.5–2x), Picture-in-Picture button, keyboard shortcuts (space=play, ←/→=10s seek, f=fullscreen, m=mute, ↑/↓=volume).
-- Persist last speed in localStorage per user.
-
-**Offline / bulk download**
-- "Download all resources" button in course sidebar → zips signed URLs from `lesson_resources` via JSZip on the client.
-- Per-lesson transcript/notes export to .txt.
+Based on a scan of `src/pages/`, `src/pages/admin/`, and the routes registered in `src/App.tsx`, here is what is **still missing** (or thin) for a production-grade LMS + commerce + jobs platform like Silicon Edge.
 
 ---
 
-## Batch 2 — AI completeness
+## A. Public / Marketing pages that are missing
 
-**Lesson-aware grounding for ai-tutor**
-- Edge function fetches `lessons.content`, `lesson_transcripts.transcript`, and module title for the active `lesson_id` passed from the client; injects as system context with token budget.
-- Add citations: model is instructed to cite `[L1]`, `[L2]` referring to lesson sections; `MarkdownView` renders these as anchored chips that scroll to the source paragraph.
+| # | Page | Why it matters |
+|---|------|---------------|
+| 1 | `/about` (About / Company / Mission / Team) | Trust + SEO. Currently only `/trust`. No story, no team bios surfaced. |
+| 2 | `/contact` | No dedicated contact page with form, address, support email, hours. |
+| 3 | `/blog` index + `/blog/:slug` | `AdminBlog` exists and `blog_posts` table exists, but **no public blog routes**. Content is being created with nowhere to read it. |
+| 4 | `/instructors` (index) | `/instructors/:id` exists, but no directory page to discover them. |
+| 5 | `/testimonials` or `/success-stories` | `testimonials` table exists, no public showcase page. |
+| 6 | `/faq` (standalone) | FAQs are scattered inside Pricing / Trust / Business. No global FAQ hub. |
+| 7 | `/terms`, `/privacy`, `/refund-policy`, `/cookie-policy` | Legal pages — required for payments (Paystack/Stripe), GDPR, and app store / ad trust. Currently only `/trust`. |
+| 8 | `/sitemap` (HTML) | Have XML sitemap, no human sitemap page. |
+| 9 | `/blog/category/:slug` & `/blog/tag/:slug` | Blog taxonomy navigation. |
+| 10 | `/search` (global site search results page) | No search results route. |
+| 11 | `/categories/:slug` and `/tags/:slug` for courses | Course taxonomy landing pages — strong SEO surfaces. |
+| 12 | `/compare` (course/path compare) | Helpful for high-ticket decisions. |
+| 13 | 410 / `gone_urls` rendered page | Table exists; no public handler returning proper 410 page. |
+| 14 | `/maintenance` and a real branded `500` error boundary page | Only NotFound exists. |
 
-**Conversation history sidebar**
-- `LessonCompanion` gets a collapsible left rail listing past `ai_conversations` for the current course, with new-chat + delete actions. Threads switch via URL param `?chat={id}`.
+## B. Authenticated student-area pages missing
 
-**Whisper transcript ingestion**
-- New edge function `transcribe-lesson` uses Lovable AI Gateway (Gemini for speech-to-text not available — use Whisper via OpenAI-compatible path supported by gateway; if not supported, surface a clear message and queue a manual upload field instead).
-- Admin "Generate transcript" button on each video lesson. Stores in `lesson_transcripts`.
+| # | Page | Notes |
+|---|------|------|
+| 15 | `/account/profile` (edit profile, avatar, bio, password, 2FA) | Profile editing surface not present. |
+| 16 | `/account/orders` & `/account/orders/:id` (invoice/receipt download) | Orders table exists; student-facing order history missing. |
+| 17 | `/account/billing` (payment methods, invoices, tax info) | Not present. |
+| 18 | `/account/notifications` (preferences + history) | Notifications table exists; no preference center. |
+| 19 | `/account/security` (sessions, login history, password, 2FA) | `AdminSessions` + `login_attempts` exist for admin only. |
+| 20 | `/wishlist` | `AdminWishlistInsights` exists; **no student wishlist page**. |
+| 21 | `/bookmarks` | `bookmarks` table exists; no listing UI. |
+| 22 | `/my-certificates` | Have `/certificates` public page, but no personal earned-certificates index. |
+| 23 | `/my-learning-paths` / progress on paths | Path detail exists, no enrolled-paths view. |
+| 24 | `/messages` / `/inbox` | `chat_conversations` table; no student inbox UI confirmed. |
+| 25 | `/refer` (student referral dashboard) | `influencer_referrals` is admin only. |
+| 26 | `/jobs/applied` (student application history) | `job_applications` table; no student view. |
 
-**AI catalog search**
-- `/courses` adds a natural-language search bar. Edge function `ai-course-search` returns ranked course IDs from a structured query (parses "beginner AWS under ₦50k" → filters: level, category, max_price) using `Output.object`.
+## C. Admin functionality gaps
 
-**AI announcement / email drafting**
-- "Draft with AI" button in `AdminEmail` and `AdminCourseAnnouncements`. Opens a dialog: tone, audience, key points → streams a draft into the editor.
+Existing admin surfaces are extensive, but the following are missing or incomplete:
 
-**AI business-lead qualifier**
-- Edge function `ai-qualify-lead` scores each new `business_leads` row 1–100 with rationale (company size, intent signal, budget hints). Trigger runs on insert. Admin lead list shows score + rationale.
+1. **Role & Permission management UI** — `user_roles` enum exists, but no UI to assign/revoke `admin`/`moderator`/`user` per account from `AdminUsers`.
+2. **Refunds & disputes workflow** — `AdminOrders` exists, but no refund issuance, partial refund, chargeback log, or Paystack/Stripe refund actions.
+3. **Coupons / Promo codes UI** — `promo_codes` table (21 cols!) has no dedicated admin CRUD page; only referenced via influencer marketing.
+4. **Tax / VAT settings** per region.
+5. **Email deliverability dashboard** — bounces, complaints, opens, unsubscribes; `email_announcements` lacks analytics view.
+6. **Webhook events viewer** — `webhook_events` table exists; no admin inspector / replay UI (only `AdminAuthReplay`).
+7. **Knowledge Base admin** — `kb_articles`, `kb_categories` tables exist; no admin CRUD page.
+8. **CMS pages versioning / drafts / preview** — `AdminPages` exists; revision history and unpublished preview missing.
+9. **Blog editor enhancements** — categories, scheduling, SEO per post, OpenGraph image picker (verify in `AdminBlog`).
+10. **Bulk operations** — bulk enroll, bulk email, bulk certificate issuance, CSV import for students/courses/jobs.
+11. **Reports & exports** — revenue report, refunds report, enrollments by cohort, tax report, instructor payout report. (`AdminAnalytics` likely doesn't cover finance reports.)
+12. **Instructor payouts / revenue share** — no payouts schema or admin screen.
+13. **Discussion / Q&A moderation tools** — flagging, ban, soft-delete; `lesson_comments` has no moderation UI.
+14. **Reviews moderation** — approve / reject / reply (verify in `AdminReviews`).
+15. **Spam / abuse / IP block UI** — `blocked_ips` table exists, no admin CRUD page.
+16. **GDPR tooling** — user data export (DSAR) and account deletion request handling.
+17. **Audit log search & export** — `AdminActivityLog` likely lacks date-range export.
+18. **Feature flags / A-B test toggles**.
+19. **Cohorts / batches** management for live classes (registration windows, capacity, waitlist).
+20. **Waitlists** for sold-out / not-yet-launched courses.
+21. **Assignment grading rubrics & gradebook** — submissions exist, no gradebook view per course / per student.
+22. **Quiz question bank** with tagging & reuse across quizzes.
+23. **Proctoring / attempt review** for quizzes.
+24. **Live class attendance & recordings library** — recordings index, attendance export.
+25. **Scheduled / drip content rules** for lessons.
+26. **Backup restore UI** — `AdminBackupStatus` shows status; trigger/restore/download buttons missing.
+27. **Maintenance mode toggle** in `AdminSettings`.
+28. **Translations / i18n admin** — string overrides per locale.
+29. **Affiliate payout management** (separate from influencer link tracking).
+30. **Push notifications (web push) admin** — only in-app + email exist.
+31. **Onboarding checklist** for new admins on first login.
+32. **Global search inside admin** (cmd-K) across courses, users, orders.
 
----
+## D. Cross-cutting / quality gaps
 
-## Batch 3 — Auth & accounts hardening
-
-**Email verification enforcement**
-- `configure_auth` to require confirmed email.
-- Add `<RequireVerified>` wrapper around purchase, enrollment, and AI features; show a "Resend verification" banner if `user.email_confirmed_at` is null.
-
-**Admin MFA (TOTP)**
-- Enable Supabase MFA factors. New `AdminMfaSetup` page: enroll TOTP, verify code, store factor.
-- Admin route guard requires `aal2` for users with admin role; if missing, redirect to MFA challenge.
-
-**Magic-link sign-in**
-- Add "Email me a magic link" tab on `/signin` using `supabase.auth.signInWithOtp`.
-
-**LinkedIn OAuth**
-- LinkedIn isn't in Lovable Cloud's native providers. I'll wire it through the LinkedIn connector for sign-in: edge function `linkedin-oauth-callback` exchanges code, creates/updates a Supabase user via service role, then issues a session. (If the user prefers, they can instead connect external Supabase for native LinkedIn provider; I'll proceed with the connector path by default.)
-
-**User session management UI**
-- `ProfileSettings` adds an "Active sessions" tab: lists rows from `auth.sessions` via a SECURITY DEFINER RPC scoped to `auth.uid()`; "Revoke" button calls `supabase.auth.admin.signOut(session_id)` from an edge function.
-
-**Account deletion cascade audit**
-- Add `delete-account` edge function that: anonymizes `profiles`, hard-deletes `enrollments/lesson_progress/notes/bookmarks/ai_conversations`, retains `orders/certificates` with a `deleted_user` flag for compliance, then deletes the auth user.
-- Document the audit in `docs/account-deletion.md`.
-
----
-
-## Batch 4 — Learning paths (student view) + PWA
-
-**Learning paths student-facing**
-- `/paths` index page: cards for each published path.
-- `/paths/:slug` detail: ordered courses, locked/unlocked indicator, aggregate progress bar from enrollments, "Start next course" CTA.
-- Path completion certificate (reuses certificate template).
-
-**PWA**
-- Use the PWA skill's `vite-plugin-pwa` offline path since the user wants offline lessons in Batch 1.
-- `registerType: autoUpdate`, NetworkFirst for HTML, CacheFirst for hashed assets, exclude `/~oauth`.
-- Registration wrapper with the required Lovable-preview/iframe/dev guards and `?sw=off` kill switch.
-- iOS install hint card on first mobile visit.
-
----
-
-## Batch 5 — Help Center / KB
-
-- New tables: `kb_categories`, `kb_articles` (slug, title, body markdown, category_id, is_published, views, helpful/unhelpful counts).
-- Public `/help` index with search; `/help/:slug` article page.
-- Admin CRUD at `/admin/help` with markdown editor and AI "Improve article" button.
-- Floating help widget (bottom-right) with article search; falls back to "Contact support" → existing LiveChat.
-
----
-
-## Batch 6 — Hardening verification
-
-- Run security scan; resolve any new findings introduced by the above migrations (RLS grants on `lesson_comments`, `kb_articles`, etc.).
-- Add a few targeted Vitest tests: lesson comments RLS, AI catalog search structured output, account deletion idempotency.
-- Smoke-test payments end-to-end (cart + single + webhook retry).
-
----
-
-## Technical details (one place)
-
-```text
-New tables
-  lesson_comments(id, lesson_id→lessons, user_id→auth.users, parent_id→lesson_comments, body, deleted_at)
-  kb_categories(id, slug, title, order_index)
-  kb_articles(id, category_id, slug, title, body_md, is_published, views, helpful, unhelpful)
-  mfa_required_roles (optional: role → require_aal2 bool)
-
-New edge functions
-  transcribe-lesson           (admin-triggered, service role, writes lesson_transcripts)
-  ai-course-search            (Output.object → {level, category, max_price, tokens})
-  ai-draft-announcement       (streaming text)
-  ai-draft-email              (streaming text)
-  ai-qualify-lead             (Output.object → {score, rationale}; trigger via DB → pg_net or admin button)
-  ai-tutor                    (UPDATED: load lesson context + transcripts; cite [L#])
-  linkedin-oauth-callback     (code exchange + session issuance)
-  delete-account              (cascade + anonymize, service role)
-  revoke-session              (service role admin.signOut(session_id) for caller's own sessions)
-
-Frontend additions
-  src/components/learning/AssignmentSubmissionPanel.tsx
-  src/components/learning/LessonDiscussion.tsx
-  src/components/learning/DownloadAllButton.tsx
-  src/components/player/EnhancedVideoPlayer.tsx        (speed/PiP/keys)
-  src/components/ai/ChatHistorySidebar.tsx             (wire to LessonCompanion)
-  src/components/ai/CourseSearchBar.tsx
-  src/components/help/HelpWidget.tsx
-  src/pages/LearningPaths.tsx / LearningPathDetail.tsx (student)
-  src/pages/Help.tsx / HelpArticle.tsx
-  src/pages/admin/AdminAssignmentSubmissions.tsx
-  src/pages/admin/AdminHelp.tsx
-  src/pages/admin/AdminMfaSetup.tsx
-  src/components/auth/MagicLinkTab.tsx
-  src/components/auth/LinkedInButton.tsx
-  src/components/account/ActiveSessionsTab.tsx
-  src/components/account/VerifyEmailBanner.tsx
-
-PWA
-  vite-plugin-pwa added with generateSW, guarded register wrapper
-  public/sw.js path reserved for kill-switch if needed
-```
+- No `robots`-aware OG image generator per route (open-graph default falls back).
+- No RSS feed (`/rss.xml`) for blog — easy SEO win.
+- No `/api/health` or status badge surfaced anywhere.
+- No cookie consent banner (visible) → GDPR risk if EU traffic.
+- Newsletter signup endpoint + admin subscriber list missing.
+- No `/changelog` or `/roadmap` page (optional but valued).
+- Course detail SEO: BreadcrumbList JSON-LD and Course JSON-LD verification needed.
+- 404 page does not link to popular / recent courses.
 
 ---
 
-## Order of operations
+## Proposed scope for the next build pass
 
-I'll ship Batch 1 first end-to-end (DB migration → backend → UI → smoke test), then return for approval/feedback before starting Batch 2. This keeps each delivery reviewable instead of one giant change set.
+Because this is a long list, propose tackling it in **three prioritized waves**. I can implement any subset you approve:
 
-Two quick confirmations before I start:
-1. **LinkedIn OAuth path**: connector-based sign-in (works on Lovable Cloud) vs migrating auth to external Supabase for native provider. I'll default to **connector-based** unless you say otherwise.
-2. **Whisper transcripts**: Lovable AI Gateway doesn't currently expose Whisper. I'll add a **manual transcript upload + paste** path in admin and an "AI clean-up" pass instead of speech-to-text. OK?
+**Wave 1 — Legal & trust essentials (blocks payments/SEO):**
+- `/terms`, `/privacy`, `/refund-policy`, `/cookie-policy`
+- Cookie consent banner
+- Public `/blog` + `/blog/:slug` (data already exists)
+- `/contact` + `/about`
+- Admin: Role management UI in `AdminUsers`, Promo codes CRUD page
+
+**Wave 2 — Student account & commerce depth:**
+- `/account/profile`, `/account/orders` (+ invoices), `/wishlist`, `/bookmarks`, `/my-certificates`, `/account/notifications`
+- Admin: Refunds, Webhook events viewer, Reviews moderation polish, Blocked IPs UI, GDPR export/delete
+
+**Wave 3 — LMS depth & ops:**
+- Instructors index, Testimonials page, Categories/Tags landing pages, global Search page, 410 handler, RSS feed
+- Admin: Gradebook, Quiz question bank, Live class attendance & recordings, Instructor payouts, Maintenance toggle, Backup restore, Admin cmd-K
+
+---
+
+**Which wave (or specific items) should I implement first?** Once you pick, I'll switch to build mode and ship them.
