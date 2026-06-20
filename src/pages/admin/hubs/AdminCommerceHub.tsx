@@ -3,6 +3,7 @@ import AdminOrders from "../AdminOrders";
 import AdminPricing from "../AdminPricing";
 import AdminCartAbandonment from "../AdminCartAbandonment";
 import AdminInfluencerMarketing from "../AdminInfluencerMarketing";
+import AdminPromoCodes from "../AdminPromoCodes";
 
 export default function AdminCommerceHub() {
   return (
@@ -12,6 +13,7 @@ export default function AdminCommerceHub() {
       tabs={[
         { value: "orders", label: "Orders", content: <AdminOrders /> },
         { value: "pricing", label: "Pricing Plans", content: <AdminPricing /> },
+        { value: "promo-codes", label: "Promo Codes", content: <AdminPromoCodes /> },
         { value: "cart-abandonment", label: "Cart Abandonment", content: <AdminCartAbandonment /> },
         { value: "influencers", label: "Influencer Marketing", content: <AdminInfluencerMarketing /> },
       ]}
