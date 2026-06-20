@@ -39,11 +39,7 @@ export default function BlogPost() {
         .maybeSingle());
       if (!active) return;
       if (!data) setNotFound(true);
-      else {
-        setPost(data as unknown as Post);
-        // increment views (best-effort)
-        await (supabase.rpc as any)("noop").catch(() => {});
-      }
+      else setPost(data as unknown as Post);
       setLoading(false);
     })();
     return () => { active = false; };
