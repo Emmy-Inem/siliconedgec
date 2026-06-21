@@ -48,6 +48,15 @@ const Trust = lazy(() => import("./pages/Trust"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Contact = lazy(() => import("./pages/Contact"));
+const About = lazy(() => import("./pages/About"));
+const Faq = lazy(() => import("./pages/Faq"));
+const InstructorsIndex = lazy(() => import("./pages/Instructors"));
+const TestimonialsPage = lazy(() => import("./pages/Testimonials"));
+const Bookmarks = lazy(() => import("./pages/Bookmarks"));
+const Account = lazy(() => import("./pages/Account"));
+const OrderDetail = lazy(() => import("./pages/OrderDetail"));
+const Refer = lazy(() => import("./pages/Refer"));
+const SearchPage = lazy(() => import("./pages/Search"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -189,6 +198,16 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<Faq />} />
+              <Route path="/instructors" element={<InstructorsIndex />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/bookmarks" element={<Bookmarks />} />
+              <Route path="/wishlist" element={<Bookmarks />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/orders/:id" element={<OrderDetail />} />
+              <Route path="/refer" element={<Refer />} />
+              <Route path="/search" element={<SearchPage />} />
 
               <Route
                 path="/admin"
