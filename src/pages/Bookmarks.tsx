@@ -13,7 +13,7 @@ interface Course {
   title: string;
   slug: string | null;
   thumbnail_url: string | null;
-  short_description: string | null;
+  description: string | null;
   category: string | null;
   price: number | null;
 }
@@ -30,7 +30,7 @@ export default function Bookmarks() {
       const ids = bookmarks.map((b) => b.course_id);
       const { data } = await supabase
         .from("courses")
-        .select("id,title,slug,thumbnail_url,short_description,category,price")
+        .select("id,title,slug,thumbnail_url,description,category,price")
         .in("id", ids);
       setCourses((data as Course[]) ?? []);
       setLoading(false);
@@ -65,7 +65,7 @@ export default function Bookmarks() {
                 <div className="p-5 flex-1 flex flex-col">
                   {c.category && <p className="text-xs text-primary uppercase mb-1">{c.category}</p>}
                   <Link to={`/courses/${c.slug || c.id}`} className="font-heading font-semibold mb-2 hover:text-primary">{c.title}</Link>
-                  {c.short_description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{c.short_description}</p>}
+                  {c.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{c.description}</p>}
                   <div className="mt-auto flex items-center justify-between">
                     {c.price != null && <span className="font-semibold">₦{Number(c.price).toLocaleString()}</span>}
                     <button onClick={() => toggleBookmark(c.id)} className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
