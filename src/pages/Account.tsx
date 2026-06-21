@@ -29,11 +29,11 @@ export default function Account() {
     if (!user) return;
     (async () => {
       const [{ data: p }, { data: o }, { data: n }] = await Promise.all([
-        supabase.from("profiles").select("full_name,avatar_url,phone").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name,avatar_url").eq("user_id", user.id).maybeSingle(),
         supabase.from("orders").select("id,reference,amount,currency,status,created_at,course_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
         supabase.from("notifications").select("id,title,message,type,link,is_read,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       ]);
-      if (p) setProfile({ full_name: p.full_name, avatar_url: p.avatar_url, phone: (p as any).phone ?? "" });
+      if (p) setProfile({ full_name: p.full_name, avatar_url: p.avatar_url, phone: "" });
       setOrders((o as Order[]) ?? []);
       setNotifs((n as Notif[]) ?? []);
       setLoading(false);
@@ -48,8 +48,7 @@ export default function Account() {
     const { error } = await supabase.from("profiles").update({
       full_name: profile.full_name,
       avatar_url: profile.avatar_url,
-      phone: profile.phone,
-    } as any).eq("user_id", user.id);
+    }).eq("user_id", user.id);
     setSaving(false);
     if (error) toast({ title: "Failed to save", description: error.message, variant: "destructive" });
     else toast({ title: "Profile saved" });
