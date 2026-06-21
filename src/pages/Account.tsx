@@ -12,14 +12,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
-interface Profile { full_name: string | null; avatar_url: string | null; phone: string | null }
+interface Profile { full_name: string | null; avatar_url: string | null }
 interface Order { id: string; reference: string; amount: number; currency: string; status: string; created_at: string; course_id: string }
 interface Notif { id: string; title: string; message: string | null; type: string | null; link: string | null; is_read: boolean; created_at: string }
 
 export default function Account() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [profile, setProfile] = useState<Profile>({ full_name: "", avatar_url: "", phone: "" });
+  const [profile, setProfile] = useState<Profile>({ full_name: "", avatar_url: "" });
   const [orders, setOrders] = useState<Order[]>([]);
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [saving, setSaving] = useState(false);
@@ -33,7 +33,7 @@ export default function Account() {
         supabase.from("orders").select("id,reference,amount,currency,status,created_at,course_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
         supabase.from("notifications").select("id,title,message,type,link,is_read,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
       ]);
-      if (p) setProfile({ full_name: p.full_name, avatar_url: p.avatar_url, phone: "" });
+      if (p) setProfile({ full_name: p.full_name, avatar_url: p.avatar_url });
       setOrders((o as Order[]) ?? []);
       setNotifs((n as Notif[]) ?? []);
       setLoading(false);
@@ -81,10 +81,6 @@ export default function Account() {
               <div>
                 <Label htmlFor="name">Full name</Label>
                 <Input id="name" value={profile.full_name ?? ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" value={profile.phone ?? ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} />
               </div>
               <div>
                 <Label htmlFor="avatar">Avatar URL</Label>
