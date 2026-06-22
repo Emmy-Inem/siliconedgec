@@ -8,6 +8,10 @@ import AdminSEO from "../AdminSEO";
 import AdminCustomScripts from "../AdminCustomScripts";
 import AdminBackupStatus from "../AdminBackupStatus";
 import AdminHelp from "../AdminHelp";
+import AdminWebhookEvents from "../AdminWebhookEvents";
+import AdminBlockedIps from "../AdminBlockedIps";
+import AdminGdprTools from "../AdminGdprTools";
+import AdminMaintenance from "../AdminMaintenance";
 
 export default function AdminSystemHub() {
   return (
@@ -23,6 +27,10 @@ export default function AdminSystemHub() {
         { value: "seo", label: "SEO", content: <AdminSEO /> },
         { value: "custom-scripts", label: "Custom Scripts", content: <AdminCustomScripts /> },
         { value: "backups", label: "Backups", content: <AdminBackupStatus /> },
+        { value: "webhooks", label: "Webhooks", content: <AdminWebhookEvents /> },
+        { value: "blocked-ips", label: "Blocked IPs", content: <AdminBlockedIps /> },
+        { value: "gdpr", label: "GDPR Tools", content: <AdminGdprTools /> },
+        { value: "maintenance", label: "Maintenance", content: <AdminMaintenance /> },
         { value: "help", label: "Help Center", content: <AdminHelp /> },
       ]}
     />
