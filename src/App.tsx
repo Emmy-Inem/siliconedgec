@@ -165,6 +165,7 @@ const App = () => (
           <ScrollToTop />
           <UtmTracker />
           <CartProvider>
+            <MaintenanceBanner />
             <Suspense fallback={<PublicFallback />}>
             <Routes>
               <Route path="/" element={<Index />} />
