@@ -48,7 +48,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
   return (
     <footer ref={ref} className="bg-navy text-hero-muted">
       <div className="container mx-auto px-5 sm:px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <img src={logoLight} alt={settings?.site_name || "Silicon Edge Consulting"} className="h-8 w-auto" />
@@ -75,11 +75,18 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
               <li><Link to="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
               <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
               <li><Link to="/for-businesses" className="hover:text-primary transition-colors">For Businesses</Link></li>
+              <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-heading font-semibold text-hero mb-4">Company &amp; Support</h4>
+            <ul className="space-y-2 text-sm">
               <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
-              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
-              <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
+              <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
               <li><Link to="/trust" className="hover:text-primary transition-colors">Trust &amp; Privacy</Link></li>
               <li>
                 <a
@@ -88,7 +95,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
                 >
-                  Support
+                  WhatsApp Support
                 </a>
               </li>
               {cmsLinks.map((p) => (
