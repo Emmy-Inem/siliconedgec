@@ -57,9 +57,11 @@ const Account = lazy(() => import("./pages/Account"));
 const OrderDetail = lazy(() => import("./pages/OrderDetail"));
 const Refer = lazy(() => import("./pages/Refer"));
 const SearchPage = lazy(() => import("./pages/Search"));
+const CategoryCourses = lazy(() => import("./pages/CategoryCourses"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
+import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -208,6 +210,7 @@ const App = () => (
               <Route path="/orders/:id" element={<OrderDetail />} />
               <Route path="/refer" element={<Refer />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/category/:slug" element={<CategoryCourses />} />
 
               <Route
                 path="/admin"
