@@ -1,10 +1,11 @@
 import { forwardRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, ArrowRight, Facebook, Instagram, Linkedin, Youtube, Music2 } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight, Facebook, Instagram, Linkedin, Youtube, Music2, Loader2 } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // X (Twitter) inline SVG — Lucide doesn't ship the new X mark.
 const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -24,6 +25,7 @@ const SOCIAL_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
   const [email, setEmail] = useState("");
+  const [subBusy, setSubBusy] = useState(false);
   const { data: settings } = useSiteSettings();
 
   const { data: cmsLinks = [] } = useQuery({
@@ -118,18 +120,40 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
           <div>
             <h4 className="font-heading font-semibold text-hero mb-4">Newsletter</h4>
             <p className="text-sm mb-3">Stay up to date with our latest news, receive exclusive deals, and more.</p>
-            <div className="flex gap-2">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!email.includes("@")) return;
+                setSubBusy(true);
+                try {
+                  const { error } = await supabase.from("business_leads").insert({
+                    email: email.trim(),
+                    full_name: "Newsletter Subscriber",
+                    company_name: "Newsletter",
+                    message: "Subscribed via footer newsletter",
+                    source: "newsletter",
+                  } as any);
+                  if (error) throw error;
+                  toast({ title: "Subscribed!", description: "Thanks for joining our list." });
+                  setEmail("");
+                } catch (err: any) {
+                  toast({ title: "Couldn't subscribe", description: err.message, variant: "destructive" });
+                } finally { setSubBusy(false); }
+              }}
+              className="flex gap-2"
+            >
               <input
                 type="email"
                 placeholder="Enter Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
                 className="flex-1 px-3 py-2 rounded-lg bg-navy-light border border-navy-light text-sm text-hero placeholder:text-hero-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <button className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity hover-scale">
-                <ArrowRight className="h-4 w-4" />
+              <button type="submit" disabled={subBusy} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity hover-scale disabled:opacity-50">
+                {subBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
