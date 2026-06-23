@@ -58,6 +58,7 @@ const OrderDetail = lazy(() => import("./pages/OrderDetail"));
 const Refer = lazy(() => import("./pages/Refer"));
 const SearchPage = lazy(() => import("./pages/Search"));
 const CategoryCourses = lazy(() => import("./pages/CategoryCourses"));
+const Legal = lazy(() => import("./pages/Legal"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -212,6 +213,10 @@ const App = () => (
               <Route path="/refer" element={<Refer />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/category/:slug" element={<CategoryCourses />} />
+              <Route path="/terms" element={<Legal />} />
+              <Route path="/privacy" element={<Legal />} />
+              <Route path="/refund-policy" element={<Legal />} />
+              <Route path="/cookie-policy" element={<Legal />} />
 
               <Route
                 path="/admin"
