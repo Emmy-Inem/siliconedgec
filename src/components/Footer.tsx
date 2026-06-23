@@ -71,33 +71,30 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             <h4 className="font-heading font-semibold text-hero mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/courses" className="hover:text-primary transition-colors">Courses</Link></li>
-              <li><Link to="/instructors" className="hover:text-primary transition-colors">Instructors</Link></li>
-              <li><Link to="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
-              <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
-              <li><Link to="/for-businesses" className="hover:text-primary transition-colors">For Businesses</Link></li>
               <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
+              <li><Link to="/paths" className="hover:text-primary transition-colors">Learning Paths</Link></li>
+              <li><Link to="/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
+              <li><Link to="/jobs" className="hover:text-primary transition-colors">Jobs</Link></li>
+              <li><Link to="/for-businesses" className="hover:text-primary transition-colors">For Businesses</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-hero mb-4">Company &amp; Support</h4>
+            <h4 className="font-heading font-semibold text-hero mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
+              <li><Link to="/instructors" className="hover:text-primary transition-colors">Instructors</Link></li>
+              <li><Link to="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
-              <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
-              <li><Link to="/trust" className="hover:text-primary transition-colors">Trust &amp; Privacy</Link></li>
-              <li>
-                <a
-                  href="https://wa.me/447741247592"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  WhatsApp Support
-                </a>
-              </li>
+            </ul>
+            <h4 className="font-heading font-semibold text-hero mt-6 mb-4">Legal &amp; Support</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/help" className="hover:text-primary transition-colors">Help &amp; FAQ</Link></li>
+              <li><Link to="/terms" className="hover:text-primary transition-colors">Terms</Link></li>
+              <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link></li>
+              <li><Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link></li>
+              <li><Link to="/cookie-policy" className="hover:text-primary transition-colors">Cookies</Link></li>
               {cmsLinks.map((p) => (
                 <li key={p.slug}>
                   <Link to={`/p/${p.slug}`} className="hover:text-primary transition-colors">{p.title}</Link>
