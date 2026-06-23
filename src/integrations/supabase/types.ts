@@ -2778,6 +2778,14 @@ export type Database = {
         Returns: boolean
       }
       is_paid_enrolled: { Args: { _course_id: string }; Returns: boolean }
+      is_paid_enrolled_for_assignment: {
+        Args: { _assignment_id: string }
+        Returns: boolean
+      }
+      is_paid_enrolled_for_lesson: {
+        Args: { _lesson_id: string }
+        Returns: boolean
+      }
       resolve_promo_slug: {
         Args: { p_slug: string }
         Returns: {
