@@ -19,6 +19,12 @@ interface Post {
   category: string | null;
   published_at: string | null;
   updated_at?: string;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  seo_keywords?: string[] | null;
+  related_post_ids?: string[] | null;
+  reading_time_minutes?: number | null;
+  tags?: string[] | null;
 }
 
 export default function BlogPost() {
@@ -26,6 +32,7 @@ export default function BlogPost() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [related, setRelated] = useState<Post[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -44,6 +51,22 @@ export default function BlogPost() {
     })();
     return () => { active = false; };
   }, [slug]);
+
+  useEffect(() => {
+    if (!post) return;
+    let active = true;
+    (async () => {
+      let q = supabase.from("blog_posts" as any).select("id,title,slug,excerpt,featured_image_url,category,published_at").eq("status", "published").neq("id", post.id).limit(3);
+      if (post.related_post_ids?.length) {
+        q = supabase.from("blog_posts" as any).select("id,title,slug,excerpt,featured_image_url,category,published_at").eq("status", "published").in("id", post.related_post_ids).limit(3);
+      } else if (post.category) {
+        q = q.eq("category", post.category);
+      }
+      const { data } = await q;
+      if (active) setRelated((data as unknown as Post[]) ?? []);
+    })();
+    return () => { active = false; };
+  }, [post]);
 
   const jsonLd = post && {
     "@context": "https://schema.org",
@@ -65,8 +88,9 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title={post?.title ?? "Blog Post"}
-        description={post?.excerpt ?? undefined}
+        title={post?.meta_title ?? post?.title ?? "Blog Post"}
+        description={post?.meta_description ?? post?.excerpt ?? undefined}
+        keywords={post?.seo_keywords?.join(", ") ?? post?.tags?.join(", ")}
         image={post?.featured_image_url ?? undefined}
         type="article"
         jsonLd={jsonLd ?? undefined}
@@ -99,13 +123,41 @@ export default function BlogPost() {
               {post.published_at && (
                 <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{new Date(post.published_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</span>
               )}
+              {post.reading_time_minutes ? (
+                <span className="inline-flex items-center gap-1.5">{post.reading_time_minutes} min read</span>
+              ) : null}
             </div>
-            {post.featured_image_url && (
-              <img src={post.featured_image_url} alt={post.title} className="w-full rounded-2xl mb-10 border border-border" />
-            )}
             <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary">
               <ReactMarkdown>{post.content ?? ""}</ReactMarkdown>
             </div>
+
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-10 flex flex-wrap gap-2">
+                {post.tags.map((t) => (
+                  <span key={t} className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">#{t}</span>
+                ))}
+              </div>
+            )}
+
+            {related.length > 0 && (
+              <section className="mt-16 pt-10 border-t border-border">
+                <h2 className="font-heading text-2xl font-bold mb-6">Related articles</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {related.map((r) => (
+                    <Link key={r.id} to={`/blog/${r.slug}`} className="group rounded-xl border border-border overflow-hidden hover:border-primary transition-colors bg-card">
+                      {r.featured_image_url && (
+                        <img src={r.featured_image_url} alt={r.title} loading="lazy" className="w-full aspect-video object-cover" />
+                      )}
+                      <div className="p-4">
+                        {r.category && <span className="text-[10px] tracking-widest uppercase text-primary font-semibold">{r.category}</span>}
+                        <h3 className="font-heading text-base font-semibold mt-1 group-hover:text-primary line-clamp-2">{r.title}</h3>
+                        {r.excerpt && <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">{r.excerpt}</p>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div className="mt-14 pt-8 border-t border-border text-center">
               <Button asChild variant="outline"><Link to="/blog"><ArrowLeft className="h-4 w-4 mr-2" /> More articles</Link></Button>
