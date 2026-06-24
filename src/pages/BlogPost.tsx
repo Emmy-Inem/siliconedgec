@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -126,8 +127,8 @@ export default function BlogPost() {
                 <span className="inline-flex items-center gap-1.5">{post.reading_time_minutes} min read</span>
               ) : null}
             </div>
-            <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary">
-              <ReactMarkdown>{post.content ?? ""}</ReactMarkdown>
+            <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary prose-table:w-full prose-th:bg-muted prose-th:text-left prose-th:p-2 prose-td:p-2 prose-td:border prose-th:border prose-table:border-collapse">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content ?? ""}</ReactMarkdown>
             </div>
 
             {post.tags && post.tags.length > 0 && (
