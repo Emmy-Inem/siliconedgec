@@ -90,7 +90,6 @@ export default function BlogPost() {
       <SEO
         title={post?.meta_title ?? post?.title ?? "Blog Post"}
         description={post?.meta_description ?? post?.excerpt ?? undefined}
-        keywords={post?.seo_keywords?.join(", ") ?? post?.tags?.join(", ")}
         image={post?.featured_image_url ?? undefined}
         type="article"
         jsonLd={jsonLd ?? undefined}
