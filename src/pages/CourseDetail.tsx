@@ -792,11 +792,13 @@ export default function CourseDetail() {
                       </div>
                       <div>
                         <h4 className="font-heading font-semibold text-sm">{course.instructor.name}</h4>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Star className="h-3 w-3 fill-accent text-accent" />
-                          <span>{avgRating || course.rating || 4.5}</span>
-                          <span className="ml-0.5">Instructor Rating</span>
-                        </div>
+                        {(avgRating || course.rating) ? (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Star className="h-3 w-3 fill-accent text-accent" />
+                            <span>{(avgRating || course.rating || 0).toFixed(1)}</span>
+                            <span className="ml-0.5">Instructor Rating</span>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
@@ -805,11 +807,11 @@ export default function CourseDetail() {
                         <p className="text-xs text-muted-foreground">Students</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{course.modules.length || 19}</p>
-                        <p className="text-xs text-muted-foreground">Courses</p>
+                        <p className="font-heading font-bold text-lg">{course.modules.length}</p>
+                        <p className="text-xs text-muted-foreground">Modules</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{reviewCount || 4}</p>
+                        <p className="font-heading font-bold text-lg">{reviewCount ?? 0}</p>
                         <p className="text-xs text-muted-foreground">Reviews</p>
                       </div>
                     </div>
