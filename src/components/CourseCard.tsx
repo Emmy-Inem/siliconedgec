@@ -96,10 +96,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
               {(course.rating ?? 0) > 0 && (
                 <StarRating value={course.rating ?? 0} size="sm" showValue />
               )}
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                {(course.students_enrolled ?? 0).toLocaleString()}
-              </span>
+              {(course.students_enrolled ?? 0) >= 5 && (
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  {(course.students_enrolled ?? 0).toLocaleString()}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-border">
