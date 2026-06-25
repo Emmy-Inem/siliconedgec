@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Shield, ShieldCheck, User } from "lucide-react";
+import { Shield, ShieldCheck, User, GraduationCap, Headset, Wallet, PencilLine } from "lucide-react";
 import { logAdminActivity } from "@/lib/admin-logger";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -18,6 +18,10 @@ interface ProfileWithRole extends Profile {
 const ROLE_BADGE: Record<string, { icon: typeof Shield; class: string; label: string }> = {
   admin: { icon: ShieldCheck, label: "Admin", class: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
   moderator: { icon: Shield, label: "Moderator", class: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  instructor: { icon: GraduationCap, label: "Instructor", class: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+  support: { icon: Headset, label: "Support", class: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400" },
+  finance: { icon: Wallet, label: "Finance", class: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  content_editor: { icon: PencilLine, label: "Content Editor", class: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
   user: { icon: User, label: "User", class: "bg-muted text-muted-foreground" },
 };
 
@@ -77,9 +81,9 @@ export default function AdminUsers() {
       if (form.role !== currentRole) {
         await supabase.from("user_roles").delete().eq("user_id", editing.user_id);
         if (form.role !== "user") {
-          const { error: roleErr } = await supabase.from("user_roles").insert({
+          const { error: roleErr } = await (supabase.from("user_roles") as any).insert({
             user_id: editing.user_id,
-            role: form.role as "admin" | "moderator" | "user",
+            role: form.role as any,
           });
           if (roleErr) throw roleErr;
         }
@@ -148,8 +152,8 @@ export default function AdminUsers() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1">Role</label>
-              <div className="flex gap-2">
-                {(["user", "moderator", "admin"] as const).map((r) => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(["user", "moderator", "instructor", "support", "finance", "content_editor", "admin"] as const).map((r) => {
                   const badge = ROLE_BADGE[r];
                   const Icon = badge.icon;
                   return (
@@ -157,17 +161,20 @@ export default function AdminUsers() {
                       key={r}
                       type="button"
                       onClick={() => setForm({ ...form, role: r })}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
                         form.role === r
                           ? "border-primary bg-primary/10 text-foreground ring-2 ring-primary/20"
                           : "border-border bg-background text-muted-foreground hover:border-primary/30"
                       }`}
                     >
-                      <Icon className="h-3.5 w-3.5" /> {badge.label}
+                      <Icon className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{badge.label}</span>
                     </button>
                   );
                 })}
               </div>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                Roles control admin-panel access. Edit per-route permissions in System → Permissions.
+              </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>

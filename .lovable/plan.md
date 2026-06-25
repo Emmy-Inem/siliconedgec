@@ -1,115 +1,99 @@
+## What's already done (database)
 
-# Gap Audit — Missing Pages & Admin Functionality
+Two migrations have been applied:
 
-Based on a scan of `src/pages/`, `src/pages/admin/`, and the routes registered in `src/App.tsx`, here is what is **still missing** (or thin) for a production-grade LMS + commerce + jobs platform like Silicon Edge.
+1. Added 4 new roles to the `app_role` enum: `instructor`, `support`, `finance`, `content_editor` (in addition to existing `admin`, `moderator`, `user`).
+2. Created `role_permissions(role, route, allowed)` matrix table — admin-managed, readable by all signed-in users; seeded with sensible defaults per role.
+3. Created `finance_refunds` and `finance_payouts` tables, restricted to `admin` + `finance` via `has_any_role` helper.
+4. Added DB helpers: `has_any_role(uuid, app_role[])`, `role_can_access(role, route)`.
 
----
+## What this plan builds (code)
 
-## A. Public / Marketing pages that are missing
+### A. Role-Based Access Control overhaul
 
-| # | Page | Why it matters |
-|---|------|---------------|
-| 1 | `/about` (About / Company / Mission / Team) | Trust + SEO. Currently only `/trust`. No story, no team bios surfaced. |
-| 2 | `/contact` | No dedicated contact page with form, address, support email, hours. |
-| 3 | `/blog` index + `/blog/:slug` | `AdminBlog` exists and `blog_posts` table exists, but **no public blog routes**. Content is being created with nowhere to read it. |
-| 4 | `/instructors` (index) | `/instructors/:id` exists, but no directory page to discover them. |
-| 5 | `/testimonials` or `/success-stories` | `testimonials` table exists, no public showcase page. |
-| 6 | `/faq` (standalone) | FAQs are scattered inside Pricing / Trust / Business. No global FAQ hub. |
-| 7 | `/terms`, `/privacy`, `/refund-policy`, `/cookie-policy` | Legal pages — required for payments (Paystack/Stripe), GDPR, and app store / ad trust. Currently only `/trust`. |
-| 8 | `/sitemap` (HTML) | Have XML sitemap, no human sitemap page. |
-| 9 | `/blog/category/:slug` & `/blog/tag/:slug` | Blog taxonomy navigation. |
-| 10 | `/search` (global site search results page) | No search results route. |
-| 11 | `/categories/:slug` and `/tags/:slug` for courses | Course taxonomy landing pages — strong SEO surfaces. |
-| 12 | `/compare` (course/path compare) | Helpful for high-ticket decisions. |
-| 13 | 410 / `gone_urls` rendered page | Table exists; no public handler returning proper 410 page. |
-| 14 | `/maintenance` and a real branded `500` error boundary page | Only NotFound exists. |
+**`src/lib/admin-permissions.ts`** — rewrite:
+- Export `StaffRole` union covering all 6 staff roles, plus `ALL_STAFF_ROLES`, `ROLE_RANK`, `ROLE_LABEL`.
+- Replace hardcoded `MODERATOR_ROUTES` allowlist with a hybrid model: hardcoded fallback per role + DB-loaded matrix merged on top via `setRolePermissionsMatrix()`.
+- `canAccessRoute(role, path)` consults the merged set; admin bypasses; instructor/moderator keep dynamic `/admin/courses/:id/*` access.
+- `getAccessibleSections(role)` returns the sidebar sections each role can see (e.g. finance → Workspace + Finance + Engagement).
 
-## B. Authenticated student-area pages missing
+**`src/hooks/useRolePermissions.ts`** (new) — loads the matrix via React Query and calls `setRolePermissionsMatrix()` on success so `canAccessRoute` is reactive.
 
-| # | Page | Notes |
-|---|------|------|
-| 15 | `/account/profile` (edit profile, avatar, bio, password, 2FA) | Profile editing surface not present. |
-| 16 | `/account/orders` & `/account/orders/:id` (invoice/receipt download) | Orders table exists; student-facing order history missing. |
-| 17 | `/account/billing` (payment methods, invoices, tax info) | Not present. |
-| 18 | `/account/notifications` (preferences + history) | Notifications table exists; no preference center. |
-| 19 | `/account/security` (sessions, login history, password, 2FA) | `AdminSessions` + `login_attempts` exist for admin only. |
-| 20 | `/wishlist` | `AdminWishlistInsights` exists; **no student wishlist page**. |
-| 21 | `/bookmarks` | `bookmarks` table exists; no listing UI. |
-| 22 | `/my-certificates` | Have `/certificates` public page, but no personal earned-certificates index. |
-| 23 | `/my-learning-paths` / progress on paths | Path detail exists, no enrolled-paths view. |
-| 24 | `/messages` / `/inbox` | `chat_conversations` table; no student inbox UI confirmed. |
-| 25 | `/refer` (student referral dashboard) | `influencer_referrals` is admin only. |
-| 26 | `/jobs/applied` (student application history) | `job_applications` table; no student view. |
+**`src/contexts/AuthContext.tsx`** — replace the two-step `admin`/`moderator` probe with a single query against `user_roles` for the current user; pick the highest-ranked role via `ROLE_RANK` and keep `isAdmin` true for any staff role (so existing `RequireAdmin` gates still allow staff into `/admin`).
 
-## C. Admin functionality gaps
+**`src/pages/admin/AdminLayout.tsx`** — call `useRolePermissions()` at mount so the matrix is in place before the route guard runs.
 
-Existing admin surfaces are extensive, but the following are missing or incomplete:
+**`src/components/admin/AdminSidebar.tsx`** — add a `Finance` section with `Finance Hub` link, filter sections by `getAccessibleSections`, also call `useRolePermissions()`.
 
-1. **Role & Permission management UI** — `user_roles` enum exists, but no UI to assign/revoke `admin`/`moderator`/`user` per account from `AdminUsers`.
-2. **Refunds & disputes workflow** — `AdminOrders` exists, but no refund issuance, partial refund, chargeback log, or Paystack/Stripe refund actions.
-3. **Coupons / Promo codes UI** — `promo_codes` table (21 cols!) has no dedicated admin CRUD page; only referenced via influencer marketing.
-4. **Tax / VAT settings** per region.
-5. **Email deliverability dashboard** — bounces, complaints, opens, unsubscribes; `email_announcements` lacks analytics view.
-6. **Webhook events viewer** — `webhook_events` table exists; no admin inspector / replay UI (only `AdminAuthReplay`).
-7. **Knowledge Base admin** — `kb_articles`, `kb_categories` tables exist; no admin CRUD page.
-8. **CMS pages versioning / drafts / preview** — `AdminPages` exists; revision history and unpublished preview missing.
-9. **Blog editor enhancements** — categories, scheduling, SEO per post, OpenGraph image picker (verify in `AdminBlog`).
-10. **Bulk operations** — bulk enroll, bulk email, bulk certificate issuance, CSV import for students/courses/jobs.
-11. **Reports & exports** — revenue report, refunds report, enrollments by cohort, tax report, instructor payout report. (`AdminAnalytics` likely doesn't cover finance reports.)
-12. **Instructor payouts / revenue share** — no payouts schema or admin screen.
-13. **Discussion / Q&A moderation tools** — flagging, ban, soft-delete; `lesson_comments` has no moderation UI.
-14. **Reviews moderation** — approve / reject / reply (verify in `AdminReviews`).
-15. **Spam / abuse / IP block UI** — `blocked_ips` table exists, no admin CRUD page.
-16. **GDPR tooling** — user data export (DSAR) and account deletion request handling.
-17. **Audit log search & export** — `AdminActivityLog` likely lacks date-range export.
-18. **Feature flags / A-B test toggles**.
-19. **Cohorts / batches** management for live classes (registration windows, capacity, waitlist).
-20. **Waitlists** for sold-out / not-yet-launched courses.
-21. **Assignment grading rubrics & gradebook** — submissions exist, no gradebook view per course / per student.
-22. **Quiz question bank** with tagging & reuse across quizzes.
-23. **Proctoring / attempt review** for quizzes.
-24. **Live class attendance & recordings library** — recordings index, attendance export.
-25. **Scheduled / drip content rules** for lessons.
-26. **Backup restore UI** — `AdminBackupStatus` shows status; trigger/restore/download buttons missing.
-27. **Maintenance mode toggle** in `AdminSettings`.
-28. **Translations / i18n admin** — string overrides per locale.
-29. **Affiliate payout management** (separate from influencer link tracking).
-30. **Push notifications (web push) admin** — only in-app + email exist.
-31. **Onboarding checklist** for new admins on first login.
-32. **Global search inside admin** (cmd-K) across courses, users, orders.
+**`src/pages/admin/AdminUsers.tsx`** — replace the 3-button role selector with a `<Select>` listing all 6 staff roles + `user`; update the role badge map and column rendering accordingly; show a small description for each role.
 
-## D. Cross-cutting / quality gaps
+### B. Permission Matrix UI
 
-- No `robots`-aware OG image generator per route (open-graph default falls back).
-- No RSS feed (`/rss.xml`) for blog — easy SEO win.
-- No `/api/health` or status badge surfaced anywhere.
-- No cookie consent banner (visible) → GDPR risk if EU traffic.
-- Newsletter signup endpoint + admin subscriber list missing.
-- No `/changelog` or `/roadmap` page (optional but valued).
-- Course detail SEO: BreadcrumbList JSON-LD and Course JSON-LD verification needed.
-- 404 page does not link to popular / recent courses.
+**`src/pages/admin/AdminPermissions.tsx`** (new):
+- Table layout: rows = routes (grouped: Workspace, LMS, Engagement, Commerce, Finance, Content, System), columns = the 5 non-admin staff roles.
+- Each cell is a `<Switch>` bound to a row in `role_permissions`.
+- Bulk toggle "Allow all in section" per row group.
+- "Reset to defaults" button re-seeds the recommended set.
+- All mutations gated by RLS (admin only).
 
----
+Wired as a new tab in `AdminSystemHub` ("Permissions") so admins reach it via `/admin/system?tab=permissions`.
 
-## Proposed scope for the next build pass
+### C. Finance Hub
 
-Because this is a long list, propose tackling it in **three prioritized waves**. I can implement any subset you approve:
+**`src/pages/admin/AdminFinanceLedger.tsx`** (new) — Revenue ledger built from `orders`:
+- KPIs: gross revenue, net revenue (gross − refunds), VAT collected (configurable rate from `site_settings`, default 7.5% NG VAT shown as estimate), commission paid, refunds total.
+- Monthly revenue + refunds bar chart (12 months).
+- Top 10 courses by net revenue.
+- CSV export.
 
-**Wave 1 — Legal & trust essentials (blocks payments/SEO):**
-- `/terms`, `/privacy`, `/refund-policy`, `/cookie-policy`
-- Cookie consent banner
-- Public `/blog` + `/blog/:slug` (data already exists)
-- `/contact` + `/about`
-- Admin: Role management UI in `AdminUsers`, Promo codes CRUD page
+**`src/pages/admin/AdminRefunds.tsx`** (new) — `AdminCrudTable` over `finance_refunds`:
+- Columns: order ref, customer, amount, status, reason, processed by, date.
+- Create/edit dialog with order picker (search recent orders), amount, reason, status.
+- "Mark processed" quick action stamps `processed_at` + `processed_by`.
 
-**Wave 2 — Student account & commerce depth:**
-- `/account/profile`, `/account/orders` (+ invoices), `/wishlist`, `/bookmarks`, `/my-certificates`, `/account/notifications`
-- Admin: Refunds, Webhook events viewer, Reviews moderation polish, Blocked IPs UI, GDPR export/delete
+**`src/pages/admin/AdminPayouts.tsx`** (new) — `AdminCrudTable` over `finance_payouts`:
+- Columns: payee, type (instructor/influencer/vendor), period, amount, method, status, reference.
+- Create/edit dialog with payee picker (instructors + influencer promo codes).
+- Bulk export to CSV.
 
-**Wave 3 — LMS depth & ops:**
-- Instructors index, Testimonials page, Categories/Tags landing pages, global Search page, 410 handler, RSS feed
-- Admin: Gradebook, Quiz question bank, Live class attendance & recordings, Instructor payouts, Maintenance toggle, Backup restore, Admin cmd-K
+**`src/pages/admin/AdminTaxReport.tsx`** (new) — Tax breakdown by month:
+- Reads paid orders for the selected year.
+- Shows gross, taxable base, tax (rate configurable), exempt totals.
+- Per-month table + annual summary, CSV export.
 
----
+**`src/pages/admin/hubs/AdminFinanceHub.tsx`** (new) — `HubShell` with tabs:
+1. Ledger
+2. Refunds
+3. Payouts
+4. Tax Report
 
-**Which wave (or specific items) should I implement first?** Once you pick, I'll switch to build mode and ship them.
+### D. Wiring (`src/App.tsx`)
+
+- Lazy-import `AdminFinanceHub` and `AdminPermissions`.
+- Add `<Route path="finance" element={<AdminFinanceHub />} />` under `/admin`.
+- Add legacy redirects `/admin/refunds`, `/admin/payouts`, `/admin/tax`, `/admin/permissions` → finance/system tabs.
+
+### E. Public count accuracy fixes
+
+**`src/pages/Index.tsx`** — drop the `Math.max(..., 2000)` floor; show real student/course/instructor counts. If a count is 0, hide that stat tile entirely (don't fake "Students worldwide: 0+"). Keep admin override path (`home?.stat_students`) so the team can still set a hero number explicitly.
+
+**`src/components/CourseCard.tsx`** — only render the `Users` enrolled badge when `students_enrolled >= 5`; otherwise hide.
+
+**`src/pages/CourseDetail.tsx`** — same threshold for the "X Enrolled" line; hide instead of showing "0 Enrolled".
+
+**`src/pages/CourseDetail.tsx`** (JSON-LD) — keep `ratingCount` truthful: only emit `aggregateRating` JSON-LD when there is a real review count (not faked from enrolled).
+
+### F. Admin Activity Log entries
+
+Every role change, permission-matrix change, refund status change, and payout status change writes to `admin_activity_log` via `logAdminActivity()`.
+
+## Out of scope (deliberately)
+
+- Marketing Analytics file (`AdminMarketingAnalytics.tsx`) is already careful and channel-attribution-aware — no changes.
+- Existing courses' cached `students_enrolled` column stays as-is; the sync trigger already maintains it. We just stop showing it when it's 0.
+
+## Risks / notes
+
+- Adding enum values then using them in the same migration is illegal in Postgres — handled by splitting into two migrations (already done).
+- `RequireAdmin.isAdmin` currently means "admin or moderator". After the AuthContext change it will mean "any staff role", so the new roles can reach `/admin`. The route-level `canAccessRoute` guard inside `AdminLayout` then narrows what each role sees.
+- The matrix is permissive-merge with hardcoded fallback so a corrupted/empty matrix never locks staff out of their baseline routes.

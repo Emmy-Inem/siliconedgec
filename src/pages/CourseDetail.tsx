@@ -396,10 +396,10 @@ export default function CourseDetail() {
             priceCurrency: (course as any).currency ?? "NGN",
             availability: "https://schema.org/InStock",
           },
-          aggregateRating: course.rating ? {
+          aggregateRating: (course.rating && (reviewCount ?? 0) > 0) ? {
             "@type": "AggregateRating",
             ratingValue: course.rating,
-            ratingCount: Math.max(course.students_enrolled ?? 1, 1),
+            ratingCount: reviewCount,
           } : undefined,
         }}
       />
@@ -433,14 +433,16 @@ export default function CourseDetail() {
                 <Clock className="h-4 w-4" />
                 {hours > 0 && `${hours} hours`} {minutes > 0 && `${minutes} minutes`}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                {(course.students_enrolled ?? 0)} Enrolled
-              </span>
+              {(course.students_enrolled ?? 0) >= 5 && (
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4" />
+                  {(course.students_enrolled ?? 0)} Enrolled
+                </span>
+              )}
               {(avgRating > 0 || (course.rating ?? 0) > 0) && (
                 <span className="flex items-center gap-1.5">
                   <StarRating value={avgRating || course.rating || 0} size="md" />
-                  <span>{(avgRating || course.rating || 0).toFixed(1)} ({reviewCount || 4})</span>
+                  <span>{(avgRating || course.rating || 0).toFixed(1)}{reviewCount ? ` (${reviewCount})` : ""}</span>
                 </span>
               )}
               <span className="flex items-center gap-1.5">
@@ -790,11 +792,13 @@ export default function CourseDetail() {
                       </div>
                       <div>
                         <h4 className="font-heading font-semibold text-sm">{course.instructor.name}</h4>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Star className="h-3 w-3 fill-accent text-accent" />
-                          <span>{avgRating || course.rating || 4.5}</span>
-                          <span className="ml-0.5">Instructor Rating</span>
-                        </div>
+                        {(avgRating || course.rating) ? (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Star className="h-3 w-3 fill-accent text-accent" />
+                            <span>{(avgRating || course.rating || 0).toFixed(1)}</span>
+                            <span className="ml-0.5">Instructor Rating</span>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
@@ -803,11 +807,11 @@ export default function CourseDetail() {
                         <p className="text-xs text-muted-foreground">Students</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{course.modules.length || 19}</p>
-                        <p className="text-xs text-muted-foreground">Courses</p>
+                        <p className="font-heading font-bold text-lg">{course.modules.length}</p>
+                        <p className="text-xs text-muted-foreground">Modules</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{reviewCount || 4}</p>
+                        <p className="font-heading font-bold text-lg">{reviewCount ?? 0}</p>
                         <p className="text-xs text-muted-foreground">Reviews</p>
                       </div>
                     </div>

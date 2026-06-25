@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, ArrowLeft, ChevronLeft, ChevronRight,
   BarChart3, MessageSquare, ShoppingBag, Briefcase, FileText, Settings,
-  ClipboardCheck, Menu, X
+  ClipboardCheck, Menu, X, Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -34,6 +34,12 @@ const sections = [
       { label: "Communication", href: "/admin/communication", icon: MessageSquare },
       { label: "Commerce", href: "/admin/commerce", icon: ShoppingBag },
       { label: "Jobs", href: "/admin/jobs-hub", icon: Briefcase },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { label: "Finance", href: "/admin/finance", icon: Wallet },
     ],
   },
   {

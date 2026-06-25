@@ -129,6 +129,7 @@ const AdminCommerceHub = lazy(() => import("./pages/admin/hubs/AdminCommerceHub"
 const AdminJobsHub = lazy(() => import("./pages/admin/hubs/AdminJobsHub"));
 const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"));
 const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
+const AdminFinanceHub = lazy(() => import("./pages/admin/hubs/AdminFinanceHub"));
 
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
@@ -240,6 +241,11 @@ const App = () => (
                 <Route path="jobs-hub" element={<AdminJobsHub />} />
                 <Route path="content-hub" element={<AdminContentHub />} />
                 <Route path="system" element={<AdminSystemHub />} />
+                <Route path="finance" element={<AdminFinanceHub />} />
+                <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
+                <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />
+                <Route path="finance/tax" element={<Navigate to="/admin/finance?tab=tax" replace />} />
+                <Route path="permissions" element={<Navigate to="/admin/system?tab=permissions" replace />} />
 
                 {/* Course builder & module editor (standalone wizard) */}
                 <Route path="courses/new" element={<AdminCourseCreate />} />

@@ -4,7 +4,8 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 import { AdminSearch } from "@/components/admin/AdminSearch";
 import { useAuth } from "@/contexts/AuthContext";
-import { canAccessRoute } from "@/lib/admin-permissions";
+import { canAccessRoute, ROLE_LABEL } from "@/lib/admin-permissions";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -13,6 +14,9 @@ export default function AdminLayout() {
   const { user, adminRole, signOut } = useAuth();
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
+
+  // Eagerly load the permission matrix so canAccessRoute reflects DB edits.
+  useRolePermissions();
 
   // Reset main content scroll on route change. Do NOT scroll the sidebar —
   // it should preserve the admin's place in the navigation.
@@ -33,8 +37,8 @@ export default function AdminLayout() {
           <div className="flex items-center gap-2 min-w-0">
             <Shield className="h-4 w-4 text-primary" />
             <h2 className="font-heading font-semibold text-sm hidden sm:block">Admin Panel</h2>
-            {adminRole === "moderator" && (
-              <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium hidden sm:inline">Moderator</span>
+            {adminRole && adminRole !== "admin" && (
+              <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium hidden sm:inline">{ROLE_LABEL[adminRole]}</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">

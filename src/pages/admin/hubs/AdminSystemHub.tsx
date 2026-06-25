@@ -12,6 +12,7 @@ import AdminWebhookEvents from "../AdminWebhookEvents";
 import AdminBlockedIps from "../AdminBlockedIps";
 import AdminGdprTools from "../AdminGdprTools";
 import AdminMaintenance from "../AdminMaintenance";
+import AdminPermissions from "../AdminPermissions";
 
 export default function AdminSystemHub() {
   return (
@@ -20,6 +21,7 @@ export default function AdminSystemHub() {
       description="Users, security, SEO and platform settings"
       tabs={[
         { value: "users", label: "Users & Roles", content: <AdminUsers /> },
+        { value: "permissions", label: "Permissions", content: <AdminPermissions /> },
         { value: "settings", label: "Settings", content: <AdminSettings /> },
         { value: "login-security", label: "Login Security", content: <AdminLoginSecurity /> },
         { value: "sessions", label: "Active Sessions", content: <AdminSessions /> },
