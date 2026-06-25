@@ -635,10 +635,10 @@ export default function Index() {
         supabase.from("instructors").select("id", { count: "exact", head: true }),
       ]);
       return {
-        students: Math.max((students.data as number | null) ?? 0, 2000),
-        courses: Math.max(courses.count ?? 0, 24),
-        instructors: Math.max(instructors.count ?? 0, 30),
-        countries: 18,
+        students: (students.data as number | null) ?? 0,
+        courses: courses.count ?? 0,
+        instructors: instructors.count ?? 0,
+        countries: 0,
       };
     },
   });
@@ -650,10 +650,10 @@ export default function Index() {
     return Number.isFinite(n) && n > 0 ? n : null;
   };
   const displayStats = {
-    students: parseOverride(home?.stat_students) ?? stats?.students ?? 2000,
-    courses: parseOverride(home?.stat_courses) ?? stats?.courses ?? 24,
-    instructors: parseOverride(home?.stat_instructors) ?? stats?.instructors ?? 30,
-    countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 18,
+    students: parseOverride(home?.stat_students) ?? stats?.students ?? 0,
+    courses: parseOverride(home?.stat_courses) ?? stats?.courses ?? 0,
+    instructors: parseOverride(home?.stat_instructors) ?? stats?.instructors ?? 0,
+    countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 0,
   };
 
   const baseInstructors = (dbInstructors && dbInstructors.length > 0)
