@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import type { AdminRole } from "@/lib/admin-permissions";
+import { AdminRole, ROLE_RANK, StaffRole } from "@/lib/admin-permissions";
 
 interface AuthContextType {
   user: User | null;
@@ -29,25 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminRole = async (userId: string) => {
     try {
-      // Check admin first
-      const { data: isAdm } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: "admin",
-      });
-      if (isAdm) {
-        setAdminRole("admin");
+      // Single query against user_roles — pull every role for the user, then
+      // pick the highest-priority one via ROLE_RANK.
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      if (error || !data || data.length === 0) {
+        setAdminRole(null);
         return;
       }
-      // Check moderator
-      const { data: isMod } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: "moderator",
-      });
-      if (isMod) {
-        setAdminRole("moderator");
+      const roles = data
+        .map((r) => r.role as StaffRole | "user")
+        .filter((r): r is StaffRole => r in ROLE_RANK);
+      if (roles.length === 0) {
+        setAdminRole(null);
         return;
       }
-      setAdminRole(null);
+      roles.sort((a, b) => ROLE_RANK[b] - ROLE_RANK[a]);
+      setAdminRole(roles[0]);
     } catch {
       setAdminRole(null);
     }
@@ -102,7 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  const isAdmin = adminRole === "admin" || adminRole === "moderator";
+  // isAdmin = "any staff role" — gates entry to /admin. The route-level
+  // canAccessRoute guard in AdminLayout then narrows what each role sees.
+  const isAdmin = adminRole !== null;
 
   return (
     <AuthContext.Provider value={{ user, session, loading, isAdmin, adminRole, signOut }}>
