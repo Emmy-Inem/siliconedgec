@@ -81,9 +81,9 @@ export default function AdminUsers() {
       if (form.role !== currentRole) {
         await supabase.from("user_roles").delete().eq("user_id", editing.user_id);
         if (form.role !== "user") {
-          const { error: roleErr } = await supabase.from("user_roles").insert({
+          const { error: roleErr } = await (supabase.from("user_roles") as any).insert({
             user_id: editing.user_id,
-            role: form.role as "admin" | "moderator" | "user",
+            role: form.role as any,
           });
           if (roleErr) throw roleErr;
         }
