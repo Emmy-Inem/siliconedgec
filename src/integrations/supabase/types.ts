@@ -1064,6 +1064,119 @@ export type Database = {
           },
         ]
       }
+      finance_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          method: string | null
+          notes: string | null
+          payee_name: string
+          payee_type: string
+          payee_user_id: string | null
+          period_end: string | null
+          period_start: string | null
+          processed_at: string | null
+          processed_by: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          payee_name: string
+          payee_type?: string
+          payee_user_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          payee_name?: string
+          payee_type?: string
+          payee_user_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      finance_refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          order_id: string | null
+          processed_at: string | null
+          processed_by: string | null
+          provider_reference: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          provider_reference?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          provider_reference?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gone_urls: {
         Row: {
           created_at: string
@@ -2406,6 +2519,27 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          allowed: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at: string
+        }
+        Insert: {
+          allowed?: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at?: string
+        }
+        Update: {
+          allowed?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          route?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_backups: {
         Row: {
           created_at: string
@@ -2773,6 +2907,13 @@ export type Database = {
           score: number
         }[]
       }
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2815,6 +2956,10 @@ export type Database = {
           utm_medium: string
           utm_source: string
         }[]
+      }
+      role_can_access: {
+        Args: { _role: Database["public"]["Enums"]["app_role"]; _route: string }
+        Returns: boolean
       }
       slugify: { Args: { _text: string }; Returns: string }
       unique_course_slug: {
