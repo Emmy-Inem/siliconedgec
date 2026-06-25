@@ -864,7 +864,9 @@ export default function Index() {
                 ))}
               </div>
               <span className="text-[11px] sm:text-sm font-medium text-foreground whitespace-nowrap">
-                Join <span className="text-primary font-bold">{displayStats.students.toLocaleString()}+</span> learners building today
+                {displayStats.students > 0
+                  ? <>Join <span className="text-primary font-bold">{displayStats.students.toLocaleString()}+</span> learners building today</>
+                  : <>Join our growing community of learners building today</>}
               </span>
             </motion.div>
 
