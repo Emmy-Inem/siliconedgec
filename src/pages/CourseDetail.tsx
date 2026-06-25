@@ -396,10 +396,10 @@ export default function CourseDetail() {
             priceCurrency: (course as any).currency ?? "NGN",
             availability: "https://schema.org/InStock",
           },
-          aggregateRating: course.rating ? {
+          aggregateRating: (course.rating && (reviewCount ?? 0) > 0) ? {
             "@type": "AggregateRating",
             ratingValue: course.rating,
-            ratingCount: Math.max(course.students_enrolled ?? 1, 1),
+            ratingCount: reviewCount,
           } : undefined,
         }}
       />
@@ -433,14 +433,16 @@ export default function CourseDetail() {
                 <Clock className="h-4 w-4" />
                 {hours > 0 && `${hours} hours`} {minutes > 0 && `${minutes} minutes`}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                {(course.students_enrolled ?? 0)} Enrolled
-              </span>
+              {(course.students_enrolled ?? 0) >= 5 && (
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4" />
+                  {(course.students_enrolled ?? 0)} Enrolled
+                </span>
+              )}
               {(avgRating > 0 || (course.rating ?? 0) > 0) && (
                 <span className="flex items-center gap-1.5">
                   <StarRating value={avgRating || course.rating || 0} size="md" />
-                  <span>{(avgRating || course.rating || 0).toFixed(1)} ({reviewCount || 4})</span>
+                  <span>{(avgRating || course.rating || 0).toFixed(1)}{reviewCount ? ` (${reviewCount})` : ""}</span>
                 </span>
               )}
               <span className="flex items-center gap-1.5">
