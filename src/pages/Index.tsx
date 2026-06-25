@@ -914,7 +914,7 @@ export default function Index() {
               { icon: BookOpen, label: "Live courses", target: displayStats.courses, suffix: "" },
               { icon: GraduationCap, label: "Industry mentors", target: displayStats.instructors, suffix: "+" },
               { icon: Globe2, label: "Countries reached", target: displayStats.countries, suffix: "" },
-            ].map((s) => (
+            ].filter((s) => s.target > 0).map((s) => (
               <motion.div
                 key={s.label}
                 variants={staggerItem}
