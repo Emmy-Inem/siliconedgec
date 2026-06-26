@@ -244,6 +244,19 @@ export default function AdminOverview() {
         ))}
       </div>
 
+      {/* Reconciliation — every figure on the cards is recomputed live from
+          the source tables (no cached counters) so the numbers can be
+          audited against the database at a glance. */}
+      <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-xs">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <span className="font-semibold uppercase tracking-wider text-muted-foreground">Reconciliation</span>
+          <span className="text-muted-foreground">
+            profiles = <b>{stats?.users ?? 0}</b> · enrollments = paid <b>{stats?.paidEnrollments ?? 0}</b> + free <b>{stats?.freeEnrollments ?? 0}</b> = <b>{stats?.enrollments ?? 0}</b> · webinar registrations = <b>{stats?.registrations ?? 0}</b> · business leads = <b>{stats?.businessLeads ?? 0}</b>.
+            {" "}Counts are fetched live from Supabase with full pagination.
+          </span>
+        </div>
+      </div>
+
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard title="Enrollment Trends" subtitle="Last 6 months" icon={TrendingUp} delay={0.1}>
