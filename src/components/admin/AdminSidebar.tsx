@@ -4,6 +4,7 @@ import {
   BarChart3, MessageSquare, ShoppingBag, Briefcase, FileText, Settings,
   ClipboardCheck, Menu, X, Wallet
 } from "lucide-react";
+import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +27,7 @@ const sections = [
       { label: "Courses", href: "/admin/courses", icon: BookOpen },
       { label: "Assessments", href: "/admin/assessments", icon: ClipboardCheck },
       { label: "People", href: "/admin/people", icon: Users },
+      { label: "Cohorts", href: "/admin/cohorts", icon: Users2 },
     ],
   },
   {

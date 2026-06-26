@@ -59,6 +59,8 @@ const Refer = lazy(() => import("./pages/Refer"));
 const SearchPage = lazy(() => import("./pages/Search"));
 const CategoryCourses = lazy(() => import("./pages/CategoryCourses"));
 const Legal = lazy(() => import("./pages/Legal"));
+const Cohorts = lazy(() => import("./pages/Cohorts"));
+const CohortSpace = lazy(() => import("./pages/CohortSpace"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -130,6 +132,7 @@ const AdminJobsHub = lazy(() => import("./pages/admin/hubs/AdminJobsHub"));
 const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"));
 const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
 const AdminFinanceHub = lazy(() => import("./pages/admin/hubs/AdminFinanceHub"));
+const AdminCohorts = lazy(() => import("./pages/admin/AdminCohorts"));
 
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
@@ -214,6 +217,8 @@ const App = () => (
               <Route path="/refer" element={<Refer />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/category/:slug" element={<CategoryCourses />} />
+              <Route path="/cohorts" element={<Cohorts />} />
+              <Route path="/cohorts/:id" element={<CohortSpace />} />
               <Route path="/terms" element={<Legal />} />
               <Route path="/privacy" element={<Legal />} />
               <Route path="/refund-policy" element={<Legal />} />
@@ -242,6 +247,7 @@ const App = () => (
                 <Route path="content-hub" element={<AdminContentHub />} />
                 <Route path="system" element={<AdminSystemHub />} />
                 <Route path="finance" element={<AdminFinanceHub />} />
+                <Route path="cohorts" element={<AdminCohorts />} />
                 <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
                 <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />
                 <Route path="finance/tax" element={<Navigate to="/admin/finance?tab=tax" replace />} />

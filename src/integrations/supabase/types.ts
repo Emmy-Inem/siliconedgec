@@ -675,6 +675,183 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_members: {
+        Row: {
+          cohort_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_members_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_posts: {
+        Row: {
+          cohort_id: string
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_posts_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_posts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_sessions: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          meeting_url: string | null
+          scheduled_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          meeting_url?: string | null
+          scheduled_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          meeting_url?: string | null
+          scheduled_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_sessions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohorts: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          slug: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          slug?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohorts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_announcements: {
         Row: {
           content: string
@@ -2927,6 +3104,10 @@ export type Database = {
           clicks: number
           promo_code_id: string
         }[]
+      }
+      is_cohort_member: {
+        Args: { _cohort_id: string; _user_id: string }
+        Returns: boolean
       }
       is_ip_blocked: { Args: { _ip: string }; Returns: boolean }
       is_login_locked: {
