@@ -47,11 +47,13 @@ const FALLBACK_ALLOWED: Record<Exclude<StaffRole, "admin">, string[]> = {
     "/admin/qna", "/admin/announcements", "/admin/testimonials",
     "/admin/instructors", "/admin/live-classes", "/admin/assessments",
     "/admin/people", "/admin/communication", "/admin/content-hub",
+    "/admin/cohorts",
   ],
   instructor: [
     "/admin", "/admin/courses", "/admin/assessments", "/admin/quizzes",
     "/admin/quiz-attempts", "/admin/qna", "/admin/students",
     "/admin/live-classes", "/admin/announcements", "/admin/people",
+    "/admin/cohorts",
   ],
   support: [
     "/admin", "/admin/chat", "/admin/leads-hub", "/admin/business-leads",
