@@ -436,19 +436,22 @@ export default function AdminMarketingAnalytics() {
         </select>
       </div>
 
-      {/* KPIs — webinar regs and course enrollments are split so the same
-          person never gets counted twice across both buckets. */}
+      {/* KPIs — visits (anonymous traffic) are now clearly separated from
+          leads (a visitor who actually submitted something). Webinar regs
+          and course enrollments are split so the same person never gets
+          counted twice across both buckets. */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: "Total Leads", value: filtered.length, icon: TrendingUp, accent: "text-primary", change: percentChange },
-          { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500" },
-          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-purple-500" },
-          { label: "Course Enrols", value: courseRegs, icon: MousePointerClick, accent: "text-green-500" },
-          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary" },
-          { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500" },
-        ].map((kpi, i) => (
+          { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500", change: percentChange, hint: "Anonymous pageview events" },
+          { label: "Leads", value: totalConversions, icon: TrendingUp, accent: "text-primary", hint: "Visitors who submitted a form / converted" },
+          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-purple-500", hint: "Subset of Leads" },
+          { label: "Course Enrols", value: courseRegs, icon: MousePointerClick, accent: "text-green-500", hint: "Subset of Leads" },
+          { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary", hint: "Leads ÷ Visits" },
+          { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500", hint: "Distinct channels" },
+        ].map((kpi: any, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-            className="bg-card rounded-2xl border border-border p-4 hover:border-primary/20 transition-all">
+            className="bg-card rounded-2xl border border-border p-4 hover:border-primary/20 transition-all"
+            title={kpi.hint}>
             <div className="flex items-center justify-between mb-2">
               <kpi.icon className={`h-4 w-4 ${kpi.accent}`} />
               {typeof kpi.change === "number" && (
@@ -462,6 +465,22 @@ export default function AdminMarketingAnalytics() {
             <p className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</p>
           </motion.div>
         ))}
+      </div>
+
+      {/* Reconciliation: every lead_sources row is one of {visit, lead,
+          other}. Sum should always equal the filtered row count — this
+          panel exposes the maths so admins can audit it. */}
+      <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-xs">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <span className="font-semibold uppercase tracking-wider text-muted-foreground">Reconciliation</span>
+          <span className="text-muted-foreground">
+            Visits ({totalVisits}) + Leads ({totalConversions}) + Other ({Math.max(filtered.length - totalVisits - totalConversions, 0)}) ={" "}
+            <span className={filtered.length === totalVisits + totalConversions + Math.max(filtered.length - totalVisits - totalConversions, 0) ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+              {filtered.length} rows
+            </span>{" "}
+            in lead_sources for this period.
+          </span>
+        </div>
       </div>
 
       {/* Tabs */}

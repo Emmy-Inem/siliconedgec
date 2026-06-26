@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const DISMISSED_KEY = "sec_signup_prompt_dismissed_until";
 const DISMISS_COUNT_KEY = "sec_signup_prompt_dismiss_count";
-const AUTO_TRIGGER_MS = 10_000; // 10 seconds for first prompt
+const AUTO_TRIGGER_MS = 5_000; // 5 seconds for first prompt
 // Escalating re-prompt schedule after each dismissal. After the array is
 // exhausted, the last interval keeps repeating until the user signs up.
 const REPROMPT_SCHEDULE_MS = [
