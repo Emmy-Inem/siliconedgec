@@ -599,7 +599,7 @@ const sectionReveal = {
 
 export default function Index() {
   const { data: home } = useHomeContent();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const reduce = useReducedMotion();
   const { data: settings } = useSiteSettings();
   const communityUrl = getWhatsAppCommunityUrl(settings);
