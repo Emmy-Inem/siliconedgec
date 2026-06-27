@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,8 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft } from "lucide-react";
+import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft, FileText, Link as LinkIcon, Upload, Check, X, HelpCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 
@@ -59,14 +62,16 @@ export default function CohortSpace() {
         </div>
 
         <Tabs defaultValue="discussion">
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="discussion"><MessageSquare className="h-3.5 w-3.5 mr-1.5" />Discussion</TabsTrigger>
-            <TabsTrigger value="roster"><Users className="h-3.5 w-3.5 mr-1.5" />Roster</TabsTrigger>
             <TabsTrigger value="sessions"><Calendar className="h-3.5 w-3.5 mr-1.5" />Sessions</TabsTrigger>
+            <TabsTrigger value="materials"><FileText className="h-3.5 w-3.5 mr-1.5" />Materials</TabsTrigger>
+            <TabsTrigger value="roster"><Users className="h-3.5 w-3.5 mr-1.5" />Roster</TabsTrigger>
           </TabsList>
           <TabsContent value="discussion" className="pt-4"><Discussion cohortId={cohort.id} userId={user.id} isAdmin={isAdmin} /></TabsContent>
+          <TabsContent value="sessions" className="pt-4"><SessionsList cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
+          <TabsContent value="materials" className="pt-4"><Materials cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
           <TabsContent value="roster" className="pt-4"><Roster cohortId={cohort.id} /></TabsContent>
-          <TabsContent value="sessions" className="pt-4"><SessionsList cohortId={cohort.id} /></TabsContent>
         </Tabs>
       </main>
       <Footer />
