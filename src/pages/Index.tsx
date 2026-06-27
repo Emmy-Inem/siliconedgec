@@ -963,15 +963,21 @@ export default function Index() {
             className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-5 auto-rows-[minmax(180px,auto)]"
           >
             {/* Large — live chat */}
-            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2 glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all">
-              <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+            <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2">
+              <Link
+                to={isAdmin ? "/admin/cohorts" : "/cohorts"}
+                aria-label="Open cohort space"
+                className="group block h-full glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all"
+              >
+                <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-11 h-11 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]"><MessagesSquare className="h-5 w-5 text-primary" /></div>
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
-              </div>
-              <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
-              <p className="text-sm text-muted-foreground">Ask, build, and ship in real time with mentors who reply in minutes.</p>
-              <ChatBubbleTile />
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
+                </div>
+                <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
+                <p className="text-sm text-muted-foreground">Ask, build, and ship in real time with mentors who reply in minutes.</p>
+                <ChatBubbleTile />
+              </Link>
             </motion.div>
 
             {/* Medium — completion */}
