@@ -201,42 +201,237 @@ function Roster({ cohortId }: { cohortId: string }) {
   );
 }
 
-function SessionsList({ cohortId }: { cohortId: string }) {
+function SessionsList({ cohortId, userId, isStaff }: { cohortId: string; userId: string; isStaff: boolean }) {
   const [sessions, setSessions] = useState<any[]>([]);
-  useEffect(() => {
-    db.from("cohort_sessions").select("*").eq("cohort_id", cohortId).order("scheduled_at").then(({ data }: any) => setSessions(data || []));
-  }, [cohortId]);
+  const [rsvps, setRsvps] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
 
-  const upcoming = sessions.filter((s) => new Date(s.scheduled_at) >= new Date());
-  const past = sessions.filter((s) => new Date(s.scheduled_at) < new Date());
+  const load = async () => {
+    setLoading(true);
+    const { data: s } = await db.from("cohort_sessions").select("*").eq("cohort_id", cohortId).order("scheduled_at");
+    const list = s || [];
+    setSessions(list);
+    if (list.length) {
+      const ids = list.map((x: any) => x.id);
+      const { data: rs } = await db.from("cohort_session_rsvps").select("*").in("session_id", ids);
+      const grouped: Record<string, any[]> = {};
+      (rs || []).forEach((r: any) => {
+        (grouped[r.session_id] = grouped[r.session_id] || []).push(r);
+      });
+      setRsvps(grouped);
+    } else { setRsvps({}); }
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, [cohortId]);
+
+  if (loading) return <Loader2 className="h-5 w-5 animate-spin" />;
+
+  const now = new Date();
+  const upcoming = sessions.filter((s) => new Date(s.scheduled_at) >= now);
+  const past = sessions.filter((s) => new Date(s.scheduled_at) < now);
 
   return (
     <div className="space-y-6">
       <section>
         <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Upcoming</h2>
         {upcoming.length === 0 ? <Card className="p-4 text-sm text-muted-foreground">Nothing scheduled.</Card> : (
-          <div className="space-y-2">{upcoming.map((s) => <SessionCard key={s.id} s={s} />)}</div>
+          <div className="space-y-2">{upcoming.map((s) => <SessionCard key={s.id} s={s} rsvps={rsvps[s.id] || []} userId={userId} isStaff={isStaff} isPast={false} onChange={load} />)}</div>
         )}
       </section>
       {past.length > 0 && (
         <section>
           <h2 className="font-heading text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Past</h2>
-          <div className="space-y-2">{past.map((s) => <SessionCard key={s.id} s={s} />)}</div>
+          <div className="space-y-2">{past.map((s) => <SessionCard key={s.id} s={s} rsvps={rsvps[s.id] || []} userId={userId} isStaff={isStaff} isPast onChange={load} />)}</div>
         </section>
       )}
     </div>
   );
 }
 
-function SessionCard({ s }: { s: any }) {
+function SessionCard({ s, rsvps, userId, isStaff, isPast, onChange }: { s: any; rsvps: any[]; userId: string; isStaff: boolean; isPast: boolean; onChange: () => void }) {
+  const mine = rsvps.find((r) => r.user_id === userId);
+  const counts = useMemo(() => ({
+    going: rsvps.filter((r) => r.status === "going").length,
+    maybe: rsvps.filter((r) => r.status === "maybe").length,
+    declined: rsvps.filter((r) => r.status === "declined").length,
+    attended: rsvps.filter((r) => r.attended).length,
+  }), [rsvps]);
+  const [showRoster, setShowRoster] = useState(false);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+
+  const setRsvp = async (status: "going" | "maybe" | "declined") => {
+    const { error } = await db.from("cohort_session_rsvps")
+      .upsert({ session_id: s.id, user_id: userId, status }, { onConflict: "session_id,user_id" });
+    if (error) return toast.error(error.message);
+    toast.success("RSVP updated");
+    onChange();
+  };
+
+  const toggleRoster = async () => {
+    const next = !showRoster;
+    setShowRoster(next);
+    if (next && rsvps.length && Object.keys(profiles).length === 0) {
+      const { data: profs } = await supabase.rpc("get_public_profiles", { p_user_ids: rsvps.map((r) => r.user_id) });
+      const m: Record<string, any> = {};
+      (profs || []).forEach((p: any) => (m[p.user_id] = p));
+      setProfiles(m);
+    }
+  };
+
+  const markAttended = async (r: any, attended: boolean) => {
+    const { error } = await db.from("cohort_session_rsvps").update({ attended, marked_by: userId, marked_at: new Date().toISOString() }).eq("id", r.id);
+    if (error) return toast.error(error.message);
+    onChange();
+  };
+
   return (
-    <Card className="p-4 flex items-start justify-between gap-3 flex-wrap">
-      <div className="min-w-0">
-        <div className="font-medium">{s.title}</div>
-        <div className="text-[11px] text-muted-foreground">{new Date(s.scheduled_at).toLocaleString()} · {s.duration_minutes} min</div>
-        {s.description && <p className="text-sm text-muted-foreground mt-1">{s.description}</p>}
+    <Card className="p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">{s.title}</div>
+          <div className="text-[11px] text-muted-foreground">{new Date(s.scheduled_at).toLocaleString()} · {s.duration_minutes} min</div>
+          {s.description && <p className="text-sm text-muted-foreground mt-1">{s.description}</p>}
+        </div>
+        {s.meeting_url && <a href={s.meeting_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline"><ExternalLink className="h-3.5 w-3.5" />Join</a>}
       </div>
-      {s.meeting_url && <a href={s.meeting_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline"><ExternalLink className="h-3.5 w-3.5" />Join</a>}
+      <div className="flex items-center gap-2 flex-wrap text-xs">
+        {!isPast && (
+          <div className="flex gap-1.5">
+            <Button size="sm" variant={mine?.status === "going" ? "default" : "outline"} onClick={() => setRsvp("going")}><Check className="h-3 w-3 mr-1" />Going</Button>
+            <Button size="sm" variant={mine?.status === "maybe" ? "default" : "outline"} onClick={() => setRsvp("maybe")}><HelpCircle className="h-3 w-3 mr-1" />Maybe</Button>
+            <Button size="sm" variant={mine?.status === "declined" ? "default" : "outline"} onClick={() => setRsvp("declined")}><X className="h-3 w-3 mr-1" />Can't</Button>
+          </div>
+        )}
+        <button onClick={toggleRoster} className="text-muted-foreground hover:text-foreground underline ml-auto">
+          {counts.going} going · {counts.maybe} maybe{isPast ? ` · ${counts.attended} attended` : ""}
+        </button>
+      </div>
+      {showRoster && (
+        <div className="border-t pt-3 space-y-1.5">
+          {rsvps.length === 0 && <div className="text-xs text-muted-foreground">No RSVPs yet.</div>}
+          {rsvps.map((r) => (
+            <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <Avatar className="h-6 w-6"><AvatarImage src={profiles[r.user_id]?.avatar_url} /><AvatarFallback>{(profiles[r.user_id]?.full_name || "?").slice(0,1)}</AvatarFallback></Avatar>
+                <span className="truncate">{profiles[r.user_id]?.full_name || "Member"}</span>
+                <Badge variant="outline" className="text-[10px] h-4">{r.status}</Badge>
+                {r.attended && <Badge className="text-[10px] h-4">attended</Badge>}
+              </div>
+              {isStaff && isPast && (
+                <Button size="sm" variant="ghost" onClick={() => markAttended(r, !r.attended)}>
+                  {r.attended ? "Unmark" : "Mark attended"}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
+  );
+}
+
+function Materials({ cohortId, userId, isStaff }: { cohortId: string; userId: string; isStaff: boolean }) {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [kind, setKind] = useState<"link" | "file" | "note">("link");
+  const [url, setUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await db.from("cohort_materials").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false });
+    setItems(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, [cohortId]);
+
+  const save = async () => {
+    if (!title.trim()) return toast.error("Title required");
+    setBusy(true);
+    try {
+      let file_path: string | null = null;
+      let file_size: number | null = null;
+      let mime_type: string | null = null;
+      if (kind === "file") {
+        if (!file) { toast.error("Choose a file"); setBusy(false); return; }
+        const path = `${cohortId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error: upErr } = await supabase.storage.from("cohort-materials").upload(path, file, { upsert: false });
+        if (upErr) { toast.error(upErr.message); setBusy(false); return; }
+        file_path = path; file_size = file.size; mime_type = file.type;
+      }
+      const { error } = await db.from("cohort_materials").insert({
+        cohort_id: cohortId, title: title.trim(), description: description || null, kind,
+        url: kind === "link" ? url || null : null, file_path, file_size, mime_type, created_by: userId,
+      });
+      if (error) { toast.error(error.message); return; }
+      toast.success("Added"); setTitle(""); setDescription(""); setUrl(""); setFile(null); load();
+    } finally { setBusy(false); }
+  };
+
+  const remove = async (m: any) => {
+    if (!confirm("Delete this item?")) return;
+    if (m.file_path) await supabase.storage.from("cohort-materials").remove([m.file_path]);
+    const { error } = await db.from("cohort_materials").delete().eq("id", m.id);
+    if (error) return toast.error(error.message);
+    load();
+  };
+
+  const download = async (m: any) => {
+    const { data, error } = await supabase.storage.from("cohort-materials").createSignedUrl(m.file_path, 60 * 10);
+    if (error || !data?.signedUrl) return toast.error("Could not create download link");
+    window.open(data.signedUrl, "_blank");
+  };
+
+  return (
+    <div className="space-y-4">
+      {isStaff && (
+        <Card className="p-4 space-y-3">
+          <div className="font-medium text-sm">Add material</div>
+          <div className="grid sm:grid-cols-3 gap-2">
+            <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="sm:col-span-2" />
+            <Select value={kind} onValueChange={(v) => setKind(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="link">Link</SelectItem>
+                <SelectItem value="file">File upload</SelectItem>
+                <SelectItem value="note">Note</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Textarea placeholder="Optional description / note body" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          {kind === "link" && <Input placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} />}
+          {kind === "file" && <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />}
+          <div className="flex justify-end"><Button size="sm" onClick={save} disabled={busy}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add"}</Button></div>
+        </Card>
+      )}
+      {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : items.length === 0 ? (
+        <Card className="p-8 text-center text-muted-foreground">No materials yet.</Card>
+      ) : (
+        <div className="grid gap-2">
+          {items.map((m) => (
+            <Card key={m.id} className="p-3 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                {m.kind === "file" ? <FileText className="h-4 w-4" /> : m.kind === "link" ? <LinkIcon className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm truncate">{m.title}</div>
+                {m.description && <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">{m.description}</p>}
+                <div className="flex items-center gap-3 mt-1.5 text-[11px]">
+                  {m.kind === "link" && m.url && <a href={m.url} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline"><ExternalLink className="h-3 w-3" />Open</a>}
+                  {m.kind === "file" && m.file_path && <button onClick={() => download(m)} className="text-primary inline-flex items-center gap-1 hover:underline"><Download className="h-3 w-3" />Download</button>}
+                  <span className="text-muted-foreground">{new Date(m.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+              {(isStaff || m.created_by === userId) && (
+                <Button variant="ghost" size="sm" onClick={() => remove(m)}><Trash2 className="h-3.5 w-3.5" /></Button>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
