@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft, FileText, Link as LinkIcon, Upload, Check, X, HelpCircle, Download } from "lucide-react";
+import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft, FileText, Link as LinkIcon, Check, X, HelpCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 
