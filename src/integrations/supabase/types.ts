@@ -675,6 +675,59 @@ export type Database = {
         }
         Relationships: []
       }
+      cohort_materials: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          kind: string
+          mime_type: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_materials_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_members: {
         Row: {
           cohort_id: string
@@ -751,6 +804,50 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_session_rsvps: {
+        Row: {
+          attended: boolean
+          created_at: string
+          id: string
+          marked_at: string | null
+          marked_by: string | null
+          session_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attended?: boolean
+          created_at?: string
+          id?: string
+          marked_at?: string | null
+          marked_by?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attended?: boolean
+          created_at?: string
+          id?: string
+          marked_at?: string | null
+          marked_by?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_session_rsvps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -3036,6 +3133,14 @@ export type Database = {
     }
     Functions: {
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      get_cohort_member_emails: {
+        Args: { p_cohort_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       get_course_curriculum: {
         Args: { p_course_id: string }
         Returns: {
