@@ -695,6 +695,7 @@ export default function CourseDetail() {
                           ✓ You're enrolled — {enrollment?.progress_percentage ?? 0}% complete
                         </p>
                         <StudyPlanDialog courseId={course.id} />
+                        <CohortAccessButton courseId={course.id} />
                       </div>
                     )
                   ) : isFreeWebinar ? (
