@@ -965,7 +965,7 @@ export default function Index() {
             {/* Large — live chat */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2">
               <Link
-                to={isAdmin ? "/admin/cohorts" : "/cohorts"}
+                to="/cohorts"
                 aria-label="Open cohort space"
                 className="group block h-full glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all"
               >

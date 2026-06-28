@@ -19,12 +19,25 @@ import { Helmet } from "react-helmet-async";
 
 const db = supabase as any;
 
+const COVER_IMAGES = [
+  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=80&auto=format&fit=crop", // team collaborating
+  "https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1600&q=80&auto=format&fit=crop", // study group
+  "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&q=80&auto=format&fit=crop", // workshop
+  "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1600&q=80&auto=format&fit=crop", // discussion
+  "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1600&q=80&auto=format&fit=crop",   // mentorship
+];
+const coverFor = (id: string) => {
+  let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COVER_IMAGES[h % COVER_IMAGES.length];
+};
+
 export default function CohortSpace() {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading, isAdmin } = useAuth();
   const [cohort, setCohort] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
+  const [stats, setStats] = useState<{ members: number; sessions: number; materials: number }>({ members: 0, sessions: 0, materials: 0 });
 
   useEffect(() => {
     if (!id || !user) return;
@@ -32,6 +45,12 @@ export default function CohortSpace() {
       const { data, error } = await db.from("cohorts").select("*").eq("id", id).maybeSingle();
       if (error || !data) { setForbidden(true); setLoading(false); return; }
       setCohort(data); setLoading(false);
+      const [m, s, mat] = await Promise.all([
+        db.from("cohort_members").select("id", { count: "exact", head: true }).eq("cohort_id", id),
+        db.from("cohort_sessions").select("id", { count: "exact", head: true }).eq("cohort_id", id),
+        db.from("cohort_materials").select("id", { count: "exact", head: true }).eq("cohort_id", id),
+      ]);
+      setStats({ members: m.count || 0, sessions: s.count || 0, materials: mat.count || 0 });
     })();
   }, [id, user]);
 
@@ -40,7 +59,8 @@ export default function CohortSpace() {
   if (forbidden || !cohort) return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-16 text-center">
+      <main className="flex-1 container mx-auto px-4 py-16 text-center max-w-md">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="" className="w-full h-48 object-cover rounded-xl mb-6 opacity-80" />
         <h1 className="font-heading text-2xl font-bold mb-2">Cohort not available</h1>
         <p className="text-muted-foreground mb-4">You may not be a member of this cohort.</p>
         <Link to="/cohorts" className="text-primary underline">Back to my cohorts</Link>
@@ -49,20 +69,49 @@ export default function CohortSpace() {
     </div>
   );
 
+  const cover = coverFor(cohort.id);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>{cohort.name} | Cohort | Silicon Edge</title></Helmet>
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <Link to="/cohorts" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3"><ArrowLeft className="h-3 w-3" />My cohorts</Link>
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2"><Badge variant="outline">{cohort.status}</Badge>{cohort.start_date && <span className="text-xs text-muted-foreground">{cohort.start_date} → {cohort.end_date || "ongoing"}</span>}</div>
-          <h1 className="font-heading text-3xl font-bold">{cohort.name}</h1>
-          {cohort.description && <p className="text-muted-foreground mt-1">{cohort.description}</p>}
-        </div>
+      <main className="flex-1">
+        {/* Hero banner */}
+        <section className="relative h-64 md:h-80 w-full overflow-hidden border-b">
+          <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent" />
+          <div className="relative container mx-auto px-4 h-full flex flex-col justify-end pb-6">
+            <Link to="/cohorts" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3 w-fit"><ArrowLeft className="h-3 w-3" />My cohorts</Link>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <Badge variant="outline" className="bg-background/80 backdrop-blur">{cohort.status}</Badge>
+              {cohort.start_date && <span className="text-xs text-muted-foreground bg-background/60 backdrop-blur px-2 py-0.5 rounded">{cohort.start_date} → {cohort.end_date || "ongoing"}</span>}
+            </div>
+            <h1 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">{cohort.name}</h1>
+            {cohort.description && <p className="text-muted-foreground mt-2 max-w-2xl">{cohort.description}</p>}
+          </div>
+        </section>
+
+        <div className="container mx-auto px-4 py-6">
+          {/* Stat strip */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { icon: Users, label: "Members", value: stats.members },
+              { icon: Calendar, label: "Sessions", value: stats.sessions },
+              { icon: FileText, label: "Materials", value: stats.materials },
+            ].map((s) => (
+              <Card key={s.label} className="p-4 flex items-center gap-3 bg-gradient-to-br from-card to-muted/30">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><s.icon className="h-5 w-5" /></div>
+                <div>
+                  <div className="text-2xl font-bold font-heading leading-none">{s.value}</div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">{s.label}</div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
         <Tabs defaultValue="discussion">
-          <TabsList className="flex flex-wrap h-auto">
+          <TabsList className="flex flex-wrap h-auto p-1">
             <TabsTrigger value="discussion"><MessageSquare className="h-3.5 w-3.5 mr-1.5" />Discussion</TabsTrigger>
             <TabsTrigger value="sessions"><Calendar className="h-3.5 w-3.5 mr-1.5" />Sessions</TabsTrigger>
             <TabsTrigger value="materials"><FileText className="h-3.5 w-3.5 mr-1.5" />Materials</TabsTrigger>
@@ -73,6 +122,7 @@ export default function CohortSpace() {
           <TabsContent value="materials" className="pt-4"><Materials cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
           <TabsContent value="roster" className="pt-4"><Roster cohortId={cohort.id} /></TabsContent>
         </Tabs>
+        </div>
       </main>
       <Footer />
     </div>
@@ -133,7 +183,11 @@ function Discussion({ cohortId, userId, isAdmin }: { cohortId: string; userId: s
       </Card>
 
       {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : topLevel.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">Be the first to post in this cohort.</Card>
+        <Card className="p-10 text-center overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">Start the conversation</div>
+          <p className="text-sm text-muted-foreground mt-1">Share an introduction, ask a question, or post a win.</p>
+        </Card>
       ) : topLevel.map((p) => (
         <Card key={p.id} className="p-4">
           <PostRow post={p} profile={profiles[p.user_id]} canManage={p.user_id === userId || isAdmin} onReply={() => setReplyTo(p.id)} onDelete={() => remove(p.id)} onPin={isAdmin ? () => togglePin(p) : undefined} />
@@ -187,7 +241,12 @@ function Roster({ cohortId }: { cohortId: string }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {members.length === 0 && <Card className="p-6 text-center text-muted-foreground col-span-full">No members yet.</Card>}
+      {members.length === 0 && (
+        <Card className="p-10 text-center col-span-full">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">No members yet</div>
+        </Card>
+      )}
       {members.map((m) => (
         <Card key={m.id} className="p-4 flex items-center gap-3">
           <Avatar><AvatarImage src={m.profile?.avatar_url} /><AvatarFallback>{(m.profile?.full_name || "?").slice(0, 1).toUpperCase()}</AvatarFallback></Avatar>
@@ -408,7 +467,11 @@ function Materials({ cohortId, userId, isStaff }: { cohortId: string; userId: st
         </Card>
       )}
       {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : items.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">No materials yet.</Card>
+        <Card className="p-10 text-center">
+          <img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">No materials yet</div>
+          <p className="text-sm text-muted-foreground mt-1">Session notes, slides, and links will appear here.</p>
+        </Card>
       ) : (
         <div className="grid gap-2">
           {items.map((m) => (
