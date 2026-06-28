@@ -18,6 +18,7 @@ import { EnhancedVideoPlayer, type EnhancedVideoPlayerHandle } from "@/component
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
+import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { courseHref, courseSectionHref } from "@/lib/course-url";
 import {
   isLessonUnlocked as isLessonUnlockedHelper,
@@ -542,6 +543,7 @@ export default function CourseLearning() {
           {/* Live Classes section */}
           {id && (
             <div className="max-w-3xl mx-auto mt-10 pt-6 border-t border-border">
+              <div className="mb-6"><CohortAccessButton courseId={courseId} /></div>
               <h3 className="font-heading font-semibold text-sm mb-4">Live Sessions</h3>
               <LiveClassesTab courseId={courseId ?? id} />
             </div>
