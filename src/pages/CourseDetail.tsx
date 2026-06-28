@@ -33,6 +33,7 @@ import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 import { requestSignup } from "@/components/SignupPromptModal";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
+import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
 
@@ -695,6 +696,7 @@ export default function CourseDetail() {
                           ✓ You're enrolled — {enrollment?.progress_percentage ?? 0}% complete
                         </p>
                         <StudyPlanDialog courseId={course.id} />
+                        <CohortAccessButton courseId={course.id} />
                       </div>
                     )
                   ) : isFreeWebinar ? (
