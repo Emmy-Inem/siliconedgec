@@ -183,7 +183,11 @@ function Discussion({ cohortId, userId, isAdmin }: { cohortId: string; userId: s
       </Card>
 
       {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : topLevel.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">Be the first to post in this cohort.</Card>
+        <Card className="p-10 text-center overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">Start the conversation</div>
+          <p className="text-sm text-muted-foreground mt-1">Share an introduction, ask a question, or post a win.</p>
+        </Card>
       ) : topLevel.map((p) => (
         <Card key={p.id} className="p-4">
           <PostRow post={p} profile={profiles[p.user_id]} canManage={p.user_id === userId || isAdmin} onReply={() => setReplyTo(p.id)} onDelete={() => remove(p.id)} onPin={isAdmin ? () => togglePin(p) : undefined} />
@@ -237,7 +241,12 @@ function Roster({ cohortId }: { cohortId: string }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {members.length === 0 && <Card className="p-6 text-center text-muted-foreground col-span-full">No members yet.</Card>}
+      {members.length === 0 && (
+        <Card className="p-10 text-center col-span-full">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">No members yet</div>
+        </Card>
+      )}
       {members.map((m) => (
         <Card key={m.id} className="p-4 flex items-center gap-3">
           <Avatar><AvatarImage src={m.profile?.avatar_url} /><AvatarFallback>{(m.profile?.full_name || "?").slice(0, 1).toUpperCase()}</AvatarFallback></Avatar>
@@ -458,7 +467,11 @@ function Materials({ cohortId, userId, isStaff }: { cohortId: string; userId: st
         </Card>
       )}
       {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : items.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">No materials yet.</Card>
+        <Card className="p-10 text-center">
+          <img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&q=80&auto=format&fit=crop" alt="" className="w-full max-w-xs mx-auto h-32 object-cover rounded-lg mb-4 opacity-80" />
+          <div className="font-medium">No materials yet</div>
+          <p className="text-sm text-muted-foreground mt-1">Session notes, slides, and links will appear here.</p>
+        </Card>
       ) : (
         <div className="grid gap-2">
           {items.map((m) => (
