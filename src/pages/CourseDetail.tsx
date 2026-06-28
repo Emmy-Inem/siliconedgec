@@ -33,6 +33,7 @@ import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
 import { requestSignup } from "@/components/SignupPromptModal";
 import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
+import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
 
