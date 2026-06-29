@@ -62,7 +62,6 @@ export default function Cohorts() {
         <p className="text-muted-foreground mb-8">Private learning groups with your peers, instructors, and live sessions.</p>
         {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : cohorts.length === 0 ? (
           <Card className="p-10 text-center max-w-lg mx-auto">
-            <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="" className="w-full h-44 object-cover rounded-xl mb-5 opacity-90" />
             <h2 className="font-heading text-lg font-semibold mb-1">You haven't joined a cohort yet</h2>
             <p className="text-sm text-muted-foreground">When an instructor adds you to a cohort, it will appear here with discussion, sessions, and shared materials.</p>
           </Card>

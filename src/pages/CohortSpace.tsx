@@ -60,7 +60,6 @@ export default function CohortSpace() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-16 text-center max-w-md">
-        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="" className="w-full h-48 object-cover rounded-xl mb-6 opacity-80" />
         <h1 className="font-heading text-2xl font-bold mb-2">Cohort not available</h1>
         <p className="text-muted-foreground mb-4">You may not be a member of this cohort.</p>
         <Link to="/cohorts" className="text-primary underline">Back to my cohorts</Link>
