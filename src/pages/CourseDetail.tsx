@@ -687,6 +687,9 @@ export default function CourseDetail() {
                       </div>
                     ) : (
                       <div className="space-y-2">
+                        <div className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-1">
+                          My Cohort Space
+                        </div>
                         <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
                           <Link to={courseLearnHref(course)}>
                             <CheckCircle2 className="h-4 w-4" /> Continue course

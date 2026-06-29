@@ -60,7 +60,6 @@ export default function CohortSpace() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-16 text-center max-w-md">
-        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="" className="w-full h-48 object-cover rounded-xl mb-6 opacity-80" />
         <h1 className="font-heading text-2xl font-bold mb-2">Cohort not available</h1>
         <p className="text-muted-foreground mb-4">You may not be a member of this cohort.</p>
         <Link to="/cohorts" className="text-primary underline">Back to my cohorts</Link>
@@ -77,8 +76,8 @@ export default function CohortSpace() {
       <Header />
       <main className="flex-1">
         {/* Hero banner */}
-        <section className="relative h-64 md:h-80 w-full overflow-hidden border-b">
-          <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <section className="relative min-h-[16rem] md:h-80 w-full overflow-hidden border-b">
+          <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent" />
           <div className="relative container mx-auto px-4 h-full flex flex-col justify-end pb-6">
@@ -101,21 +100,21 @@ export default function CohortSpace() {
               { icon: FileText, label: "Materials", value: stats.materials },
             ].map((s) => (
               <Card key={s.label} className="p-4 flex items-center gap-3 bg-gradient-to-br from-card to-muted/30">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><s.icon className="h-5 w-5" /></div>
-                <div>
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><s.icon className="h-5 w-5" /></div>
+                <div className="min-w-0">
                   <div className="text-2xl font-bold font-heading leading-none">{s.value}</div>
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">{s.label}</div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 truncate">{s.label}</div>
                 </div>
               </Card>
             ))}
           </div>
 
         <Tabs defaultValue="discussion">
-          <TabsList className="flex flex-wrap h-auto p-1">
-            <TabsTrigger value="discussion"><MessageSquare className="h-3.5 w-3.5 mr-1.5" />Discussion</TabsTrigger>
-            <TabsTrigger value="sessions"><Calendar className="h-3.5 w-3.5 mr-1.5" />Sessions</TabsTrigger>
-            <TabsTrigger value="materials"><FileText className="h-3.5 w-3.5 mr-1.5" />Materials</TabsTrigger>
-            <TabsTrigger value="roster"><Users className="h-3.5 w-3.5 mr-1.5" />Roster</TabsTrigger>
+          <TabsList className="grid grid-cols-2 sm:flex sm:flex-wrap h-auto p-1 w-full sm:w-fit gap-1 bg-muted/50 rounded-xl">
+            <TabsTrigger value="discussion" className="rounded-lg py-2"><MessageSquare className="h-3.5 w-3.5 mr-1.5 shrink-0" />Discussion</TabsTrigger>
+            <TabsTrigger value="sessions" className="rounded-lg py-2"><Calendar className="h-3.5 w-3.5 mr-1.5 shrink-0" />Sessions</TabsTrigger>
+            <TabsTrigger value="materials" className="rounded-lg py-2"><FileText className="h-3.5 w-3.5 mr-1.5 shrink-0" />Materials</TabsTrigger>
+            <TabsTrigger value="roster" className="rounded-lg py-2"><Users className="h-3.5 w-3.5 mr-1.5 shrink-0" />Roster</TabsTrigger>
           </TabsList>
           <TabsContent value="discussion" className="pt-4"><Discussion cohortId={cohort.id} userId={user.id} isAdmin={isAdmin} /></TabsContent>
           <TabsContent value="sessions" className="pt-4"><SessionsList cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
