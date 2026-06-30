@@ -53,3 +53,12 @@ verify_jwt = true
 
 [functions.ai-qualify-lead]
 verify_jwt = true
+
+[functions.bootcamp-generate-link]
+verify_jwt = true
+
+[functions.bootcamp-paystack-webhook]
+verify_jwt = false
+
+[functions.bootcamp-check-overdue]
+verify_jwt = false
