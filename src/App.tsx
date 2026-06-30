@@ -133,6 +133,8 @@ const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"))
 const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
 const AdminFinanceHub = lazy(() => import("./pages/admin/hubs/AdminFinanceHub"));
 const AdminCohorts = lazy(() => import("./pages/admin/AdminCohorts"));
+const AdminBootcamps = lazy(() => import("./pages/admin/AdminBootcamps"));
+const Bootcamp = lazy(() => import("./pages/Bootcamp"));
 
 const AdminFallback = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
@@ -219,6 +221,7 @@ const App = () => (
               <Route path="/category/:slug" element={<CategoryCourses />} />
               <Route path="/cohorts" element={<Cohorts />} />
               <Route path="/cohorts/:id" element={<CohortSpace />} />
+              <Route path="/bootcamp" element={<Bootcamp />} />
               <Route path="/terms" element={<Legal />} />
               <Route path="/privacy" element={<Legal />} />
               <Route path="/refund-policy" element={<Legal />} />
@@ -248,6 +251,7 @@ const App = () => (
                 <Route path="system" element={<AdminSystemHub />} />
                 <Route path="finance" element={<AdminFinanceHub />} />
                 <Route path="cohorts" element={<AdminCohorts />} />
+                <Route path="bootcamps" element={<AdminBootcamps />} />
                 <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
                 <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />
                 <Route path="finance/tax" element={<Navigate to="/admin/finance?tab=tax" replace />} />
