@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertTriangle, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 const db = supabase as any;
@@ -56,7 +56,7 @@ export default function Bootcamp() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>Bootcamp Payments · Silicon Edge</title></Helmet>
-      <Navbar />
+      <Header />
       <main className="flex-1 container max-w-3xl py-10 space-y-6">
         <header>
           <h1 className="text-3xl font-bold">My Bootcamp</h1>
