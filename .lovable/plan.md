@@ -1,99 +1,98 @@
-## What's already done (database)
+## Bootcamp Installment Payments — Implementation Plan
 
-Two migrations have been applied:
+A dedicated, reusable Paystack payment link per student for the July 4 – August 1, 2026 bootcamp, with weekly installments, immediate access on enrollment, and automatic access revocation if not fully paid by the end date.
 
-1. Added 4 new roles to the `app_role` enum: `instructor`, `support`, `finance`, `content_editor` (in addition to existing `admin`, `moderator`, `user`).
-2. Created `role_permissions(role, route, allowed)` matrix table — admin-managed, readable by all signed-in users; seeded with sensible defaults per role.
-3. Created `finance_refunds` and `finance_payouts` tables, restricted to `admin` + `finance` via `has_any_role` helper.
-4. Added DB helpers: `has_any_role(uuid, app_role[])`, `role_can_access(role, route)`.
+### 1. Database (one migration)
 
-## What this plan builds (code)
+New tables in `public`, with GRANTs + RLS in the same migration:
 
-### A. Role-Based Access Control overhaul
+- `bootcamp_cohorts` — so this isn't hardcoded to one bootcamp.
+  - `id`, `slug`, `name`, `start_date`, `end_date`, `default_total_amount`, `default_installments`, `course_id` (FK `courses.id`, nullable — to unlock an existing course on payment), `is_active`.
+- `bootcamp_enrollments`
+  - `id`, `user_id` (FK `auth.users`, nullable until they sign up), `email`, `full_name`, `reference` (unique), `cohort_id` (FK), `total_amount`, `installment_amount`, `total_installments`, `installments_paid` (default 0), `installment_due_dates date[]`, `next_due_date`, `paystack_page_id`, `paystack_page_slug`, `payment_link`, `access_granted` (default true), `status` (`active|overdue|completed|access_revoked|cancelled`), `last_payment_date`, `created_by` (admin uid), timestamps.
+  - Unique `(cohort_id, email)`.
+- `bootcamp_payment_events` (idempotency)
+  - `id`, `enrollment_id` (FK), `paystack_event_id` (unique), `paystack_reference`, `amount`, `paid_at`, `raw` (jsonb).
 
-**`src/lib/admin-permissions.ts`** — rewrite:
-- Export `StaffRole` union covering all 6 staff roles, plus `ALL_STAFF_ROLES`, `ROLE_RANK`, `ROLE_LABEL`.
-- Replace hardcoded `MODERATOR_ROUTES` allowlist with a hybrid model: hardcoded fallback per role + DB-loaded matrix merged on top via `setRolePermissionsMatrix()`.
-- `canAccessRoute(role, path)` consults the merged set; admin bypasses; instructor/moderator keep dynamic `/admin/courses/:id/*` access.
-- `getAccessibleSections(role)` returns the sidebar sections each role can see (e.g. finance → Workspace + Finance + Engagement).
+RLS:
+- Admins/moderators: full read/write on all three.
+- Authenticated users: SELECT own row in `bootcamp_enrollments` where `user_id = auth.uid()` OR `lower(email) = lower(auth.jwt()->>'email')`.
+- No anon access. `service_role` full access (edge functions).
 
-**`src/hooks/useRolePermissions.ts`** (new) — loads the matrix via React Query and calls `setRolePermissionsMatrix()` on success so `canAccessRoute` is reactive.
+Trigger: when a user signs up (`handle_new_user`), backfill `bootcamp_enrollments.user_id` by matching email so the existing "generate link before signup" flow links automatically.
 
-**`src/contexts/AuthContext.tsx`** — replace the two-step `admin`/`moderator` probe with a single query against `user_roles` for the current user; pick the highest-ranked role via `ROLE_RANK` and keep `isAdmin` true for any staff role (so existing `RequireAdmin` gates still allow staff into `/admin`).
+Helper RPC `link_bootcamp_enrollment_to_user()` called on first dashboard load as a safety net.
 
-**`src/pages/admin/AdminLayout.tsx`** — call `useRolePermissions()` at mount so the matrix is in place before the route guard runs.
+### 2. Edge functions
 
-**`src/components/admin/AdminSidebar.tsx`** — add a `Finance` section with `Finance Hub` link, filter sections by `getAccessibleSections`, also call `useRolePermissions()`.
+All three deployed automatically; secret `PAYSTACK_SECRET_KEY` already exists.
 
-**`src/pages/admin/AdminUsers.tsx`** — replace the 3-button role selector with a `<Select>` listing all 6 staff roles + `user`; update the role badge map and column rendering accordingly; show a small description for each role.
+- `bootcamp-generate-link` (verify_jwt = true, admin-only check inside)
+  - Input: `{ cohort_id, email, full_name, total_amount, installments }`.
+  - Verifies caller has `admin` or `moderator` role via `has_role`.
+  - Computes installment amount and weekly due dates from cohort `start_date`.
+  - Calls Paystack `POST /page` with `amount = installment kobo`, `metadata.reference = <uuid>`, `metadata.cohort_id`, `metadata.email`.
+  - Inserts the enrollment row, returns `{ payment_link, enrollment }`.
 
-### B. Permission Matrix UI
+- `bootcamp-paystack-webhook` (verify_jwt = false)
+  - HMAC-SHA512 verification with `PAYSTACK_SECRET_KEY` against `x-paystack-signature` (matches the existing `paystack-webhook` pattern — do NOT just check the header exists like in the source prompt).
+  - Only handles `charge.success`.
+  - Idempotent insert into `bootcamp_payment_events` on `paystack_event_id`.
+  - Matches enrollment via `metadata.reference` OR `paystack_page_id` + customer email fallback (Paystack Page payments don't always echo metadata).
+  - Increments `installments_paid`, advances `next_due_date`, marks `completed` when fully paid, sets `last_payment_date`.
+  - On completion: if cohort has `course_id`, upsert an `enrollments` row with `payment_status='paid'` so the existing course-access gate unlocks the learning area.
+  - Returns 5xx on transient errors so Paystack retries (same convention as existing webhook).
 
-**`src/pages/admin/AdminPermissions.tsx`** (new):
-- Table layout: rows = routes (grouped: Workspace, LMS, Engagement, Commerce, Finance, Content, System), columns = the 5 non-admin staff roles.
-- Each cell is a `<Switch>` bound to a row in `role_permissions`.
-- Bulk toggle "Allow all in section" per row group.
-- "Reset to defaults" button re-seeds the recommended set.
-- All mutations gated by RLS (admin only).
+- `bootcamp-check-overdue` (verify_jwt = false, cron-triggered)
+  - Marks `active` rows past `next_due_date` as `overdue`.
+  - For rows past cohort `end_date` and not `completed`: set `access_granted=false`, `status='access_revoked'`, and (if linked to a course) downgrade the matching `enrollments.payment_status` to `comped_revoked`.
+  - Sends an in-app notification (insert into `notifications`) and an email via the existing `send-email` function for overdue + revocation events.
 
-Wired as a new tab in `AdminSystemHub` ("Permissions") so admins reach it via `/admin/system?tab=permissions`.
+Schedule via `supabase--insert` (not migration, since it contains the project URL/anon key) using `pg_cron` + `pg_net`, daily at 23:00 WAT.
 
-### C. Finance Hub
+`supabase/config.toml` additions: `verify_jwt = false` blocks for `bootcamp-paystack-webhook` and `bootcamp-check-overdue`.
 
-**`src/pages/admin/AdminFinanceLedger.tsx`** (new) — Revenue ledger built from `orders`:
-- KPIs: gross revenue, net revenue (gross − refunds), VAT collected (configurable rate from `site_settings`, default 7.5% NG VAT shown as estimate), commission paid, refunds total.
-- Monthly revenue + refunds bar chart (12 months).
-- Top 10 courses by net revenue.
-- CSV export.
+### 3. Admin UI
 
-**`src/pages/admin/AdminRefunds.tsx`** (new) — `AdminCrudTable` over `finance_refunds`:
-- Columns: order ref, customer, amount, status, reason, processed by, date.
-- Create/edit dialog with order picker (search recent orders), amount, reason, status.
-- "Mark processed" quick action stamps `processed_at` + `processed_by`.
+New route `/admin/bootcamps` added to the Commerce hub and sidebar (gated by `admin-permissions.ts`):
 
-**`src/pages/admin/AdminPayouts.tsx`** (new) — `AdminCrudTable` over `finance_payouts`:
-- Columns: payee, type (instructor/influencer/vendor), period, amount, method, status, reference.
-- Create/edit dialog with payee picker (instructors + influencer promo codes).
-- Bulk export to CSV.
+- **Cohorts tab** — CRUD for `bootcamp_cohorts` (dates, default amount, installments, linked course).
+- **Generate Link tab** — form (cohort, email, full name, total amount, installments 2/3/4/6), live preview of installment amount + due dates, calls `bootcamp-generate-link`, shows the link with copy button + "Email to student" action (uses `send-email`).
+- **Enrollments tab** — table of all bootcamp enrollments with filters (cohort, status), columns for paid/total, next due date, last payment, access state. Row actions: resend link via email, mark cancelled, manually grant/revoke access, view payment events.
 
-**`src/pages/admin/AdminTaxReport.tsx`** (new) — Tax breakdown by month:
-- Reads paid orders for the selected year.
-- Shows gross, taxable base, tax (rate configurable), exempt totals.
-- Per-month table + annual summary, CSV export.
+### 4. Student UI
 
-**`src/pages/admin/hubs/AdminFinanceHub.tsx`** (new) — `HubShell` with tabs:
-1. Ledger
-2. Refunds
-3. Payouts
-4. Tax Report
+New route `/bootcamp` (or `/bootcamp/:slug` for multiple cohorts):
 
-### D. Wiring (`src/App.tsx`)
+- Resolves enrollment by `user_id` first, then by email (with the linking RPC).
+- Shows cohort name, dates, payment progress bar, next due date, "Pay next installment ₦X" button linking to the stored Paystack page URL.
+- Alerts for `overdue`, `completed`, `access_revoked` states.
+- If `access_granted` and cohort has a `course_id`, shows a CTA into `/courses/:slug/learn`.
+- Empty state for users without an enrollment, with a contact link.
 
-- Lazy-import `AdminFinanceHub` and `AdminPermissions`.
-- Add `<Route path="finance" element={<AdminFinanceHub />} />` under `/admin`.
-- Add legacy redirects `/admin/refunds`, `/admin/payouts`, `/admin/tax`, `/admin/permissions` → finance/system tabs.
+Header/dashboard: small "Bootcamp" entry visible only when the logged-in user has a bootcamp enrollment.
 
-### E. Public count accuracy fixes
+### 5. Public landing
 
-**`src/pages/Index.tsx`** — drop the `Math.max(..., 2000)` floor; show real student/course/instructor counts. If a count is 0, hide that stat tile entirely (don't fake "Students worldwide: 0+"). Keep admin override path (`home?.stat_students`) so the team can still set a hero number explicitly.
+A `/bootcamp/:slug` public page (when not signed in) explaining the bootcamp, installments, and a "Request a payment link" form that creates a `business_leads` row tagged `bootcamp_interest` so admins can follow up and issue a link.
 
-**`src/components/CourseCard.tsx`** — only render the `Users` enrolled badge when `students_enrolled >= 5`; otherwise hide.
+### 6. Verification
 
-**`src/pages/CourseDetail.tsx`** — same threshold for the "X Enrolled" line; hide instead of showing "0 Enrolled".
+- Unit/SQL: confirm GRANTs, RLS denies cross-user reads, unique constraint on `(cohort_id, email)`.
+- Webhook: replay a `charge.success` payload via `supabase--curl_edge_functions` with a valid HMAC and confirm idempotency + course unlock.
+- Cron: manually invoke `bootcamp-check-overdue` and confirm status transitions.
+- Playwright: admin generates a link, student page loads enrollment, overdue banner appears when `next_due_date` is back-dated.
 
-**`src/pages/CourseDetail.tsx`** (JSON-LD) — keep `ratingCount` truthful: only emit `aggregateRating` JSON-LD when there is a real review count (not faked from enrolled).
+### Technical notes (for the technical reader)
 
-### F. Admin Activity Log entries
+- The original draft's webhook only checks that `x-paystack-signature` exists. We will compute the HMAC SHA-512 of the raw body with `PAYSTACK_SECRET_KEY` and constant-time compare — matching `supabase/functions/paystack-webhook/index.ts` already in the project.
+- The original draft stores `payment_link` but no `paystack_page_id`/`slug`; we add both so we can re-resolve, update, or archive the page later.
+- Reusing the existing `enrollments` table on completion (rather than a parallel access system) means the existing `useCourseAccess`, lesson gating, certificates, and notifications "just work" once a bootcamp is paid in full.
+- Email/notification reuse: `send-email` + `notifications` table already exist; no new infra needed.
+- No new secrets required; `PAYSTACK_SECRET_KEY` is already configured.
 
-Every role change, permission-matrix change, refund status change, and payout status change writes to `admin_activity_log` via `logAdminActivity()`.
+### Open questions before build
 
-## Out of scope (deliberately)
-
-- Marketing Analytics file (`AdminMarketingAnalytics.tsx`) is already careful and channel-attribution-aware — no changes.
-- Existing courses' cached `students_enrolled` column stays as-is; the sync trigger already maintains it. We just stop showing it when it's 0.
-
-## Risks / notes
-
-- Adding enum values then using them in the same migration is illegal in Postgres — handled by splitting into two migrations (already done).
-- `RequireAdmin.isAdmin` currently means "admin or moderator". After the AuthContext change it will mean "any staff role", so the new roles can reach `/admin`. The route-level `canAccessRoute` guard inside `AdminLayout` then narrows what each role sees.
-- The matrix is permissive-merge with hardcoded fallback so a corrupted/empty matrix never locks staff out of their baseline routes.
+1. Is there a specific existing course in the catalog this bootcamp should unlock on full payment, or is the bootcamp standalone content for now?
+2. Should students get immediate access after the FIRST installment, or only once an admin generates the link (your current wording says "immediate on enrollment" — I'll default to: access on link generation, kept until end date unless fully paid)?
+3. Late fee or grace period after each weekly due date before flipping to `overdue`?

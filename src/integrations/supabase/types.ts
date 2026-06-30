@@ -386,6 +386,180 @@ export type Database = {
           },
         ]
       }
+      bootcamp_cohorts: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          default_installments: number
+          default_total_amount: number
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          default_installments?: number
+          default_total_amount?: number
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          default_installments?: number
+          default_total_amount?: number
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bootcamp_cohorts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bootcamp_enrollments: {
+        Row: {
+          access_granted: boolean
+          cohort_id: string
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string
+          id: string
+          installment_amount: number
+          installment_due_dates: string[]
+          installments_paid: number
+          last_payment_date: string | null
+          next_due_date: string | null
+          payment_link: string
+          paystack_page_id: string | null
+          paystack_page_slug: string | null
+          reference: string
+          status: string
+          total_amount: number
+          total_installments: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          access_granted?: boolean
+          cohort_id: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          full_name: string
+          id?: string
+          installment_amount: number
+          installment_due_dates: string[]
+          installments_paid?: number
+          last_payment_date?: string | null
+          next_due_date?: string | null
+          payment_link: string
+          paystack_page_id?: string | null
+          paystack_page_slug?: string | null
+          reference: string
+          status?: string
+          total_amount: number
+          total_installments: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_granted?: boolean
+          cohort_id?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          installment_amount?: number
+          installment_due_dates?: string[]
+          installments_paid?: number
+          last_payment_date?: string | null
+          next_due_date?: string | null
+          payment_link?: string
+          paystack_page_id?: string | null
+          paystack_page_slug?: string | null
+          reference?: string
+          status?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bootcamp_enrollments_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "bootcamp_cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bootcamp_payment_events: {
+        Row: {
+          amount: number
+          created_at: string
+          enrollment_id: string
+          id: string
+          paid_at: string
+          paystack_event_id: string
+          paystack_reference: string | null
+          raw: Json | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          enrollment_id: string
+          id?: string
+          paid_at?: string
+          paystack_event_id: string
+          paystack_reference?: string | null
+          raw?: Json | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          enrollment_id?: string
+          id?: string
+          paid_at?: string
+          paystack_event_id?: string
+          paystack_reference?: string | null
+          raw?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bootcamp_payment_events_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "bootcamp_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brands: {
         Row: {
           created_at: string
@@ -3132,6 +3306,7 @@ export type Database = {
       }
     }
     Functions: {
+      claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
       get_cohort_member_emails: {
         Args: { p_cohort_id: string }
