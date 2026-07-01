@@ -388,6 +388,7 @@ export type Database = {
       }
       bootcamp_cohorts: {
         Row: {
+          allow_flexible_payment: boolean
           course_id: string | null
           created_at: string
           default_installments: number
@@ -402,6 +403,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_flexible_payment?: boolean
           course_id?: string | null
           created_at?: string
           default_installments?: number
@@ -416,6 +418,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_flexible_payment?: boolean
           course_id?: string | null
           created_at?: string
           default_installments?: number
@@ -442,10 +445,13 @@ export type Database = {
       bootcamp_enrollments: {
         Row: {
           access_granted: boolean
+          amount_paid: number
           cohort_id: string
           created_at: string
           created_by: string | null
-          email: string
+          email: string | null
+          final_due_date: string | null
+          flexible_payment: boolean
           full_name: string
           id: string
           installment_amount: number
@@ -465,10 +471,13 @@ export type Database = {
         }
         Insert: {
           access_granted?: boolean
+          amount_paid?: number
           cohort_id: string
           created_at?: string
           created_by?: string | null
-          email: string
+          email?: string | null
+          final_due_date?: string | null
+          flexible_payment?: boolean
           full_name: string
           id?: string
           installment_amount: number
@@ -488,10 +497,13 @@ export type Database = {
         }
         Update: {
           access_granted?: boolean
+          amount_paid?: number
           cohort_id?: string
           created_at?: string
           created_by?: string | null
-          email?: string
+          email?: string | null
+          final_due_date?: string | null
+          flexible_payment?: boolean
           full_name?: string
           id?: string
           installment_amount?: number
