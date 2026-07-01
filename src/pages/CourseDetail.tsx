@@ -687,9 +687,6 @@ export default function CourseDetail() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-1">
-                          My Cohort Space
-                        </div>
                         <Button size="lg" className="w-full gap-2" variant="secondary" asChild>
                           <Link to={courseLearnHref(course)}>
                             <CheckCircle2 className="h-4 w-4" /> Continue course
@@ -698,8 +695,14 @@ export default function CourseDetail() {
                         <p className="text-xs text-center text-muted-foreground">
                           ✓ You're enrolled — {enrollment?.progress_percentage ?? 0}% complete
                         </p>
+                        <div className="pt-2 mt-2 border-t">
+                          <div className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                            My Cohort Space
+                          </div>
+                          <CohortAccessButton courseId={course.id} />
+                        </div>
                         <StudyPlanDialog courseId={course.id} />
-                        <CohortAccessButton courseId={course.id} />
                       </div>
                     )
                   ) : isFreeWebinar ? (

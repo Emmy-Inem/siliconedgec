@@ -4,6 +4,7 @@ import AdminPricing from "../AdminPricing";
 import AdminCartAbandonment from "../AdminCartAbandonment";
 import AdminInfluencerMarketing from "../AdminInfluencerMarketing";
 import AdminPromoCodes from "../AdminPromoCodes";
+import AdminBootcamps from "../AdminBootcamps";
 
 export default function AdminCommerceHub() {
   return (
@@ -14,6 +15,7 @@ export default function AdminCommerceHub() {
         { value: "orders", label: "Orders", content: <AdminOrders /> },
         { value: "pricing", label: "Pricing Plans", content: <AdminPricing /> },
         { value: "promo-codes", label: "Promo Codes", content: <AdminPromoCodes /> },
+        { value: "bootcamps", label: "Bootcamps", content: <AdminBootcamps /> },
         { value: "cart-abandonment", label: "Cart Abandonment", content: <AdminCartAbandonment /> },
         { value: "influencers", label: "Influencer Marketing", content: <AdminInfluencerMarketing /> },
       ]}
