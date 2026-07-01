@@ -79,14 +79,29 @@ Deno.serve(async (req) => {
     return new Response("enrollment not found", { status: 500, headers: corsHeaders });
   }
 
-  const paid = (enrollment.installments_paid ?? 0) + 1;
-  const total = enrollment.total_installments;
-  const isComplete = paid >= total;
+  const chargedAmount = Number(data?.amount ?? 0) / 100;
+  const newAmountPaid = Number(enrollment.amount_paid ?? 0) + chargedAmount;
+  const totalAmount = Number(enrollment.total_amount ?? 0);
   const dueDates: string[] = enrollment.installment_due_dates ?? [];
-  const nextDue = isComplete ? null : (dueDates[paid] ?? null);
+
+  let paid: number;
+  let isComplete: boolean;
+  let nextDue: string | null;
+
+  if (enrollment.flexible_payment) {
+    // Flexible: complete once cumulative payments reach total.
+    isComplete = totalAmount > 0 && newAmountPaid + 0.5 >= totalAmount;
+    paid = enrollment.installments_paid + 1;
+    nextDue = isComplete ? null : (enrollment.final_due_date ?? enrollment.next_due_date ?? null);
+  } else {
+    paid = (enrollment.installments_paid ?? 0) + 1;
+    isComplete = paid >= enrollment.total_installments;
+    nextDue = isComplete ? null : (dueDates[paid] ?? null);
+  }
 
   await supabase.from("bootcamp_enrollments").update({
     installments_paid: paid,
+    amount_paid: newAmountPaid,
     next_due_date: nextDue,
     status: isComplete ? "completed" : "active",
     access_granted: true,
