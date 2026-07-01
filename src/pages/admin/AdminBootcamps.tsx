@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Copy, Link as LinkIcon, Mail, Plus, RefreshCcw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -300,19 +301,37 @@ function CohortForm({ open, onOpenChange, editing, courses, onSave }: any) {
 }
 
 function LinkDialog({ open, onOpenChange, cohort, generating, setGenerating, onGenerated }: any) {
-  const [form, setForm] = useState({ email: "", full_name: "", total_amount: 0, installments: 4 });
+  const [form, setForm] = useState({
+    email: "",
+    full_name: "",
+    total_amount: 0,
+    installments: 4,
+    flexible_payment: false,
+    final_due_date: "",
+  });
   const [link, setLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && cohort) {
-      setForm({ email: "", full_name: "", total_amount: cohort.default_total_amount, installments: cohort.default_installments });
+      setForm({
+        email: "",
+        full_name: "",
+        total_amount: cohort.default_total_amount,
+        installments: cohort.default_installments,
+        flexible_payment: false,
+        final_due_date: cohort.end_date || "",
+      });
       setLink(null);
     }
   }, [open, cohort]);
 
   const submit = async () => {
     if (!cohort) return;
-    if (!form.email || !form.full_name || !form.total_amount) { toast.error("Fill all fields"); return; }
+    if (!form.total_amount) { toast.error("Enter a total amount"); return; }
+    if (!form.flexible_payment && (!form.email || !form.full_name)) {
+      toast.error("Email and name required for installment lock mode");
+      return;
+    }
     setGenerating(true);
     const { data, error } = await supabase.functions.invoke("bootcamp-generate-link", {
       body: { cohort_id: cohort.id, ...form },
@@ -331,15 +350,46 @@ function LinkDialog({ open, onOpenChange, cohort, generating, setGenerating, onG
       <DialogContent>
         <DialogHeader><DialogTitle>Generate Payment Link</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <div><Label>Student email</Label><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
-          <div><Label>Full name</Label><Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
+          <div className="flex items-start justify-between gap-3 rounded-md border p-3">
+            <div>
+              <div className="font-medium text-sm">Flexible payment (no installment lock)</div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Payer can pay any amount, any time, until the final deadline. Email & name become optional.
+              </p>
+            </div>
+            <Switch
+              checked={form.flexible_payment}
+              onCheckedChange={(v) => setForm({ ...form, flexible_payment: v })}
+            />
+          </div>
+          <div>
+            <Label>Student email {form.flexible_payment && <span className="text-muted-foreground font-normal">(optional)</span>}</Label>
+            <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+          </div>
+          <div>
+            <Label>Full name {form.flexible_payment && <span className="text-muted-foreground font-normal">(optional)</span>}</Label>
+            <Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Total (₦)</Label><Input type="number" value={form.total_amount} onChange={e => setForm({ ...form, total_amount: Number(e.target.value) })} /></div>
-            <div><Label>Installments</Label><Input type="number" value={form.installments} onChange={e => setForm({ ...form, installments: Number(e.target.value) })} /></div>
+            <div>
+              <Label>{form.flexible_payment ? "Final deadline" : "Installments"}</Label>
+              {form.flexible_payment ? (
+                <Input type="date" value={form.final_due_date} onChange={e => setForm({ ...form, final_due_date: e.target.value })} />
+              ) : (
+                <Input type="number" value={form.installments} onChange={e => setForm({ ...form, installments: Number(e.target.value) })} />
+              )}
+            </div>
           </div>
-          {form.total_amount > 0 && (
+          {form.total_amount > 0 && !form.flexible_payment && (
             <div className="rounded-md bg-muted/40 p-3 text-sm">
               {form.installments} installments of ₦{Math.round(form.total_amount / form.installments).toLocaleString()}
+            </div>
+          )}
+          {form.flexible_payment && form.total_amount > 0 && (
+            <div className="rounded-md bg-muted/40 p-3 text-sm">
+              Payer chooses any amount up to <strong>₦{Number(form.total_amount).toLocaleString()}</strong>
+              {form.final_due_date && <> · due by <strong>{form.final_due_date}</strong></>}
             </div>
           )}
           {link && (
