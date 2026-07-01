@@ -64,16 +64,25 @@ Deno.serve(async (req) => {
   }
 
   const cohort_id = String(body?.cohort_id ?? "").trim();
-  const email = String(body?.email ?? "").trim().toLowerCase();
-  const full_name = String(body?.full_name ?? "").trim();
+  const emailRaw = String(body?.email ?? "").trim().toLowerCase();
+  const full_name = String(body?.full_name ?? "").trim() || "Bootcamp Student";
   const total_amount = Number(body?.total_amount);
   const installments = Math.max(1, Math.min(12, Number(body?.installments ?? 4) | 0));
+  const flexible = Boolean(body?.flexible_payment);
+  const final_due_date = body?.final_due_date ? String(body.final_due_date) : null;
 
-  if (!cohort_id || !email || !full_name || !Number.isFinite(total_amount) || total_amount <= 0) {
-    return new Response(JSON.stringify({ error: "missing or invalid fields" }), {
+  if (!cohort_id || !Number.isFinite(total_amount) || total_amount <= 0) {
+    return new Response(JSON.stringify({ error: "cohort and total amount required" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+  // Email required only when NOT flexible (installment lock mode).
+  if (!flexible && !emailRaw) {
+    return new Response(JSON.stringify({ error: "email required for installment lock mode" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const email = emailRaw || `flex-${crypto.randomUUID().slice(0, 8)}@placeholder.local`;
 
   const { data: cohort, error: cohortErr } = await admin
     .from("bootcamp_cohorts")
@@ -96,19 +105,24 @@ Deno.serve(async (req) => {
   }
   const reference = crypto.randomUUID();
 
+  // Flexible mode: omit amount to enable customer-entered amounts on Paystack.
+  const paystackBody: Record<string, unknown> = {
+    name: `${cohort.name} — ${full_name}`,
+    description: flexible
+      ? `Flexible bootcamp payment. Pay any amount up to ₦${total_amount.toLocaleString()} before ${final_due_date ?? cohort.end_date}.`
+      : `${installments} installments of ₦${installment_amount.toLocaleString()}. Total: ₦${total_amount.toLocaleString()}.`,
+    currency: "NGN",
+    metadata: { reference, cohort_id, email: emailRaw || null, full_name, kind: "bootcamp_installment", flexible },
+  };
+  if (!flexible) paystackBody.amount = Math.round(installment_amount * 100);
+
   const pageRes = await fetch("https://api.paystack.co/page", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      name: `${cohort.name} — ${full_name}`,
-      description: `${installments} installments of ₦${installment_amount.toLocaleString()}. Total: ₦${total_amount.toLocaleString()}.`,
-      amount: Math.round(installment_amount * 100),
-      currency: "NGN",
-      metadata: { reference, cohort_id, email, full_name, kind: "bootcamp_installment" },
-    }),
+    body: JSON.stringify(paystackBody),
   });
   const pageData = await pageRes.json();
   if (!pageData?.status) {
@@ -128,7 +142,9 @@ Deno.serve(async (req) => {
       installment_amount,
       total_installments: installments,
       installment_due_dates: due_dates,
-      next_due_date: due_dates[0],
+      next_due_date: flexible ? (final_due_date ?? cohort.end_date) : due_dates[0],
+      flexible_payment: flexible,
+      final_due_date: final_due_date ?? cohort.end_date,
       paystack_page_id: String(pageData.data?.id ?? ""),
       paystack_page_slug: pageData.data?.slug ?? null,
       payment_link: pageData.data?.payment_url ?? `https://paystack.com/pay/${pageData.data?.slug ?? ""}`,
