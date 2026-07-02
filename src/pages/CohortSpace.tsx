@@ -134,11 +134,11 @@ function Discussion({ cohortId, userId, isAdmin }: { cohortId: string; userId: s
   const [posts, setPosts] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [content, setContent] = useState("");
-  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data } = await db.from("cohort_posts").select("*").eq("cohort_id", cohortId).order("is_pinned", { ascending: false }).order("created_at", { ascending: false });
+    const { data } = await db.from("cohort_posts").select("*").eq("cohort_id", cohortId).order("is_pinned", { ascending: false }).order("created_at", { ascending: true });
     const rows = data || [];
     setPosts(rows);
     if (rows.length) {
@@ -155,7 +155,7 @@ function Discussion({ cohortId, userId, isAdmin }: { cohortId: string; userId: s
 
   const post = async () => {
     if (!content.trim()) return;
-    const { error } = await db.from("cohort_posts").insert({ cohort_id: cohortId, user_id: userId, content: content.trim(), parent_id: replyTo });
+    const { error } = await db.from("cohort_posts").insert({ cohort_id: cohortId, user_id: userId, content: content.trim(), parent_id: replyTo?.id ?? null });
     if (error) return toast.error(error.message);
     setContent(""); setReplyTo(null); load();
   };
@@ -172,33 +172,113 @@ function Discussion({ cohortId, userId, isAdmin }: { cohortId: string; userId: s
     load();
   };
 
-  const topLevel = posts.filter((p) => !p.parent_id);
-  const repliesOf = (pid: string) => posts.filter((p) => p.parent_id === pid).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  const byId = useMemo(() => {
+    const m: Record<string, any> = {};
+    posts.forEach((p) => (m[p.id] = p));
+    return m;
+  }, [posts]);
+
+  const ordered = useMemo(() => {
+    // Pinned first (already ordered by is_pinned desc), then chronological
+    return [...posts];
+  }, [posts]);
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4">
-        {replyTo && <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">Replying to a post <button className="underline" onClick={() => setReplyTo(null)}>cancel</button></div>}
-        <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Share an update, ask a question..." rows={3} />
-        <div className="flex justify-end mt-2"><Button size="sm" onClick={post}><Send className="h-3.5 w-3.5 mr-1.5" />Post</Button></div>
-      </Card>
-
-      {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : topLevel.length === 0 ? (
-        <Card className="p-10 text-center overflow-hidden">
-          <MessageSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground/60" />
-          <div className="font-medium">Start the conversation</div>
-          <p className="text-sm text-muted-foreground mt-1">Share an introduction, ask a question, or post a win.</p>
-        </Card>
-      ) : topLevel.map((p) => (
-        <Card key={p.id} className="p-4">
-          <PostRow post={p} profile={profiles[p.user_id]} canManage={p.user_id === userId || isAdmin} onReply={() => setReplyTo(p.id)} onDelete={() => remove(p.id)} onPin={isAdmin ? () => togglePin(p) : undefined} />
-          {repliesOf(p.id).map((r) => (
-            <div key={r.id} className="ml-6 mt-3 pl-3 border-l border-border">
-              <PostRow post={r} profile={profiles[r.user_id]} canManage={r.user_id === userId || isAdmin} onDelete={() => remove(r.id)} />
+    <div className="flex flex-col h-[70vh] md:h-[calc(100vh-22rem)] min-h-[420px] rounded-xl border border-border bg-card overflow-hidden">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 bg-gradient-to-b from-background to-muted/20">
+        {loading ? (
+          <div className="h-full grid place-items-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : ordered.length === 0 ? (
+          <div className="h-full grid place-items-center text-center">
+            <div>
+              <MessageSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground/60" />
+              <div className="font-medium">Start the conversation</div>
+              <p className="text-sm text-muted-foreground mt-1">Share an intro, ask a question, or post a win.</p>
             </div>
-          ))}
-        </Card>
-      ))}
+          </div>
+        ) : (
+          ordered.map((p) => {
+            const mine = p.user_id === userId;
+            const prof = profiles[p.user_id];
+            const parent = p.parent_id ? byId[p.parent_id] : null;
+            const parentProf = parent ? profiles[parent.user_id] : null;
+            return (
+              <div key={p.id} className={`flex gap-2 ${mine ? "justify-end" : "justify-start"}`}>
+                {!mine && (
+                  <Avatar className="h-8 w-8 mt-0.5 shrink-0">
+                    <AvatarImage src={prof?.avatar_url} />
+                    <AvatarFallback>{(prof?.full_name || "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                )}
+                <div className={`max-w-[85%] sm:max-w-[70%] flex flex-col ${mine ? "items-end" : "items-start"}`}>
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-0.5">
+                    <span className="font-medium">{mine ? "You" : (prof?.full_name || "Member")}</span>
+                    <span>·</span>
+                    <span>{new Date(p.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                    {p.is_pinned && <Badge variant="outline" className="h-4 text-[9px] py-0"><Pin className="h-2.5 w-2.5 mr-1" />Pinned</Badge>}
+                  </div>
+                  <div
+                    className={`relative rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words shadow-sm ${
+                      mine
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                        : "bg-card border border-border rounded-bl-sm"
+                    }`}
+                  >
+                    {parent && (
+                      <div className={`mb-1.5 rounded-lg text-[11px] border-l-2 pl-2 py-1 ${mine ? "bg-primary-foreground/10 border-primary-foreground/40" : "bg-muted/60 border-primary/40"}`}>
+                        <div className={`font-medium ${mine ? "text-primary-foreground/80" : "text-foreground"}`}>{parentProf?.full_name || "Member"}</div>
+                        <div className={`line-clamp-2 opacity-80 ${mine ? "" : "text-muted-foreground"}`}>{parent.content}</div>
+                      </div>
+                    )}
+                    {p.content}
+                  </div>
+                  <div className={`flex gap-3 mt-1 text-[11px] ${mine ? "text-primary/70" : "text-muted-foreground"}`}>
+                    <button onClick={() => setReplyTo(p)} className="hover:text-foreground">Reply</button>
+                    {isAdmin && <button onClick={() => togglePin(p)} className="hover:text-foreground">{p.is_pinned ? "Unpin" : "Pin"}</button>}
+                    {(mine || isAdmin) && <button onClick={() => remove(p.id)} className="hover:text-destructive inline-flex items-center gap-1"><Trash2 className="h-3 w-3" />Delete</button>}
+                  </div>
+                </div>
+                {mine && (
+                  <Avatar className="h-8 w-8 mt-0.5 shrink-0">
+                    <AvatarImage src={prof?.avatar_url} />
+                    <AvatarFallback>{(prof?.full_name || "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Reply preview */}
+      {replyTo && (
+        <div className="border-t border-border px-3 py-2 bg-muted/40 flex items-start gap-2">
+          <div className="w-1 self-stretch rounded bg-primary/60" />
+          <div className="flex-1 min-w-0 text-[11px]">
+            <div className="font-medium">Replying to {profiles[replyTo.user_id]?.full_name || "Member"}</div>
+            <div className="text-muted-foreground line-clamp-1">{replyTo.content}</div>
+          </div>
+          <button onClick={() => setReplyTo(null)} className="text-muted-foreground hover:text-foreground p-1"><X className="h-3.5 w-3.5" /></button>
+        </div>
+      )}
+
+      {/* Composer */}
+      <div className="border-t border-border p-2 sm:p-3 bg-card">
+        <div className="flex items-end gap-2">
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); post(); } }}
+            placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+            rows={1}
+            className="min-h-[40px] max-h-32 resize-none"
+          />
+          <Button size="sm" onClick={post} disabled={!content.trim()} className="h-10">
+            <Send className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
