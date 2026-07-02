@@ -158,8 +158,8 @@ export default function AdminQuizzes() {
     { key: "passing_score", label: "Passing Score", render: (q) => <Badge variant="secondary">{q.passing_score}%</Badge> },
   ];
 
-  const openAdd = () => { setEditing(null); setForm({ title: "", lesson_id: "", passing_score: "70" }); setDialogOpen(true); };
-  const openEdit = (q: Quiz) => { setEditing(q); setForm({ title: q.title, lesson_id: q.lesson_id, passing_score: String(q.passing_score) }); setDialogOpen(true); };
+  const openAdd = () => { setEditing(null); setForm({ title: "", lesson_id: "", passing_score: "70", manual_count: "5" }); setDialogOpen(true); };
+  const openEdit = (q: Quiz) => { setEditing(q); setForm({ title: q.title, lesson_id: q.lesson_id, passing_score: String(q.passing_score), manual_count: "0" }); setDialogOpen(true); };
   const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
