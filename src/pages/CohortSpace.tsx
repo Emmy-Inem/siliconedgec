@@ -76,18 +76,18 @@ export default function CohortSpace() {
       <Header />
       <main className="flex-1">
         {/* Hero banner */}
-        <section className="relative min-h-[16rem] md:h-80 w-full overflow-hidden border-b">
-          <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent" />
-          <div className="relative container mx-auto px-4 h-full flex flex-col justify-end pb-6">
+        <section className="relative w-full overflow-hidden border-b">
+          <img src={cover} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/70 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-transparent" />
+          <div className="relative container mx-auto px-4 pt-6 pb-8 sm:pt-10 sm:pb-12">
             <Link to="/cohorts" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3 w-fit"><ArrowLeft className="h-3 w-3" />My cohorts</Link>
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <Badge variant="outline" className="bg-background/80 backdrop-blur">{cohort.status}</Badge>
-              {cohort.start_date && <span className="text-xs text-muted-foreground bg-background/60 backdrop-blur px-2 py-0.5 rounded">{cohort.start_date} → {cohort.end_date || "ongoing"}</span>}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <Badge variant="outline" className="bg-background/80 backdrop-blur capitalize">{cohort.status}</Badge>
+              {cohort.start_date && <span className="text-[11px] sm:text-xs text-muted-foreground bg-background/60 backdrop-blur px-2 py-0.5 rounded">{cohort.start_date} → {cohort.end_date || "ongoing"}</span>}
             </div>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">{cohort.name}</h1>
-            {cohort.description && <p className="text-muted-foreground mt-2 max-w-2xl">{cohort.description}</p>}
+            <h1 className="font-heading text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight leading-tight break-words">{cohort.name}</h1>
+            {cohort.description && <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{cohort.description}</p>}
           </div>
         </section>
 
@@ -110,12 +110,14 @@ export default function CohortSpace() {
           </div>
 
         <Tabs defaultValue="discussion">
-          <TabsList className="grid grid-cols-2 sm:flex sm:flex-wrap h-auto p-1 w-full sm:w-fit gap-1 bg-muted/50 rounded-xl">
-            <TabsTrigger value="discussion" className="rounded-lg py-2"><MessageSquare className="h-3.5 w-3.5 mr-1.5 shrink-0" />Discussion</TabsTrigger>
-            <TabsTrigger value="sessions" className="rounded-lg py-2"><Calendar className="h-3.5 w-3.5 mr-1.5 shrink-0" />Sessions</TabsTrigger>
-            <TabsTrigger value="materials" className="rounded-lg py-2"><FileText className="h-3.5 w-3.5 mr-1.5 shrink-0" />Materials</TabsTrigger>
-            <TabsTrigger value="roster" className="rounded-lg py-2"><Users className="h-3.5 w-3.5 mr-1.5 shrink-0" />Roster</TabsTrigger>
-          </TabsList>
+          <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-none">
+            <TabsList className="inline-flex sm:flex flex-nowrap sm:flex-wrap h-auto p-1 gap-1 bg-muted/50 rounded-xl mx-4 sm:mx-0 w-max sm:w-fit">
+              <TabsTrigger value="discussion" className="rounded-lg py-2 whitespace-nowrap"><MessageSquare className="h-3.5 w-3.5 mr-1.5 shrink-0" />Discussion</TabsTrigger>
+              <TabsTrigger value="sessions" className="rounded-lg py-2 whitespace-nowrap"><Calendar className="h-3.5 w-3.5 mr-1.5 shrink-0" />Sessions</TabsTrigger>
+              <TabsTrigger value="materials" className="rounded-lg py-2 whitespace-nowrap"><FileText className="h-3.5 w-3.5 mr-1.5 shrink-0" />Materials</TabsTrigger>
+              <TabsTrigger value="roster" className="rounded-lg py-2 whitespace-nowrap"><Users className="h-3.5 w-3.5 mr-1.5 shrink-0" />Roster</TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="discussion" className="pt-4"><Discussion cohortId={cohort.id} userId={user.id} isAdmin={isAdmin} /></TabsContent>
           <TabsContent value="sessions" className="pt-4"><SessionsList cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
           <TabsContent value="materials" className="pt-4"><Materials cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
