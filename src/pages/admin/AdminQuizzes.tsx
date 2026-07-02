@@ -32,7 +32,7 @@ export default function AdminQuizzes() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Quiz | null>(null);
-  const [form, setForm] = useState({ title: "", lesson_id: "", passing_score: "70" });
+  const [form, setForm] = useState({ title: "", lesson_id: "", passing_score: "70", manual_count: "5" });
   const [questionsDialogOpen, setQuestionsDialogOpen] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
@@ -72,9 +72,21 @@ export default function AdminQuizzes() {
       if (editing) {
         const { error } = await supabase.from("quizzes").update(payload).eq("id", editing.id);
         if (error) throw error;
+        return;
       } else {
-        const { error } = await supabase.from("quizzes").insert(payload);
+        const { data, error } = await supabase.from("quizzes").insert(payload).select("id").single();
         if (error) throw error;
+        const count = Math.max(0, Math.min(50, parseInt(form.manual_count || "0") || 0));
+        if (count > 0 && data?.id) {
+          const stubs = Array.from({ length: count }).map((_, i) => ({
+            quiz_id: data.id,
+            question_text: `Question ${i + 1}`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correct_answer: "Option A",
+            order_index: i,
+          }));
+          await supabase.from("quiz_questions").insert(stubs);
+        }
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); setDialogOpen(false); toast({ title: editing ? "Quiz updated" : "Quiz created" }); },
@@ -205,8 +217,19 @@ export default function AdminQuizzes() {
                 </TabsList>
                 <TabsContent value="manual" className="space-y-3 pt-3">
                   <p className="text-xs text-muted-foreground">
-                    Save the quiz, then add questions one by one from the Q&A panel.
+                    Choose how many questions to pre-create. You can edit each one from the Q&A panel after saving.
                   </p>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Number of questions (0–50)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={form.manual_count}
+                      onChange={(e) => setForm({ ...form, manual_count: e.target.value })}
+                      className={inputClass}
+                    />
+                  </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
                     <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
