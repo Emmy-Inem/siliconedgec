@@ -500,6 +500,18 @@ export default function CourseLearning() {
 
               {/* Resources */}
               {resources.length > 0 && (
+                <></>
+              )}
+              {isStaffApprover && courseId && currentLesson && (
+                <div className="pt-6 border-t border-border">
+                  <LessonApprovalPanel
+                    courseId={courseId}
+                    currentLessonId={currentLesson.id}
+                    nextLessonId={allLessons[currentIndex + 1]?.id ?? null}
+                  />
+                </div>
+              )}
+              {resources.length > 0 && (
                 <div className="pt-6 border-t border-border">
                   <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                     <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
