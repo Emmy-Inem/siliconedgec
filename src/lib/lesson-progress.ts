@@ -18,6 +18,13 @@ export interface UnlockContext {
   isStaff?: boolean;
   /** Whether the user has a paid enrollment. */
   hasPaid?: boolean;
+  /**
+   * Lesson ids for which an admin/instructor has explicitly approved this
+   * student's access. When provided, lessons past the first one require an
+   * explicit approval AND the prior lessons to be completed.
+   * If omitted (undefined), approvals are ignored (legacy behavior).
+   */
+  approved?: Set<string>;
 }
 
 export function isLessonUnlocked(lessonId: string, ctx: UnlockContext): boolean {
@@ -26,11 +33,13 @@ export function isLessonUnlocked(lessonId: string, ctx: UnlockContext): boolean 
   const idx = ctx.lessons.findIndex((l) => l.id === lessonId);
   if (idx < 0) return false;
   if (idx === 0) return true;
-  // Out-of-order completions don't unlock later lessons: EVERY previous
-  // lesson in the ordered list must be completed.
+  // Every previous lesson must be completed.
   for (let i = 0; i < idx; i++) {
     if (!ctx.completed.has(ctx.lessons[i].id)) return false;
   }
+  // Instructor approval gate: when approvals are being tracked, this lesson
+  // must be explicitly unlocked for the student.
+  if (ctx.approved && !ctx.approved.has(lessonId)) return false;
   return true;
 }
 

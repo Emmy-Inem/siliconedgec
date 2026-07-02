@@ -19,6 +19,7 @@ import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { LessonCompanion } from "@/components/ai/LessonCompanion";
 import { LessonNotes } from "@/components/ai/LessonNotes";
 import { CohortAccessButton } from "@/components/CohortAccessButton";
+import { LessonApprovalPanel } from "@/components/learning/LessonApprovalPanel";
 import { courseHref, courseSectionHref } from "@/lib/course-url";
 import {
   isLessonUnlocked as isLessonUnlockedHelper,
@@ -28,7 +29,7 @@ import {
 
 export default function CourseLearning() {
   const { id } = useParams<{ id: string }>();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, adminRole, loading: authLoading } = useAuth();
   const { data: publicAccess } = usePublicAccessMode();
   const queryClient = useQueryClient();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
@@ -77,6 +78,9 @@ export default function CourseLearning() {
 
   const courseId = course?.id;
   const hasAdminAccess = !!user && isAdmin;
+  const isStaffApprover =
+    hasAdminAccess &&
+    (adminRole === "admin" || adminRole === "moderator" || adminRole === "instructor");
 
   const { data: enrollment, isLoading: enrollLoading } = useQuery({
     queryKey: ["enrollment-check", courseId, user?.id],
@@ -104,6 +108,23 @@ export default function CourseLearning() {
       const { data } = await supabase
         .from("lesson_progress")
         .select("lesson_id, is_completed")
+        .eq("user_id", user.id)
+        .in("lesson_id", allLessonIds);
+      return data ?? [];
+    },
+  });
+
+  // Fetch which lessons an instructor has explicitly approved for this student.
+  const { data: approvals = [] } = useQuery({
+    queryKey: ["lesson-approvals", id, user?.id, course?.modules?.length ?? 0],
+    enabled: !!user && !!course?.modules?.length,
+    queryFn: async () => {
+      if (!user) return [];
+      const allLessonIds = course?.modules?.flatMap((m: any) => m.lessons.map((l: any) => l.id)) ?? [];
+      if (!allLessonIds.length) return [];
+      const { data } = await (supabase as any)
+        .from("lesson_unlocks")
+        .select("lesson_id")
         .eq("user_id", user.id)
         .in("lesson_id", allLessonIds);
       return data ?? [];
@@ -141,6 +162,7 @@ export default function CourseLearning() {
 
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
+  const approvedIds = new Set((approvals ?? []).map((a: any) => a.lesson_id));
   const hasPaidEnrollment = ["paid", "success", "completed", "confirmed"].includes(
     String(enrollment?.payment_status ?? "").toLowerCase(),
   );
@@ -150,6 +172,7 @@ export default function CourseLearning() {
     completed: completedIds as Set<string>,
     isStaff: hasAdminAccess,
     hasPaid: hasPaidEnrollment,
+    approved: approvedIds as Set<string>,
   };
   const isLessonUnlocked = (lessonId: string) => isLessonUnlockedHelper(lessonId, unlockCtx);
   const lastUnlockedLesson = findResumeLesson(unlockCtx);
@@ -475,6 +498,15 @@ export default function CourseLearning() {
                 </Button>
               </div>
 
+              {isStaffApprover && courseId && currentLesson && (
+                <div className="pt-6 border-t border-border">
+                  <LessonApprovalPanel
+                    courseId={courseId}
+                    currentLessonId={currentLesson.id}
+                    nextLessonId={allLessons[currentIndex + 1]?.id ?? null}
+                  />
+                </div>
+              )}
               {/* Resources */}
               {resources.length > 0 && (
                 <div className="pt-6 border-t border-border">
