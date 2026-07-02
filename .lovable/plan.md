@@ -1,98 +1,56 @@
-## Bootcamp Installment Payments — Implementation Plan
 
-A dedicated, reusable Paystack payment link per student for the July 4 – August 1, 2026 bootcamp, with weekly installments, immediate access on enrollment, and automatic access revocation if not fully paid by the end date.
+## 1. Instructor role — expanded permissions
 
-### 1. Database (one migration)
+The `instructor` role already exists in `src/lib/admin-permissions.ts`. Extend it so instructors can fully manage cohorts + courses (not just view).
 
-New tables in `public`, with GRANTs + RLS in the same migration:
+- Add these routes to `FALLBACK_ALLOWED.instructor`: `/admin/cohorts`, `/admin/courses/new`, `/admin/categories`, `/admin/tags`, `/admin/paths`, `/admin/enrollments`, `/admin/certificates`, `/admin/live-classes`, `/admin/instructors`, `/admin/course-modules`.
+- Add "Engagement" to `ROLE_SECTIONS.instructor` so the sidebar exposes Cohorts + Communication.
+- Update `has_any_role` policy checks on DB tables that currently gate on `admin`/`moderator` for cohort + course editing (cohorts, cohort_members, cohort_sessions, cohort_materials, cohort_posts pin/delete, modules, lessons, courses, assignments, quizzes) to also include `'instructor'::app_role`.
+- Seed default rows in `role_permissions` so the RBAC matrix UI at `/admin/system` reflects the new instructor grants (admin can still edit).
 
-- `bootcamp_cohorts` — so this isn't hardcoded to one bootcamp.
-  - `id`, `slug`, `name`, `start_date`, `end_date`, `default_total_amount`, `default_installments`, `course_id` (FK `courses.id`, nullable — to unlock an existing course on payment), `is_active`.
-- `bootcamp_enrollments`
-  - `id`, `user_id` (FK `auth.users`, nullable until they sign up), `email`, `full_name`, `reference` (unique), `cohort_id` (FK), `total_amount`, `installment_amount`, `total_installments`, `installments_paid` (default 0), `installment_due_dates date[]`, `next_due_date`, `paystack_page_id`, `paystack_page_slug`, `payment_link`, `access_granted` (default true), `status` (`active|overdue|completed|access_revoked|cancelled`), `last_payment_date`, `created_by` (admin uid), timestamps.
-  - Unique `(cohort_id, email)`.
-- `bootcamp_payment_events` (idempotency)
-  - `id`, `enrollment_id` (FK), `paystack_event_id` (unique), `paystack_reference`, `amount`, `paid_at`, `raw` (jsonb).
+## 2. Manual quizzes & assignments (no AI)
 
-RLS:
-- Admins/moderators: full read/write on all three.
-- Authenticated users: SELECT own row in `bootcamp_enrollments` where `user_id = auth.uid()` OR `lower(email) = lower(auth.jwt()->>'email')`.
-- No anon access. `service_role` full access (edge functions).
+Admin + instructor should be able to hand-author quizzes/assignments and pick exactly how many items to attach per lesson.
 
-Trigger: when a user signs up (`handle_new_user`), backfill `bootcamp_enrollments.user_id` by matching email so the existing "generate link before signup" flow links automatically.
+- In `AdminQuizzes` / `AdminAssessmentsHub`: add a "Create manually" flow with `Number of questions` field; render N question forms (question text, options, correct answer, explanation). Keep the existing AI generator, but make it opt-in via a toggle — default is manual.
+- Same treatment for `AdminAssignmentSubmissions` hub: add a "New assignment" dialog (title, description, lesson, points, due date, `count` for multi-part assignments).
+- Both flows write directly to `quizzes`/`quiz_questions` and `assignments`. Guard the UI + RLS with `has_any_role(auth.uid(), ARRAY['admin','instructor'])`.
 
-Helper RPC `link_bootcamp_enrollment_to_user()` called on first dashboard load as a safety net.
+## 3. Lesson-unlock approval by instructor/admin
 
-### 2. Edge functions
+Replace "auto-unlock when previous lesson complete" with "unlock only after an admin/instructor approves it for that learner".
 
-All three deployed automatically; secret `PAYSTACK_SECRET_KEY` already exists.
+- New table `public.lesson_unlocks (user_id, lesson_id, approved_by, approved_at, note)` with unique `(user_id, lesson_id)`; RLS: learner can `SELECT` their rows; admin/instructor can `INSERT/UPDATE/DELETE`.
+- Rewrite `enforce_lesson_unlock_order` trigger so a learner can only mark a lesson complete when either (a) it's the first lesson, or (b) an approval row exists.
+- Update client helper `src/lib/lesson-progress.ts` `isLessonUnlocked` to also require an approval for lessons after the first (via new `approvals: Set<string>` field in `UnlockContext`).
+- In `CourseLearning.tsx`, load approvals for the current user, gate the lesson list padlocks accordingly, and add an inline "Approve next lesson for this student" control rendered only when `isAdmin || adminRole === 'instructor'`. Hidden entirely for regular students. Provide a bulk "Approve all remaining" for admins.
+- Add `/admin/course-progress` (accessible to admin + instructor) to review per-student progress and toggle approvals.
 
-- `bootcamp-generate-link` (verify_jwt = true, admin-only check inside)
-  - Input: `{ cohort_id, email, full_name, total_amount, installments }`.
-  - Verifies caller has `admin` or `moderator` role via `has_role`.
-  - Computes installment amount and weekly due dates from cohort `start_date`.
-  - Calls Paystack `POST /page` with `amount = installment kobo`, `metadata.reference = <uuid>`, `metadata.cohort_id`, `metadata.email`.
-  - Inserts the enrollment row, returns `{ payment_link, enrollment }`.
+## 4. Cohort Space — mobile/desktop polish
 
-- `bootcamp-paystack-webhook` (verify_jwt = false)
-  - HMAC-SHA512 verification with `PAYSTACK_SECRET_KEY` against `x-paystack-signature` (matches the existing `paystack-webhook` pattern — do NOT just check the header exists like in the source prompt).
-  - Only handles `charge.success`.
-  - Idempotent insert into `bootcamp_payment_events` on `paystack_event_id`.
-  - Matches enrollment via `metadata.reference` OR `paystack_page_id` + customer email fallback (Paystack Page payments don't always echo metadata).
-  - Increments `installments_paid`, advances `next_due_date`, marks `completed` when fully paid, sets `last_payment_date`.
-  - On completion: if cohort has `course_id`, upsert an `enrollments` row with `payment_status='paid'` so the existing course-access gate unlocks the learning area.
-  - Returns 5xx on transient errors so Paystack retries (same convention as existing webhook).
+Fix header cutoff and general layout on `src/pages/CohortSpace.tsx`.
 
-- `bootcamp-check-overdue` (verify_jwt = false, cron-triggered)
-  - Marks `active` rows past `next_due_date` as `overdue`.
-  - For rows past cohort `end_date` and not `completed`: set `access_granted=false`, `status='access_revoked'`, and (if linked to a course) downgrade the matching `enrollments.payment_status` to `comped_revoked`.
-  - Sends an in-app notification (insert into `notifications`) and an email via the existing `send-email` function for overdue + revocation events.
+- Hero: replace `min-h-[16rem] md:h-80` with a fluid `py-10 md:py-16` container so title/description never overflow; add `pt-20` to clear the fixed site header; ensure `<h1>` uses `text-2xl sm:text-3xl md:text-5xl leading-tight` and description clamps to 3 lines on mobile.
+- Move breadcrumb ("My cohorts") above the badges with proper spacing; wrap status/date row so it stacks under 380px.
+- Tabs: replace `grid-cols-2 sm:flex` with a horizontally scrollable pill row on mobile (`overflow-x-auto no-scrollbar`); labels stay one line.
+- Stat strip: switch to `grid-cols-1 xs:grid-cols-3` for very narrow screens; ensure numbers don't crop.
 
-Schedule via `supabase--insert` (not migration, since it contains the project URL/anon key) using `pg_cron` + `pg_net`, daily at 23:00 WAT.
+## 5. Discussion — chat-style redesign
 
-`supabase/config.toml` additions: `verify_jwt = false` blocks for `bootcamp-paystack-webhook` and `bootcamp-check-overdue`.
+Match the polished look of the homepage cohort animation.
 
-### 3. Admin UI
+- Rework `Discussion` in `CohortSpace.tsx`:
+  - Two-tone bubbles: own posts right-aligned in `bg-primary text-primary-foreground`, others left-aligned in `bg-muted text-foreground`, both `rounded-2xl` with a small tail.
+  - Avatar always on the sender side; name + timestamp in a small caption above the bubble.
+  - Reply-to shows a quoted preview inside the reply bubble (author name + first ~80 chars, clickable to scroll to original).
+  - Actions row (Reply / Pin / Delete) appears on hover / long-press.
+  - Compact composer pinned to the bottom of the tab (sticky), with an inline "Replying to @name ×" chip when `replyTo` is set.
+  - Reactions row (👍 ❤️ 🎉) — thin `cohort_post_reactions` table (user_id, post_id, emoji). Optional but included.
+  - Auto-scroll to newest, keep pinned posts as a dismissible strip at the top.
+- Add subtle divider between conversation days ("Today", "Yesterday", full date).
 
-New route `/admin/bootcamps` added to the Commerce hub and sidebar (gated by `admin-permissions.ts`):
+## Technical notes
 
-- **Cohorts tab** — CRUD for `bootcamp_cohorts` (dates, default amount, installments, linked course).
-- **Generate Link tab** — form (cohort, email, full name, total amount, installments 2/3/4/6), live preview of installment amount + due dates, calls `bootcamp-generate-link`, shows the link with copy button + "Email to student" action (uses `send-email`).
-- **Enrollments tab** — table of all bootcamp enrollments with filters (cohort, status), columns for paid/total, next due date, last payment, access state. Row actions: resend link via email, mark cancelled, manually grant/revoke access, view payment events.
-
-### 4. Student UI
-
-New route `/bootcamp` (or `/bootcamp/:slug` for multiple cohorts):
-
-- Resolves enrollment by `user_id` first, then by email (with the linking RPC).
-- Shows cohort name, dates, payment progress bar, next due date, "Pay next installment ₦X" button linking to the stored Paystack page URL.
-- Alerts for `overdue`, `completed`, `access_revoked` states.
-- If `access_granted` and cohort has a `course_id`, shows a CTA into `/courses/:slug/learn`.
-- Empty state for users without an enrollment, with a contact link.
-
-Header/dashboard: small "Bootcamp" entry visible only when the logged-in user has a bootcamp enrollment.
-
-### 5. Public landing
-
-A `/bootcamp/:slug` public page (when not signed in) explaining the bootcamp, installments, and a "Request a payment link" form that creates a `business_leads` row tagged `bootcamp_interest` so admins can follow up and issue a link.
-
-### 6. Verification
-
-- Unit/SQL: confirm GRANTs, RLS denies cross-user reads, unique constraint on `(cohort_id, email)`.
-- Webhook: replay a `charge.success` payload via `supabase--curl_edge_functions` with a valid HMAC and confirm idempotency + course unlock.
-- Cron: manually invoke `bootcamp-check-overdue` and confirm status transitions.
-- Playwright: admin generates a link, student page loads enrollment, overdue banner appears when `next_due_date` is back-dated.
-
-### Technical notes (for the technical reader)
-
-- The original draft's webhook only checks that `x-paystack-signature` exists. We will compute the HMAC SHA-512 of the raw body with `PAYSTACK_SECRET_KEY` and constant-time compare — matching `supabase/functions/paystack-webhook/index.ts` already in the project.
-- The original draft stores `payment_link` but no `paystack_page_id`/`slug`; we add both so we can re-resolve, update, or archive the page later.
-- Reusing the existing `enrollments` table on completion (rather than a parallel access system) means the existing `useCourseAccess`, lesson gating, certificates, and notifications "just work" once a bootcamp is paid in full.
-- Email/notification reuse: `send-email` + `notifications` table already exist; no new infra needed.
-- No new secrets required; `PAYSTACK_SECRET_KEY` is already configured.
-
-### Open questions before build
-
-1. Is there a specific existing course in the catalog this bootcamp should unlock on full payment, or is the bootcamp standalone content for now?
-2. Should students get immediate access after the FIRST installment, or only once an admin generates the link (your current wording says "immediate on enrollment" — I'll default to: access on link generation, kept until end date unless fully paid)?
-3. Late fee or grace period after each weekly due date before flipping to `overdue`?
+- Migration steps required: `lesson_unlocks` table + trigger rewrite, `cohort_post_reactions` table, role_permissions seed for instructor, RLS updates on cohort_*/quizzes/assignments/modules/lessons to include instructor.
+- No breaking data changes — existing completions stay valid; unlock approvals only gate lessons the student hasn't reached yet.
+- Files touched (est.): `src/lib/admin-permissions.ts`, `src/lib/lesson-progress.ts` + tests, `src/pages/CohortSpace.tsx`, `src/pages/CourseLearning.tsx`, `src/pages/admin/AdminQuizzes.tsx`, `src/pages/admin/AdminAssignmentSubmissions.tsx`, new `src/pages/admin/AdminCourseProgress.tsx`, `src/App.tsx` route, plus one Supabase migration.
