@@ -50,10 +50,12 @@ const FALLBACK_ALLOWED: Record<Exclude<StaffRole, "admin">, string[]> = {
     "/admin/cohorts",
   ],
   instructor: [
-    "/admin", "/admin/courses", "/admin/assessments", "/admin/quizzes",
-    "/admin/quiz-attempts", "/admin/qna", "/admin/students",
+    "/admin", "/admin/courses", "/admin/courses/new", "/admin/modules",
+    "/admin/categories", "/admin/tags", "/admin/paths",
+    "/admin/assessments", "/admin/quizzes", "/admin/quiz-attempts",
+    "/admin/assignments", "/admin/qna", "/admin/students",
     "/admin/live-classes", "/admin/announcements", "/admin/people",
-    "/admin/cohorts",
+    "/admin/cohorts", "/admin/lesson-approvals", "/admin/content-hub",
   ],
   support: [
     "/admin", "/admin/chat", "/admin/leads-hub", "/admin/business-leads",
@@ -103,6 +105,8 @@ export function canAccessRoute(role: AdminRole, path: string): boolean {
   if ((role === "moderator" || role === "instructor") && path.startsWith("/admin/courses/")) {
     return true;
   }
+  // Instructor cohort sub-routes
+  if (role === "instructor" && path.startsWith("/admin/cohorts")) return true;
   // Finance sub-routes.
   if (role === "finance" && path.startsWith("/admin/finance")) return true;
   return allowedSetFor(role).has(path);
@@ -111,7 +115,7 @@ export function canAccessRoute(role: AdminRole, path: string): boolean {
 // Sidebar sections each role can see in the left nav.
 const ROLE_SECTIONS: Record<Exclude<StaffRole, "admin">, string[]> = {
   moderator: ["Workspace", "LMS", "Engagement"],
-  instructor: ["Workspace", "LMS"],
+  instructor: ["Workspace", "LMS", "Engagement"],
   support: ["Workspace", "Engagement"],
   finance: ["Workspace", "Engagement", "Finance"],
   content_editor: ["Workspace", "Platform"],
