@@ -498,10 +498,6 @@ export default function CourseLearning() {
                 </Button>
               </div>
 
-              {/* Resources */}
-              {resources.length > 0 && (
-                <></>
-              )}
               {isStaffApprover && courseId && currentLesson && (
                 <div className="pt-6 border-t border-border">
                   <LessonApprovalPanel
@@ -511,6 +507,7 @@ export default function CourseLearning() {
                   />
                 </div>
               )}
+              {/* Resources */}
               {resources.length > 0 && (
                 <div className="pt-6 border-t border-border">
                   <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
