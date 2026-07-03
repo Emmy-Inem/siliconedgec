@@ -61,6 +61,14 @@ const CategoryCourses = lazy(() => import("./pages/CategoryCourses"));
 const Legal = lazy(() => import("./pages/Legal"));
 const Cohorts = lazy(() => import("./pages/Cohorts"));
 const CohortSpace = lazy(() => import("./pages/CohortSpace"));
+const InstructorLayout = lazy(() => import("./pages/instructor/InstructorLayout"));
+const InstructorOverview = lazy(() => import("./pages/instructor/InstructorOverview"));
+const InstructorStudents = lazy(() => import("./pages/instructor/InstructorStudents"));
+const InstructorStudentDetail = lazy(() => import("./pages/instructor/InstructorStudentDetail"));
+const InstructorCohort = lazy(() => import("./pages/instructor/InstructorCohort"));
+const InstructorAssignments = lazy(() => import("./pages/instructor/InstructorAssignments"));
+const InstructorAssignmentGrading = lazy(() => import("./pages/instructor/InstructorAssignmentGrading"));
+const InstructorQuizzes = lazy(() => import("./pages/instructor/InstructorQuizzes"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -222,6 +230,15 @@ const App = () => (
               <Route path="/cohorts" element={<Cohorts />} />
               <Route path="/cohorts/:id" element={<CohortSpace />} />
               <Route path="/bootcamp" element={<Bootcamp />} />
+              <Route path="/instructor" element={<InstructorLayout />}>
+                <Route index element={<InstructorOverview />} />
+                <Route path="students" element={<InstructorStudents />} />
+                <Route path="students/:userId" element={<InstructorStudentDetail />} />
+                <Route path="cohort" element={<InstructorCohort />} />
+                <Route path="assignments" element={<InstructorAssignments />} />
+                <Route path="assignments/:assignmentId" element={<InstructorAssignmentGrading />} />
+                <Route path="quizzes" element={<InstructorQuizzes />} />
+              </Route>
               <Route path="/terms" element={<Legal />} />
               <Route path="/privacy" element={<Legal />} />
               <Route path="/refund-policy" element={<Legal />} />
