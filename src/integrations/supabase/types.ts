@@ -3432,6 +3432,18 @@ export type Database = {
           promo_code_id: string
         }[]
       }
+      instructor_teaches_course: {
+        Args: { _course_id: string; _user_id: string }
+        Returns: boolean
+      }
+      instructor_teaches_lesson: {
+        Args: { _lesson_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_cohort_instructor: {
+        Args: { _cohort_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_cohort_member: {
         Args: { _cohort_id: string; _user_id: string }
         Returns: boolean
