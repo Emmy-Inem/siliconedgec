@@ -1,56 +1,139 @@
+## Instructor Dashboard — tailored to Silicon Edge
 
-## 1. Instructor role — expanded permissions
+The proposed plan largely duplicates infrastructure that already exists. Below is a version rewritten to fit the current schema, RBAC, and routing conventions. Nothing gets rebuilt from scratch — the Instructor Dashboard is a **new role-scoped shell** at `/instructor` that reuses `cohorts`, `cohort_members`, `cohort_posts`, `cohort_sessions`, `quizzes`, `quiz_questions`, `assignments`, `assignment_submissions`, and the existing `has_role('instructor')` policies.
 
-The `instructor` role already exists in `src/lib/admin-permissions.ts`. Extend it so instructors can fully manage cohorts + courses (not just view).
+## 1. Role & assignment (reuse what's there)
 
-- Add these routes to `FALLBACK_ALLOWED.instructor`: `/admin/cohorts`, `/admin/courses/new`, `/admin/categories`, `/admin/tags`, `/admin/paths`, `/admin/enrollments`, `/admin/certificates`, `/admin/live-classes`, `/admin/instructors`, `/admin/course-modules`.
-- Add "Engagement" to `ROLE_SECTIONS.instructor` so the sidebar exposes Cohorts + Communication.
-- Update `has_any_role` policy checks on DB tables that currently gate on `admin`/`moderator` for cohort + course editing (cohorts, cohort_members, cohort_sessions, cohort_materials, cohort_posts pin/delete, modules, lessons, courses, assignments, quizzes) to also include `'instructor'::app_role`.
-- Seed default rows in `role_permissions` so the RBAC matrix UI at `/admin/system` reflects the new instructor grants (admin can still edit).
+- `user_roles` already includes `'instructor'` (see `src/lib/admin-permissions.ts`). No enum migration.
+- Instructor ↔ cohort scoping already exists via `public.cohort_members.role = 'instructor'`. **Do NOT add `instructor_cohorts`** — it would duplicate this and break existing cohort UI.
+- Add one helper: `public.is_cohort_instructor(_cohort_id uuid, _user_id uuid)` (SECURITY DEFINER) returning true when a row exists in `cohort_members` with role `instructor`. Reuse it in RLS instead of `has_role('instructor')` for cohort-scoped tables so an instructor only sees THEIR cohorts, not every cohort.
 
-## 2. Manual quizzes & assignments (no AI)
+## 2. Routing & shell
 
-Admin + instructor should be able to hand-author quizzes/assignments and pick exactly how many items to attach per lesson.
+New top-level area, separate from `/dashboard` (student) and `/admin` (staff console):
 
-- In `AdminQuizzes` / `AdminAssessmentsHub`: add a "Create manually" flow with `Number of questions` field; render N question forms (question text, options, correct answer, explanation). Keep the existing AI generator, but make it opt-in via a toggle — default is manual.
-- Same treatment for `AdminAssignmentSubmissions` hub: add a "New assignment" dialog (title, description, lesson, points, due date, `count` for multi-part assignments).
-- Both flows write directly to `quizzes`/`quiz_questions` and `assignments`. Guard the UI + RLS with `has_any_role(auth.uid(), ARRAY['admin','instructor'])`.
+```text
+/instructor                       InstructorLayout (guard: adminRole === 'instructor' OR admin)
+  ├─ /                            Overview: needs-action tiles
+  ├─ /students                    Roster across my cohorts
+  ├─ /students/:userId            Per-student drill-down
+  ├─ /cohorts                     Picker (if >1)  → deep link to /cohorts/:id (existing CohortSpace)
+  ├─ /quizzes                     List + create (reuses AdminQuizzes engine, cohort-scoped)
+  ├─ /quizzes/:id/results         Attempts + per-question breakdown
+  ├─ /assignments                 List + create
+  └─ /assignments/:id             Submissions + grading side-by-side
+```
 
-## 3. Lesson-unlock approval by instructor/admin
+Routing rules updated in `src/App.tsx` and `AuthContext`:
+- When `adminRole === 'instructor'` and user hits `/dashboard`, redirect to `/instructor`.
+- Admins can visit `/instructor` too (impersonation-style view).
+- Header dropdown: show "Instructor Dashboard" link for instructors instead of "Admin".
 
-Replace "auto-unlock when previous lesson complete" with "unlock only after an admin/instructor approves it for that learner".
+`InstructorLayout` provides:
+- Cohort selector in the header (persists in `localStorage` — never re-picked per page).
+- Sidebar: Overview · Students · Cohort Space · Quizzes · Assignments · Live Sessions.
+- Auth guard using `adminRole === 'instructor' || adminRole === 'admin'`.
 
-- New table `public.lesson_unlocks (user_id, lesson_id, approved_by, approved_at, note)` with unique `(user_id, lesson_id)`; RLS: learner can `SELECT` their rows; admin/instructor can `INSERT/UPDATE/DELETE`.
-- Rewrite `enforce_lesson_unlock_order` trigger so a learner can only mark a lesson complete when either (a) it's the first lesson, or (b) an approval row exists.
-- Update client helper `src/lib/lesson-progress.ts` `isLessonUnlocked` to also require an approval for lessons after the first (via new `approvals: Set<string>` field in `UnlockContext`).
-- In `CourseLearning.tsx`, load approvals for the current user, gate the lesson list padlocks accordingly, and add an inline "Approve next lesson for this student" control rendered only when `isAdmin || adminRole === 'instructor'`. Hidden entirely for regular students. Provide a bulk "Approve all remaining" for admins.
-- Add `/admin/course-progress` (accessible to admin + instructor) to review per-student progress and toggle approvals.
+## 3. Overview — action-first, not stats-first
 
-## 4. Cohort Space — mobile/desktop polish
+Tiles fetched from existing tables:
+- **Ungraded submissions** — `assignment_submissions` where `grade IS NULL` AND assignment's course is in my cohorts.
+- **Unanswered Q&A** — `course_qna` for cohort courses, no `answer` row.
+- **Unread cohort posts** — `cohort_posts` count since last visit (per-cohort `last_seen_at` in `localStorage`).
+- **Upcoming sessions** — `cohort_sessions` in next 7 days.
+- **Pending lesson-unlock approvals** — students who completed the current lesson but have no `lesson_unlocks` row for the next one (uses table shipped last turn).
 
-Fix header cutoff and general layout on `src/pages/CohortSpace.tsx`.
+Each tile links straight to the filtered list — no dead-end numbers.
 
-- Hero: replace `min-h-[16rem] md:h-80` with a fluid `py-10 md:py-16` container so title/description never overflow; add `pt-20` to clear the fixed site header; ensure `<h1>` uses `text-2xl sm:text-3xl md:text-5xl leading-tight` and description clamps to 3 lines on mobile.
-- Move breadcrumb ("My cohorts") above the badges with proper spacing; wrap status/date row so it stacks under 380px.
-- Tabs: replace `grid-cols-2 sm:flex` with a horizontally scrollable pill row on mobile (`overflow-x-auto no-scrollbar`); labels stay one line.
-- Stat strip: switch to `grid-cols-1 xs:grid-cols-3` for very narrow screens; ensure numbers don't crop.
+## 4. Students roster
 
-## 5. Discussion — chat-style redesign
+Single query joining `cohort_members` (my cohorts) → `enrollments` → `profiles`. Columns: name, cohort, course progress %, last active, ungraded count, quiz avg. Filter by cohort, search by name/email. Row click → `/instructor/students/:userId` showing quiz attempts, assignment submissions, lesson progress, cohort activity, and inline approval controls (reuses `LessonApprovalPanel`).
 
-Match the polished look of the homepage cohort animation.
+## 5. Cohort Space
 
-- Rework `Discussion` in `CohortSpace.tsx`:
-  - Two-tone bubbles: own posts right-aligned in `bg-primary text-primary-foreground`, others left-aligned in `bg-muted text-foreground`, both `rounded-2xl` with a small tail.
-  - Avatar always on the sender side; name + timestamp in a small caption above the bubble.
-  - Reply-to shows a quoted preview inside the reply bubble (author name + first ~80 chars, clickable to scroll to original).
-  - Actions row (Reply / Pin / Delete) appears on hover / long-press.
-  - Compact composer pinned to the bottom of the tab (sticky), with an inline "Replying to @name ×" chip when `replyTo` is set.
-  - Reactions row (👍 ❤️ 🎉) — thin `cohort_post_reactions` table (user_id, post_id, emoji). Optional but included.
-  - Auto-scroll to newest, keep pinned posts as a dismissible strip at the top.
-- Add subtle divider between conversation days ("Today", "Yesterday", full date).
+No new tables. Instructor `/cohorts` picker deep-links into the existing `/cohorts/:id` `CohortSpace` page. Add an "Instructor tools" strip visible only to staff:
+- Pin/unpin any post (already exists in RLS).
+- "Announce to cohort" composer that posts with `is_pinned=true` AND triggers `notify_cohort_post` (already wired).
+- Bulk-message: send a notification to every `cohort_members` user via `notifications` insert.
+
+## 6. Quizzes
+
+Reuse `quizzes` + `quiz_questions` (already in schema, already used by `AdminQuizzes`). Instructor UI is a thin wrapper:
+- List filters by `course_id IN (SELECT course_id FROM cohorts WHERE id IN my_cohorts)`.
+- Create modal reuses the manual-count builder shipped last turn (0–50 stubs).
+- `/quizzes/:id/results` reads `quiz_attempts` scoped to students in my cohorts and shows: attempts table, distribution, per-question correct %, top wrong answers.
+
+No new tables. Do NOT add `quiz_options` / `quiz_answers` — the project stores options as JSONB in `quiz_questions.options` and answers as JSONB in `quiz_attempts.answers`, graded by the existing `grade_quiz_submission` RPC.
+
+## 7. Assignments
+
+Reuse `assignments` + `assignment_submissions`. New Instructor pages:
+- List with status chips (draft / open / past due / all graded).
+- Detail view = submissions list on the left, viewer + grade/feedback form on the right (single screen — no tab-switch). Writes `grade`, `feedback`, `graded_by=auth.uid()`, `graded_at=now()`. Existing `notify_assignment_submission` trigger already sends the "graded" notification.
+
+## 8. RLS additions (single migration)
+
+Only what's actually missing. Everything else is already covered.
+
+```sql
+-- Helper: cohort membership as instructor
+create or replace function public.is_cohort_instructor(_cohort_id uuid, _user_id uuid)
+returns boolean language sql stable security definer set search_path=public as $$
+  select exists (
+    select 1 from public.cohort_members
+    where cohort_id = _cohort_id and user_id = _user_id and role = 'instructor'
+  )
+$$;
+
+-- Instructors see submissions from students in their cohorts (course-scoped)
+create policy "Instructors read cohort submissions" on public.assignment_submissions
+  for select using (
+    exists (
+      select 1
+      from public.assignments a
+      join public.lessons l on l.id = a.lesson_id
+      join public.modules m on m.id = l.module_id
+      join public.cohorts c on c.course_id = m.course_id
+      where a.id = assignment_submissions.assignment_id
+        and public.is_cohort_instructor(c.id, auth.uid())
+    )
+  );
+
+-- Same shape for quiz_attempts (read) and lesson_progress (read).
+```
+
+Explicitly test: instructor A on cohort X cannot read instructor B's cohort Y data. Add a vitest RLS test alongside `src/test/rls-influencer-referrals.test.ts`.
+
+## 9. Files touched
+
+New:
+- `src/pages/instructor/InstructorLayout.tsx`
+- `src/pages/instructor/InstructorOverview.tsx`
+- `src/pages/instructor/InstructorStudents.tsx`, `InstructorStudentDetail.tsx`
+- `src/pages/instructor/InstructorQuizzes.tsx`, `InstructorQuizResults.tsx`
+- `src/pages/instructor/InstructorAssignments.tsx`, `InstructorAssignmentGrading.tsx`
+- `src/pages/instructor/InstructorCohortPicker.tsx`
+- `src/hooks/useInstructorCohorts.ts`
+- `src/test/rls-instructor-scoping.test.ts`
+- One Supabase migration for `is_cohort_instructor` + scoped read policies.
+
+Edited:
+- `src/App.tsx` — add `/instructor/*` routes.
+- `src/contexts/AuthContext.tsx` — redirect instructor from `/dashboard` on sign-in.
+- `src/components/Header.tsx` — role-aware dashboard link.
+
+## 10. Build order
+
+1. Migration + `is_cohort_instructor` helper + RLS test.
+2. `InstructorLayout` + cohort selector + `/instructor` route + redirect logic.
+3. Overview tiles (read-only, uses existing data).
+4. Students roster + drill-down.
+5. Assignments grading (simpler than quizzes).
+6. Quizzes list/results (reuse manual builder from last turn).
+7. Cohort Space instructor tools strip.
 
 ## Technical notes
 
-- Migration steps required: `lesson_unlocks` table + trigger rewrite, `cohort_post_reactions` table, role_permissions seed for instructor, RLS updates on cohort_*/quizzes/assignments/modules/lessons to include instructor.
-- No breaking data changes — existing completions stay valid; unlock approvals only gate lessons the student hasn't reached yet.
-- Files touched (est.): `src/lib/admin-permissions.ts`, `src/lib/lesson-progress.ts` + tests, `src/pages/CohortSpace.tsx`, `src/pages/CourseLearning.tsx`, `src/pages/admin/AdminQuizzes.tsx`, `src/pages/admin/AdminAssignmentSubmissions.tsx`, new `src/pages/admin/AdminCourseProgress.tsx`, `src/App.tsx` route, plus one Supabase migration.
+- No changes to existing student `/dashboard` or admin `/admin/*` — Instructor Dashboard is additive.
+- Admins retain access to everything via `/admin`; `/instructor` is a focused workspace, not a replacement.
+- No new content tables; all writes go through existing tables so notifications, XP, and analytics keep firing.
