@@ -34,7 +34,7 @@ export default function InstructorAssignmentGrading() {
         .select("*")
         .eq("assignment_id", assignmentId!)
         .order("submitted_at", { ascending: false });
-      const userIds = Array.from(new Set((subs ?? []).map((s: any) => s.user_id)));
+      const userIds = Array.from(new Set((subs ?? []).map((s: any) => s.user_id))) as string[];
       let names: Record<string, any> = {};
       if (userIds.length) {
         const { data: profs } = await supabase.rpc("get_public_profiles", { p_user_ids: userIds });
