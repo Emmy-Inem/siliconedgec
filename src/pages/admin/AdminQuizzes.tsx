@@ -116,7 +116,13 @@ export default function AdminQuizzes() {
       if (!form.title || !form.lesson_id) throw new Error("Provide a quiz title and lesson before saving AI questions");
       const { data: quiz, error } = await supabase
         .from("quizzes")
-        .insert({ title: form.title, lesson_id: form.lesson_id, passing_score: parseInt(form.passing_score) })
+        .insert({
+          title: form.title,
+          lesson_id: form.lesson_id,
+          passing_score: parseInt(form.passing_score),
+          is_ai_generated: true,
+          is_visible: false,
+        } as any)
         .select("id")
         .single();
       if (error) throw error;
