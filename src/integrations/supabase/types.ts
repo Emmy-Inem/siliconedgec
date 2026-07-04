@@ -918,6 +918,7 @@ export type Database = {
         Row: {
           cohort_id: string
           id: string
+          is_lead: boolean
           joined_at: string
           role: string
           user_id: string
@@ -925,6 +926,7 @@ export type Database = {
         Insert: {
           cohort_id: string
           id?: string
+          is_lead?: boolean
           joined_at?: string
           role?: string
           user_id: string
@@ -932,6 +934,7 @@ export type Database = {
         Update: {
           cohort_id?: string
           id?: string
+          is_lead?: boolean
           joined_at?: string
           role?: string
           user_id?: string
@@ -1476,8 +1479,10 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          access_source: string
           course_id: string
           created_at: string
+          granted_by: string | null
           id: string
           is_completed: boolean | null
           last_lesson_id: string | null
@@ -1489,8 +1494,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          access_source?: string
           course_id: string
           created_at?: string
+          granted_by?: string | null
           id?: string
           is_completed?: boolean | null
           last_lesson_id?: string | null
@@ -1502,8 +1509,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          access_source?: string
           course_id?: string
           created_at?: string
+          granted_by?: string | null
           id?: string
           is_completed?: boolean | null
           last_lesson_id?: string | null
@@ -2910,6 +2919,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_ai_generated: boolean
+          is_visible: boolean
           lesson_id: string
           max_attempts: number | null
           passing_score: number
@@ -2919,6 +2930,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_ai_generated?: boolean
+          is_visible?: boolean
           lesson_id: string
           max_attempts?: number | null
           passing_score?: number
@@ -2928,6 +2941,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_ai_generated?: boolean
+          is_visible?: boolean
           lesson_id?: string
           max_attempts?: number | null
           passing_score?: number
@@ -3227,6 +3242,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          item_key: string
+          order_index: number
+          pinned_at: string
+          user_id: string
+        }
+        Insert: {
+          item_key: string
+          order_index?: number
+          pinned_at?: string
+          user_id: string
+        }
+        Update: {
+          item_key?: string
+          order_index?: number
+          pinned_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -3373,6 +3409,15 @@ export type Database = {
           module_id: string
           module_order_index: number
           module_title: string
+        }[]
+      }
+      get_course_instructors: {
+        Args: { p_course_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          is_lead: boolean
+          user_id: string
         }[]
       }
       get_profiles_count: { Args: never; Returns: number }
