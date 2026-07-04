@@ -32,7 +32,11 @@ export default function AdminQuizzes() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Quiz | null>(null);
-  const [form, setForm] = useState({ title: "", lesson_id: "", passing_score: "70", manual_count: "5" });
+  const [form, setForm] = useState({ title: "", lesson_id: "", passing_score: "70" });
+  type ManualQ = { question_text: string; options: string[]; correct_answer: string };
+  const [manualQs, setManualQs] = useState<ManualQ[]>([
+    { question_text: "", options: ["", "", "", ""], correct_answer: "" },
+  ]);
   const [questionsDialogOpen, setQuestionsDialogOpen] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
@@ -74,22 +78,36 @@ export default function AdminQuizzes() {
         if (error) throw error;
         return;
       } else {
-        const { data, error } = await supabase.from("quizzes").insert(payload).select("id").single();
+        const { data, error } = await supabase
+          .from("quizzes")
+          .insert({ ...payload, is_ai_generated: false, is_visible: true } as any)
+          .select("id")
+          .single();
         if (error) throw error;
-        const count = Math.max(0, Math.min(50, parseInt(form.manual_count || "0") || 0));
-        if (count > 0 && data?.id) {
-          const stubs = Array.from({ length: count }).map((_, i) => ({
+        const valid = manualQs
+          .map((q) => ({
+            ...q,
+            options: q.options.map((o) => o.trim()).filter(Boolean),
+          }))
+          .filter((q) => q.question_text.trim() && q.options.length >= 2 && q.correct_answer && q.options.includes(q.correct_answer));
+        if (valid.length > 0 && data?.id) {
+          const rows = valid.map((q, i) => ({
             quiz_id: data.id,
-            question_text: `Question ${i + 1}`,
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            correct_answer: "Option A",
+            question_text: q.question_text.trim(),
+            options: q.options,
+            correct_answer: q.correct_answer,
             order_index: i,
           }));
-          await supabase.from("quiz_questions").insert(stubs);
+          const { error: qErr } = await supabase.from("quiz_questions").insert(rows);
+          if (qErr) throw qErr;
         }
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); setDialogOpen(false); toast({ title: editing ? "Quiz updated" : "Quiz created" }); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      setDialogOpen(false);
+      toast({ title: editing ? "Quiz updated" : "Quiz created with questions" });
+    },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
@@ -98,7 +116,13 @@ export default function AdminQuizzes() {
       if (!form.title || !form.lesson_id) throw new Error("Provide a quiz title and lesson before saving AI questions");
       const { data: quiz, error } = await supabase
         .from("quizzes")
-        .insert({ title: form.title, lesson_id: form.lesson_id, passing_score: parseInt(form.passing_score) })
+        .insert({
+          title: form.title,
+          lesson_id: form.lesson_id,
+          passing_score: parseInt(form.passing_score),
+          is_ai_generated: true,
+          is_visible: false,
+        } as any)
         .select("id")
         .single();
       if (error) throw error;
@@ -158,8 +182,32 @@ export default function AdminQuizzes() {
     { key: "passing_score", label: "Passing Score", render: (q) => <Badge variant="secondary">{q.passing_score}%</Badge> },
   ];
 
-  const openAdd = () => { setEditing(null); setForm({ title: "", lesson_id: "", passing_score: "70", manual_count: "5" }); setDialogOpen(true); };
-  const openEdit = (q: Quiz) => { setEditing(q); setForm({ title: q.title, lesson_id: q.lesson_id, passing_score: String(q.passing_score), manual_count: "0" }); setDialogOpen(true); };
+  const openAdd = () => {
+    setEditing(null);
+    setForm({ title: "", lesson_id: "", passing_score: "70" });
+    setManualQs([{ question_text: "", options: ["", "", "", ""], correct_answer: "" }]);
+    setDialogOpen(true);
+  };
+  const openEdit = (q: Quiz) => {
+    setEditing(q);
+    setForm({ title: q.title, lesson_id: q.lesson_id, passing_score: String(q.passing_score) });
+    setDialogOpen(true);
+  };
+  const updateMQ = (idx: number, patch: Partial<ManualQ>) => {
+    setManualQs((prev) => prev.map((q, i) => (i === idx ? { ...q, ...patch } : q)));
+  };
+  const updateMQOpt = (qIdx: number, optIdx: number, value: string) => {
+    setManualQs((prev) => prev.map((q, i) => {
+      if (i !== qIdx) return q;
+      const opts = [...q.options];
+      opts[optIdx] = value;
+      // If the correct answer no longer matches any option, clear it.
+      const stillValid = q.correct_answer && opts.includes(q.correct_answer);
+      return { ...q, options: opts, correct_answer: stillValid ? q.correct_answer : "" };
+    }));
+  };
+  const addMQ = () => setManualQs((prev) => [...prev, { question_text: "", options: ["", "", "", ""], correct_answer: "" }]);
+  const removeMQ = (idx: number) => setManualQs((prev) => prev.filter((_, i) => i !== idx));
   const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
@@ -217,19 +265,54 @@ export default function AdminQuizzes() {
                 </TabsList>
                 <TabsContent value="manual" className="space-y-3 pt-3">
                   <p className="text-xs text-muted-foreground">
-                    Choose how many questions to pre-create. You can edit each one from the Q&A panel after saving.
+                    Add each question and its four options below. Select the correct answer for each.
                   </p>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">Number of questions (0–50)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={50}
-                      value={form.manual_count}
-                      onChange={(e) => setForm({ ...form, manual_count: e.target.value })}
-                      className={inputClass}
-                    />
+                  <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1">
+                    {manualQs.map((q, qi) => (
+                      <div key={qi} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-xs font-semibold text-muted-foreground">Question {qi + 1}</div>
+                          {manualQs.length > 1 && (
+                            <button type="button" onClick={() => removeMQ(qi)} className="text-destructive text-xs hover:underline">
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          value={q.question_text}
+                          onChange={(e) => updateMQ(qi, { question_text: e.target.value })}
+                          placeholder="Type the question…"
+                          className={inputClass}
+                        />
+                        <div className="space-y-1.5">
+                          {q.options.map((opt, oi) => (
+                            <label key={oi} className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name={`correct-${qi}`}
+                                checked={!!opt && q.correct_answer === opt}
+                                onChange={() => updateMQ(qi, { correct_answer: opt })}
+                                disabled={!opt}
+                                className="shrink-0"
+                              />
+                              <input
+                                value={opt}
+                                onChange={(e) => updateMQOpt(qi, oi, e.target.value)}
+                                placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                                className={inputClass}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Tick the radio next to the correct option.
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                  <Button type="button" variant="outline" size="sm" onClick={addMQ} className="w-full">
+                    <Plus className="h-3 w-3 mr-1" /> Add another question
+                  </Button>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
                     <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>

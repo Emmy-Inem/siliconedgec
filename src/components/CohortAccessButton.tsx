@@ -15,14 +15,16 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
   const { user } = useAuth();
   const [cohort, setCohort] = useState<{ id: string; name: string } | null>(null);
   const [allCohorts, setAllCohorts] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [otherCohorts, setOtherCohorts] = useState<{ id: string; name: string; role: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
 
   useEffect(() => {
-    if (!user || !courseId) {
+    if (!user) {
       setCohort(null);
       setAllCohorts([]);
+      setOtherCohorts([]);
       setLoading(false);
       return;
     }
@@ -31,33 +33,38 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
       setLoading(true);
       setError(null);
       try {
-        const { data: cohorts, error: cErr } = await db.from("cohorts").select("id, name").eq("course_id", courseId);
-        if (cErr) throw cErr;
-        const ids = (cohorts || []).map((c: any) => c.id);
-        if (ids.length === 0) {
-          if (mounted) { setCohort(null); setAllCohorts([]); }
-          return;
-        }
-        const { data: ms, error: mErr } = await db.from("cohort_members").select("cohort_id, role").eq("user_id", user.id).in("cohort_id", ids);
+        // Query the user's memberships FIRST so we always find their cohorts,
+        // even ones not linked to this specific course (bootcamps, cross-course).
+        const { data: ms, error: mErr } = await db
+          .from("cohort_members")
+          .select("cohort_id, role")
+          .eq("user_id", user.id);
         if (mErr) throw mErr;
         if (!mounted) return;
-
-        if (ms && ms.length > 0) {
-          const matches = ms.map((m: any) => {
-            const match = (cohorts || []).find((c: any) => c.id === m.cohort_id);
-            return match ? { id: match.id, name: match.name, role: m.role } : null;
-          }).filter(Boolean) as { id: string; name: string; role: string }[];
-
-          setAllCohorts(matches);
-          if (matches.length > 0) {
-            setCohort({ id: matches[0].id, name: matches[0].name });
-          } else {
-            setCohort(null);
-          }
-        } else {
-          setCohort(null);
-          setAllCohorts([]);
+        if (!ms || ms.length === 0) {
+          setCohort(null); setAllCohorts([]); setOtherCohorts([]);
+          return;
         }
+        const memberIds = ms.map((m: any) => m.cohort_id);
+        const { data: cohorts, error: cErr } = await db
+          .from("cohorts")
+          .select("id, name, course_id")
+          .in("id", memberIds);
+        if (cErr) throw cErr;
+        const byId = new Map((cohorts || []).map((c: any) => [c.id, c]));
+        const matches: { id: string; name: string; role: string }[] = [];
+        const others: { id: string; name: string; role: string }[] = [];
+        for (const m of ms) {
+          const c: any = byId.get(m.cohort_id);
+          if (!c) continue;
+          const row = { id: c.id, name: c.name, role: m.role };
+          if (courseId && c.course_id === courseId) matches.push(row);
+          else others.push(row);
+        }
+        if (!mounted) return;
+        setAllCohorts(matches);
+        setOtherCohorts(others);
+        setCohort(matches.length ? { id: matches[0].id, name: matches[0].name } : null);
       } catch (err: any) {
         if (mounted) setError(err.message || "Failed to load cohort access");
       } finally {
@@ -102,6 +109,34 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
   }
 
   if (!cohort) {
+    // User has other cohort memberships (bootcamp, other courses) — surface those instead of the dead empty state.
+    if (otherCohorts.length > 0) {
+      const first = otherCohorts[0];
+      return (
+        <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card p-4">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+              <Users className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-primary font-semibold">Your cohorts</div>
+              <div className="font-heading font-semibold text-sm mt-0.5 truncate">{first.name}</div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                You're a member of {otherCohorts.length} other cohort{otherCohorts.length > 1 ? "s" : ""}.
+              </p>
+              <div className="flex items-center gap-3 mt-2">
+                <Link to={`/cohorts/${first.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                  Open cohort <ArrowRight className="h-3 w-3" />
+                </Link>
+                <Link to="/cohorts" className="text-[11px] text-muted-foreground hover:text-foreground underline">
+                  All my cohorts
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/20 to-card p-4">
         <div className="flex items-start gap-3">
