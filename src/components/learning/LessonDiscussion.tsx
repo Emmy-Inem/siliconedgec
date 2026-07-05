@@ -164,6 +164,8 @@ export function LessonDiscussion({
   const renderItem = (c: CommentRow & { replies?: CommentRow[] }) => {
     const isOwn = user?.id === c.user_id;
     const isEditing = editing === c.id;
+    const lessonLabel = lessonTitleById.get(c.lesson_id);
+    const isFromOtherLesson = c.lesson_id !== lessonId && !!lessonLabel;
     return (
       <li key={c.id} className="space-y-2">
         <div className="rounded-xl border border-border/60 bg-card p-3">
@@ -180,6 +182,12 @@ export function LessonDiscussion({
                 </p>
               </div>
             </div>
+            {isFromOtherLesson && (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5 max-w-[180px] truncate">
+                <BookOpen className="h-3 w-3 shrink-0" />
+                <span className="truncate">{lessonLabel}</span>
+              </span>
+            )}
             {(isOwn || isAdmin) && !c.is_deleted && !isEditing && (
               <div className="flex gap-1">
                 {isOwn && (
