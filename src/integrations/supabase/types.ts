@@ -192,6 +192,8 @@ export type Database = {
           due_at: string | null
           id: string
           instructions: string
+          is_ai_generated: boolean
+          is_visible: boolean
           lesson_id: string
           max_points: number
           title: string
@@ -202,6 +204,8 @@ export type Database = {
           due_at?: string | null
           id?: string
           instructions?: string
+          is_ai_generated?: boolean
+          is_visible?: boolean
           lesson_id: string
           max_points?: number
           title: string
@@ -212,6 +216,8 @@ export type Database = {
           due_at?: string | null
           id?: string
           instructions?: string
+          is_ai_generated?: boolean
+          is_visible?: boolean
           lesson_id?: string
           max_points?: number
           title?: string
