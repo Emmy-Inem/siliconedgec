@@ -20,7 +20,13 @@ export function AssignmentPanel({ lessonId }: { lessonId: string }) {
   useEffect(() => {
     if (!lessonId || !user) return;
     (async () => {
-      const { data: as } = await supabase.from("assignments").select("id, title, instructions, max_points, due_at").eq("lesson_id", lessonId);
+      // Only show assignments the instructor has explicitly published.
+      // AI drafts stay hidden until they toggle visibility on.
+      const { data: as } = await supabase
+        .from("assignments")
+        .select("id, title, instructions, max_points, due_at")
+        .eq("lesson_id", lessonId)
+        .eq("is_visible", true);
       const list = (as ?? []) as Assignment[];
       setAssignments(list);
       if (list.length) {
