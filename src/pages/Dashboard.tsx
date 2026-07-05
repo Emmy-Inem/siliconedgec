@@ -82,7 +82,7 @@ interface LiveClassRow {
 }
 
 export default function Dashboard() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, adminRole } = useAuth();
   const { data: siteSettings } = useSiteSettings();
   const { data: publicAccess } = usePublicAccessMode();
   const { data: hasJobs } = useHasPublishedJobs();
@@ -209,6 +209,8 @@ export default function Dashboard() {
 
   if (loading) return null;
   if (!user && !publicAccess) return <Navigate to="/sign-in" replace />;
+  // Instructors get their dedicated dashboard.
+  if (adminRole === "instructor") return <Navigate to="/instructor" replace />;
 
   const completed = enrollments.filter((e) => e.is_completed);
   const isWebinar = (e: EnrolledCourse) =>
