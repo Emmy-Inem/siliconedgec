@@ -559,7 +559,10 @@ export default function CourseLearning() {
 
               {/* Threaded lesson discussion */}
               <div className="pt-6 border-t border-border">
-                <LessonDiscussion lessonId={currentLesson.id} />
+                <LessonDiscussion
+                  lessonId={currentLesson.id}
+                  courseLessons={allLessons as { id: string; title: string }[]}
+                />
               </div>
 
               {/* Personal notes */}
