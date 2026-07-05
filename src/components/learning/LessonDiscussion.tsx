@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Reply, Trash2, Pencil, Loader2, Send } from "lucide-react";
+import { MessageSquare, Reply, Trash2, Pencil, Loader2, Send, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -22,11 +22,18 @@ interface CommentRow {
 }
 
 /**
- * Threaded lesson discussion. Enrolled users + admins can read and post.
- * RLS in the DB is the source of truth — this UI just enforces the same rules
- * for UX (disabled inputs when not enrolled, etc.).
+ * Course-wide threaded discussion. Comments posted from any lesson are
+ * visible from every lesson in the same course so that conversation between
+ * students doesn't fragment. New posts are still tagged with the current
+ * lesson so learners can jump to context.
  */
-export function LessonDiscussion({ lessonId }: { lessonId: string }) {
+export function LessonDiscussion({
+  lessonId,
+  courseLessons,
+}: {
+  lessonId: string;
+  courseLessons?: { id: string; title: string }[];
+}) {
   const { user, isAdmin } = useAuth();
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +44,22 @@ export function LessonDiscussion({ lessonId }: { lessonId: string }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [editBody, setEditBody] = useState("");
 
+  const lessonIds = useMemo(
+    () => (courseLessons?.length ? courseLessons.map((l) => l.id) : [lessonId]),
+    [courseLessons, lessonId],
+  );
+  const lessonTitleById = useMemo(() => {
+    const m = new Map<string, string>();
+    (courseLessons ?? []).forEach((l) => m.set(l.id, l.title));
+    return m;
+  }, [courseLessons]);
+
   const load = async () => {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("lesson_comments")
       .select("id, lesson_id, user_id, parent_id, body, is_deleted, created_at, updated_at")
-      .eq("lesson_id", lessonId)
+      .in("lesson_id", lessonIds)
       .order("created_at", { ascending: true });
     if (error) {
       setLoading(false);
@@ -66,22 +83,27 @@ export function LessonDiscussion({ lessonId }: { lessonId: string }) {
   };
 
   useEffect(() => {
-    if (!lessonId) return;
+    if (!lessonIds.length) return;
     load();
-    // Realtime: keep the thread fresh while users chat
+    // Realtime: keep the thread fresh while users chat. Subscribe to the
+    // whole table (RLS filters what we actually receive) and re-load on any
+    // change to a lesson in this course.
     const ch = (supabase as any)
-      .channel(`lesson_comments:${lessonId}`)
+      .channel(`lesson_comments:course:${lessonIds[0]}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "lesson_comments", filter: `lesson_id=eq.${lessonId}` },
-        () => load(),
+        { event: "*", schema: "public", table: "lesson_comments" },
+        (payload: any) => {
+          const lid = payload?.new?.lesson_id ?? payload?.old?.lesson_id;
+          if (lid && lessonIds.includes(lid)) load();
+        },
       )
       .subscribe();
     return () => {
       try { supabase.removeChannel(ch); } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonId]);
+  }, [lessonIds.join("|")]);
 
   const tree = useMemo(() => {
     const roots = comments.filter((c) => !c.parent_id);
