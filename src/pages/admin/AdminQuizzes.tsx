@@ -15,6 +15,8 @@ interface Quiz {
   lesson_id: string;
   title: string;
   passing_score: number;
+  is_ai_generated?: boolean;
+  is_visible?: boolean;
   lessons?: { title: string; modules?: { courses?: { title: string } } } | null;
 }
 
@@ -153,6 +155,21 @@ export default function AdminQuizzes() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); toast({ title: "Quiz deleted" }); },
   });
 
+  const toggleVisible = useMutation({
+    mutationFn: async (q: Quiz) => {
+      const { error } = await (supabase as any)
+        .from("quizzes")
+        .update({ is_visible: !q.is_visible })
+        .eq("id", q.id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, q) => {
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      toast({ title: q.is_visible ? "Quiz hidden from students" : "Quiz published to students" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const addQuestion = useMutation({
     mutationFn: async () => {
       if (!selectedQuiz) return;
@@ -180,6 +197,22 @@ export default function AdminQuizzes() {
     { key: "title", label: "Quiz Title" },
     { key: "lesson_id", label: "Lesson", render: (q) => <span className="text-xs">{(q.lessons as any)?.title || "—"}</span> },
     { key: "passing_score", label: "Passing Score", render: (q) => <Badge variant="secondary">{q.passing_score}%</Badge> },
+    {
+      key: "is_visible",
+      label: "Status",
+      render: (q) => (
+        <div className="flex items-center gap-1.5">
+          <Badge variant={q.is_visible ? "default" : "outline"} className="text-[10px]">
+            {q.is_visible ? "Published" : "Hidden"}
+          </Badge>
+          {q.is_ai_generated && (
+            <Badge variant="secondary" className="text-[10px]">
+              <Star className="h-2.5 w-2.5 mr-0.5" /> AI
+            </Badge>
+          )}
+        </div>
+      ),
+    },
   ];
 
   const openAdd = () => {
@@ -222,9 +255,18 @@ export default function AdminQuizzes() {
         isLoading={isLoading}
         addLabel="Add Quiz"
         extraActions={(item) => (
-          <button onClick={() => { setSelectedQuiz(item); setQuestionsDialogOpen(true); }} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
-            Q&A
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => toggleVisible.mutate(item)}
+              className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-xs font-medium"
+              title={item.is_visible ? "Hide from students" : "Publish to students"}
+            >
+              {item.is_visible ? "Unpublish" : "Publish"}
+            </button>
+            <button onClick={() => { setSelectedQuiz(item); setQuestionsDialogOpen(true); }} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-xs font-medium">
+              Q&A
+            </button>
+          </div>
         )}
       />
 

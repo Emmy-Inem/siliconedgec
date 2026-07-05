@@ -35,10 +35,14 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   const { data: quiz, isLoading } = useQuery({
     queryKey: ["lesson-quiz", lessonId],
     queryFn: async () => {
+      // Students only see published quizzes. AI-generated drafts stay hidden
+      // until an instructor/admin flips is_visible in the admin UI. RLS is
+      // permissive here, so we filter explicitly.
       const { data: q } = await supabase
         .from("quizzes")
-        .select("id, title, passing_score, max_attempts")
+        .select("id, title, passing_score, max_attempts, is_visible")
         .eq("lesson_id", lessonId)
+        .eq("is_visible", true)
         .maybeSingle();
       if (!q) return null;
       const { data: questions } = await supabase.rpc("get_quiz_questions", { p_quiz_id: q.id });
