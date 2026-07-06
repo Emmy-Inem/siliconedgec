@@ -577,9 +577,60 @@ export function CurriculumBuilder({ courseId }: Props) {
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
-              <div>
-                <label className="text-sm font-medium block mb-1">Instructions</label>
-                <textarea value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} rows={4} className={inputClass} placeholder="Describe the task, deliverables, and grading criteria…" />
+              <div className="space-y-3">
+                {!editingLesson && (
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Attach to lesson</label>
+                    <select
+                      value={assignmentTarget}
+                      onChange={(e) => setAssignmentTarget(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="new">➕ Create new lesson slot in this module</option>
+                      {lessonsByModule(lessonForm.module_id)
+                        .filter((l) => (l.content_type ?? "video") !== "assignment")
+                        .map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.title}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Assignments must attach to a lesson. Pick one from this module or create a new slot.
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium block mb-1">Instructions</label>
+                  <textarea
+                    value={lessonForm.content_url}
+                    onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })}
+                    rows={4}
+                    className={inputClass}
+                    placeholder="Describe the task, deliverables, and grading criteria…"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Max points</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={assignmentMaxPoints}
+                      onChange={(e) => setAssignmentMaxPoints(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Due date (optional)</label>
+                    <input
+                      type="datetime-local"
+                      value={assignmentDueAt}
+                      onChange={(e) => setAssignmentDueAt(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
