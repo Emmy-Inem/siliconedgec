@@ -97,6 +97,12 @@ export function CurriculumBuilder({ courseId }: Props) {
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [lessonForm, setLessonForm] = useState({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
+  // For assignment-type lessons: pick an existing lesson to attach to, or
+  // "new" to create a fresh lesson slot in the module.
+  const [assignmentTarget, setAssignmentTarget] = useState<string>("new");
+  const [assignmentMaxPoints, setAssignmentMaxPoints] = useState<string>("100");
+  const [assignmentDueAt, setAssignmentDueAt] = useState<string>("");
+  const [linkedAssignmentId, setLinkedAssignmentId] = useState<string | null>(null);
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const sensors = useSensors(
@@ -160,6 +166,83 @@ export function CurriculumBuilder({ courseId }: Props) {
 
   const saveLesson = useMutation({
     mutationFn: async () => {
+      // ── Assignment flow ──────────────────────────────────────────────
+      // Assignments always need a row in `assignments` linked to a lesson.
+      // Two modes:
+      //   1. Attach to an EXISTING lesson (assignmentTarget = lesson id)
+      //      → insert/update ONLY the assignments row.
+      //   2. Create a NEW lesson slot (assignmentTarget = "new")
+      //      → create lesson row (content_type='assignment') AND assignments row.
+      if (lessonForm.content_type === "assignment") {
+        const maxPts = Math.max(1, parseInt(assignmentMaxPoints || "100", 10) || 100);
+        const dueIso = assignmentDueAt ? new Date(assignmentDueAt).toISOString() : null;
+        const assignmentPayload = {
+          title: lessonForm.title,
+          instructions: lessonForm.content_url || "",
+          max_points: maxPts,
+          due_at: dueIso,
+          is_ai_generated: false,
+          is_visible: true,
+        } as any;
+
+        if (editingLesson) {
+          // Keep lesson row in sync (title/instructions may have changed).
+          const { error: lErr } = await supabase
+            .from("lessons")
+            .update({
+              title: lessonForm.title,
+              duration: lessonForm.duration || null,
+              content_type: "assignment",
+              content_url: lessonForm.content_url || null,
+              module_id: lessonForm.module_id,
+            })
+            .eq("id", editingLesson.id);
+          if (lErr) throw lErr;
+
+          if (linkedAssignmentId) {
+            const { error: aErr } = await (supabase as any)
+              .from("assignments")
+              .update(assignmentPayload)
+              .eq("id", linkedAssignmentId);
+            if (aErr) throw aErr;
+          } else {
+            const { error: aErr } = await (supabase as any)
+              .from("assignments")
+              .insert({ ...assignmentPayload, lesson_id: editingLesson.id });
+            if (aErr) throw aErr;
+          }
+          return;
+        }
+
+        // Create mode
+        let targetLessonId: string;
+        if (assignmentTarget === "new") {
+          const moduleLessons = lessonsByModule(lessonForm.module_id);
+          const { data: newLesson, error: lErr } = await supabase
+            .from("lessons")
+            .insert({
+              title: lessonForm.title,
+              duration: lessonForm.duration || null,
+              content_type: "assignment",
+              content_url: lessonForm.content_url || null,
+              module_id: lessonForm.module_id,
+              order_index: moduleLessons.length,
+            })
+            .select("id")
+            .single();
+          if (lErr) throw lErr;
+          targetLessonId = newLesson!.id;
+        } else {
+          targetLessonId = assignmentTarget;
+        }
+        const { error: aErr } = await (supabase as any)
+          .from("assignments")
+          .insert({ ...assignmentPayload, lesson_id: targetLessonId });
+        if (aErr) throw aErr;
+        return;
+      }
+
+      // ── Standard (video / text / quiz) flow ──────────────────────────
       const payload = {
         title: lessonForm.title,
         duration: lessonForm.duration || null,
@@ -184,8 +267,13 @@ export function CurriculumBuilder({ courseId }: Props) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-assignments"] });
       setLessonDialogOpen(false); setEditingLesson(null);
       setLessonForm({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
+      setAssignmentTarget("new");
+      setAssignmentMaxPoints("100");
+      setAssignmentDueAt("");
+      setLinkedAssignmentId(null);
       toast({ title: editingLesson ? "Lesson saved" : "Lesson added" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -256,6 +344,10 @@ export function CurriculumBuilder({ courseId }: Props) {
   const openLessonDialog = (moduleId: string, contentType: string) => {
     setEditingLesson(null);
     setLessonForm({ title: "", duration: "", module_id: moduleId, content_type: contentType, content_url: "" });
+    setAssignmentTarget("new");
+    setAssignmentMaxPoints("100");
+    setAssignmentDueAt("");
+    setLinkedAssignmentId(null);
     setLessonDialogOpen(true);
   };
 
@@ -314,6 +406,31 @@ export function CurriculumBuilder({ courseId }: Props) {
                                           content_type: l.content_type ?? "video",
                                           content_url: l.content_url ?? "",
                                         });
+                                        // Preload the linked assignment (if any)
+                                        // so edits update that row instead of
+                                        // creating a duplicate.
+                                        if ((l.content_type ?? "") === "assignment") {
+                                          setAssignmentTarget(l.id);
+                                          (supabase as any)
+                                            .from("assignments")
+                                            .select("id, max_points, due_at, instructions, title")
+                                            .eq("lesson_id", l.id)
+                                            .maybeSingle()
+                                            .then((res: any) => {
+                                              const a = res?.data;
+                                              if (a) {
+                                                setLinkedAssignmentId(a.id);
+                                                setAssignmentMaxPoints(String(a.max_points ?? 100));
+                                                setAssignmentDueAt(
+                                                  a.due_at ? new Date(a.due_at).toISOString().slice(0, 16) : "",
+                                                );
+                                              } else {
+                                                setLinkedAssignmentId(null);
+                                                setAssignmentMaxPoints("100");
+                                                setAssignmentDueAt("");
+                                              }
+                                            });
+                                        }
                                         setLessonDialogOpen(true);
                                       }}
                                       onDelete={(id) => deleteLesson.mutate(id)}
@@ -460,9 +577,60 @@ export function CurriculumBuilder({ courseId }: Props) {
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
-              <div>
-                <label className="text-sm font-medium block mb-1">Instructions</label>
-                <textarea value={lessonForm.content_url} onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })} rows={4} className={inputClass} placeholder="Describe the task, deliverables, and grading criteria…" />
+              <div className="space-y-3">
+                {!editingLesson && (
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Attach to lesson</label>
+                    <select
+                      value={assignmentTarget}
+                      onChange={(e) => setAssignmentTarget(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="new">➕ Create new lesson slot in this module</option>
+                      {lessonsByModule(lessonForm.module_id)
+                        .filter((l) => (l.content_type ?? "video") !== "assignment")
+                        .map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.title}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Assignments must attach to a lesson. Pick one from this module or create a new slot.
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium block mb-1">Instructions</label>
+                  <textarea
+                    value={lessonForm.content_url}
+                    onChange={(e) => setLessonForm({ ...lessonForm, content_url: e.target.value })}
+                    rows={4}
+                    className={inputClass}
+                    placeholder="Describe the task, deliverables, and grading criteria…"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Max points</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={assignmentMaxPoints}
+                      onChange={(e) => setAssignmentMaxPoints(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Due date (optional)</label>
+                    <input
+                      type="datetime-local"
+                      value={assignmentDueAt}
+                      onChange={(e) => setAssignmentDueAt(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
               </div>
             )}
 

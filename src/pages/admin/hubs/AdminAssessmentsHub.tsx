@@ -2,6 +2,7 @@ import { HubShell } from "./HubShell";
 import AdminQuizzes from "../AdminQuizzes";
 import AdminQuizAttempts from "../AdminQuizAttempts";
 import AdminAssignmentSubmissions from "../AdminAssignmentSubmissions";
+import AdminAssignments from "../AdminAssignments";
 
 export default function AdminAssessmentsHub() {
   return (
@@ -11,7 +12,8 @@ export default function AdminAssessmentsHub() {
       tabs={[
         { value: "quizzes", label: "Quizzes", content: <AdminQuizzes /> },
         { value: "attempts", label: "Quiz Attempts", content: <AdminQuizAttempts /> },
-        { value: "assignments", label: "Assignments", content: <AdminAssignmentSubmissions /> },
+        { value: "assignments", label: "Assignments", content: <AdminAssignments /> },
+        { value: "submissions", label: "Submissions", content: <AdminAssignmentSubmissions /> },
       ]}
     />
   );

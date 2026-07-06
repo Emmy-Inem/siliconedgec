@@ -74,6 +74,20 @@ export default function AdminAccessGrants() {
   const grant = useMutation({
     mutationFn: async () => {
       if (!selectedUser || !courseId) throw new Error("Pick a student and course");
+      // Safeguard: double-check the course exists and lock the payload to
+      // ONLY the fields relevant to this single enrollment. The unique
+      // (user_id, course_id) constraint on `enrollments` guarantees the
+      // upsert cannot touch another course's row.
+      const { data: courseCheck, error: courseErr } = await supabase
+        .from("courses")
+        .select("id, title")
+        .eq("id", courseId)
+        .maybeSingle();
+      if (courseErr || !courseCheck) throw new Error("That course no longer exists.");
+      const confirmed = window.confirm(
+        `Grant ${selectedUser.full_name || "this student"} access ONLY to "${courseCheck.title}"? They will not gain access to any other course.`,
+      );
+      if (!confirmed) throw new Error("Cancelled");
       const payload = {
         user_id: selectedUser.user_id,
         course_id: courseId,
