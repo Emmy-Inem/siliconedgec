@@ -29,7 +29,10 @@ export default function CourseAssignments() {
       const lessonIds = (modules ?? []).flatMap((m: any) => (m.lessons ?? []).map((l: any) => l.id));
       if (!lessonIds.length) return { modules: modules ?? [], assignments: [], subs: [] };
       const { data: assignments } = await supabase
-        .from("assignments").select("id, title, lesson_id, max_points, due_at").in("lesson_id", lessonIds);
+        .from("assignments")
+        .select("id, title, lesson_id, max_points, due_at")
+        .in("lesson_id", lessonIds)
+        .eq("is_visible", true);
       const aIds = (assignments ?? []).map((a: any) => a.id);
       let subs: any[] = [];
       if (user && aIds.length) {
