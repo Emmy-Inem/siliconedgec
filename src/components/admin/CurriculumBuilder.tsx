@@ -406,6 +406,31 @@ export function CurriculumBuilder({ courseId }: Props) {
                                           content_type: l.content_type ?? "video",
                                           content_url: l.content_url ?? "",
                                         });
+                                        // Preload the linked assignment (if any)
+                                        // so edits update that row instead of
+                                        // creating a duplicate.
+                                        if ((l.content_type ?? "") === "assignment") {
+                                          setAssignmentTarget(l.id);
+                                          (supabase as any)
+                                            .from("assignments")
+                                            .select("id, max_points, due_at, instructions, title")
+                                            .eq("lesson_id", l.id)
+                                            .maybeSingle()
+                                            .then((res: any) => {
+                                              const a = res?.data;
+                                              if (a) {
+                                                setLinkedAssignmentId(a.id);
+                                                setAssignmentMaxPoints(String(a.max_points ?? 100));
+                                                setAssignmentDueAt(
+                                                  a.due_at ? new Date(a.due_at).toISOString().slice(0, 16) : "",
+                                                );
+                                              } else {
+                                                setLinkedAssignmentId(null);
+                                                setAssignmentMaxPoints("100");
+                                                setAssignmentDueAt("");
+                                              }
+                                            });
+                                        }
                                         setLessonDialogOpen(true);
                                       }}
                                       onDelete={(id) => deleteLesson.mutate(id)}
