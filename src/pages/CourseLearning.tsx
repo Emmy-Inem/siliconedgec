@@ -65,11 +65,19 @@ export default function CourseLearning() {
         .in("module_id", (modules ?? []).map((m) => m.id))
         .order("order_index");
 
+      // Assignment-type lessons are surfaced only via the /assignments page
+      // (and the AssignmentPanel component). Do NOT include them in the
+      // sequential lesson list, sidebar, or prev/next navigation — they would
+      // otherwise render a duplicate video/"Mark as Complete" viewer here.
+      const nonAssignmentLessons = (lessons ?? []).filter(
+        (l) => (l.content_type ?? "video") !== "assignment",
+      );
+
       return {
         ...courseData,
         modules: (modules ?? []).map((m) => ({
           ...m,
-          lessons: (lessons ?? []).filter((l) => l.module_id === m.id),
+          lessons: nonAssignmentLessons.filter((l) => l.module_id === m.id),
         })),
       };
     },
