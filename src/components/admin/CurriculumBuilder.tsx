@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video } from "lucide-react";
+import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 import {
@@ -30,6 +30,44 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  const qc = useQueryClient();
+  const { toast } = useToast();
+
+  // Count of AI-generated exercises for this lesson and whether any are currently visible.
+  const { data: aiState } = useQuery({
+    queryKey: ["lesson-ai-exercises", lesson.id],
+    queryFn: async () => {
+      const [qz, asg] = await Promise.all([
+        (supabase as any).from("quizzes").select("id, is_visible").eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+        (supabase as any).from("assignments").select("id, is_visible").eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+      ]);
+      const rows = [...(qz.data ?? []), ...(asg.data ?? [])];
+      return {
+        total: rows.length,
+        visible: rows.filter((r: any) => r.is_visible).length,
+      };
+    },
+  });
+
+  const toggleAi = useMutation({
+    mutationFn: async (enable: boolean) => {
+      await Promise.all([
+        (supabase as any).from("quizzes").update({ is_visible: enable }).eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+        (supabase as any).from("assignments").update({ is_visible: enable }).eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+      ]);
+    },
+    onSuccess: (_d, enable) => {
+      qc.invalidateQueries({ queryKey: ["lesson-ai-exercises", lesson.id] });
+      qc.invalidateQueries({ queryKey: ["admin-assignments"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      toast({ title: enable ? "AI exercise enabled" : "AI exercise hidden" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const hasAi = (aiState?.total ?? 0) > 0;
+  const aiEnabled = hasAi && (aiState?.visible ?? 0) > 0;
+
   return (
     <li
       ref={setNodeRef}
@@ -54,6 +92,21 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
         {lesson.duration && <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">({lesson.duration})</span>}
       </span>
       <span className="flex gap-0.5 shrink-0">
+        {hasAi && (
+          <button
+            type="button"
+            onClick={() => toggleAi.mutate(!aiEnabled)}
+            title={aiEnabled ? "Hide AI exercise for this lesson" : "Enable AI-generated exercise for this lesson"}
+            className={`h-7 px-2 rounded-md text-[10px] font-medium inline-flex items-center gap-1 border transition-colors ${
+              aiEnabled
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "bg-muted text-muted-foreground border-transparent hover:border-border"
+            }`}
+          >
+            <Sparkles className="h-3 w-3" />
+            AI {aiEnabled ? "on" : "off"}
+          </button>
+        )}
         <Button size="icon" variant="ghost" className="h-7 w-7" title="Manage resources" onClick={() => onResources(lesson)}>
           <Paperclip className="h-3 w-3" />
         </Button>
