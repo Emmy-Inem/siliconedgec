@@ -673,12 +673,47 @@ export function CurriculumBuilder({ courseId }: Props) {
               </div>
             )}
             {lessonForm.content_type === "quiz" && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <Star className="h-3.5 w-3.5 text-primary" />
-                  <p className="font-medium">Tip: build the quiz questions next</p>
+              <div className="space-y-3">
+                {!editingLesson && (
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Attach to lesson</label>
+                    <select
+                      value={quizTarget}
+                      onChange={(e) => setQuizTarget(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="new">➕ Create new lesson slot in this module</option>
+                      {lessonsByModule(lessonForm.module_id).map((l) => (
+                        <option key={l.id} value={l.id}>{l.title}</option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Quizzes must attach to a lesson. Multiple quizzes can share one lesson.
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium block mb-1">Passing score (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={quizPassingScore}
+                    onChange={(e) => setQuizPassingScore(e.target.value)}
+                    className={inputClass}
+                  />
                 </div>
-                <p className="text-[11px] text-muted-foreground">After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to add questions manually or generate them with AI.</p>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                    <p className="font-medium">Next: add the questions</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to
+                    add questions manually or generate them with AI. Manually created quizzes are published to
+                    students by default.
+                  </p>
+                </div>
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
