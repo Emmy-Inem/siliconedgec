@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video } from "lucide-react";
+import { Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video, Sparkles } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 import {
@@ -30,6 +30,44 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  const qc = useQueryClient();
+  const { toast } = useToast();
+
+  // Count of AI-generated exercises for this lesson and whether any are currently visible.
+  const { data: aiState } = useQuery({
+    queryKey: ["lesson-ai-exercises", lesson.id],
+    queryFn: async () => {
+      const [qz, asg] = await Promise.all([
+        (supabase as any).from("quizzes").select("id, is_visible").eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+        (supabase as any).from("assignments").select("id, is_visible").eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+      ]);
+      const rows = [...(qz.data ?? []), ...(asg.data ?? [])];
+      return {
+        total: rows.length,
+        visible: rows.filter((r: any) => r.is_visible).length,
+      };
+    },
+  });
+
+  const toggleAi = useMutation({
+    mutationFn: async (enable: boolean) => {
+      await Promise.all([
+        (supabase as any).from("quizzes").update({ is_visible: enable }).eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+        (supabase as any).from("assignments").update({ is_visible: enable }).eq("lesson_id", lesson.id).eq("is_ai_generated", true),
+      ]);
+    },
+    onSuccess: (_d, enable) => {
+      qc.invalidateQueries({ queryKey: ["lesson-ai-exercises", lesson.id] });
+      qc.invalidateQueries({ queryKey: ["admin-assignments"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      toast({ title: enable ? "AI exercise enabled" : "AI exercise hidden" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const hasAi = (aiState?.total ?? 0) > 0;
+  const aiEnabled = hasAi && (aiState?.visible ?? 0) > 0;
+
   return (
     <li
       ref={setNodeRef}
@@ -54,6 +92,21 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
         {lesson.duration && <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">({lesson.duration})</span>}
       </span>
       <span className="flex gap-0.5 shrink-0">
+        {hasAi && (
+          <button
+            type="button"
+            onClick={() => toggleAi.mutate(!aiEnabled)}
+            title={aiEnabled ? "Hide AI exercise for this lesson" : "Enable AI-generated exercise for this lesson"}
+            className={`h-7 px-2 rounded-md text-[10px] font-medium inline-flex items-center gap-1 border transition-colors ${
+              aiEnabled
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "bg-muted text-muted-foreground border-transparent hover:border-border"
+            }`}
+          >
+            <Sparkles className="h-3 w-3" />
+            AI {aiEnabled ? "on" : "off"}
+          </button>
+        )}
         <Button size="icon" variant="ghost" className="h-7 w-7" title="Manage resources" onClick={() => onResources(lesson)}>
           <Paperclip className="h-3 w-3" />
         </Button>
@@ -103,6 +156,11 @@ export function CurriculumBuilder({ courseId }: Props) {
   const [assignmentMaxPoints, setAssignmentMaxPoints] = useState<string>("100");
   const [assignmentDueAt, setAssignmentDueAt] = useState<string>("");
   const [linkedAssignmentId, setLinkedAssignmentId] = useState<string | null>(null);
+  // Quiz-flow state (parity with assignments): attach to an existing lesson
+  // or create a new lesson slot. quizzes.lesson_id has no unique constraint,
+  // so multiple quizzes can share one lesson.
+  const [quizTarget, setQuizTarget] = useState<string>("new");
+  const [quizPassingScore, setQuizPassingScore] = useState<string>("70");
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const sensors = useSensors(
@@ -166,6 +224,48 @@ export function CurriculumBuilder({ courseId }: Props) {
 
   const saveLesson = useMutation({
     mutationFn: async () => {
+      // ── Quiz flow ───────────────────────────────────────────────────
+      // Quizzes always live on a lesson. Mirror the assignment flow:
+      //   1. Attach to an EXISTING lesson (quizTarget = lesson id)
+      //      → insert ONLY into quizzes.
+      //   2. Create a NEW lesson slot (quizTarget = "new")
+      //      → create lesson row (content_type='quiz') AND quizzes row.
+      // On save, quizzes rows created manually default to
+      // is_ai_generated=false and is_visible=true so students see them
+      // immediately without needing an extra publish step.
+      if (lessonForm.content_type === "quiz" && !editingLesson) {
+        const passing = Math.max(0, Math.min(100, parseInt(quizPassingScore || "70", 10) || 70));
+        let targetLessonId: string;
+        if (quizTarget === "new") {
+          const moduleLessons = lessonsByModule(lessonForm.module_id);
+          const { data: newLesson, error: lErr } = await supabase
+            .from("lessons")
+            .insert({
+              title: lessonForm.title,
+              duration: lessonForm.duration || null,
+              content_type: "quiz",
+              content_url: lessonForm.content_url || null,
+              module_id: lessonForm.module_id,
+              order_index: moduleLessons.length,
+            })
+            .select("id")
+            .single();
+          if (lErr) throw lErr;
+          targetLessonId = newLesson!.id;
+        } else {
+          targetLessonId = quizTarget;
+        }
+        const { error: qErr } = await (supabase as any).from("quizzes").insert({
+          title: lessonForm.title,
+          lesson_id: targetLessonId,
+          passing_score: passing,
+          is_ai_generated: false,
+          is_visible: true,
+        });
+        if (qErr) throw qErr;
+        return;
+      }
+
       // ── Assignment flow ──────────────────────────────────────────────
       // Assignments always need a row in `assignments` linked to a lesson.
       // Two modes:
@@ -268,12 +368,15 @@ export function CurriculumBuilder({ courseId }: Props) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
       qc.invalidateQueries({ queryKey: ["admin-assignments"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
       setLessonDialogOpen(false); setEditingLesson(null);
       setLessonForm({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
       setAssignmentTarget("new");
       setAssignmentMaxPoints("100");
       setAssignmentDueAt("");
       setLinkedAssignmentId(null);
+      setQuizTarget("new");
+      setQuizPassingScore("70");
       toast({ title: editingLesson ? "Lesson saved" : "Lesson added" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -348,6 +451,8 @@ export function CurriculumBuilder({ courseId }: Props) {
     setAssignmentMaxPoints("100");
     setAssignmentDueAt("");
     setLinkedAssignmentId(null);
+    setQuizTarget("new");
+    setQuizPassingScore("70");
     setLessonDialogOpen(true);
   };
 
@@ -568,12 +673,47 @@ export function CurriculumBuilder({ courseId }: Props) {
               </div>
             )}
             {lessonForm.content_type === "quiz" && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <Star className="h-3.5 w-3.5 text-primary" />
-                  <p className="font-medium">Tip: build the quiz questions next</p>
+              <div className="space-y-3">
+                {!editingLesson && (
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Attach to lesson</label>
+                    <select
+                      value={quizTarget}
+                      onChange={(e) => setQuizTarget(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="new">➕ Create new lesson slot in this module</option>
+                      {lessonsByModule(lessonForm.module_id).map((l) => (
+                        <option key={l.id} value={l.id}>{l.title}</option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Quizzes must attach to a lesson. Multiple quizzes can share one lesson.
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium block mb-1">Passing score (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={quizPassingScore}
+                    onChange={(e) => setQuizPassingScore(e.target.value)}
+                    className={inputClass}
+                  />
                 </div>
-                <p className="text-[11px] text-muted-foreground">After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to add questions manually or generate them with AI.</p>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                    <p className="font-medium">Next: add the questions</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to
+                    add questions manually or generate them with AI. Manually created quizzes are published to
+                    students by default.
+                  </p>
+                </div>
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
