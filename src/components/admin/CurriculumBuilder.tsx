@@ -156,6 +156,11 @@ export function CurriculumBuilder({ courseId }: Props) {
   const [assignmentMaxPoints, setAssignmentMaxPoints] = useState<string>("100");
   const [assignmentDueAt, setAssignmentDueAt] = useState<string>("");
   const [linkedAssignmentId, setLinkedAssignmentId] = useState<string | null>(null);
+  // Quiz-flow state (parity with assignments): attach to an existing lesson
+  // or create a new lesson slot. quizzes.lesson_id has no unique constraint,
+  // so multiple quizzes can share one lesson.
+  const [quizTarget, setQuizTarget] = useState<string>("new");
+  const [quizPassingScore, setQuizPassingScore] = useState<string>("70");
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const sensors = useSensors(
@@ -219,6 +224,48 @@ export function CurriculumBuilder({ courseId }: Props) {
 
   const saveLesson = useMutation({
     mutationFn: async () => {
+      // ── Quiz flow ───────────────────────────────────────────────────
+      // Quizzes always live on a lesson. Mirror the assignment flow:
+      //   1. Attach to an EXISTING lesson (quizTarget = lesson id)
+      //      → insert ONLY into quizzes.
+      //   2. Create a NEW lesson slot (quizTarget = "new")
+      //      → create lesson row (content_type='quiz') AND quizzes row.
+      // On save, quizzes rows created manually default to
+      // is_ai_generated=false and is_visible=true so students see them
+      // immediately without needing an extra publish step.
+      if (lessonForm.content_type === "quiz" && !editingLesson) {
+        const passing = Math.max(0, Math.min(100, parseInt(quizPassingScore || "70", 10) || 70));
+        let targetLessonId: string;
+        if (quizTarget === "new") {
+          const moduleLessons = lessonsByModule(lessonForm.module_id);
+          const { data: newLesson, error: lErr } = await supabase
+            .from("lessons")
+            .insert({
+              title: lessonForm.title,
+              duration: lessonForm.duration || null,
+              content_type: "quiz",
+              content_url: lessonForm.content_url || null,
+              module_id: lessonForm.module_id,
+              order_index: moduleLessons.length,
+            })
+            .select("id")
+            .single();
+          if (lErr) throw lErr;
+          targetLessonId = newLesson!.id;
+        } else {
+          targetLessonId = quizTarget;
+        }
+        const { error: qErr } = await (supabase as any).from("quizzes").insert({
+          title: lessonForm.title,
+          lesson_id: targetLessonId,
+          passing_score: passing,
+          is_ai_generated: false,
+          is_visible: true,
+        });
+        if (qErr) throw qErr;
+        return;
+      }
+
       // ── Assignment flow ──────────────────────────────────────────────
       // Assignments always need a row in `assignments` linked to a lesson.
       // Two modes:
@@ -321,12 +368,15 @@ export function CurriculumBuilder({ courseId }: Props) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
       qc.invalidateQueries({ queryKey: ["admin-assignments"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
       setLessonDialogOpen(false); setEditingLesson(null);
       setLessonForm({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
       setAssignmentTarget("new");
       setAssignmentMaxPoints("100");
       setAssignmentDueAt("");
       setLinkedAssignmentId(null);
+      setQuizTarget("new");
+      setQuizPassingScore("70");
       toast({ title: editingLesson ? "Lesson saved" : "Lesson added" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -401,6 +451,8 @@ export function CurriculumBuilder({ courseId }: Props) {
     setAssignmentMaxPoints("100");
     setAssignmentDueAt("");
     setLinkedAssignmentId(null);
+    setQuizTarget("new");
+    setQuizPassingScore("70");
     setLessonDialogOpen(true);
   };
 
