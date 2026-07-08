@@ -21,6 +21,8 @@ import { LessonNotes } from "@/components/ai/LessonNotes";
 import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { LessonApprovalPanel } from "@/components/learning/LessonApprovalPanel";
 import { courseHref, courseSectionHref } from "@/lib/course-url";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   isLessonUnlocked as isLessonUnlockedHelper,
   findResumeLesson,
@@ -35,6 +37,14 @@ export default function CourseLearning() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const initialTab = searchParams.get("tab") || "content";
+  const [mobileTab, setMobileTab] = useState<string>(initialTab);
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && t !== mobileTab) setMobileTab(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get("tab")]);
   const activeLessonRef = useRef<HTMLButtonElement | null>(null);
   const playerRef = useRef<EnhancedVideoPlayerHandle | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -549,29 +559,80 @@ export default function CourseLearning() {
                 </div>
               )}
 
-              {/* Quiz for this lesson */}
-              <div className="pt-6 border-t border-border">
-                <LessonQuiz
-                  lessonId={currentLesson.id}
-                  onPass={() => markComplete.mutate(currentLesson.id)}
-                />
-              </div>
+              {isMobile ? (
+                <div className="pt-6 border-t border-border">
+                  <Tabs
+                    value={mobileTab}
+                    onValueChange={(v) => {
+                      setMobileTab(v);
+                      const next = new URLSearchParams(searchParams);
+                      if (v === "content") next.delete("tab"); else next.set("tab", v);
+                      setSearchParams(next, { replace: true });
+                    }}
+                    className="w-full"
+                  >
+                    <TabsList className="w-full grid grid-cols-4 mb-4">
+                      <TabsTrigger value="quizzes" className="text-xs">Quizzes</TabsTrigger>
+                      <TabsTrigger value="assignments" className="text-xs">Assignments</TabsTrigger>
+                      <TabsTrigger value="discussion" className="text-xs">Discussion</TabsTrigger>
+                      <TabsTrigger value="related" className="text-xs">Related</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="quizzes">
+                      <LessonQuiz
+                        lessonId={currentLesson.id}
+                        onPass={() => markComplete.mutate(currentLesson.id)}
+                      />
+                    </TabsContent>
+                    <TabsContent value="assignments" className="space-y-3">
+                      <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-primary" /> Assignments
+                      </h3>
+                      <AssignmentPanel lessonId={currentLesson.id} />
+                    </TabsContent>
+                    <TabsContent value="discussion">
+                      <LessonDiscussion
+                        lessonId={currentLesson.id}
+                        courseLessons={allLessons as { id: string; title: string }[]}
+                      />
+                    </TabsContent>
+                    <TabsContent value="related">
+                      <div className="text-sm text-muted-foreground mb-3">Other courses you may like:</div>
+                      <Link
+                        to={`/courses/${id}/related`}
+                        className="block text-center py-4 px-4 rounded-lg border border-border hover:border-primary/40 hover:bg-muted/30 text-sm font-medium text-primary"
+                      >
+                        Browse related courses →
+                      </Link>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              ) : (
+                <>
+                  {/* Quiz for this lesson */}
+                  <div className="pt-6 border-t border-border">
+                    <LessonQuiz
+                      lessonId={currentLesson.id}
+                      onPass={() => markComplete.mutate(currentLesson.id)}
+                    />
+                  </div>
 
-              {/* Assignments for this lesson */}
-              <div className="pt-6 border-t border-border space-y-3">
-                <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" /> Assignments
-                </h3>
-                <AssignmentPanel lessonId={currentLesson.id} />
-              </div>
+                  {/* Assignments for this lesson */}
+                  <div className="pt-6 border-t border-border space-y-3">
+                    <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" /> Assignments
+                    </h3>
+                    <AssignmentPanel lessonId={currentLesson.id} />
+                  </div>
 
-              {/* Threaded lesson discussion */}
-              <div className="pt-6 border-t border-border">
-                <LessonDiscussion
-                  lessonId={currentLesson.id}
-                  courseLessons={allLessons as { id: string; title: string }[]}
-                />
-              </div>
+                  {/* Threaded lesson discussion */}
+                  <div className="pt-6 border-t border-border">
+                    <LessonDiscussion
+                      lessonId={currentLesson.id}
+                      courseLessons={allLessons as { id: string; title: string }[]}
+                    />
+                  </div>
+                </>
+              )}
 
               {/* Personal notes */}
               <LessonNotes lessonId={currentLesson.id} />

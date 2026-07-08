@@ -1,12 +1,16 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Users, Star } from "lucide-react";
+import { Clock, Users, Star, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
 import { SafeImage } from "@/components/SafeImage";
 import { courseHref } from "@/lib/course-url";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useAuth } from "@/contexts/AuthContext";
+import { requestSignup } from "@/components/SignupPromptModal";
+import { cn } from "@/lib/utils";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -31,6 +35,15 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
   function CourseCard({ course, index = 0 }, ref) {
     const isWebinar = (course.price ?? 0) === 0 || course.title.toUpperCase().startsWith("FREE");
     const { format } = useLocalizedPrice();
+    const { user } = useAuth();
+    const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
+    const favorited = isBookmarked(course.id);
+    const handleFavorite = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!user) { requestSignup("bookmark"); return; }
+      toggleBookmark(course.id);
+    };
     const instructorName = course.instructor?.name && course.instructor.name.toLowerCase() !== "silicon-edge"
       ? course.instructor.name
       : "Silicon Edge Mentor";
@@ -78,6 +91,19 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 {course.difficulty}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={handleFavorite}
+              disabled={isToggling}
+              aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+              aria-pressed={favorited}
+              className={cn(
+                "absolute bottom-2.5 right-2.5 p-2 rounded-full bg-white/90 backdrop-blur shadow-md transition-all hover:scale-110 hover:bg-white z-10",
+                favorited ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+              )}
+            >
+              <Heart className={cn("h-4 w-4", favorited && "fill-current")} />
+            </button>
           </div>
 
           {/* Content */}

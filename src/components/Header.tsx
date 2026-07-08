@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard, ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -97,6 +97,9 @@ export function Header() {
                   <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
                 </Button>
               )}
+              <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold" title="My favorites">
+                <Link to="/bookmarks" aria-label="Favorites"><Heart className="h-4 w-4" /></Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                 <Link to="/dashboard"><User className="h-3.5 w-3.5 mr-1" /> Dashboard</Link>
               </Button>
@@ -152,6 +155,15 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+          {user && (
+            <Link
+              to="/bookmarks"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary py-2"
+            >
+              <Heart className="h-4 w-4" /> Favorites
+            </Link>
+          )}
           <div className="flex gap-2 pt-2">
             {user ? (
               <>
