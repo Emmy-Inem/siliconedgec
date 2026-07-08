@@ -812,20 +812,20 @@ export default function CourseDetail() {
                 </div>
 
                 {/* Instructor Card */}
-                {course.instructor && (
+                {displayInstructor && (
                   <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {course.instructor.avatar_url ? (
-                          <img src={course.instructor.avatar_url} alt={course.instructor.name} className="w-full h-full object-cover" />
+                        {displayInstructor.avatar_url ? (
+                          <img src={displayInstructor.avatar_url} alt={displayInstructor.name} className="w-full h-full object-cover" />
                         ) : (
                           <span className="font-heading font-bold text-primary text-lg">
-                            {course.instructor.name.split(" ").map((n) => n[0]).join("")}
+                            {displayInstructor.name.split(" ").map((n: string) => n[0]).join("")}
                           </span>
                         )}
                       </div>
                       <div>
-                        <h4 className="font-heading font-semibold text-sm">{course.instructor.name}</h4>
+                        <h4 className="font-heading font-semibold text-sm">{displayInstructor.name}</h4>
                         {(avgRating || course.rating) ? (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Star className="h-3 w-3 fill-accent text-accent" />
@@ -849,9 +849,11 @@ export default function CourseDetail() {
                         <p className="text-xs text-muted-foreground">Reviews</p>
                       </div>
                     </div>
-                    <Button asChild variant="outline" size="sm" className="w-full text-xs">
-                      <Link to={`/instructors/${course.instructor.id}`}>View Details</Link>
-                    </Button>
+                    {!displayInstructor.isReal && course.instructor?.id && (
+                      <Button asChild variant="outline" size="sm" className="w-full text-xs">
+                        <Link to={`/instructors/${course.instructor.id}`}>View Details</Link>
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
