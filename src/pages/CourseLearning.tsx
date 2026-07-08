@@ -21,6 +21,8 @@ import { LessonNotes } from "@/components/ai/LessonNotes";
 import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { LessonApprovalPanel } from "@/components/learning/LessonApprovalPanel";
 import { courseHref, courseSectionHref } from "@/lib/course-url";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   isLessonUnlocked as isLessonUnlockedHelper,
   findResumeLesson,
@@ -35,6 +37,14 @@ export default function CourseLearning() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const initialTab = searchParams.get("tab") || "content";
+  const [mobileTab, setMobileTab] = useState<string>(initialTab);
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && t !== mobileTab) setMobileTab(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get("tab")]);
   const activeLessonRef = useRef<HTMLButtonElement | null>(null);
   const playerRef = useRef<EnhancedVideoPlayerHandle | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
