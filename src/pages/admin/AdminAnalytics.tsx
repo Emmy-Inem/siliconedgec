@@ -462,4 +462,3 @@ export default function AdminAnalytics() {
     </div>
   );
 }
-import { GraduationCap } from "lucide-react";
