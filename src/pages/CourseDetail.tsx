@@ -77,6 +77,32 @@ export default function CourseDetail() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Real cohort instructor (Fauziyah for the Azure bootcamp, etc.) — always
+  // wins over the placeholder row on the `instructors` table.
+  const { data: cohortInstructors = [] } = useQuery({
+    queryKey: ["course-cohort-instructors", courseId],
+    queryFn: async () => {
+      if (!courseId) return [];
+      const { data, error } = await supabase.rpc("get_course_instructors", { p_course_id: courseId });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!courseId,
+    staleTime: 1000 * 60 * 5,
+  });
+  const primaryInstructor = (cohortInstructors[0] as any) ?? null;
+  const displayInstructor = primaryInstructor
+    ? {
+        id: primaryInstructor.user_id,
+        name: primaryInstructor.full_name ?? course?.instructor?.name ?? "Silicon Edge Mentor",
+        avatar_url: primaryInstructor.avatar_url ?? course?.instructor?.avatar_url ?? null,
+        bio: course?.instructor?.bio ?? null,
+        isReal: true,
+      }
+    : course?.instructor
+      ? { ...course.instructor, isReal: false }
+      : null;
+
   const curriculumModules = useMemo(() => {
     if (!courseId) return [];
 
