@@ -118,6 +118,28 @@ export default function AdminAnalytics() {
         .sort((a, b) => b[1] - a[1]).slice(0, 5)
         .map(([id, count]) => { const c = courseMap.get(id); return { name: c?.title ? (c.title.length > 26 ? c.title.slice(0, 24) + "…" : c.title) : id.slice(0, 8), enrollments: count }; });
 
+      // Per-course completion rate: enrolled + completed + avg progress %.
+      // Excludes free webinar rows so numbers reflect real learners.
+      const perCourseCompletion = courses
+        .filter((c: any) => c.is_published !== false)
+        .map((c: any) => {
+          const enr = paidEnrollments.filter((e: any) => e.course_id === c.id);
+          const completed = enr.filter((e: any) => e.is_completed).length;
+          const avg = enr.length
+            ? enr.reduce((s: number, e: any) => s + Number(e.progress_percentage ?? 0), 0) / enr.length
+            : 0;
+          return {
+            id: c.id,
+            title: c.title,
+            enrolled: enr.length,
+            completed,
+            rate: enr.length ? Math.round((completed / enr.length) * 100) : 0,
+            avg: Math.round(avg),
+          };
+        })
+        .filter((c) => c.enrolled > 0)
+        .sort((a, b) => b.rate - a.rate);
+
       // Completion / progress metrics only meaningful for actual paid course
       // learners — webinar `free` rows have no curriculum to complete.
       const learnerEnrollments = paidEnrollments.length > 0 ? paidEnrollments : enrollments.filter(e => e.payment_status !== "free");
@@ -126,7 +148,7 @@ export default function AdminAnalytics() {
       const avgProgress = learnerEnrollments.length > 0 ? Math.round(learnerEnrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / learnerEnrollments.length) : 0;
       const topPromos = [...promos].sort((a, b) => Number(b.revenue_generated) - Number(a.revenue_generated)).slice(0, 5);
 
-      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos };
+      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos, perCourseCompletion };
     },
   });
 
