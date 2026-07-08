@@ -42,17 +42,17 @@ export default function Bookmarks() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="My Saved Courses" description="Courses you've bookmarked for later." canonical="/bookmarks" />
+      <SEO title="My Favorite Courses" description="Courses you've favorited for quick access." canonical="/bookmarks" />
       <Header />
       <main className="container mx-auto px-5 sm:px-6 py-12">
-        <h1 className="font-heading text-3xl font-bold mb-2">Saved Courses</h1>
-        <p className="text-muted-foreground mb-8">Courses you bookmarked to review later.</p>
+        <h1 className="font-heading text-3xl font-bold mb-2">Favorites</h1>
+        <p className="text-muted-foreground mb-8">Courses you've favorited for quick access.</p>
 
         {(isLoading || loading) ? (
           <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : courses.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-border rounded-2xl">
-            <p className="text-muted-foreground mb-4">You haven't bookmarked any courses yet.</p>
+            <p className="text-muted-foreground mb-4">You haven't favorited any courses yet.</p>
             <Link to="/courses" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium inline-block">Browse Courses</Link>
           </div>
         ) : (
