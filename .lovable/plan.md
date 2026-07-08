@@ -1,137 +1,120 @@
 
-# Admin & Instructor Fixes — Part 2 (Adapted to Silicon Edge)
+## Scope
 
-This plan adapts your spec to the actual schema and code paths in the app. No new tables invented where existing ones already cover the case, and the immediate reported bugs are fixed first.
+Seven related fixes across admin, learning UI, notifications, and analytics.
 
 ---
 
-## 0. Immediate bug fixes (ship first)
+### 1. AdminQuizzes: publish/unpublish parity with Assignments
 
-### 0a. Manual quiz builder shows no question editor
+`src/pages/admin/AdminQuizzes.tsx` currently focuses on question authoring. Add a top-level quiz list matching `AdminAssignments`:
 
-`AdminQuizzes.tsx` currently only lets you set a "number of stub questions" — the per-question editor (question text + 4 options + correct answer) lives in a separate "Q&A" dialog. Users don't discover it.
+- Table of every quiz: title, course, lesson, `is_ai_generated` badge (`✨ AI` vs `Manual`), `is_visible` switch, question count.
+- Filters: All / AI-only / Manual-only / Hidden.
+- One-click Publish/Unpublish toggles `is_visible` in `quizzes`.
+- Keep existing per-quiz question editor accessible from a row action.
 
-Fix in-dialog:
-- In the "Manual" tab, after saving the quiz, immediately open the questions editor for that new quiz (`setSelectedQuiz(...); setQuestionsDialogOpen(true)`), instead of closing the dialog.
-- Replace the "Number of questions (0–50)" stub input with an inline repeater: an "Add another question" button that pushes `{ question_text, options[4], correct_answer }` blocks; a single "Save quiz" persists the quiz + all questions in one transaction.
-- Keep the existing "Q&A" side dialog for later edits.
+### 2. Mobile learning view: Quizzes / Assignments / Related tabs
 
-### 0b. "Not assigned to a cohort yet" while user IS a member
+In `src/pages/CourseLearning.tsx`, the sidebar tabs (Content / Quizzes / Assignments / Related / Q&A / Discussion) only render on desktop/tablet. On mobile, users only see lesson content.
 
-`CohortAccessButton.tsx` finds cohorts by `cohorts.course_id = courseId`, then filters `cohort_members` by those cohort ids. Two failure modes cause the false negative:
-1. Cohorts the user is a member of that are NOT linked to `courseId` (e.g. bootcamp cohorts, cross-course cohorts) never show.
-2. RLS on `cohort_members` may hide rows for the user even when they are the member row (should be readable — verify policy `user_id = auth.uid()`).
+Fix: add a mobile-only tab strip (below the video, above content) that surfaces the same panels using the existing components (`AssignmentPanel`, `LessonQuiz`, related courses list, discussion, Q&A). Use the existing `useIsMobile` hook to toggle rendering — desktop layout untouched.
+
+### 3. Assignment notifications to cohort students
+
+Add a DB trigger on `public.assignments` (AFTER INSERT and AFTER UPDATE of `is_visible`) that fires only when `is_visible = true`:
+
+- Resolve `course_id` via `lessons → modules`.
+- Insert one row into `public.notifications` for every enrolled student in that course:
+  - title: `New assignment: <title>`
+  - link: `/courses/<course_id>/learn?lesson=<lesson_id>&tab=assignments`
+  - type: `info`
+- Update `CourseLearning.tsx` to read the `tab` query param on mount and auto-select the Assignments tab (also handle `tab=quizzes`).
+- Suppress duplicates: only fire on INSERT-when-visible or on UPDATE where `OLD.is_visible = false AND NEW.is_visible = true`.
+
+### 4. Favorites courses
+
+`bookmarks` table + `useBookmarks` + `/bookmarks` page already exist. Gaps to close:
+
+- Surface a "Favorites" (heart) link in the authenticated user menu in `Header.tsx` and in `Dashboard.tsx` quick-links.
+- Add a heart toggle button to `CourseCard.tsx` (uses `useBookmarks.toggleBookmark`).
+- Rename `/bookmarks` page copy to "Favorites" for consistency with the requested wording; keep the route to avoid breaking links.
+
+### 5. Admin analytics: per-course completion rate
+
+`AdminCourseHealth` already computes completion, but the main `AdminAnalytics` overview doesn't surface it prominently. Add a "Course completion rates" card to `src/pages/admin/AdminAnalytics.tsx`:
+
+- Table per published course: enrolled count, completed count, completion %, avg progress %, sorted by completion %.
+- Source: `enrollments` (progress_percentage, is_completed) joined with `courses`.
+- Link each row to `/admin/analytics` → Course Health tab for detail.
+
+### 6. Instructor sourcing — replace placeholders with real cohort instructors
+
+Course pages (`CourseDetail`, learning header, `Instructors` list) sometimes show the `instructors` table rows (placeholder profiles) instead of the actual cohort instructor for that course.
 
 Fix:
-- Query `cohort_members` for the current user FIRST (`.eq("user_id", user.id)`), then load those cohort rows and filter to the ones where `course_id = courseId` OR display all if `courseId` isn't set.
-- Fall back: if no course-matched cohort but the user has any cohort membership, still surface a smaller "Open your cohorts" link instead of the "Not assigned" empty state.
-- Verify the `cohort_members` SELECT policy allows `user_id = auth.uid()`; add it in the migration if missing.
 
-### 0c. Assign Fauziyyah as the true instructor for the Azure bootcamp
+- Use the existing `get_course_instructors(course_id)` RPC (already in DB) as the source of truth on `CourseDetail.tsx` and `CourseLearning.tsx` header.
+- Fall back to `instructors` table only when the RPC returns nothing.
+- Verify `Fauziyah Zakariyah` (Fauziyyahzak@gmail.com) is the `cohort_members.role='instructor'` for the Azure bootcamp cohort. If not, insert the correct mapping via migration.
 
-Data seed step (via data-insert tool after migrations run):
-- Ensure a `user_roles` row with `role='instructor'` exists for the account matching `Fauziyyahzak@gmail.com`.
-- Find the cohort where `courses.title` contains "One-Month Cloud Engineering Bootcamp — Microsoft Azure", upsert a `cohort_members` row `(cohort_id, user_id, role='instructor', is_lead=true)`.
-- Remove any stale placeholder instructor rows for that cohort.
+### 7. General bug sweep tied to the above
 
----
-
-## 1. Centralized RBAC — use the table already in the DB
-
-The project already has `public.role_permissions (role, route, allowed)` and a `role_can_access(role, route)` function, plus `has_role` / `has_any_role`. Do not introduce a parallel `(role, resource, action)` table — extend the existing one so we don't split the source of truth.
-
-Changes:
-- Migration: insert `role_permissions` rows for `instructor` covering every `/admin/cohorts*`, `/admin/courses*`, `/admin/quizzes*`, `/admin/assignments*`, `/admin/assessments*`, `/admin/lesson-approvals` route.
-- Update `src/lib/admin-permissions.ts` fallback map to match (already partially covers this — align the two).
-- Codebase audit: replace every `role === "admin"` gate on cohort/course/assessment surfaces with `has_any_role(['admin','instructor'])` on the server (RLS) and the equivalent `canAccessRoute` / `useAuth().adminRole` check on the client. Grep targets: `role === "admin"`, `isAdmin &&`, `adminRole === 'admin'` inside `src/pages/admin/AdminCohorts*`, `AdminCourses*`, `AdminQuizzes*`, `AdminAssignments*`, `AdminAssessments*`, `AdminLessonApprovals*`, and their child components.
-- RLS: all instructor-scoped writes must go through the existing `is_cohort_instructor` / `instructor_teaches_course` / `instructor_teaches_lesson` helpers so instructors stay bounded to their cohorts.
-
-## 2. Instructor Dashboard reshape (this is the current dashboard, not the student one)
-
-Confirmed already in place: `/instructor` layout with cohort selector, Overview, Students, Assignments, Quizzes, Cohort deep-link. Keep as-is; only additions:
-- Rename page titles/breadcrumbs from "Dashboard" to "Instructor Dashboard".
-- When `adminRole === 'instructor'` and the user hits `/dashboard`, redirect to `/instructor`.
-- Header user menu: for instructors show "Instructor Dashboard" instead of "Dashboard".
-
-## 3. Favorites (pin nav items)
-
-Migration:
-```
-CREATE TABLE public.user_favorites (
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  item_key text NOT NULL,
-  order_index int NOT NULL DEFAULT 0,
-  pinned_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (user_id, item_key)
-);
--- + GRANTs to authenticated/service_role, RLS: user_id = auth.uid() for all ops.
-```
-UI:
-- Add star toggle to items in `AdminSidebar.tsx` and `InstructorLayout.tsx` sidebar, plus the main site header nav for regular users.
-- New "Favorites" section rendered above the normal sections, ordered by `order_index ASC, pinned_at ASC`.
-- Drag-reorder deferred (record `order_index` on click position for now).
-
-## 4. Manual course access grant (bypass payment)
-
-Reuse existing `enrollments`. Migration adds:
-- `access_source text NOT NULL DEFAULT 'payment'` (allowed values: `payment`, `manual_grant`, `promo`, `bootcamp`)
-- `granted_by uuid REFERENCES auth.users(id)`
-
-Everywhere the app currently treats `payment_status IN ('paid','success','completed','confirmed')` as "has access" (see `is_paid_enrolled`, `useCourseAccess.ts`, `CohortAccessButton` gating, `CourseAccessGate`), extend to also accept `payment_status = 'granted'` OR `access_source IN ('manual_grant','promo','bootcamp')`. Update the SQL security-definer helpers in the same migration.
-
-UI:
-- In `AdminStudents` student detail (and `InstructorStudentDetail`), add "Grant course access" — select course + confirm — upserts enrollment with `access_source='manual_grant', granted_by=auth.uid(), payment_status='granted'`.
-- Log to `admin_activity_log`.
-
-## 5. Manual quiz creation permissions (RLS)
-
-Already partially covered by the instructor RLS migration. Add explicit `INSERT`/`UPDATE`/`DELETE` policies on `quizzes` and `quiz_questions` using `instructor_teaches_lesson(lesson_id, auth.uid())`. Verify from the client: instructor creating a quiz on a lesson in their cohort's course succeeds; on another cohort's course fails.
-
-## 6. AI quiz gating (hidden until instructor publishes)
-
-Migration on `quizzes`:
-- `is_ai_generated boolean NOT NULL DEFAULT false`
-- `is_visible boolean NOT NULL DEFAULT true`
-
-Behavior:
-- `AdminQuizzes` AI path sets `is_ai_generated=true, is_visible=false`.
-- Manual path keeps `is_visible=true`.
-- Student-facing selects (`get_quiz_questions`, `CourseQuizzes.tsx`, `LessonQuiz.tsx`) filter `is_visible=true` OR `has_any_role(auth.uid(), ['admin','instructor','moderator'])`.
-- In `AdminQuizzes` list and lesson editor, add a "Publish to students" toggle for AI-generated quizzes.
-
-## 7. Course & lesson search
-
-- Admin: add a debounced (300ms) search input above the tables in `AdminCourses` and lesson list within course editor; query `title ilike %q% OR description ilike %q%` (course) / `title ilike %q%` with course title joined (lessons).
-- Student: add a search input on `/courses` catalog and inside `CourseLearning` lesson sidebar.
-- No FTS migration in this pass; leave a note to migrate to `to_tsvector` if the catalog exceeds ~500 rows.
-
-## 8. Instructor sourcing — derive from cohort_members
-
-Problem: `courses` still carries denormalized instructor fields (name/avatar) that go stale.
-
-Change:
-- Add `is_lead boolean NOT NULL DEFAULT false` to `cohort_members`.
-- Create SQL view/function `get_course_instructors(course_id)` returning `(user_id, full_name, avatar_url, is_lead)` by joining `cohorts → cohort_members (role='instructor') → profiles`, ordered lead-first.
-- `CourseDetail.tsx`, `Instructors.tsx`, `CourseCard.tsx`: read from this function instead of the denormalized fields.
-- Stop writing to the legacy course-level instructor columns from the course editor; leave the columns in place (backfill later) but ignore on read.
+- Notification click handler: ensure `?tab=…` and `?lesson=…` both survive routing in `CourseLearning`.
+- Add missing GRANTs when creating any new trigger functions.
+- Verify RLS on `notifications` insert path (trigger runs as SECURITY DEFINER, so unaffected).
 
 ---
 
-## Execution order
+## Technical Details
 
-1. Section 0 fixes (quiz builder UX, cohort detection, seed Fauziyyah).
-2. Migration bundle: role_permissions rows for instructor + `user_favorites` + `access_source`/`granted_by` on enrollments + `is_ai_generated`/`is_visible` on quizzes + `is_lead` on cohort_members + `get_course_instructors` function + instructor RLS policies for quizzes/quiz_questions/assignments.
-3. Update `admin-permissions.ts`, `useCourseAccess.ts`, `is_paid_enrolled*` callers to honor `granted` / `access_source`.
-4. AI-quiz visibility wiring (admin toggle + student filter).
-5. Manual grant UI in student detail pages.
-6. Favorites UI in sidebars.
-7. Course/lesson search inputs.
-8. Instructor sourcing swap on course pages.
-9. Paystack partial-payment investigation deferred until webhook logs + `bootcamp_payment_events` rows can be inspected (Item 3 of your original spec).
+**Migration** (single file):
 
-## Technical notes
+```sql
+-- 1. Assignment notification trigger
+CREATE OR REPLACE FUNCTION public.notify_assignment_published()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE v_course uuid; v_title text;
+BEGIN
+  IF NEW.is_visible IS NOT TRUE THEN RETURN NEW; END IF;
+  IF TG_OP = 'UPDATE' AND COALESCE(OLD.is_visible,false) = true THEN RETURN NEW; END IF;
 
-- All new `public` tables include the required GRANTs to `authenticated` + `service_role` and RLS policies scoped to `auth.uid()`.
-- No writes to `auth`, `storage`, `supabase_functions` schemas.
-- All instructor-scoped RLS uses the existing `SECURITY DEFINER` helpers (`is_cohort_instructor`, `instructor_teaches_course`, `instructor_teaches_lesson`) — no new helpers needed.
-- Data seed for Fauziyyah runs via the data-insert tool after migration approval so it can look up her `auth.users.id` by email.
+  SELECT m.course_id INTO v_course
+  FROM lessons l JOIN modules m ON m.id = l.module_id
+  WHERE l.id = NEW.lesson_id;
+  IF v_course IS NULL THEN RETURN NEW; END IF;
+
+  INSERT INTO notifications (user_id, title, message, type, link)
+  SELECT e.user_id,
+         'New assignment: ' || NEW.title,
+         COALESCE(LEFT(NEW.description,160),'A new assignment is available.'),
+         'info',
+         '/courses/' || v_course || '/learn?lesson=' || NEW.lesson_id || '&tab=assignments'
+  FROM enrollments e WHERE e.course_id = v_course;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER trg_notify_assignment_published
+  AFTER INSERT OR UPDATE OF is_visible ON assignments
+  FOR EACH ROW EXECUTE FUNCTION notify_assignment_published();
+
+-- 2. Verify/insert Fauziyah as Azure bootcamp instructor
+-- (verified via read_query in build mode; insert into cohort_members if missing)
+```
+
+**Files to touch:**
+- `src/pages/admin/AdminQuizzes.tsx` — add list view above editor.
+- `src/pages/CourseLearning.tsx` — mobile tabs + `?tab=` param handling.
+- `src/components/Header.tsx`, `src/pages/Dashboard.tsx`, `src/components/CourseCard.tsx`, `src/pages/Bookmarks.tsx` — favorites surfacing.
+- `src/pages/admin/AdminAnalytics.tsx` — completion rate card.
+- `src/pages/CourseDetail.tsx` — instructor RPC sourcing.
+- New migration file.
+
+## Order of implementation
+
+1. Migration (trigger + instructor mapping)
+2. AdminQuizzes list
+3. CourseLearning mobile tabs + tab param
+4. Favorites UI (header, card, dashboard)
+5. AdminAnalytics completion card
+6. Instructor RPC sourcing
