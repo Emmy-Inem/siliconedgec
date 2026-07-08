@@ -409,6 +409,57 @@ export default function AdminAnalytics() {
           </div>
         </motion.div>
       </div>
+
+      {/* Per-course completion rates */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-primary" /> Student completion rate by course
+          </h3>
+          <span className="text-[10px] text-muted-foreground">Paid enrollments only</span>
+        </div>
+        {(data?.perCourseCompletion ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">No paid enrollments yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-3 font-medium">Course</th>
+                  <th className="py-2 px-2 font-medium tabular-nums text-right">Enrolled</th>
+                  <th className="py-2 px-2 font-medium tabular-nums text-right">Completed</th>
+                  <th className="py-2 px-2 font-medium tabular-nums text-right">Avg progress</th>
+                  <th className="py-2 pl-2 font-medium w-40">Completion rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data?.perCourseCompletion ?? []).map((c: any) => (
+                  <tr key={c.id} className="border-b border-border/40 last:border-0 hover:bg-muted/30">
+                    <td className="py-2 pr-3 truncate max-w-[280px]" title={c.title}>{c.title}</td>
+                    <td className="py-2 px-2 tabular-nums text-right">{c.enrolled}</td>
+                    <td className="py-2 px-2 tabular-nums text-right">{c.completed}</td>
+                    <td className="py-2 px-2 tabular-nums text-right">{c.avg}%</td>
+                    <td className="py-2 pl-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent" style={{ width: `${c.rate}%` }} />
+                        </div>
+                        <span className="tabular-nums font-semibold w-8 text-right">{c.rate}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }
+import { GraduationCap } from "lucide-react";
