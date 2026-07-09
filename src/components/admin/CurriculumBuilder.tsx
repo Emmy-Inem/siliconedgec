@@ -267,14 +267,38 @@ export function CurriculumBuilder({ courseId }: Props) {
         } else {
           targetLessonId = quizTarget;
         }
-        const { error: qErr } = await (supabase as any).from("quizzes").insert({
+        const { data: quizRow, error: qErr } = await (supabase as any).from("quizzes").insert({
           title: lessonForm.title,
           lesson_id: targetLessonId,
           passing_score: passing,
           is_ai_generated: false,
           is_visible: true,
-        });
+        }).select("id").single();
         if (qErr) throw qErr;
+        // Persist any inline-authored questions.
+        const validQs = quizManualQs
+          .map((q) => ({
+            ...q,
+            options: q.options.map((o) => o.trim()).filter(Boolean),
+          }))
+          .filter(
+            (q) =>
+              q.question_text.trim() &&
+              q.options.length >= 2 &&
+              q.correct_answer &&
+              q.options.includes(q.correct_answer),
+          );
+        if (validQs.length > 0 && quizRow?.id) {
+          const rows = validQs.map((q, i) => ({
+            quiz_id: quizRow.id,
+            question_text: q.question_text.trim(),
+            options: q.options,
+            correct_answer: q.correct_answer,
+            order_index: i,
+          }));
+          const { error: qqErr } = await supabase.from("quiz_questions").insert(rows);
+          if (qqErr) throw qqErr;
+        }
         return;
       }
 
@@ -389,6 +413,7 @@ export function CurriculumBuilder({ courseId }: Props) {
       setLinkedAssignmentId(null);
       setQuizTarget("new");
       setQuizPassingScore("70");
+      setQuizManualQs([emptyMQ()]);
       toast({ title: editingLesson ? "Lesson saved" : "Lesson added" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
