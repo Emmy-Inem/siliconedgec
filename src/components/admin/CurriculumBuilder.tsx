@@ -741,17 +741,110 @@ export function CurriculumBuilder({ courseId }: Props) {
                     className={inputClass}
                   />
                 </div>
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center gap-2 text-xs">
-                    <Star className="h-3.5 w-3.5 text-primary" />
-                    <p className="font-medium">Next: add the questions</p>
+                {!editingLesson && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold">Questions</p>
+                      <span className="text-[11px] text-muted-foreground">
+                        Tick the correct option for each question.
+                      </span>
+                    </div>
+                    <div className="space-y-3 max-h-[38vh] overflow-y-auto pr-1">
+                      {quizManualQs.map((q, qi) => (
+                        <div key={qi} className="rounded-md border border-border bg-background p-2.5 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="text-[11px] font-semibold text-muted-foreground">
+                              Q{qi + 1}
+                            </div>
+                            {quizManualQs.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setQuizManualQs((p) => p.filter((_, i) => i !== qi))
+                                }
+                                className="text-destructive text-[11px] hover:underline"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            value={q.question_text}
+                            onChange={(e) =>
+                              setQuizManualQs((p) =>
+                                p.map((x, i) =>
+                                  i === qi ? { ...x, question_text: e.target.value } : x,
+                                ),
+                              )
+                            }
+                            placeholder="Question text"
+                            className={inputClass}
+                          />
+                          <div className="space-y-1.5">
+                            {q.options.map((opt, oi) => (
+                              <label key={oi} className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`cb-correct-${qi}`}
+                                  checked={!!opt && q.correct_answer === opt}
+                                  onChange={() =>
+                                    setQuizManualQs((p) =>
+                                      p.map((x, i) =>
+                                        i === qi ? { ...x, correct_answer: opt } : x,
+                                      ),
+                                    )
+                                  }
+                                  disabled={!opt}
+                                  className="shrink-0"
+                                />
+                                <input
+                                  value={opt}
+                                  onChange={(e) =>
+                                    setQuizManualQs((p) =>
+                                      p.map((x, i) => {
+                                        if (i !== qi) return x;
+                                        const opts = [...x.options];
+                                        opts[oi] = e.target.value;
+                                        const stillValid =
+                                          x.correct_answer && opts.includes(x.correct_answer);
+                                        return {
+                                          ...x,
+                                          options: opts,
+                                          correct_answer: stillValid ? x.correct_answer : "",
+                                        };
+                                      }),
+                                    )
+                                  }
+                                  placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                                  className={inputClass}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setQuizManualQs((p) => [...p, emptyMQ()])}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Add question
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground">
+                      Empty questions are skipped. You can add more later from the lesson's{" "}
+                      <span className="font-medium text-foreground">Questions</span> button.
+                    </p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to
-                    add questions manually or generate them with AI. Manually created quizzes are published to
-                    students by default.
-                  </p>
-                </div>
+                )}
+                {editingLesson && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-[11px] text-muted-foreground">
+                    To add or edit questions, close this dialog and click{" "}
+                    <span className="font-medium text-foreground">Questions</span> on the quiz row.
+                  </div>
+                )}
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
