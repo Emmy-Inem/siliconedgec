@@ -22,11 +22,12 @@ interface Props { courseId: string; }
 
 const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
-function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
+function SortableLesson({ lesson, onEdit, onDelete, onResources, onManageQuestions }: {
   lesson: Lesson;
   onEdit: (l: Lesson) => void;
   onDelete: (id: string) => void;
   onResources: (l: Lesson) => void;
+  onManageQuestions: (l: Lesson) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
@@ -110,6 +111,17 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
         <Button size="icon" variant="ghost" className="h-7 w-7" title="Manage resources" onClick={() => onResources(lesson)}>
           <Paperclip className="h-3 w-3" />
         </Button>
+        {lesson.content_type === "quiz" && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            title="Manage questions"
+            onClick={() => onManageQuestions(lesson)}
+          >
+            <FileQuestion className="h-3 w-3" />
+          </Button>
+        )}
         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(lesson)}>
           <Pencil className="h-3 w-3" />
         </Button>
