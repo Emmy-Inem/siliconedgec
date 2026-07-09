@@ -490,6 +490,7 @@ export function CurriculumBuilder({ courseId }: Props) {
     setLinkedAssignmentId(null);
     setQuizTarget("new");
     setQuizPassingScore("70");
+    setQuizManualQs([emptyMQ()]);
     setLessonDialogOpen(true);
   };
 
