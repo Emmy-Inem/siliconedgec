@@ -1,120 +1,124 @@
+## 1. Favorites behavior cleanup
 
-## Scope
+- **Header (**`src/components/Header.tsx`**)** — remove the "Favorites" link from the mobile hamburger menu. Keep the heart icon in the desktop toolbar only.
+- **Sort favorites first** — in every place a signed-in user sees a list of courses (`Dashboard.tsx` "My courses", `Courses.tsx` catalog, `Bookmarks.tsx`, `CategoryCourses.tsx`, `RelatedCourses.tsx`), reorder so favorited courses appear at the top while preserving the existing secondary sort. Use the existing `useBookmarks` hook — no schema change.
+- Leave the standalone `/bookmarks` page reachable via the desktop heart icon for users who explicitly want the filtered view.
 
-Seven related fixes across admin, learning UI, notifications, and analytics.
+## 2. Admin LMS revamp — one-page, in-place builder
 
----
+Today, `AdminAssignments` and `AdminQuizzes` push admins back to the curriculum builder to edit, and the curriculum builder itself can only create quiz/assignment *shells* — questions and rubric details live elsewhere. Rebuild so **the course's Curriculum page is the single source of truth** and the top-level Assessments hub is a read-only cross-course index.
 
-### 1. AdminQuizzes: publish/unpublish parity with Assignments
+### 2a. Curriculum Builder becomes a full assessment editor
 
-`src/pages/admin/AdminQuizzes.tsx` currently focuses on question authoring. Add a top-level quiz list matching `AdminAssignments`:
+File: `src/components/admin/CurriculumBuilder.tsx` (+ new sub-components under `src/components/admin/curriculum/`).
 
-- Table of every quiz: title, course, lesson, `is_ai_generated` badge (`✨ AI` vs `Manual`), `is_visible` switch, question count.
-- Filters: All / AI-only / Manual-only / Hidden.
-- One-click Publish/Unpublish toggles `is_visible` in `quizzes`.
-- Keep existing per-quiz question editor accessible from a row action.
+For each lesson row, expand the existing accordion so admins can:
 
-### 2. Mobile learning view: Quizzes / Assignments / Related tabs
+- **Add / edit / delete quiz questions inline** — new `QuizQuestionsEditor` panel that lists all `quiz_questions` for the lesson's quizzes, with add/edit/delete/reorder, option list (multiple choice / true-false / short answer), correct answer, explanation, `order_index`. Uses existing `quiz_questions` table.
+- **Multiple quizzes per lesson** — expose a "+ Quiz" button on each lesson; each quiz has editable title, passing score, max attempts, visibility toggle, and its own question list.
+- **Multiple assignments per lesson** — inline `AssignmentEditor` with title, instructions (textarea), max points, due date, attachment URL, visibility toggle. No page navigation.
+- **AI generation stays opt-in** — keep the existing `✨ AI on/off` per-lesson toggle and the "Generate with AI" buttons inside each editor, writing rows with `is_ai_generated=true, is_visible=false` so nothing appears to students until published.
+- Every mutation invalidates `admin-lessons`, `admin-quizzes`, `admin-assignments`, `lesson-ai-exercises` so the other views stay in sync.
 
-In `src/pages/CourseLearning.tsx`, the sidebar tabs (Content / Quizzes / Assignments / Related / Q&A / Discussion) only render on desktop/tablet. On mobile, users only see lesson content.
+### 2b. Assessments hub becomes a read-only index
 
-Fix: add a mobile-only tab strip (below the video, above content) that surfaces the same panels using the existing components (`AssignmentPanel`, `LessonQuiz`, related courses list, discussion, Q&A). Use the existing `useIsMobile` hook to toggle rendering — desktop layout untouched.
+Files: `src/pages/admin/AdminQuizzes.tsx`, `src/pages/admin/AdminAssignments.tsx`, `src/pages/admin/hubs/AdminAssessmentsHub.tsx`.
 
-### 3. Assignment notifications to cohort students
+- Remove the "Add" buttons and edit navigations. Replace with a **"Open in curriculum" link** on each row that jumps to `/admin/courses/:id/modules#lesson-:lessonId` (anchor auto-scrolls and opens that lesson's accordion in the builder).
+- Keep the existing Publish/Unpublish toggle, AI badge, delete, and filters (All / AI / Manual / Hidden) so admins can still do bulk visibility work across courses without leaving the hub.
+- `AdminQuizAttempts` and `AdminAssignmentSubmissions` are unchanged.
 
-Add a DB trigger on `public.assignments` (AFTER INSERT and AFTER UPDATE of `is_visible`) that fires only when `is_visible = true`:
+### 2c. Curriculum page anchor + auto-open
 
-- Resolve `course_id` via `lessons → modules`.
-- Insert one row into `public.notifications` for every enrolled student in that course:
-  - title: `New assignment: <title>`
-  - link: `/courses/<course_id>/learn?lesson=<lesson_id>&tab=assignments`
-  - type: `info`
-- Update `CourseLearning.tsx` to read the `tab` query param on mount and auto-select the Assignments tab (also handle `tab=quizzes`).
-- Suppress duplicates: only fire on INSERT-when-visible or on UPDATE where `OLD.is_visible = false AND NEW.is_visible = true`.
+File: `src/pages/admin/AdminCourseModules.tsx` (+ `CurriculumBuilder`).
 
-### 4. Favorites courses
+- When the URL has `#lesson-<id>`, scroll to that lesson row and expand its accordion + assessments panel so "Open in curriculum" from the hub lands the admin exactly where they clicked.
 
-`bookmarks` table + `useBookmarks` + `/bookmarks` page already exist. Gaps to close:
+## Corrections & Additions to the Plan
 
-- Surface a "Favorites" (heart) link in the authenticated user menu in `Header.tsx` and in `Dashboard.tsx` quick-links.
-- Add a heart toggle button to `CourseCard.tsx` (uses `useBookmarks.toggleBookmark`).
-- Rename `/bookmarks` page copy to "Favorites" for consistency with the requested wording; keep the route to avoid breaking links.
+&nbsp;
 
-### 5. Admin analytics: per-course completion rate
+**1. "No migration required" is incorrect — this needs one.**
 
-`AdminCourseHealth` already computes completion, but the main `AdminAnalytics` overview doesn't surface it prominently. Add a "Course completion rates" card to `src/pages/admin/AdminAnalytics.tsx`:
+`assignments.lesson_id` and `quizzes.lesson_id` currently have **no foreign key constraint at all**. Add:
 
-- Table per published course: enrolled count, completed count, completion %, avg progress %, sorted by completion %.
-- Source: `enrollments` (progress_percentage, is_completed) joined with `courses`.
-- Link each row to `/admin/analytics` → Course Health tab for detail.
-
-### 6. Instructor sourcing — replace placeholders with real cohort instructors
-
-Course pages (`CourseDetail`, learning header, `Instructors` list) sometimes show the `instructors` table rows (placeholder profiles) instead of the actual cohort instructor for that course.
-
-Fix:
-
-- Use the existing `get_course_instructors(course_id)` RPC (already in DB) as the source of truth on `CourseDetail.tsx` and `CourseLearning.tsx` header.
-- Fall back to `instructors` table only when the RPC returns nothing.
-- Verify `Fauziyah Zakariyah` (Fauziyyahzak@gmail.com) is the `cohort_members.role='instructor'` for the Azure bootcamp cohort. If not, insert the correct mapping via migration.
-
-### 7. General bug sweep tied to the above
-
-- Notification click handler: ensure `?tab=…` and `?lesson=…` both survive routing in `CourseLearning`.
-- Add missing GRANTs when creating any new trigger functions.
-- Verify RLS on `notifications` insert path (trigger runs as SECURITY DEFINER, so unaffected).
-
----
-
-## Technical Details
-
-**Migration** (single file):
+&nbsp;
 
 ```sql
--- 1. Assignment notification trigger
-CREATE OR REPLACE FUNCTION public.notify_assignment_published()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-DECLARE v_course uuid; v_title text;
-BEGIN
-  IF NEW.is_visible IS NOT TRUE THEN RETURN NEW; END IF;
-  IF TG_OP = 'UPDATE' AND COALESCE(OLD.is_visible,false) = true THEN RETURN NEW; END IF;
 
-  SELECT m.course_id INTO v_course
-  FROM lessons l JOIN modules m ON m.id = l.module_id
-  WHERE l.id = NEW.lesson_id;
-  IF v_course IS NULL THEN RETURN NEW; END IF;
+alter table assignments
 
-  INSERT INTO notifications (user_id, title, message, type, link)
-  SELECT e.user_id,
-         'New assignment: ' || NEW.title,
-         COALESCE(LEFT(NEW.description,160),'A new assignment is available.'),
-         'info',
-         '/courses/' || v_course || '/learn?lesson=' || NEW.lesson_id || '&tab=assignments'
-  FROM enrollments e WHERE e.course_id = v_course;
-  RETURN NEW;
-END $$;
+  add constraint assignments_lesson_id_fkey
 
-CREATE TRIGGER trg_notify_assignment_published
-  AFTER INSERT OR UPDATE OF is_visible ON assignments
-  FOR EACH ROW EXECUTE FUNCTION notify_assignment_published();
+  foreign key (lesson_id) references lessons(id)
 
--- 2. Verify/insert Fauziyah as Azure bootcamp instructor
--- (verified via read_query in build mode; insert into cohort_members if missing)
+  on delete restrict;
+
+&nbsp;
+
+alter table quizzes
+
+  add constraint quizzes_lesson_id_fkey
+
+  foreign key (lesson_id) references lessons(id)
+
+  on delete restrict;
+
 ```
 
-**Files to touch:**
-- `src/pages/admin/AdminQuizzes.tsx` — add list view above editor.
-- `src/pages/CourseLearning.tsx` — mobile tabs + `?tab=` param handling.
-- `src/components/Header.tsx`, `src/pages/Dashboard.tsx`, `src/components/CourseCard.tsx`, `src/pages/Bookmarks.tsx` — favorites surfacing.
-- `src/pages/admin/AdminAnalytics.tsx` — completion rate card.
-- `src/pages/CourseDetail.tsx` — instructor RPC sourcing.
-- New migration file.
+&nbsp;
 
-## Order of implementation
+(Only add after confirming zero orphaned rows remain — re-run the orphan check first.)
 
-1. Migration (trigger + instructor mapping)
-2. AdminQuizzes list
-3. CourseLearning mobile tabs + tab param
-4. Favorites UI (header, card, dashboard)
-5. AdminAnalytics completion card
-6. Instructor RPC sourcing
+&nbsp;
+
+**2. Audit `CurriculumBuilder`'s save logic before extracting it.**
+
+The current save path for lessons appears to delete-and-reinsert the module's lesson tree rather than diff against existing rows. This is how 7 lessons were previously hard-deleted with their linked assignments silently orphaned (no FK, no audit log). Since this rebuild adds *more* inline delete surfaces (quizzes, assignments, questions), the same destructive-replace pattern must not be carried into the new `QuizEditor` / `AssignmentEditor` / `QuizQuestionsEditor` components. Require: diff against DB state, update matched IDs, insert new, and never bulk-delete unlisted rows without an explicit per-item delete action.
+
+&nbsp;
+
+**3. Define cascade behavior for inline quiz/question deletion.**
+
+Not specified: what happens to `quiz_questions` and `quiz_attempts` when an admin deletes a quiz from the new inline editor. Needs an explicit FK/cascade decision (block if attempts exist, or cascade only to questions, etc.), not left to default behavior.
+
+&nbsp;
+
+**4. "Confirm before shipping" on `quiz_questions` RLS should be an actual query, not an assumption.**
+
+Given the assignments RLS was fine but the underlying data layer wasn't, run the real check:
+
+```sql
+
+select * from pg_policies where tablename = 'quiz_questions';
+
+```
+
+before treating it as verified.
+
+&nbsp;
+
+**5. `order_index` handling needs a stated rule.**
+
+For lessons/quizzes/questions added or reordered inline, the save logic should preserve/assign `order_index` from a diff, not recompute it from array position on every save — recomputing from position is the same bug class (innocent edit silently reshuffles or wipes unrelated rows).
+
+## 3. Bug sweep (scoped to this change)
+
+- Ensure the new inline editors respect the existing `enforce_manual_assignment_visibility` trigger (manual rows keep `is_visible=true`).
+- Fix a stale query-key issue: `AdminAssignments`/`AdminQuizzes` currently don't re-fetch after visibility toggles in the curriculum. Standardize invalidations.
+- Verify RLS: `quiz_questions` insert/update/delete already require admin/instructor — no policy changes needed. Confirm before shipping.
+
+## Technical notes
+
+- No new tables. Reuses `quizzes`, `quiz_questions`, `assignments`, `lessons`, `modules`, `bookmarks`.
+- New files: `src/components/admin/curriculum/QuizEditor.tsx`, `QuizQuestionsEditor.tsx`, `AssignmentEditor.tsx`. Extract from `CurriculumBuilder.tsx` to keep it under ~800 lines.
+- No migration required. If a linter warning appears from re-checking policies, it will be handled in the same turn.
+- Out of scope: redesigning `AdminCourses`, instructor pages, or the student-facing lesson viewer.
+
+## Build order
+
+1. Header + list sorting for favorites (small, isolated).
+2. Extract `QuizEditor` / `AssignmentEditor` / `QuizQuestionsEditor` and wire them into `CurriculumBuilder`.
+3. Convert Assessments hub tables to read-only index with deep links.
+4. Add `#lesson-:id` anchor handling in `AdminCourseModules`.
+5. Verify with the linter and a quick admin walk-through.

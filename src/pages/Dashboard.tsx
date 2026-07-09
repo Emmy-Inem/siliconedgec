@@ -218,8 +218,13 @@ export default function Dashboard() {
     e.payment_status === "free" ||
     webinarRegCourseIds.has(e.course_id) ||
     (e.course?.title ?? "").toUpperCase().startsWith("FREE");
-  const webinars = enrollments.filter((e) => !e.is_completed && isWebinar(e));
-  const inProgress = enrollments.filter((e) => !e.is_completed && !isWebinar(e));
+  // Favorited (bookmarked) courses float to the top of every list — that's
+  // the "favorite" contract now that the standalone header link is gone.
+  const favIds = new Set(bookmarks.map((b) => b.course_id));
+  const favFirst = <T extends { course_id: string }>(arr: T[]) =>
+    [...arr].sort((a, b) => Number(favIds.has(b.course_id)) - Number(favIds.has(a.course_id)));
+  const webinars = favFirst(enrollments.filter((e) => !e.is_completed && isWebinar(e)));
+  const inProgress = favFirst(enrollments.filter((e) => !e.is_completed && !isWebinar(e)));
   const avgProgress =
     enrollments.length > 0
       ? Math.round(enrollments.reduce((s, e) => s + (e.progress_percentage ?? 0), 0) / enrollments.length)

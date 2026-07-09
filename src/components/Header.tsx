@@ -155,15 +155,6 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          {user && (
-            <Link
-              to="/bookmarks"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary py-2"
-            >
-              <Heart className="h-4 w-4" /> Favorites
-            </Link>
-          )}
           <div className="flex gap-2 pt-2">
             {user ? (
               <>

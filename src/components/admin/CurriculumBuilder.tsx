@@ -22,11 +22,12 @@ interface Props { courseId: string; }
 
 const inputClass = "w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
-function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
+function SortableLesson({ lesson, onEdit, onDelete, onResources, onManageQuestions }: {
   lesson: Lesson;
   onEdit: (l: Lesson) => void;
   onDelete: (id: string) => void;
   onResources: (l: Lesson) => void;
+  onManageQuestions: (l: Lesson) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
@@ -110,6 +111,17 @@ function SortableLesson({ lesson, onEdit, onDelete, onResources }: {
         <Button size="icon" variant="ghost" className="h-7 w-7" title="Manage resources" onClick={() => onResources(lesson)}>
           <Paperclip className="h-3 w-3" />
         </Button>
+        {lesson.content_type === "quiz" && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            title="Manage questions"
+            onClick={() => onManageQuestions(lesson)}
+          >
+            <FileQuestion className="h-3 w-3" />
+          </Button>
+        )}
         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(lesson)}>
           <Pencil className="h-3 w-3" />
         </Button>
@@ -161,6 +173,18 @@ export function CurriculumBuilder({ courseId }: Props) {
   // so multiple quizzes can share one lesson.
   const [quizTarget, setQuizTarget] = useState<string>("new");
   const [quizPassingScore, setQuizPassingScore] = useState<string>("70");
+  // Inline manual questions authored during quiz creation. Mirrors the
+  // AdminQuizzes flow so admins can build a full quiz without leaving the
+  // course curriculum page.
+  type ManualQ = { question_text: string; options: string[]; correct_answer: string };
+  const emptyMQ = (): ManualQ => ({
+    question_text: "",
+    options: ["", "", "", ""],
+    correct_answer: "",
+  });
+  const [quizManualQs, setQuizManualQs] = useState<ManualQ[]>([emptyMQ()]);
+  // "Manage questions" dialog for existing quiz-type lessons.
+  const [questionsLesson, setQuestionsLesson] = useState<Lesson | null>(null);
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const sensors = useSensors(
@@ -255,14 +279,38 @@ export function CurriculumBuilder({ courseId }: Props) {
         } else {
           targetLessonId = quizTarget;
         }
-        const { error: qErr } = await (supabase as any).from("quizzes").insert({
+        const { data: quizRow, error: qErr } = await (supabase as any).from("quizzes").insert({
           title: lessonForm.title,
           lesson_id: targetLessonId,
           passing_score: passing,
           is_ai_generated: false,
           is_visible: true,
-        });
+        }).select("id").single();
         if (qErr) throw qErr;
+        // Persist any inline-authored questions.
+        const validQs = quizManualQs
+          .map((q) => ({
+            ...q,
+            options: q.options.map((o) => o.trim()).filter(Boolean),
+          }))
+          .filter(
+            (q) =>
+              q.question_text.trim() &&
+              q.options.length >= 2 &&
+              q.correct_answer &&
+              q.options.includes(q.correct_answer),
+          );
+        if (validQs.length > 0 && quizRow?.id) {
+          const rows = validQs.map((q, i) => ({
+            quiz_id: quizRow.id,
+            question_text: q.question_text.trim(),
+            options: q.options,
+            correct_answer: q.correct_answer,
+            order_index: i,
+          }));
+          const { error: qqErr } = await supabase.from("quiz_questions").insert(rows);
+          if (qqErr) throw qqErr;
+        }
         return;
       }
 
@@ -377,6 +425,7 @@ export function CurriculumBuilder({ courseId }: Props) {
       setLinkedAssignmentId(null);
       setQuizTarget("new");
       setQuizPassingScore("70");
+      setQuizManualQs([emptyMQ()]);
       toast({ title: editingLesson ? "Lesson saved" : "Lesson added" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -453,6 +502,7 @@ export function CurriculumBuilder({ courseId }: Props) {
     setLinkedAssignmentId(null);
     setQuizTarget("new");
     setQuizPassingScore("70");
+    setQuizManualQs([emptyMQ()]);
     setLessonDialogOpen(true);
   };
 
@@ -502,6 +552,7 @@ export function CurriculumBuilder({ courseId }: Props) {
                                       key={lesson.id}
                                       lesson={lesson}
                                       onResources={(l) => setResourcesLesson(l)}
+                                      onManageQuestions={(l) => setQuestionsLesson(l)}
                                       onEdit={(l) => {
                                         setEditingLesson(l);
                                         setLessonForm({
@@ -703,17 +754,110 @@ export function CurriculumBuilder({ courseId }: Props) {
                     className={inputClass}
                   />
                 </div>
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center gap-2 text-xs">
-                    <Star className="h-3.5 w-3.5 text-primary" />
-                    <p className="font-medium">Next: add the questions</p>
+                {!editingLesson && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold">Questions</p>
+                      <span className="text-[11px] text-muted-foreground">
+                        Tick the correct option for each question.
+                      </span>
+                    </div>
+                    <div className="space-y-3 max-h-[38vh] overflow-y-auto pr-1">
+                      {quizManualQs.map((q, qi) => (
+                        <div key={qi} className="rounded-md border border-border bg-background p-2.5 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="text-[11px] font-semibold text-muted-foreground">
+                              Q{qi + 1}
+                            </div>
+                            {quizManualQs.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setQuizManualQs((p) => p.filter((_, i) => i !== qi))
+                                }
+                                className="text-destructive text-[11px] hover:underline"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            value={q.question_text}
+                            onChange={(e) =>
+                              setQuizManualQs((p) =>
+                                p.map((x, i) =>
+                                  i === qi ? { ...x, question_text: e.target.value } : x,
+                                ),
+                              )
+                            }
+                            placeholder="Question text"
+                            className={inputClass}
+                          />
+                          <div className="space-y-1.5">
+                            {q.options.map((opt, oi) => (
+                              <label key={oi} className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`cb-correct-${qi}`}
+                                  checked={!!opt && q.correct_answer === opt}
+                                  onChange={() =>
+                                    setQuizManualQs((p) =>
+                                      p.map((x, i) =>
+                                        i === qi ? { ...x, correct_answer: opt } : x,
+                                      ),
+                                    )
+                                  }
+                                  disabled={!opt}
+                                  className="shrink-0"
+                                />
+                                <input
+                                  value={opt}
+                                  onChange={(e) =>
+                                    setQuizManualQs((p) =>
+                                      p.map((x, i) => {
+                                        if (i !== qi) return x;
+                                        const opts = [...x.options];
+                                        opts[oi] = e.target.value;
+                                        const stillValid =
+                                          x.correct_answer && opts.includes(x.correct_answer);
+                                        return {
+                                          ...x,
+                                          options: opts,
+                                          correct_answer: stillValid ? x.correct_answer : "",
+                                        };
+                                      }),
+                                    )
+                                  }
+                                  placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                                  className={inputClass}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setQuizManualQs((p) => [...p, emptyMQ()])}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Add question
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground">
+                      Empty questions are skipped. You can add more later from the lesson's{" "}
+                      <span className="font-medium text-foreground">Questions</span> button.
+                    </p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    After saving, open <span className="font-medium text-foreground">Assessments → Quizzes</span> to
-                    add questions manually or generate them with AI. Manually created quizzes are published to
-                    students by default.
-                  </p>
-                </div>
+                )}
+                {editingLesson && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-[11px] text-muted-foreground">
+                    To add or edit questions, close this dialog and click{" "}
+                    <span className="font-medium text-foreground">Questions</span> on the quiz row.
+                  </div>
+                )}
               </div>
             )}
             {lessonForm.content_type === "assignment" && (
@@ -791,6 +935,213 @@ export function CurriculumBuilder({ courseId }: Props) {
           courseId={courseId}
         />
       )}
+
+      {questionsLesson && (
+        <QuizQuestionsDialog
+          lesson={questionsLesson}
+          onClose={() => setQuestionsLesson(null)}
+        />
+      )}
     </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Inline quiz-question editor. Opened from the "Questions" icon on a
+// quiz-type lesson row so admins can manage questions without leaving the
+// course page.
+function QuizQuestionsDialog({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const { data: quizzes = [] } = useQuery({
+    queryKey: ["cb-quiz-for-lesson", lesson.id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("quizzes")
+        .select("id, title, passing_score, is_visible, is_ai_generated")
+        .eq("lesson_id", lesson.id)
+        .order("created_at");
+      if (error) throw error;
+      return data as Array<{
+        id: string;
+        title: string;
+        passing_score: number;
+        is_visible: boolean | null;
+        is_ai_generated: boolean | null;
+      }>;
+    },
+  });
+
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+  const currentQuizId = activeQuizId ?? quizzes[0]?.id ?? null;
+
+  const { data: questions = [] } = useQuery({
+    queryKey: ["cb-quiz-questions", currentQuizId],
+    queryFn: async () => {
+      if (!currentQuizId) return [];
+      const { data, error } = await supabase
+        .from("quiz_questions")
+        .select("id, question_text, options, correct_answer, order_index")
+        .eq("quiz_id", currentQuizId)
+        .order("order_index");
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!currentQuizId,
+  });
+
+  const [qForm, setQForm] = useState({
+    question_text: "",
+    options: ["", "", "", ""],
+    correct_answer: "",
+  });
+
+  const addQ = useMutation({
+    mutationFn: async () => {
+      if (!currentQuizId) throw new Error("No quiz selected");
+      const opts = qForm.options.map((o) => o.trim()).filter(Boolean);
+      if (!qForm.question_text.trim() || opts.length < 2 || !opts.includes(qForm.correct_answer)) {
+        throw new Error("Enter the question, at least 2 options, and pick the correct one.");
+      }
+      const { error } = await supabase.from("quiz_questions").insert({
+        quiz_id: currentQuizId,
+        question_text: qForm.question_text.trim(),
+        options: opts,
+        correct_answer: qForm.correct_answer,
+        order_index: questions.length,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cb-quiz-questions", currentQuizId] });
+      setQForm({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
+      toast({ title: "Question added" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const removeQ = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("quiz_questions").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cb-quiz-questions", currentQuizId] });
+      toast({ title: "Question removed" });
+    },
+  });
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Questions · {lesson.title}</DialogTitle>
+        </DialogHeader>
+        {quizzes.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6">
+            No quiz exists on this lesson yet. Close this dialog, open the lesson, and use the Quiz
+            form to create one — you can add questions there too.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {quizzes.length > 1 && (
+              <select
+                value={currentQuizId ?? ""}
+                onChange={(e) => setActiveQuizId(e.target.value)}
+                className={inputClass}
+              >
+                {quizzes.map((q) => (
+                  <option key={q.id} value={q.id}>
+                    {q.title} ({q.passing_score}%)
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">Existing questions</p>
+              {questions.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">No questions yet.</p>
+              ) : (
+                questions.map((q: any, i: number) => (
+                  <div key={q.id} className="rounded-md border border-border bg-muted/30 p-2.5 text-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium">
+                        {i + 1}. {q.question_text}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => removeQ.mutate(q.id)}
+                        className="text-destructive"
+                        title="Delete question"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <ul className="mt-1.5 space-y-0.5 text-xs">
+                      {(q.options as string[]).map((opt, j) => (
+                        <li
+                          key={j}
+                          className={opt === q.correct_answer ? "text-green-600 font-medium" : ""}
+                        >
+                          {opt === q.correct_answer ? "✓ " : "• "}
+                          {opt}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+              <p className="text-xs font-semibold">Add a question</p>
+              <input
+                value={qForm.question_text}
+                onChange={(e) => setQForm({ ...qForm, question_text: e.target.value })}
+                placeholder="Question text"
+                className={inputClass}
+              />
+              <div className="space-y-1.5">
+                {qForm.options.map((opt, oi) => (
+                  <label key={oi} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="cb-new-q-correct"
+                      checked={!!opt && qForm.correct_answer === opt}
+                      onChange={() => setQForm({ ...qForm, correct_answer: opt })}
+                      disabled={!opt}
+                      className="shrink-0"
+                    />
+                    <input
+                      value={opt}
+                      onChange={(e) => {
+                        const opts = [...qForm.options];
+                        opts[oi] = e.target.value;
+                        const stillValid =
+                          qForm.correct_answer && opts.includes(qForm.correct_answer);
+                        setQForm({
+                          ...qForm,
+                          options: opts,
+                          correct_answer: stillValid ? qForm.correct_answer : "",
+                        });
+                      }}
+                      placeholder={`Option ${String.fromCharCode(65 + oi)}`}
+                      className={inputClass}
+                    />
+                  </label>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <Button size="sm" type="button" onClick={() => addQ.mutate()} disabled={addQ.isPending}>
+                  <Plus className="h-3 w-3 mr-1" /> Add
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
