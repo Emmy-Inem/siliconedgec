@@ -212,7 +212,7 @@ export default function Dashboard() {
   // Instructors get their dedicated dashboard.
   if (adminRole === "instructor") return <Navigate to="/instructor" replace />;
 
-  const completed = enrollments.filter((e) => e.is_completed);
+  const completedRaw = enrollments.filter((e) => e.is_completed);
   const isWebinar = (e: EnrolledCourse) =>
     (e.course?.price ?? 0) === 0 ||
     e.payment_status === "free" ||
