@@ -552,6 +552,7 @@ export function CurriculumBuilder({ courseId }: Props) {
                                       key={lesson.id}
                                       lesson={lesson}
                                       onResources={(l) => setResourcesLesson(l)}
+                                      onManageQuestions={(l) => setQuestionsLesson(l)}
                                       onEdit={(l) => {
                                         setEditingLesson(l);
                                         setLessonForm({
