@@ -161,6 +161,18 @@ export function CurriculumBuilder({ courseId }: Props) {
   // so multiple quizzes can share one lesson.
   const [quizTarget, setQuizTarget] = useState<string>("new");
   const [quizPassingScore, setQuizPassingScore] = useState<string>("70");
+  // Inline manual questions authored during quiz creation. Mirrors the
+  // AdminQuizzes flow so admins can build a full quiz without leaving the
+  // course curriculum page.
+  type ManualQ = { question_text: string; options: string[]; correct_answer: string };
+  const emptyMQ = (): ManualQ => ({
+    question_text: "",
+    options: ["", "", "", ""],
+    correct_answer: "",
+  });
+  const [quizManualQs, setQuizManualQs] = useState<ManualQ[]>([emptyMQ()]);
+  // "Manage questions" dialog for existing quiz-type lessons.
+  const [questionsLesson, setQuestionsLesson] = useState<Lesson | null>(null);
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
   const sensors = useSensors(
