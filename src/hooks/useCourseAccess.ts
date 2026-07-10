@@ -18,23 +18,18 @@ export function useCourseAccess(courseId?: string | null) {
     queryKey: ["course-access", courseId, user?.id],
     queryFn: async () => {
       if (!user || !courseId) return null;
-      const [{ data: enrollment }, { data: course }, { data: membership }] = await Promise.all([
-        supabase
-        .from("enrollments")
-        .select("payment_status")
-        .eq("course_id", courseId)
-        .eq("user_id", user.id)
-          .maybeSingle(),
+      const [{ data: enrollment }, { data: course }, { data: cohorts }] = await Promise.all([
+        supabase.from("enrollments").select("payment_status").eq("course_id", courseId).eq("user_id", user.id).maybeSingle(),
         supabase.from("courses").select("cohort_only").eq("id", courseId).maybeSingle(),
-        supabase
-          .from("cohort_members")
-          .select("id, cohort:cohorts!inner(course_id)")
-          .eq("user_id", user.id)
-          .eq("cohort.course_id", courseId)
-          .limit(1)
-          .maybeSingle(),
+        supabase.from("cohorts").select("id").eq("course_id", courseId),
       ]);
-      return { enrollment, cohortOnly: !!(course as any)?.cohort_only, isCohortMember: !!membership };
+      const cohortIds = (cohorts ?? []).map((c: any) => c.id);
+      let isCohortMember = false;
+      if (cohortIds.length) {
+        const { data: m } = await supabase.from("cohort_members").select("id").eq("user_id", user.id).in("cohort_id", cohortIds).limit(1).maybeSingle();
+        isCohortMember = !!m;
+      }
+      return { enrollment, cohortOnly: !!(course as any)?.cohort_only, isCohortMember };
     },
     enabled: !!user && !!courseId && !isStaff,
   });
