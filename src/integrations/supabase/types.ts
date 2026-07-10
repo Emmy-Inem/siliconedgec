@@ -1328,6 +1328,7 @@ export type Database = {
         Row: {
           category: string
           category_id: string | null
+          cohort_only: boolean
           course_type: string | null
           created_at: string
           cross_sell_course_ids: string[] | null
@@ -1364,6 +1365,7 @@ export type Database = {
         Insert: {
           category: string
           category_id?: string | null
+          cohort_only?: boolean
           course_type?: string | null
           created_at?: string
           cross_sell_course_ids?: string[] | null
@@ -1400,6 +1402,7 @@ export type Database = {
         Update: {
           category?: string
           category_id?: string | null
+          cohort_only?: boolean
           course_type?: string | null
           created_at?: string
           cross_sell_course_ids?: string[] | null
@@ -3528,6 +3531,10 @@ export type Database = {
           utm_source: string
         }[]
       }
+      reveal_ai_quiz_for_lesson: {
+        Args: { _lesson_id: string }
+        Returns: string
+      }
       role_can_access: {
         Args: { _role: Database["public"]["Enums"]["app_role"]; _route: string }
         Returns: boolean
@@ -3536,6 +3543,10 @@ export type Database = {
       unique_course_slug: {
         Args: { _base: string; _id: string }
         Returns: string
+      }
+      user_can_access_course: {
+        Args: { _course_id: string; _user_id: string }
+        Returns: boolean
       }
       validate_promo_code: {
         Args: { p_code: string }

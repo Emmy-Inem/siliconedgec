@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LessonQuiz } from "@/components/LessonQuiz";
 import { useCourse } from "@/hooks/useCourses";
-import { ClipboardCheck, ChevronLeft, Loader2, Trophy } from "lucide-react";
+import { ClipboardCheck, ChevronLeft, Loader2, Trophy, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { courseHref, courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
 import { CourseAccessGate } from "@/components/learning/CourseAccessGate";
+import { toast } from "@/hooks/use-toast";
 
 export default function CourseQuizzes() {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +32,8 @@ export default function CourseQuizzes() {
       const lessonIds = (modules ?? []).flatMap((m: any) => (m.lessons ?? []).map((l: any) => l.id));
       if (!lessonIds.length) return { modules: modules ?? [], quizzes: [], attempts: [] };
       const { data: quizzes } = await supabase
-        .from("quizzes").select("id, title, passing_score, lesson_id").in("lesson_id", lessonIds);
+        .from("quizzes").select("id, title, passing_score, lesson_id, is_visible")
+        .in("lesson_id", lessonIds).eq("is_visible", true);
       const quizIds = (quizzes ?? []).map((q: any) => q.id);
       let attempts: any[] = [];
       if (user && quizIds.length) {
@@ -43,6 +45,23 @@ export default function CourseQuizzes() {
       }
       return { modules: modules ?? [], quizzes: quizzes ?? [], attempts };
     },
+  });
+
+  const revealAll = useMutation({
+    mutationFn: async () => {
+      const lessonIds = (data?.modules ?? []).flatMap((m: any) => (m.lessons ?? []).map((l: any) => l.id));
+      let revealed = 0;
+      for (const lid of lessonIds) {
+        const { data: qid } = await supabase.rpc("reveal_ai_quiz_for_lesson", { _lesson_id: lid });
+        if (qid) revealed++;
+      }
+      return revealed;
+    },
+    onSuccess: (n) => {
+      toast({ title: n > 0 ? `${n} practice quizzes unlocked` : "No hidden quizzes found", description: n > 0 ? "Refresh to start practicing." : "There are no AI-generated quizzes waiting for this course." });
+      if (n > 0) window.location.reload();
+    },
+    onError: (e: any) => toast({ title: "Couldn't unlock quizzes", description: e.message, variant: "destructive" }),
   });
 
   const bestByQuiz: Record<string, number> = {};
@@ -87,8 +106,17 @@ export default function CourseQuizzes() {
         {(isLoading || courseLoading) ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (data?.quizzes ?? []).length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-            No quizzes are available for this course yet.
+          <div className="rounded-2xl border border-dashed border-border p-10 text-center space-y-4">
+            <Sparkles className="h-6 w-6 text-primary mx-auto" />
+            <div>
+              <p className="font-medium">No quizzes published yet</p>
+              <p className="text-sm text-muted-foreground">Generate AI-powered practice quizzes to test yourself on every lesson.</p>
+            </div>
+            {user && (
+              <Button onClick={() => revealAll.mutate()} disabled={revealAll.isPending}>
+                {revealAll.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing…</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate practice quizzes</>}
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
