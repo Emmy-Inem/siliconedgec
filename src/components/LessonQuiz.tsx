@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   const [reviewMode, setReviewMode] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  const { data: quiz, isLoading } = useQuery({
+  const { data: quiz, isLoading, refetch: refetchQuiz } = useQuery({
     queryKey: ["lesson-quiz", lessonId],
     queryFn: async () => {
       // Students only see published quizzes. AI-generated drafts stay hidden
@@ -48,6 +48,20 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
       const { data: questions } = await supabase.rpc("get_quiz_questions", { p_quiz_id: q.id });
       return { ...q, questions: (questions ?? []) as unknown as QuizQuestion[] };
     },
+  });
+
+  const reveal = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("reveal_ai_quiz_for_lesson", { _lesson_id: lessonId });
+      if (error) throw error;
+      return data as string | null;
+    },
+    onSuccess: async (id) => {
+      await refetchQuiz();
+      if (id) toast({ title: "Practice quiz ready", description: "Your AI-generated quiz is now available." });
+      else toast({ title: "No practice quiz yet", description: "There is no AI quiz set up for this lesson.", variant: "destructive" });
+    },
+    onError: (e: any) => toast({ title: "Couldn't reveal quiz", description: e.message, variant: "destructive" }),
   });
 
   const { data: attempts = [] } = useQuery<PastAttempt[]>({
@@ -105,7 +119,20 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   if (isLoading) {
     return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading quiz…</div>;
   }
-  if (!quiz) return null;
+  if (!quiz) {
+    return (
+      <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-5 text-center space-y-3">
+        <Sparkles className="h-5 w-5 text-primary mx-auto" />
+        <div>
+          <p className="text-sm font-medium">Test yourself on this lesson</p>
+          <p className="text-xs text-muted-foreground">Generate an AI-powered practice quiz to check what you've learned.</p>
+        </div>
+        <Button size="sm" onClick={() => reveal.mutate()} disabled={reveal.isPending} className="mx-auto">
+          {reveal.isPending ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Preparing…</> : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Generate practice quiz</>}
+        </Button>
+      </div>
+    );
+  }
   if (!quiz.questions.length) {
     return (
       <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
