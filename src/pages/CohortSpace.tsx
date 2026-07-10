@@ -59,7 +59,7 @@ export default function CohortSpace() {
   if (forbidden || !cohort) return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-16 text-center max-w-md">
+      <main className="flex-1 container mx-auto px-4 pt-20 pb-16 text-center max-w-md">
         <h1 className="font-heading text-2xl font-bold mb-2">Cohort not available</h1>
         <p className="text-muted-foreground mb-4">You may not be a member of this cohort.</p>
         <Link to="/cohorts" className="text-primary underline">Back to my cohorts</Link>
@@ -74,7 +74,7 @@ export default function CohortSpace() {
     <div className="min-h-screen flex flex-col">
       <Helmet><title>{cohort.name} | Cohort | Silicon Edge</title></Helmet>
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 pt-14">
         {/* Hero banner */}
         <section className="relative w-full overflow-hidden border-b">
           <img src={cover} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40" />

@@ -63,7 +63,7 @@ export default function Account() {
     <div className="min-h-screen bg-background">
       <SEO title="My Account" description="Manage your profile, orders, and notifications." canonical="/account" />
       <Header />
-      <main className="container mx-auto px-5 sm:px-6 py-12 max-w-4xl">
+      <main className="container mx-auto px-5 sm:px-6 pt-20 pb-12 max-w-4xl">
         <h1 className="font-heading text-3xl font-bold mb-6">My Account</h1>
         <Tabs defaultValue="profile">
           <TabsList>

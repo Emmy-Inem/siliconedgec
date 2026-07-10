@@ -41,7 +41,7 @@ export default function Refer() {
     <div className="min-h-screen bg-background">
       <SEO title="Refer & Earn" description="Share Silicon Edge with friends and earn rewards on every successful enrollment." canonical="/refer" />
       <Header />
-      <main className="container mx-auto px-5 sm:px-6 py-12 max-w-2xl">
+      <main className="container mx-auto px-5 sm:px-6 pt-20 pb-12 max-w-2xl">
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Gift className="h-7 w-7 text-primary" />

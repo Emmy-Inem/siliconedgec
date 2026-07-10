@@ -1,124 +1,31 @@
-## 1. Favorites behavior cleanup
+# Fixes: notifications, quiz flow verification, header overlap
 
-- **Header (**`src/components/Header.tsx`**)** — remove the "Favorites" link from the mobile hamburger menu. Keep the heart icon in the desktop toolbar only.
-- **Sort favorites first** — in every place a signed-in user sees a list of courses (`Dashboard.tsx` "My courses", `Courses.tsx` catalog, `Bookmarks.tsx`, `CategoryCourses.tsx`, `RelatedCourses.tsx`), reorder so favorited courses appear at the top while preserving the existing secondary sort. Use the existing `useBookmarks` hook — no schema change.
-- Leave the standalone `/bookmarks` page reachable via the desktop heart icon for users who explicitly want the filtered view.
+## 1. Mobile notification bell (main new work)
+`src/components/Header.tsx` — the mobile toolbar (`lg:hidden` section, ~line 122) currently only renders the cart icon and the hamburger toggle. `UserNotificationBell` only appears inside the `hidden lg:flex` desktop block.
 
-## 2. Admin LMS revamp — one-page, in-place builder
+Change: render `<UserNotificationBell />` in the mobile toolbar too, placed to the left of the cart icon, only when `user` is present. The bell component itself is already responsive — its dropdown panel is a fixed-width (`w-80`) card anchored to the button, which fits within a 375px viewport. No changes needed inside `UserNotificationBell.tsx`; it fetches from the same `notifications` table and subscribes to the same realtime channel as desktop.
 
-Today, `AdminAssignments` and `AdminQuizzes` push admins back to the curriculum builder to edit, and the curriculum builder itself can only create quiz/assignment *shells* — questions and rubric details live elsewhere. Rebuild so **the course's Curriculum page is the single source of truth** and the top-level Assessments hub is a read-only cross-course index.
+Result: signed-in mobile users see the bell + unread badge in the top bar, can open the panel, mark items read, and tap through to `n.link` — matching desktop behavior from the same data source.
 
-### 2a. Curriculum Builder becomes a full assessment editor
+## 2. Cohort page header overlap
+`src/pages/CohortSpace.tsx` — `<Header />` is `fixed top-0 h-14`, but `<main className="flex-1">` has no top offset, so the cohort hero + "Cohort not available" fallback slide under the header on all breakpoints (the reported "hamburger blocking the header" symptom).
 
-File: `src/components/admin/CurriculumBuilder.tsx` (+ new sub-components under `src/components/admin/curriculum/`).
+Change: add `pt-14` to the `<main>` element in both the forbidden branch (line 62) and the main return (line 77). Nothing else on that page needs to move.
 
-For each lesson row, expand the existing accordion so admins can:
+Sweep sibling pages that also mount `<Header />` directly without a top offset and apply the same `pt-14` fix where the first child visibly clips under the header. Candidates to check with a quick grep and fix only where they clip: `Bookmarks.tsx`, `Cohorts.tsx`, `Cart.tsx`, `Account.tsx`, `OrderDetail.tsx`, `QuizAttempts.tsx`, `Refer.tsx`, `Search.tsx`. Skip pages whose first section already includes `pt-*` or a hero that intentionally starts at y=0.
 
-- **Add / edit / delete quiz questions inline** — new `QuizQuestionsEditor` panel that lists all `quiz_questions` for the lesson's quizzes, with add/edit/delete/reorder, option list (multiple choice / true-false / short answer), correct answer, explanation, `order_index`. Uses existing `quiz_questions` table.
-- **Multiple quizzes per lesson** — expose a "+ Quiz" button on each lesson; each quiz has editable title, passing score, max attempts, visibility toggle, and its own question list.
-- **Multiple assignments per lesson** — inline `AssignmentEditor` with title, instructions (textarea), max points, due date, attachment URL, visibility toggle. No page navigation.
-- **AI generation stays opt-in** — keep the existing `✨ AI on/off` per-lesson toggle and the "Generate with AI" buttons inside each editor, writing rows with `is_ai_generated=true, is_visible=false` so nothing appears to students until published.
-- Every mutation invalidates `admin-lessons`, `admin-quizzes`, `admin-assignments`, `lesson-ai-exercises` so the other views stay in sync.
+## 3. Quiz modal parity + AI toggle — verify only
+Both are already implemented in `src/components/admin/CurriculumBuilder.tsx`:
+- "Attach to lesson" select for quizzes (lines 726–745) with a "Create new lesson slot" option, writing `lesson_id` on save (line 282–288). No unique-constraint logic present. ✅
+- Per-lesson `AI on/off` pill (lines 96–110) that updates `is_visible` on rows scoped to `is_ai_generated = true` for both `quizzes` and `assignments`, so manual rows are untouched. ✅
+- Manual quiz save inserts `is_ai_generated: false, is_visible: true` and persists inline questions to `quiz_questions` in the same mutation (lines 282–313). ✅
 
-### 2b. Assessments hub becomes a read-only index
+No code change here — call these out in the closing summary so the user knows they're covered and were re-verified.
 
-Files: `src/pages/admin/AdminQuizzes.tsx`, `src/pages/admin/AdminAssignments.tsx`, `src/pages/admin/hubs/AdminAssessmentsHub.tsx`.
-
-- Remove the "Add" buttons and edit navigations. Replace with a **"Open in curriculum" link** on each row that jumps to `/admin/courses/:id/modules#lesson-:lessonId` (anchor auto-scrolls and opens that lesson's accordion in the builder).
-- Keep the existing Publish/Unpublish toggle, AI badge, delete, and filters (All / AI / Manual / Hidden) so admins can still do bulk visibility work across courses without leaving the hub.
-- `AdminQuizAttempts` and `AdminAssignmentSubmissions` are unchanged.
-
-### 2c. Curriculum page anchor + auto-open
-
-File: `src/pages/admin/AdminCourseModules.tsx` (+ `CurriculumBuilder`).
-
-- When the URL has `#lesson-<id>`, scroll to that lesson row and expand its accordion + assessments panel so "Open in curriculum" from the hub lands the admin exactly where they clicked.
-
-## Corrections & Additions to the Plan
-
-&nbsp;
-
-**1. "No migration required" is incorrect — this needs one.**
-
-`assignments.lesson_id` and `quizzes.lesson_id` currently have **no foreign key constraint at all**. Add:
-
-&nbsp;
-
-```sql
-
-alter table assignments
-
-  add constraint assignments_lesson_id_fkey
-
-  foreign key (lesson_id) references lessons(id)
-
-  on delete restrict;
-
-&nbsp;
-
-alter table quizzes
-
-  add constraint quizzes_lesson_id_fkey
-
-  foreign key (lesson_id) references lessons(id)
-
-  on delete restrict;
-
-```
-
-&nbsp;
-
-(Only add after confirming zero orphaned rows remain — re-run the orphan check first.)
-
-&nbsp;
-
-**2. Audit `CurriculumBuilder`'s save logic before extracting it.**
-
-The current save path for lessons appears to delete-and-reinsert the module's lesson tree rather than diff against existing rows. This is how 7 lessons were previously hard-deleted with their linked assignments silently orphaned (no FK, no audit log). Since this rebuild adds *more* inline delete surfaces (quizzes, assignments, questions), the same destructive-replace pattern must not be carried into the new `QuizEditor` / `AssignmentEditor` / `QuizQuestionsEditor` components. Require: diff against DB state, update matched IDs, insert new, and never bulk-delete unlisted rows without an explicit per-item delete action.
-
-&nbsp;
-
-**3. Define cascade behavior for inline quiz/question deletion.**
-
-Not specified: what happens to `quiz_questions` and `quiz_attempts` when an admin deletes a quiz from the new inline editor. Needs an explicit FK/cascade decision (block if attempts exist, or cascade only to questions, etc.), not left to default behavior.
-
-&nbsp;
-
-**4. "Confirm before shipping" on `quiz_questions` RLS should be an actual query, not an assumption.**
-
-Given the assignments RLS was fine but the underlying data layer wasn't, run the real check:
-
-```sql
-
-select * from pg_policies where tablename = 'quiz_questions';
-
-```
-
-before treating it as verified.
-
-&nbsp;
-
-**5. `order_index` handling needs a stated rule.**
-
-For lessons/quizzes/questions added or reordered inline, the save logic should preserve/assign `order_index` from a diff, not recompute it from array position on every save — recomputing from position is the same bug class (innocent edit silently reshuffles or wipes unrelated rows).
-
-## 3. Bug sweep (scoped to this change)
-
-- Ensure the new inline editors respect the existing `enforce_manual_assignment_visibility` trigger (manual rows keep `is_visible=true`).
-- Fix a stale query-key issue: `AdminAssignments`/`AdminQuizzes` currently don't re-fetch after visibility toggles in the curriculum. Standardize invalidations.
-- Verify RLS: `quiz_questions` insert/update/delete already require admin/instructor — no policy changes needed. Confirm before shipping.
+## 4. End-to-end smoke check after edits
+Open the preview at mobile viewport, sign in, and confirm: (a) bell renders and opens on mobile, (b) `/cohorts/:id` hero is no longer under the fixed header, (c) admin curriculum → Add Quiz still saves with a lesson attached and shows to enrolled students.
 
 ## Technical notes
-
-- No new tables. Reuses `quizzes`, `quiz_questions`, `assignments`, `lessons`, `modules`, `bookmarks`.
-- New files: `src/components/admin/curriculum/QuizEditor.tsx`, `QuizQuestionsEditor.tsx`, `AssignmentEditor.tsx`. Extract from `CurriculumBuilder.tsx` to keep it under ~800 lines.
-- No migration required. If a linter warning appears from re-checking policies, it will be handled in the same turn.
-- Out of scope: redesigning `AdminCourses`, instructor pages, or the student-facing lesson viewer.
-
-## Build order
-
-1. Header + list sorting for favorites (small, isolated).
-2. Extract `QuizEditor` / `AssignmentEditor` / `QuizQuestionsEditor` and wire them into `CurriculumBuilder`.
-3. Convert Assessments hub tables to read-only index with deep links.
-4. Add `#lesson-:id` anchor handling in `AdminCourseModules`.
-5. Verify with the linter and a quick admin walk-through.
+- Files edited: `src/components/Header.tsx`, `src/pages/CohortSpace.tsx`, plus any sibling pages found to clip (add `pt-14` to their `<main>` only).
+- No schema, RLS, or notification-trigger changes — the existing `notify_assignment_published` / `notify_quiz_published` triggers plus realtime subscription in `UserNotificationBell` already power the flow; exposing the bell on mobile is what unblocks users seeing it.
+- No changes to `UserNotificationBell.tsx`, `CurriculumBuilder.tsx`, quiz save logic, or AI-toggle mutation.

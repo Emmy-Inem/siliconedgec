@@ -121,6 +121,7 @@ export function Header() {
 
         {/* Mobile/Tablet: cart + menu toggle */}
         <div className="lg:hidden flex items-center gap-2">
+          {user && <UserNotificationBell />}
           <Link
             to="/cart"
             aria-label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
