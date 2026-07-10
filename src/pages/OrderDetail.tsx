@@ -52,7 +52,7 @@ export default function OrderDetail() {
     <div className="min-h-screen bg-background">
       <SEO title="Order Details" description="Receipt and details for your order." canonical={`/orders/${id}`} />
       <Header />
-      <main className="container mx-auto px-5 sm:px-6 py-12 max-w-2xl">
+      <main className="container mx-auto px-5 sm:px-6 pt-20 pb-12 max-w-2xl">
         <Link to="/account" className="text-sm text-muted-foreground hover:text-primary">← Back to account</Link>
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
