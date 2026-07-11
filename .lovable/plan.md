@@ -1,31 +1,73 @@
-# Fixes: notifications, quiz flow verification, header overlap
+## Fix critical LMS + access-grant issues
 
-## 1. Mobile notification bell (main new work)
-`src/components/Header.tsx` — the mobile toolbar (`lg:hidden` section, ~line 122) currently only renders the cart icon and the hamburger toggle. `UserNotificationBell` only appears inside the `hidden lg:flex` desktop block.
+### 1. "Couldn't grant access" error
+Root cause: `enrollments_payment_status_check` allows only `pending/paid/refunded/free/comped/confirmed/success` — but `AdminAccessGrants.tsx` inserts `payment_status='granted'`. Every manual grant fails with the check-constraint error shown in the screenshot.
 
-Change: render `<UserNotificationBell />` in the mobile toolbar too, placed to the left of the cart icon, only when `user` is present. The bell component itself is already responsive — its dropdown panel is a fixed-width (`w-80`) card anchored to the button, which fits within a 375px viewport. No changes needed inside `UserNotificationBell.tsx`; it fetches from the same `notifications` table and subscribes to the same realtime channel as desktop.
+Fix (migration): drop and recreate the check constraint to include `'granted'`.
 
-Result: signed-in mobile users see the bell + unread badge in the top bar, can open the panel, mark items read, and tap through to `n.link` — matching desktop behavior from the same data source.
+### 2. Grant Oluwaseun Adegbesan (seunmii@gmail.com, user_id `07f6ed4c-…`) access to the Azure Bootcamp
+Because the course is `cohort_only=true`, an enrollment row alone won't unlock it — cohort membership is required. Add him to both:
+- `enrollments` (course `3b1f29ec-…`, `payment_status='granted'`, `access_source='manual_grant'`)
+- `cohort_members` (cohort `269e0f74-…` "Azure Bootcamp — Cohort 1")
 
-## 2. Cohort page header overlap
-`src/pages/CohortSpace.tsx` — `<Header />` is `fixed top-0 h-14`, but `<main className="flex-1">` has no top offset, so the cohort hero + "Cohort not available" fallback slide under the header on all breakpoints (the reported "hamburger blocking the header" symptom).
+### 3. Student count showing 253 instead of the real cohort size
+`courses.students_enrolled = 253` for the Azure course, but `cohort_members = 1`. For `cohort_only` courses, the displayed count should reflect cohort membership, not the legacy 253 stray enrollments that pre-date the cohort gate.
 
-Change: add `pt-14` to the `<main>` element in both the forbidden branch (line 62) and the main return (line 77). Nothing else on that page needs to move.
+Fix:
+- Backfill `courses.students_enrolled` for cohort-only courses to `count(cohort_members)`.
+- Update the DB trigger / RPC that maintains `students_enrolled` so cohort-only courses count cohort members; other courses continue counting paid enrollments.
 
-Sweep sibling pages that also mount `<Header />` directly without a top offset and apply the same `pt-14` fix where the first child visibly clips under the header. Candidates to check with a quick grep and fix only where they clip: `Bookmarks.tsx`, `Cohorts.tsx`, `Cart.tsx`, `Account.tsx`, `OrderDetail.tsx`, `QuizAttempts.tsx`, `Refer.tsx`, `Search.tsx`. Skip pages whose first section already includes `pt-*` or a hero that intentionally starts at y=0.
+### 4. Assignment / quiz notifications only reaching real students
+Current triggers `notify_assignment_published` and `notify_quiz_published` fan out to every row in `enrollments` for the course. For the Azure bootcamp that's 253 people who can't even open the course. 
 
-## 3. Quiz modal parity + AI toggle — verify only
-Both are already implemented in `src/components/admin/CurriculumBuilder.tsx`:
-- "Attach to lesson" select for quizzes (lines 726–745) with a "Create new lesson slot" option, writing `lesson_id` on save (line 282–288). No unique-constraint logic present. ✅
-- Per-lesson `AI on/off` pill (lines 96–110) that updates `is_visible` on rows scoped to `is_ai_generated = true` for both `quizzes` and `assignments`, so manual rows are untouched. ✅
-- Manual quiz save inserts `is_ai_generated: false, is_visible: true` and persists inline questions to `quiz_questions` in the same mutation (lines 282–313). ✅
+Fix: rewrite both trigger functions so that when the course is `cohort_only`, notifications insert one row per `cohort_members.user_id` for cohorts tied to that course; otherwise keep the current enrollments-based fan-out. Same link format (`/courses/:id/learn?lesson=…&tab=…`) so the bell deep-links straight to the item.
 
-No code change here — call these out in the closing summary so the user knows they're covered and were re-verified.
+### 5. "New assignment / quiz" pop-up for cohort students
+Add a lightweight in-app modal (`NewAssessmentToast`) mounted in `App.tsx` that:
+- Subscribes to realtime inserts on `notifications` for the current user where `type='info'` and `link` contains `tab=assignments` or `tab=quizzes`.
+- Shows a dismissible modal with title + "Open assignment / quiz" CTA that navigates to the notification's `link`.
+- Marks the notification as read on click / dismiss.
 
-## 4. End-to-end smoke check after edits
-Open the preview at mobile viewport, sign in, and confirm: (a) bell renders and opens on mobile, (b) `/cohorts/:id` hero is no longer under the fixed header, (c) admin curriculum → Add Quiz still saves with a lesson attached and shows to enrolled students.
+No new tables — reuses existing `notifications` rows so the bell and the pop-up stay in sync.
 
-## Technical notes
-- Files edited: `src/components/Header.tsx`, `src/pages/CohortSpace.tsx`, plus any sibling pages found to clip (add `pt-14` to their `<main>` only).
-- No schema, RLS, or notification-trigger changes — the existing `notify_assignment_published` / `notify_quiz_published` triggers plus realtime subscription in `UserNotificationBell` already power the flow; exposing the bell on mobile is what unblocks users seeing it.
-- No changes to `UserNotificationBell.tsx`, `CurriculumBuilder.tsx`, quiz save logic, or AI-toggle mutation.
+### 6. Global LMS flow verification
+- `CourseAssignments.tsx` / `CourseQuizzes.tsx` / `LessonQuiz.tsx` already gate on `useCourseAccess`; confirm cohort members pass (they do — hook already checks `cohort_members`).
+- Confirm assignment/quiz submission RPCs (`is_paid_enrolled_for_assignment`, `is_paid_enrolled_for_lesson`) already honour cohort access (they were updated in the previous migration). Re-run linter after the migration.
+
+### Technical details
+
+**Migration (single file):**
+```sql
+-- 1. widen check constraint
+ALTER TABLE public.enrollments DROP CONSTRAINT enrollments_payment_status_check;
+ALTER TABLE public.enrollments ADD CONSTRAINT enrollments_payment_status_check
+  CHECK (payment_status IN ('pending','paid','refunded','free','comped','confirmed','success','granted'));
+
+-- 2. seed access for Seun
+INSERT INTO public.enrollments (user_id, course_id, payment_status, access_source, granted_by)
+VALUES ('07f6ed4c-8a5b-452f-95ae-2f970bbfdcc0','3b1f29ec-8fd4-4ff0-9357-1987b90e6c91','granted','manual_grant', null)
+ON CONFLICT (user_id, course_id) DO UPDATE SET payment_status='granted', access_source='manual_grant';
+
+INSERT INTO public.cohort_members (cohort_id, user_id, role)
+VALUES ('269e0f74-781a-4224-a10c-ea666cf47d9a','07f6ed4c-8a5b-452f-95ae-2f970bbfdcc0','student')
+ON CONFLICT DO NOTHING;
+
+-- 3. rewrite the two notification trigger functions to branch on cohort_only
+--    (SELECT cohort_only FROM courses WHERE id = v_course) → fan out to cohort_members OR enrollments
+
+-- 4. recompute students_enrolled for cohort_only courses
+UPDATE public.courses c SET students_enrolled = (
+  SELECT count(DISTINCT m.user_id)
+  FROM public.cohort_members m
+  JOIN public.cohorts co ON co.id = m.cohort_id
+  WHERE co.course_id = c.id
+) WHERE c.cohort_only = true;
+
+-- 5. update the recount trigger/function used elsewhere to branch on cohort_only
+```
+
+**Frontend:**
+- `src/components/NewAssessmentToast.tsx` (new): realtime listener + modal.
+- `src/App.tsx`: mount `<NewAssessmentToast />` inside the auth-aware tree.
+
+No changes to `AdminAccessGrants.tsx` are needed once the constraint is widened.

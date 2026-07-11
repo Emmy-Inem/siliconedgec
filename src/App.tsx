@@ -74,6 +74,7 @@ import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
+import { NewAssessmentToast } from "./components/NewAssessmentToast";
 import { HelmetProvider } from "react-helmet-async";
 
 // Code-split admin pages — they only load when an admin route is visited
@@ -181,6 +182,7 @@ const App = () => (
           <UtmTracker />
           <CartProvider>
             <MaintenanceBanner />
+            <NewAssessmentToast />
             <Suspense fallback={<PublicFallback />}>
             <Routes>
               <Route path="/" element={<Index />} />
