@@ -154,12 +154,17 @@ export function AdminSidebar() {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col"
               >
-                <div className="h-16 border-b border-border flex items-center justify-between px-4">
+                <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
                   <Link to="/admin" onClick={() => setMobileOpen(false)}>
                     <img src={logoDark} alt="Silicon Edge" className="h-7 w-auto" />
                   </Link>
-                  <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
-                    <X className="h-4 w-4" />
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setMobileOpen(false); }}
+                    aria-label="Close menu"
+                    className="relative z-10 -mr-2 p-3 rounded-lg text-foreground hover:bg-muted active:bg-muted/70 touch-manipulation"
+                  >
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
                 <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} filteredSections={filteredSections} />
@@ -177,13 +182,16 @@ export function AdminSidebar() {
             </>
           )}
         </AnimatePresence>
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center md:hidden ring-2 ring-background"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        {!mobileOpen && (
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="fixed bottom-4 left-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center md:hidden ring-2 ring-background"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
       </>
     );
   }
