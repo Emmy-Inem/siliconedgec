@@ -62,26 +62,26 @@ export default function AdminAnalytics() {
       // Use fetchAllRows so we never silently drop rows past the 1000-row
       // PostgREST cap — keeps Platform Analytics consistent with Marketing
       // Analytics and Overview.
-      const [courses, enrollments, profiles, promos, referrals] = await Promise.all([
+      const [courses, enrollments, profiles, promos, referrals, orders] = await Promise.all([
         fetchAllRows<any>("courses", "id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
         fetchAllRows<any>("enrollments", "id, payment_status, progress_percentage, is_completed, created_at, course_id"),
         fetchAllRows<any>("profiles", "id, created_at"),
         fetchAllRows<any>("promo_codes", "id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
         fetchAllRows<any>("influencer_referrals", "id, commission_earned, final_price, original_price, discount_applied, created_at"),
+        fetchAllRows<any>("orders", "id, amount, status, course_id, created_at"),
       ]);
       const now = new Date();
 
       const courseMap = new Map(courses.map(c => [c.id, c]));
-      let totalEstRevenue = 0;
-      // `free` payment_status rows come from webinar registrations (auto-created
-      // alongside course_registrations). Excluding them prevents the same lead
-      // being counted as both a webinar registration and a paid course sale.
+      // Real revenue = sum of paid orders (Paystack-verified). Never derive
+      // from enrollment counts × list price — that inflates the number
+      // because legacy event/promo enrollments carry a `paid` status without
+      // a matching Paystack payment.
+      const PAID_ORDER = new Set(["paid","success","completed","confirmed"]);
+      const paidOrders = (orders as any[]).filter(o => PAID_ORDER.has(String(o.status ?? "").toLowerCase()));
+      const totalEstRevenue = paidOrders.reduce((s, o) => s + Number(o.amount || 0), 0);
       const paidEnrollments = enrollments.filter(isPaidEnrollment);
       const freeEnrollments = enrollments.filter(isFreeEnrollment);
-      paidEnrollments.forEach(e => {
-        const course = courseMap.get(e.course_id);
-        if (course) totalEstRevenue += Number(course.price ?? 0);
-      });
 
       const totalPromoRevenue = promos.reduce((s, p) => s + Number(p.revenue_generated ?? 0), 0);
       const totalCommission = referrals.reduce((s, r) => s + Number(r.commission_earned ?? 0), 0);
@@ -101,12 +101,12 @@ export default function AdminAnalytics() {
       const difficultyData = Object.entries(diffMap).map(([name, value]) => ({ name, value }));
 
       const catRevenue: Record<string, number> = {};
-      paidEnrollments.forEach(e => {
-        const course = courseMap.get(e.course_id);
-        if (course) {
-          const cat = course.category.length > 15 ? course.category.slice(0, 13) + "…" : course.category;
-          catRevenue[cat] = (catRevenue[cat] ?? 0) + Number(course.price ?? 0);
-        }
+      paidOrders.forEach(o => {
+        if (!o.course_id) return;
+        const course = courseMap.get(o.course_id);
+        if (!course) return;
+        const cat = course.category.length > 15 ? course.category.slice(0, 13) + "…" : course.category;
+        catRevenue[cat] = (catRevenue[cat] ?? 0) + Number(o.amount || 0);
       });
       const catRevenueData = Object.entries(catRevenue).map(([name, revenue]) => ({ name, revenue }));
 
