@@ -433,6 +433,19 @@ export default function CourseLearning() {
                           <Circle className="h-4 w-4 shrink-0" />
                         )}
                         <span className="truncate flex-1">{lesson.title}</span>
+                        {assignmentStatus.pending.has(lesson.id) ? (
+                          <span
+                            title="Assignment pending"
+                            aria-label="Assignment pending"
+                            className="inline-block h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_2px_rgba(168,85,247,0.75)] shrink-0"
+                          />
+                        ) : assignmentStatus.done.has(lesson.id) ? (
+                          <span
+                            title="Assignment submitted"
+                            aria-label="Assignment submitted"
+                            className="inline-block h-2 w-2 rounded-full bg-muted-foreground/60 shadow-[0_0_6px_1px_rgba(148,163,184,0.55)] shrink-0"
+                          />
+                        ) : null}
                         {isNextUp && (
                           <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary shrink-0">
                             Next
