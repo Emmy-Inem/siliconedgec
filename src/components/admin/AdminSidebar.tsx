@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -128,6 +128,16 @@ export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { adminRole } = useAuth();
+  const location = useLocation();
+
+  // Always close the mobile drawer on route change and on Escape.
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
 
   const allowedSections = getAccessibleSections(adminRole);
   const filteredSections = allowedSections
@@ -144,8 +154,9 @@ export function AdminSidebar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-40"
+                className="fixed inset-0 bg-black/50 z-40 pointer-events-auto"
                 onClick={() => setMobileOpen(false)}
+                onTouchStart={() => setMobileOpen(false)}
               />
               <motion.aside
                 initial={{ x: -280 }}
