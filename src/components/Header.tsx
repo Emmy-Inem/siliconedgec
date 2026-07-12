@@ -37,6 +37,11 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close the mobile menu on route change so tapping a link always dismisses it.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const showLight = false; // Header now always uses white background; logoDark always
 
   return (
@@ -145,7 +150,14 @@ export function Header() {
       </div>
 
       {menuOpen && (
-        <div className="lg:hidden bg-card border-b border-border p-4 space-y-3 animate-fade-in">
+        <>
+          {/* Tap-outside overlay so users can dismiss the menu by tapping anywhere else. */}
+          <div
+            className="lg:hidden fixed inset-0 top-14 z-40 bg-black/20"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="lg:hidden relative z-50 bg-card border-b border-border p-4 space-y-3 animate-fade-in">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -178,6 +190,7 @@ export function Header() {
             )}
           </div>
         </div>
+        </>
       )}
     </header>
   );
