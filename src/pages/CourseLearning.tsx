@@ -178,6 +178,43 @@ export default function CourseLearning() {
     enabled: !!courseId,
   });
 
+  // Assignments per lesson + this user's submission status, so the sidebar can
+  // show a glowing dot: purple = has assignment(s) still to do, grey = done.
+  const { data: assignmentStatus = { pending: new Set<string>(), done: new Set<string>() } } = useQuery({
+    queryKey: ["lesson-assignment-status", courseId, user?.id, course?.modules?.length ?? 0],
+    enabled: !!user && !!course?.modules?.length,
+    queryFn: async () => {
+      const allLessonIds: string[] =
+        course?.modules?.flatMap((m: any) => m.lessons.map((l: any) => l.id)) ?? [];
+      if (!allLessonIds.length) return { pending: new Set<string>(), done: new Set<string>() };
+      const { data: assigns } = await supabase
+        .from("assignments")
+        .select("id, lesson_id, is_visible")
+        .in("lesson_id", allLessonIds);
+      const visible = (assigns ?? []).filter((a: any) => a.is_visible !== false);
+      const aIds = visible.map((a: any) => a.id);
+      let submitted = new Set<string>();
+      if (user && aIds.length) {
+        const { data: subs } = await supabase
+          .from("assignment_submissions")
+          .select("assignment_id")
+          .eq("user_id", user.id)
+          .in("assignment_id", aIds);
+        submitted = new Set((subs ?? []).map((s: any) => s.assignment_id));
+      }
+      const pending = new Set<string>();
+      const done = new Set<string>();
+      const byLesson: Record<string, any[]> = {};
+      for (const a of visible) (byLesson[a.lesson_id] ??= []).push(a);
+      for (const [lessonId, items] of Object.entries(byLesson)) {
+        const anyPending = items.some((a: any) => !submitted.has(a.id));
+        if (anyPending) pending.add(lessonId);
+        else done.add(lessonId);
+      }
+      return { pending, done };
+    },
+  });
+
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
   const approvedIds = new Set((approvals ?? []).map((a: any) => a.lesson_id));
