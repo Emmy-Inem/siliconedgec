@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LogOut, User, LayoutDashboard, ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ const baseNavLinks = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
   const location = useLocation();
   const darkHeroPages = ["/", "/for-businesses", "/certificates", "/pricing"];
   const isHeroPage = darkHeroPages.includes(location.pathname);
@@ -41,6 +43,26 @@ export function Header() {
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (mobileMenuRef.current?.contains(target)) return;
+      if (mobileMenuButtonRef.current?.contains(target)) return;
+      setMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
 
   const showLight = false; // Header now always uses white background; logoDark always
 
@@ -139,7 +161,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+          <button ref={mobileMenuButtonRef} type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? (
               <X className="h-6 w-6 text-foreground" />
             ) : (
@@ -153,11 +175,15 @@ export function Header() {
         <>
           {/* Tap-outside overlay so users can dismiss the menu by tapping anywhere else. */}
           <div
-            className="lg:hidden fixed inset-0 top-14 z-40 bg-black/20"
-            onClick={() => setMenuOpen(false)}
+            className="lg:hidden fixed inset-x-0 bottom-0 top-14 z-40 bg-foreground/20"
+            onPointerDown={() => setMenuOpen(false)}
             aria-hidden="true"
           />
-          <div className="lg:hidden relative z-50 bg-card border-b border-border p-4 space-y-3 animate-fade-in">
+          <div
+            ref={mobileMenuRef}
+            className="lg:hidden relative z-50 bg-card border-b border-border p-4 space-y-3 animate-fade-in shadow-lg"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
           {navLinks.map((link) => (
             <Link
               key={link.href}

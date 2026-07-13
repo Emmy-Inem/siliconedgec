@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -127,16 +127,30 @@ export function AdminSidebar() {
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mobilePanelRef = useRef<HTMLElement | null>(null);
+  const mobileOpenButtonRef = useRef<HTMLButtonElement | null>(null);
   const { adminRole } = useAuth();
   const location = useLocation();
 
   // Always close the mobile drawer on route change and on Escape.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { if (!isMobile) setMobileOpen(false); }, [isMobile]);
   useEffect(() => {
     if (!mobileOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (mobilePanelRef.current?.contains(target)) return;
+      if (mobileOpenButtonRef.current?.contains(target)) return;
+      setMobileOpen(false);
+    };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("keydown", onKey);
+    };
   }, [mobileOpen]);
 
   const allowedSections = getAccessibleSections(adminRole);
@@ -154,16 +168,17 @@ export function AdminSidebar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-40 pointer-events-auto"
-                onClick={() => setMobileOpen(false)}
-                onTouchStart={() => setMobileOpen(false)}
+                className="fixed inset-0 bg-foreground/50 z-40 pointer-events-auto"
+                onPointerDown={() => setMobileOpen(false)}
               />
               <motion.aside
+                ref={mobilePanelRef as any}
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col"
+                className="fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col shadow-2xl"
+                onPointerDown={(event) => event.stopPropagation()}
               >
                 <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
                   <Link to="/admin" onClick={() => setMobileOpen(false)}>
@@ -172,6 +187,7 @@ export function AdminSidebar() {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setMobileOpen(false); }}
+                    onPointerDown={(e) => { e.stopPropagation(); setMobileOpen(false); }}
                     aria-label="Close menu"
                     className="relative z-10 -mr-2 p-3 rounded-lg text-foreground hover:bg-muted active:bg-muted/70 touch-manipulation"
                   >
@@ -195,6 +211,7 @@ export function AdminSidebar() {
         </AnimatePresence>
         {!mobileOpen && (
           <button
+            ref={mobileOpenButtonRef}
             type="button"
             onClick={() => setMobileOpen(true)}
             className="fixed bottom-4 left-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center md:hidden ring-2 ring-background"
