@@ -149,6 +149,14 @@
   .glow-purple {
     box-shadow: 0 0 40px -8px hsl(var(--purple-glow) / 0.35);
   }
+  .assignment-dot-pending {
+    background-color: hsl(var(--primary));
+    box-shadow: 0 0 8px 2px hsl(var(--primary) / 0.75);
+  }
+  .assignment-dot-done {
+    background-color: hsl(var(--muted-foreground) / 0.65);
+    box-shadow: 0 0 6px 1px hsl(var(--muted-foreground) / 0.5);
+  }
   .glass-card {
     background: hsl(var(--card) / 0.6);
     backdrop-filter: blur(16px);

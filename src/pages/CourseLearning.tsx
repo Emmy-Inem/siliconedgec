@@ -274,6 +274,32 @@ export default function CourseLearning() {
     return hasPaidEnrollment;
   }, [publicAccess, user, hasAdminAccess, enrollment, hasPaidEnrollment]);
 
+  const refreshAssignmentStatus = () => {
+    queryClient.invalidateQueries({ queryKey: ["lesson-assignment-status"] });
+  };
+
+  const AssignmentStatusDot = ({ lessonId }: { lessonId: string }) => {
+    if (assignmentStatus.pending.has(lessonId)) {
+      return (
+        <span
+          title="Assignment pending"
+          aria-label="Assignment pending"
+          className="inline-block h-2 w-2 rounded-full assignment-dot-pending shrink-0"
+        />
+      );
+    }
+    if (assignmentStatus.done.has(lessonId)) {
+      return (
+        <span
+          title="Assignment submitted"
+          aria-label="Assignment submitted"
+          className="inline-block h-2 w-2 rounded-full assignment-dot-done shrink-0"
+        />
+      );
+    }
+    return null;
+  };
+
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
       if (!user) return;
@@ -375,6 +401,45 @@ export default function CourseLearning() {
         </div>
       </div>
 
+      {allLessons.length > 0 && (
+        <div className="md:hidden border-b border-border bg-card/95 px-3 py-2 overflow-x-auto scrollbar-hover-only">
+          <div className="flex gap-2 min-w-max">
+            {allLessons.map((lesson: any, index: number) => {
+              const isComplete = completedIds.has(lesson.id);
+              const isActive = lesson.id === currentLesson?.id;
+              const unlocked = isLessonUnlocked(lesson.id);
+              return (
+                <button
+                  key={lesson.id}
+                  type="button"
+                  onClick={() => unlocked && setSelectedLessonId(lesson.id)}
+                  disabled={!unlocked}
+                  aria-label={`Lesson ${index + 1}: ${lesson.title}`}
+                  className={cn(
+                    "inline-flex h-9 max-w-[220px] items-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors",
+                    isActive
+                      ? "border-primary bg-primary/10 text-primary"
+                      : unlocked
+                        ? "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "border-border/70 text-muted-foreground/50 cursor-not-allowed"
+                  )}
+                >
+                  {isComplete ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  ) : !unlocked ? (
+                    <Lock className="h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <Circle className="h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span className="truncate">{index + 1}. {lesson.title}</span>
+                  <AssignmentStatusDot lessonId={lesson.id} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - modules & lessons */}
         <aside className="w-72 border-r border-border bg-card overflow-y-auto shrink-0 hidden md:block">
@@ -433,19 +498,7 @@ export default function CourseLearning() {
                           <Circle className="h-4 w-4 shrink-0" />
                         )}
                         <span className="truncate flex-1">{lesson.title}</span>
-                        {assignmentStatus.pending.has(lesson.id) ? (
-                          <span
-                            title="Assignment pending"
-                            aria-label="Assignment pending"
-                            className="inline-block h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_2px_rgba(168,85,247,0.75)] shrink-0"
-                          />
-                        ) : assignmentStatus.done.has(lesson.id) ? (
-                          <span
-                            title="Assignment submitted"
-                            aria-label="Assignment submitted"
-                            className="inline-block h-2 w-2 rounded-full bg-muted-foreground/60 shadow-[0_0_6px_1px_rgba(148,163,184,0.55)] shrink-0"
-                          />
-                        ) : null}
+                        <AssignmentStatusDot lessonId={lesson.id} />
                         {isNextUp && (
                           <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary shrink-0">
                             Next
@@ -637,7 +690,7 @@ export default function CourseLearning() {
                       <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
                         <FileText className="h-4 w-4 text-primary" /> Assignments
                       </h3>
-                      <AssignmentPanel lessonId={currentLesson.id} />
+                      <AssignmentPanel lessonId={currentLesson.id} onSubmitted={refreshAssignmentStatus} />
                     </TabsContent>
                     <TabsContent value="discussion">
                       <LessonDiscussion
@@ -671,7 +724,7 @@ export default function CourseLearning() {
                     <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" /> Assignments
                     </h3>
-                    <AssignmentPanel lessonId={currentLesson.id} />
+                    <AssignmentPanel lessonId={currentLesson.id} onSubmitted={refreshAssignmentStatus} />
                   </div>
 
                   {/* Threaded lesson discussion */}

@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 interface Assignment { id: string; title: string; instructions: string; max_points: number; due_at: string | null }
 interface Submission { id: string; content: string; file_url: string | null; submitted_at: string; grade: number | null; feedback: string | null }
 
-export function AssignmentPanel({ lessonId }: { lessonId: string }) {
+export function AssignmentPanel({ lessonId, onSubmitted }: { lessonId: string; onSubmitted?: () => void }) {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [subs, setSubs] = useState<Record<string, Submission | undefined>>({});
@@ -22,18 +22,31 @@ export function AssignmentPanel({ lessonId }: { lessonId: string }) {
     (async () => {
       // Only show assignments the instructor has explicitly published.
       // AI drafts stay hidden until they toggle visibility on.
-      const { data: as } = await supabase
+      const { data: as, error: assignmentError } = await supabase
         .from("assignments")
         .select("id, title, instructions, max_points, due_at")
         .eq("lesson_id", lessonId)
         .eq("is_visible", true);
+      if (assignmentError) {
+        toast({ title: "Couldn't load assignments", description: assignmentError.message, variant: "destructive" });
+        setAssignments([]);
+        setSubs({});
+        return;
+      }
       const list = (as ?? []) as Assignment[];
       setAssignments(list);
       if (list.length) {
-        const { data: ss } = await supabase.from("assignment_submissions").select("id, assignment_id, content, file_url, submitted_at, grade, feedback").in("assignment_id", list.map((a) => a.id)).eq("user_id", user.id);
+        const { data: ss, error: submissionsError } = await supabase.from("assignment_submissions").select("id, assignment_id, content, file_url, submitted_at, grade, feedback").in("assignment_id", list.map((a) => a.id)).eq("user_id", user.id);
+        if (submissionsError) {
+          toast({ title: "Couldn't load submissions", description: submissionsError.message, variant: "destructive" });
+          setSubs({});
+          return;
+        }
         const map: Record<string, Submission> = {};
         for (const s of ss ?? []) map[(s as any).assignment_id] = s as any;
         setSubs(map);
+      } else {
+        setSubs({});
       }
     })();
   }, [lessonId, user]);
@@ -53,7 +66,7 @@ export function AssignmentPanel({ lessonId }: { lessonId: string }) {
     }
     setSaving(null);
     if (res.error) toast({ title: "Couldn't save", description: res.error.message, variant: "destructive" });
-    else { setSubs((p) => ({ ...p, [a.id]: res.data as any })); toast({ title: "Submitted", description: "Your work was sent for review." }); }
+    else { setSubs((p) => ({ ...p, [a.id]: res.data as any })); toast({ title: "Submitted", description: "Your work was sent for review." }); onSubmitted?.(); }
   };
 
   const upload = async (a: Assignment, file: File) => {
@@ -65,11 +78,14 @@ export function AssignmentPanel({ lessonId }: { lessonId: string }) {
     const { data: pub } = supabase.storage.from("course-resources").createSignedUrl ? await supabase.storage.from("course-resources").createSignedUrl(path, 60 * 60 * 24 * 365) : { data: null } as any;
     const file_url = pub?.signedUrl ?? path;
     const existing = subs[a.id];
-    if (existing) await supabase.from("assignment_submissions").update({ file_url }).eq("id", existing.id);
-    else await supabase.from("assignment_submissions").insert({ assignment_id: a.id, user_id: user.id, content: drafts[a.id] ?? "", file_url });
+    const saveResult = existing
+      ? await supabase.from("assignment_submissions").update({ file_url }).eq("id", existing.id)
+      : await supabase.from("assignment_submissions").insert({ assignment_id: a.id, user_id: user.id, content: drafts[a.id] ?? "", file_url });
+    if (saveResult.error) return toast({ title: "Couldn't attach file", description: saveResult.error.message, variant: "destructive" });
     toast({ title: "File attached" });
     const { data: s } = await supabase.from("assignment_submissions").select("*").eq("assignment_id", a.id).eq("user_id", user.id).maybeSingle();
     if (s) setSubs((p) => ({ ...p, [a.id]: s as any }));
+    onSubmitted?.();
   };
 
   return (

@@ -42,6 +42,15 @@ export function Header() {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   const showLight = false; // Header now always uses white background; logoDark always
 
   return (
@@ -139,7 +148,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+          <button type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? (
               <X className="h-6 w-6 text-foreground" />
             ) : (
@@ -153,11 +162,14 @@ export function Header() {
         <>
           {/* Tap-outside overlay so users can dismiss the menu by tapping anywhere else. */}
           <div
-            className="lg:hidden fixed inset-0 top-14 z-40 bg-black/20"
-            onClick={() => setMenuOpen(false)}
+            className="lg:hidden fixed inset-x-0 bottom-0 top-14 z-40 bg-foreground/20"
+            onPointerDown={() => setMenuOpen(false)}
             aria-hidden="true"
           />
-          <div className="lg:hidden relative z-50 bg-card border-b border-border p-4 space-y-3 animate-fade-in">
+          <div
+            className="lg:hidden relative z-50 bg-card border-b border-border p-4 space-y-3 animate-fade-in shadow-lg"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
           {navLinks.map((link) => (
             <Link
               key={link.href}
