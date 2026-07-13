@@ -1,73 +1,39 @@
-## Fix critical LMS + access-grant issues
+## Plan
 
-### 1. "Couldn't grant access" error
-Root cause: `enrollments_payment_status_check` allows only `pending/paid/refunded/free/comped/confirmed/success` — but `AdminAccessGrants.tsx` inserts `payment_status='granted'`. Every manual grant fails with the check-constraint error shown in the screenshot.
+1. **Fix both mobile menus for real devices**
+   - Replace fragile click/touch handlers with pointer-based dismiss handling for the site header menu and admin sidebar.
+   - Make overlays fixed, full-screen, and reliably above page content but below the menu panel.
+   - Add explicit close behavior for X buttons, outside tap, Escape key, route changes, and viewport changes.
+   - Prevent event bubbling from the open panel so tapping inside does not immediately close it.
 
-Fix (migration): drop and recreate the check constraint to include `'granted'`.
+2. **Fix lesson assignment indicators and mobile lesson access**
+   - Keep lesson names clean: no `+ assignment` text anywhere.
+   - Add a reusable assignment status dot component with semantic colors:
+     - Purple glow = lesson has at least one visible assignment still pending.
+     - Grey glow = lesson has visible assignment(s) and all have been submitted.
+   - Add the same indicators to the mobile lesson/navigation experience, not desktop-only.
+   - Refresh assignment status after submitting or updating an assignment so the dot changes without needing a full page reload.
 
-### 2. Grant Oluwaseun Adegbesan (seunmii@gmail.com, user_id `07f6ed4c-…`) access to the Azure Bootcamp
-Because the course is `cohort_only=true`, an enrollment row alone won't unlock it — cohort membership is required. Add him to both:
-- `enrollments` (course `3b1f29ec-…`, `payment_status='granted'`, `access_source='manual_grant'`)
-- `cohort_members` (cohort `269e0f74-…` "Azure Bootcamp — Cohort 1")
+3. **Make assignment submission more robust**
+   - Improve `AssignmentPanel` error handling so failed assignment loads, uploads, inserts, or updates show clear feedback instead of silently failing.
+   - Add a completion callback so the parent lesson page can update the assignment dot when a student submits.
+   - Preserve the existing submit/update/upload flow and grading lock behavior.
 
-### 3. Student count showing 253 instead of the real cohort size
-`courses.students_enrolled = 253` for the Azure course, but `cohort_members = 1`. For `cohort_only` courses, the displayed count should reflect cohort membership, not the legacy 253 stray enrollments that pre-date the cohort gate.
+4. **Close current security gaps in the backend**
+   - Tighten bootcamp enrollment read access by removing email-claim-only access, so students can read records only when linked to their authenticated user id; admins/moderators keep full access.
+   - Tighten `cohort_materials` read access so instructors only read materials for cohorts they teach, instead of any instructor reading all cohort materials.
+   - Review storage policies for the private `cohort-materials` bucket and scope instructor write/update/delete to the cohort id in the object path where possible; admins/moderators stay unrestricted.
+   - Re-run the security scan and mark resolved findings as fixed.
 
-Fix:
-- Backfill `courses.students_enrolled` for cohort-only courses to `count(cohort_members)`.
-- Update the DB trigger / RPC that maintains `students_enrolled` so cohort-only courses count cohort members; other courses continue counting paid enrollments.
+5. **Verify LMS/admin/mobile flows**
+   - Use mobile viewport browser checks for:
+     - Header menu opens, X closes, outside tap closes, route navigation closes.
+     - Admin sidebar opens, X closes, outside tap closes.
+   - Verify lesson assignment dots render for pending/submitted states and update after submission.
+   - Verify backend scan findings are reduced and no new critical security findings remain.
 
-### 4. Assignment / quiz notifications only reaching real students
-Current triggers `notify_assignment_published` and `notify_quiz_published` fan out to every row in `enrollments` for the course. For the Azure bootcamp that's 253 people who can't even open the course. 
+## Technical notes
 
-Fix: rewrite both trigger functions so that when the course is `cohort_only`, notifications insert one row per `cohort_members.user_id` for cohorts tied to that course; otherwise keep the current enrollments-based fan-out. Same link format (`/courses/:id/learn?lesson=…&tab=…`) so the bell deep-links straight to the item.
-
-### 5. "New assignment / quiz" pop-up for cohort students
-Add a lightweight in-app modal (`NewAssessmentToast`) mounted in `App.tsx` that:
-- Subscribes to realtime inserts on `notifications` for the current user where `type='info'` and `link` contains `tab=assignments` or `tab=quizzes`.
-- Shows a dismissible modal with title + "Open assignment / quiz" CTA that navigates to the notification's `link`.
-- Marks the notification as read on click / dismiss.
-
-No new tables — reuses existing `notifications` rows so the bell and the pop-up stay in sync.
-
-### 6. Global LMS flow verification
-- `CourseAssignments.tsx` / `CourseQuizzes.tsx` / `LessonQuiz.tsx` already gate on `useCourseAccess`; confirm cohort members pass (they do — hook already checks `cohort_members`).
-- Confirm assignment/quiz submission RPCs (`is_paid_enrolled_for_assignment`, `is_paid_enrolled_for_lesson`) already honour cohort access (they were updated in the previous migration). Re-run linter after the migration.
-
-### Technical details
-
-**Migration (single file):**
-```sql
--- 1. widen check constraint
-ALTER TABLE public.enrollments DROP CONSTRAINT enrollments_payment_status_check;
-ALTER TABLE public.enrollments ADD CONSTRAINT enrollments_payment_status_check
-  CHECK (payment_status IN ('pending','paid','refunded','free','comped','confirmed','success','granted'));
-
--- 2. seed access for Seun
-INSERT INTO public.enrollments (user_id, course_id, payment_status, access_source, granted_by)
-VALUES ('07f6ed4c-8a5b-452f-95ae-2f970bbfdcc0','3b1f29ec-8fd4-4ff0-9357-1987b90e6c91','granted','manual_grant', null)
-ON CONFLICT (user_id, course_id) DO UPDATE SET payment_status='granted', access_source='manual_grant';
-
-INSERT INTO public.cohort_members (cohort_id, user_id, role)
-VALUES ('269e0f74-781a-4224-a10c-ea666cf47d9a','07f6ed4c-8a5b-452f-95ae-2f970bbfdcc0','student')
-ON CONFLICT DO NOTHING;
-
--- 3. rewrite the two notification trigger functions to branch on cohort_only
---    (SELECT cohort_only FROM courses WHERE id = v_course) → fan out to cohort_members OR enrollments
-
--- 4. recompute students_enrolled for cohort_only courses
-UPDATE public.courses c SET students_enrolled = (
-  SELECT count(DISTINCT m.user_id)
-  FROM public.cohort_members m
-  JOIN public.cohorts co ON co.id = m.cohort_id
-  WHERE co.course_id = c.id
-) WHERE c.cohort_only = true;
-
--- 5. update the recount trigger/function used elsewhere to branch on cohort_only
-```
-
-**Frontend:**
-- `src/components/NewAssessmentToast.tsx` (new): realtime listener + modal.
-- `src/App.tsx`: mount `<NewAssessmentToast />` inside the auth-aware tree.
-
-No changes to `AdminAccessGrants.tsx` are needed once the constraint is widened.
+- Frontend files likely affected: `Header.tsx`, `AdminSidebar.tsx`, `CourseLearning.tsx`, and `AssignmentPanel.tsx`.
+- Backend changes will be done through a database migration only.
+- Admin users retain unrestricted access; instructor access is scoped to the cohorts/courses they actually teach.
