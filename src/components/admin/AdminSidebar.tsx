@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -127,6 +127,8 @@ export function AdminSidebar() {
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mobilePanelRef = useRef<HTMLElement | null>(null);
+  const mobileOpenButtonRef = useRef<HTMLButtonElement | null>(null);
   const { adminRole } = useAuth();
   const location = useLocation();
 
@@ -135,9 +137,20 @@ export function AdminSidebar() {
   useEffect(() => { if (!isMobile) setMobileOpen(false); }, [isMobile]);
   useEffect(() => {
     if (!mobileOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (mobilePanelRef.current?.contains(target)) return;
+      if (mobileOpenButtonRef.current?.contains(target)) return;
+      setMobileOpen(false);
+    };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("keydown", onKey);
+    };
   }, [mobileOpen]);
 
   const allowedSections = getAccessibleSections(adminRole);
@@ -159,6 +172,7 @@ export function AdminSidebar() {
                 onPointerDown={() => setMobileOpen(false)}
               />
               <motion.aside
+                ref={mobilePanelRef as any}
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
@@ -197,6 +211,7 @@ export function AdminSidebar() {
         </AnimatePresence>
         {!mobileOpen && (
           <button
+            ref={mobileOpenButtonRef}
             type="button"
             onClick={() => setMobileOpen(true)}
             className="fixed bottom-4 left-4 z-40 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center md:hidden ring-2 ring-background"
