@@ -177,6 +177,60 @@ export default function CourseDetail() {
     },
     enabled: !!user && orderedLessons.length > 0,
   });
+
+  // Assignment presence per lesson (public) + this user's submission status (auth).
+  // Drives the purple (pending) / grey (done) glowing dot in the curriculum.
+  const { data: assignmentDots = { pending: new Set<string>(), done: new Set<string>(), has: new Set<string>() } } = useQuery({
+    queryKey: ["course-detail-assignment-dots", courseId, user?.id, orderedLessons.length],
+    enabled: orderedLessons.length > 0,
+    queryFn: async () => {
+      const lessonIds = orderedLessons.map((l) => l.id);
+      const { data: assigns } = await supabase
+        .from("assignments")
+        .select("id, lesson_id, is_visible")
+        .in("lesson_id", lessonIds);
+      const visible = (assigns ?? []).filter((a: any) => a.is_visible !== false);
+      const has = new Set<string>(visible.map((a: any) => a.lesson_id));
+      const byLesson: Record<string, string[]> = {};
+      for (const a of visible) (byLesson[a.lesson_id] ??= []).push(a.id);
+      let submitted = new Set<string>();
+      if (user && visible.length) {
+        const { data: subs } = await supabase
+          .from("assignment_submissions")
+          .select("assignment_id")
+          .eq("user_id", user.id)
+          .in("assignment_id", visible.map((a: any) => a.id));
+        submitted = new Set((subs ?? []).map((s: any) => s.assignment_id));
+      }
+      const pending = new Set<string>();
+      const done = new Set<string>();
+      for (const [lessonId, ids] of Object.entries(byLesson)) {
+        if (ids.some((id) => !submitted.has(id))) pending.add(lessonId);
+        else done.add(lessonId);
+      }
+      return { pending, done, has };
+    },
+  });
+
+  const AssignmentDot = ({ lessonId }: { lessonId: string }) => {
+    if (!assignmentDots.has.has(lessonId)) return null;
+    if (user && assignmentDots.done.has(lessonId)) {
+      return (
+        <span
+          title="Assignment submitted"
+          aria-label="Assignment submitted"
+          className="inline-block h-2 w-2 rounded-full assignment-dot-done shrink-0"
+        />
+      );
+    }
+    return (
+      <span
+        title="Assignment pending"
+        aria-label="Assignment pending"
+        className="inline-block h-2 w-2 rounded-full assignment-dot-pending shrink-0"
+      />
+    );
+  };
   const completedIds = new Set(
     (completedRows as any[]).filter((r) => r.is_completed).map((r) => r.lesson_id),
   );
