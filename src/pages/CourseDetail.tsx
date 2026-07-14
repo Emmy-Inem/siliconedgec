@@ -579,6 +579,7 @@ export default function CourseDetail() {
                                               <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
                                             )}
                                             {lesson.title}
+                                            <AssignmentDot lessonId={lesson.id} />
                                           </span>
                                           <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{lesson.duration}</span>
                                         </Link>
@@ -594,6 +595,7 @@ export default function CourseDetail() {
                                           <span className="flex items-center gap-2">
                                             <Lock className="h-3.5 w-3.5 flex-shrink-0" />
                                             {lesson.title}
+                                            <AssignmentDot lessonId={lesson.id} />
                                           </span>
                                           <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
                                         </div>
