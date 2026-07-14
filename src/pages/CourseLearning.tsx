@@ -705,7 +705,7 @@ export default function CourseLearning() {
                       <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
                         <FileText className="h-4 w-4 text-primary" /> Assignments
                       </h3>
-                      <AssignmentPanel lessonId={currentLesson.id} onSubmitted={refreshAssignmentStatus} />
+                      <AssignmentPanel lessonId={currentLesson.id} onSubmitted={() => refreshAssignmentStatus(currentLesson.id)} />
                     </TabsContent>
                     <TabsContent value="discussion">
                       <LessonDiscussion
@@ -739,7 +739,7 @@ export default function CourseLearning() {
                     <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" /> Assignments
                     </h3>
-                    <AssignmentPanel lessonId={currentLesson.id} onSubmitted={refreshAssignmentStatus} />
+                    <AssignmentPanel lessonId={currentLesson.id} onSubmitted={() => refreshAssignmentStatus(currentLesson.id)} />
                   </div>
 
                   {/* Threaded lesson discussion */}
