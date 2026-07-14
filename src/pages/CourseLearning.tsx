@@ -274,7 +274,22 @@ export default function CourseLearning() {
     return hasPaidEnrollment;
   }, [publicAccess, user, hasAdminAccess, enrollment, hasPaidEnrollment]);
 
-  const refreshAssignmentStatus = () => {
+  const refreshAssignmentStatus = (lessonId?: string) => {
+    // Optimistic: move this lesson from pending → done immediately so the
+    // dot flips without waiting for the round-trip.
+    if (lessonId) {
+      queryClient.setQueriesData<{ pending: Set<string>; done: Set<string> } | undefined>(
+        { queryKey: ["lesson-assignment-status"] },
+        (prev) => {
+          if (!prev) return prev;
+          const pending = new Set(prev.pending);
+          const done = new Set(prev.done);
+          pending.delete(lessonId);
+          done.add(lessonId);
+          return { pending, done };
+        },
+      );
+    }
     queryClient.invalidateQueries({ queryKey: ["lesson-assignment-status"] });
   };
 
