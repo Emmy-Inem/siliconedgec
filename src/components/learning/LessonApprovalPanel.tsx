@@ -36,15 +36,34 @@ export function LessonApprovalPanel({ courseId, currentLessonId, nextLessonId }:
 
   const load = async () => {
     setLoading(true);
-    // 1. enrolled students on this course
-    const { data: enrolls } = await db
-      .from("enrollments")
-      .select("user_id, payment_status")
+    // 1. Determine the roster of students eligible for this course.
+    //    For cohort-based courses (e.g. the Bootcamp), only cohort members
+    //    are actual students — plain `enrollments` may contain comp/free
+    //    access rows we do not want to surface here. Fall back to
+    //    `enrollments` (paid) for regular self-paced courses.
+    const { data: cohorts } = await db
+      .from("cohorts")
+      .select("id")
       .eq("course_id", courseId);
-    const paid = (enrolls ?? []).filter((e: any) =>
-      ["paid", "success", "completed", "confirmed"].includes(String(e.payment_status ?? "").toLowerCase()),
-    );
-    const userIds: string[] = paid.map((e: any) => e.user_id);
+    const cohortIds: string[] = (cohorts ?? []).map((c: any) => c.id);
+
+    let userIds: string[] = [];
+    if (cohortIds.length) {
+      const { data: members } = await db
+        .from("cohort_members")
+        .select("user_id")
+        .in("cohort_id", cohortIds);
+      userIds = Array.from(new Set((members ?? []).map((m: any) => m.user_id).filter(Boolean)));
+    } else {
+      const { data: enrolls } = await db
+        .from("enrollments")
+        .select("user_id, payment_status")
+        .eq("course_id", courseId);
+      const paid = (enrolls ?? []).filter((e: any) =>
+        ["paid", "success", "completed", "confirmed"].includes(String(e.payment_status ?? "").toLowerCase()),
+      );
+      userIds = paid.map((e: any) => e.user_id);
+    }
     if (userIds.length === 0) {
       setRows([]); setLoading(false); return;
     }
