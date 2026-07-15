@@ -106,13 +106,32 @@ export default function CourseLearning() {
       if (!user || !courseId) return null;
       const { data } = await supabase
         .from("enrollments")
-        .select("id, course_id, user_id, payment_status, last_lesson_id, resume_position_seconds")
+        .select("id, course_id, user_id, payment_status, access_source, last_lesson_id, resume_position_seconds")
         .eq("course_id", courseId)
         .eq("user_id", user.id)
         .maybeSingle();
       return data;
     },
     enabled: !!user && !!courseId && !hasAdminAccess,
+    // Newly-granted enrollments must show up without a hard refresh.
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+
+  // Server-authoritative access check. Combines paid/granted status,
+  // manual_grant/promo/bootcamp access_source, and cohort membership.
+  const { data: rpcAccess } = useQuery({
+    queryKey: ["course-access-rpc", courseId, user?.id],
+    queryFn: async () => {
+      if (!user || !courseId) return null;
+      const { data } = await supabase.rpc("is_paid_enrolled", { _course_id: courseId });
+      return data === true;
+    },
+    enabled: !!user && !!courseId && !hasAdminAccess,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   // Fetch lesson progress
@@ -218,9 +237,14 @@ export default function CourseLearning() {
   const allLessons = course?.modules?.flatMap((m: any) => m.lessons) ?? [];
   const completedIds = new Set((progress ?? []).filter((p: any) => p.is_completed).map((p: any) => p.lesson_id));
   const approvedIds = new Set((approvals ?? []).map((a: any) => a.lesson_id));
-  const hasPaidEnrollment = ["paid", "success", "completed", "confirmed"].includes(
-    String(enrollment?.payment_status ?? "").toLowerCase(),
-  );
+  // Any of these count as full access, matching public.user_can_access_course.
+  const PAID_STATUSES = ["paid", "success", "completed", "confirmed", "granted"];
+  const GRANTED_SOURCES = ["manual_grant", "promo", "bootcamp"];
+  const enrollmentGrantsAccess =
+    !!enrollment &&
+    (PAID_STATUSES.includes(String(enrollment.payment_status ?? "").toLowerCase()) ||
+      GRANTED_SOURCES.includes(String((enrollment as any)?.access_source ?? "").toLowerCase()));
+  const hasPaidEnrollment = rpcAccess === true || enrollmentGrantsAccess;
 
   const unlockCtx = {
     lessons: allLessons as { id: string }[],
@@ -270,9 +294,26 @@ export default function CourseLearning() {
     if (publicAccess) return true;
     if (!user) return false;
     if (hasAdminAccess) return true;
+    // RPC is server-authoritative — trust it even when the local enrollment
+    // row hasn't loaded yet (e.g. cohort_only courses where access comes
+    // from cohort_members rather than an enrollment row).
+    if (rpcAccess === true) return true;
     if (!enrollment) return false;
     return hasPaidEnrollment;
-  }, [publicAccess, user, hasAdminAccess, enrollment, hasPaidEnrollment]);
+  }, [publicAccess, user, hasAdminAccess, enrollment, hasPaidEnrollment, rpcAccess]);
+
+  useEffect(() => {
+    if (import.meta.env.DEV && user && courseId && !hasAdminAccess && !canAccessCourse && !enrollLoading) {
+      // eslint-disable-next-line no-console
+      console.warn("[course-learning] access denied", {
+        user_id: user.id,
+        course_id: courseId,
+        rpcAccess,
+        enrollment_status: enrollment?.payment_status ?? null,
+        enrollment_source: (enrollment as any)?.access_source ?? null,
+      });
+    }
+  }, [user, courseId, hasAdminAccess, canAccessCourse, enrollLoading, rpcAccess, enrollment]);
 
   const refreshAssignmentStatus = (lessonId?: string) => {
     // Optimistic: move this lesson from pending → done immediately so the
