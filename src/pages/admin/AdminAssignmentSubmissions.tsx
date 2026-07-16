@@ -17,6 +17,21 @@ import { Search, Download, CheckCircle2, FileCheck2, Loader2, GraduationCap } fr
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+const openAssignmentFile = async (fileUrl: string) => {
+  if (/^https?:\/\//i.test(fileUrl)) {
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+  const { data, error } = await supabase.storage
+    .from("assignment-submissions")
+    .createSignedUrl(fileUrl, 60 * 60);
+  if (error || !data?.signedUrl) {
+    toast({ title: "Couldn't open file", description: error?.message ?? "Signed URL failed", variant: "destructive" });
+    return;
+  }
+  window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+};
+
 interface SubmissionRow {
   id: string;
   assignment_id: string;
@@ -196,9 +211,9 @@ export default function AdminAssignmentSubmissions() {
                   <Badge variant="outline">Pending</Badge>
                 )}
                 {r.file_url && (
-                  <a href={r.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                  <button type="button" onClick={() => openAssignmentFile(r.file_url!)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
                     <Download className="h-3 w-3" /> File
-                  </a>
+                  </button>
                 )}
                 <Button size="sm" onClick={() => openGrader(r)}>{r.grade != null ? "Re-grade" : "Grade"}</Button>
               </CardContent>
@@ -227,9 +242,9 @@ export default function AdminAssignmentSubmissions() {
                   {active.content || <span className="italic text-muted-foreground">No written response.</span>}
                 </div>
                 {active.file_url && (
-                  <a href={active.file_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                  <button type="button" onClick={() => openAssignmentFile(active.file_url!)} className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline">
                     <Download className="h-3 w-3" /> Download attachment
-                  </a>
+                  </button>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
