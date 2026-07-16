@@ -72,11 +72,11 @@ export function AssignmentPanel({ lessonId, onSubmitted }: { lessonId: string; o
   const upload = async (a: Assignment, file: File) => {
     if (!user) return;
     if (file.size > 10 * 1024 * 1024) return toast({ title: "Too large", description: "Max 10MB", variant: "destructive" });
-    const path = `${user.id}/${a.id}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("course-resources").upload(path, file, { upsert: true });
+    const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+    const path = `${user.id}/${a.id}-${Date.now()}-${safeName}`;
+    const { error } = await supabase.storage.from("assignment-submissions").upload(path, file, { upsert: true, contentType: file.type || undefined });
     if (error) return toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-    const { data: pub } = supabase.storage.from("course-resources").createSignedUrl ? await supabase.storage.from("course-resources").createSignedUrl(path, 60 * 60 * 24 * 365) : { data: null } as any;
-    const file_url = pub?.signedUrl ?? path;
+    const file_url = path;
     const existing = subs[a.id];
     const saveResult = existing
       ? await supabase.from("assignment_submissions").update({ file_url }).eq("id", existing.id)
