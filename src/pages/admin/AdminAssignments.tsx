@@ -33,6 +33,8 @@ export default function AdminAssignments() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AssignmentRow | null>(null);
+  const [typeFilter, setTypeFilter] = useState<"all" | "manual" | "ai">("all");
+  const [visFilter, setVisFilter] = useState<"all" | "published" | "hidden">("all");
   const [form, setForm] = useState({
     title: "",
     lesson_id: "",
@@ -63,6 +65,14 @@ export default function AdminAssignments() {
       if (error) throw error;
       return (data ?? []) as AssignmentRow[];
     },
+  });
+
+  const filteredRows = rows.filter((a) => {
+    if (typeFilter === "manual" && a.is_ai_generated) return false;
+    if (typeFilter === "ai" && !a.is_ai_generated) return false;
+    if (visFilter === "published" && !a.is_visible) return false;
+    if (visFilter === "hidden" && a.is_visible) return false;
+    return true;
   });
 
   const toggleVisible = useMutation({
@@ -192,9 +202,42 @@ export default function AdminAssignments() {
 
   return (
     <>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+          {(["all", "manual", "ai"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setTypeFilter(v)}
+              className={`px-3 py-1 text-xs rounded-md capitalize transition-colors ${
+                typeFilter === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v === "ai" ? "AI" : v}
+            </button>
+          ))}
+        </div>
+        <div className="inline-flex rounded-lg border border-border bg-background p-0.5">
+          {(["all", "published", "hidden"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setVisFilter(v)}
+              className={`px-3 py-1 text-xs rounded-md capitalize transition-colors ${
+                visFilter === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground ml-1">
+          {filteredRows.length} of {rows.length}
+        </span>
+      </div>
       <AdminCrudTable
         title="Assignments"
-        data={rows}
+        data={filteredRows}
         columns={columns}
         isLoading={isLoading}
         addLabel="Add Assignment"
