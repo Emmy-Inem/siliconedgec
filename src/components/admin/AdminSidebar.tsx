@@ -527,20 +527,9 @@ export function AdminSidebar() {
   useEffect(() => { if (!isMobile) setMobileOpen(false); }, [isMobile]);
   useEffect(() => {
     if (!mobileOpen) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Node | null;
-      if (!target) return;
-      if (mobilePanelRef.current?.contains(target)) return;
-      if (mobileOpenButtonRef.current?.contains(target)) return;
-      setMobileOpen(false);
-    };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
-    document.addEventListener("pointerdown", onPointerDown, true);
     window.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      window.removeEventListener("keydown", onKey);
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen]);
 
   const allowedSections = getAccessibleSections(adminRole);
@@ -554,12 +543,15 @@ export function AdminSidebar() {
         <AnimatePresence>
           {mobileOpen && (
             <>
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label="Close menu overlay"
+                tabIndex={-1}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-foreground/50 z-40 pointer-events-auto"
-                onPointerDown={() => setMobileOpen(false)}
+                className="fixed inset-0 bg-foreground/50 z-40 cursor-pointer"
+                onClick={() => setMobileOpen(false)}
               />
               <motion.aside
                 ref={mobilePanelRef as any}
@@ -568,7 +560,6 @@ export function AdminSidebar() {
                 exit={{ x: -280 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col shadow-2xl"
-                onPointerDown={(event) => event.stopPropagation()}
               >
                 <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
                   <Link to="/admin" onClick={() => setMobileOpen(false)}>
@@ -576,8 +567,7 @@ export function AdminSidebar() {
                   </Link>
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); setMobileOpen(false); }}
-                    onPointerDown={(e) => { e.stopPropagation(); setMobileOpen(false); }}
+                    onClick={() => setMobileOpen(false)}
                     aria-label="Close menu"
                     className="relative z-10 -mr-2 p-3 rounded-lg text-foreground hover:bg-muted active:bg-muted/70 touch-manipulation"
                   >
