@@ -545,7 +545,8 @@ export function AdminSidebar() {
             <>
               <motion.button
                 type="button"
-                aria-label="Close menu"
+                aria-label="Close menu overlay"
+                tabIndex={-1}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
