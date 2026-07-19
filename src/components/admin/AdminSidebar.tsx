@@ -524,7 +524,7 @@ export function AdminSidebar() {
   const location = useLocation();
 
   // Always close the mobile drawer on route change and on Escape.
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); }, [location.pathname, location.search]);
   useEffect(() => { if (!isMobile) setMobileOpen(false); }, [isMobile]);
   useEffect(() => {
     if (!mobileOpen) return;
@@ -533,63 +533,68 @@ export function AdminSidebar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen]);
 
+  // Lock body scroll while drawer is open on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    if (mobileOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [mobileOpen, isMobile]);
+
   const allowedSections = getAccessibleSections(adminRole);
   const filteredSections = allowedSections
     ? sections.filter((s) => allowedSections.includes(s.label))
     : sections;
 
   if (isMobile) {
+    const closeMobile = () => setMobileOpen(false);
     return (
       <>
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              <motion.button
-                type="button"
-                aria-label="Close menu overlay"
-                tabIndex={-1}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-foreground/50 z-40 cursor-pointer"
-                onClick={() => setMobileOpen(false)}
-              />
-              <motion.aside
-                ref={mobilePanelRef as any}
-                initial={{ x: -280 }}
-                animate={{ x: 0 }}
-                exit={{ x: -280 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col shadow-2xl"
-              >
-                <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
-                  <Link to="/admin" onClick={() => setMobileOpen(false)}>
-                    <img src={logoDark} alt="Silicon Edge" className="h-7 w-auto" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setMobileOpen(false)}
-                    aria-label="Close menu"
-                    className="relative z-10 -mr-2 p-3 rounded-lg text-foreground hover:bg-muted active:bg-muted/70 touch-manipulation"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} filteredSections={filteredSections} />
-                <div className="p-3 border-t border-border">
-                  <Link
-                    to="/"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
-                  >
-                    <ArrowLeft className="h-4 w-4 shrink-0" />
-                    <span>Back to Site</span>
-                  </Link>
-                </div>
-              </motion.aside>
-            </>
+        {/* Overlay: always mounted, toggled with pointer-events + opacity for reliable dismiss on touch */}
+        <div
+          aria-hidden={!mobileOpen}
+          onClick={closeMobile}
+          className={cn(
+            "fixed inset-0 bg-foreground/50 z-40 transition-opacity duration-200",
+            mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           )}
-        </AnimatePresence>
+        />
+        {/* Drawer: always mounted, slides via CSS transform. Avoids AnimatePresence exit races. */}
+        <aside
+          ref={mobilePanelRef as any}
+          aria-hidden={!mobileOpen}
+          className={cn(
+            "fixed left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border z-50 flex flex-col shadow-2xl transition-transform duration-200 ease-out will-change-transform",
+            mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+          )}
+        >
+          <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
+            <Link to="/admin" onClick={closeMobile}>
+              <img src={logoDark} alt="Silicon Edge" className="h-7 w-auto" />
+            </Link>
+            <button
+              type="button"
+              onClick={closeMobile}
+              aria-label="Close menu"
+              className="relative z-10 -mr-2 p-3 rounded-lg text-foreground hover:bg-muted active:bg-muted/70 touch-manipulation"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <SidebarContent collapsed={false} onNavigate={closeMobile} filteredSections={filteredSections} />
+          <div className="p-3 border-t border-border">
+            <Link
+              to="/"
+              onClick={closeMobile}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+            >
+              <ArrowLeft className="h-4 w-4 shrink-0" />
+              <span>Back to Site</span>
+            </Link>
+          </div>
+        </aside>
         {!mobileOpen && (
           <button
             ref={mobileOpenButtonRef}
