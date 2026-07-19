@@ -177,6 +177,7 @@ const sections: NavSection[] = [
           { label: "Custom Scripts", tab: "scripts" },
           { label: "Backups", tab: "backups" },
           { label: "Webhooks", tab: "webhooks" },
+          { label: "LMS Sync Health", tab: "lms-sync" },
           { label: "Help", tab: "help" },
         ],
       },
