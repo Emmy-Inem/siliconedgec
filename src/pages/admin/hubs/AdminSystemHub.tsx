@@ -13,6 +13,7 @@ import AdminBlockedIps from "../AdminBlockedIps";
 import AdminGdprTools from "../AdminGdprTools";
 import AdminMaintenance from "../AdminMaintenance";
 import AdminPermissions from "../AdminPermissions";
+import AdminLmsSyncHealth from "../AdminLmsSyncHealth";
 
 export default function AdminSystemHub() {
   return (
@@ -33,6 +34,7 @@ export default function AdminSystemHub() {
         { value: "blocked-ips", label: "Blocked IPs", content: <AdminBlockedIps /> },
         { value: "gdpr", label: "GDPR Tools", content: <AdminGdprTools /> },
         { value: "maintenance", label: "Maintenance", content: <AdminMaintenance /> },
+        { value: "lms-sync", label: "LMS Sync Health", content: <AdminLmsSyncHealth /> },
         { value: "help", label: "Help Center", content: <AdminHelp /> },
       ]}
     />
