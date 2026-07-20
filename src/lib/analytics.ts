@@ -202,7 +202,14 @@ export function gaSetUserId(userId: string | null) {
   // pixel (re-init triggers a "Duplicate Pixel ID" warning and breaks
   // attribution dedupe). `set` updates the already-initialised pixel's
   // user data; on older SDKs this is a safe no-op.
-  if (userId) safeFbq("set", "userData", { external_id: userId });
+  if (userId) {
+    // Correct signature: fbq('set', 'userData', <pixel_id>, { data }).
+    // Without an explicit pixel_id Meta's SDK treats the userData object as
+    // the pixel_id and logs "invalid value" warnings for every registered
+    // pixel — that's the noise in the console.
+    safeFbq("set", "userData", META_PIXEL_ID, { external_id: userId });
+    safeFbq("set", "userData", META_PIXEL_ID_2, { external_id: userId });
+  }
 }
 
 /** TikTok-specific event helper for conversion tracking
@@ -225,6 +232,7 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
 // guard every call to avoid throwing if a privacy extension nuked `fbq`.
 
 const META_PIXEL_ID = "802223455823137";
+const META_PIXEL_ID_2 = "1307808714777123";
 
 function safeFbq(...args: any[]) {
   if (typeof window === "undefined") return;

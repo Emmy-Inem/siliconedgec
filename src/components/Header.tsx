@@ -39,10 +39,11 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close the mobile menu on route change so tapping a link always dismisses it.
+  // Close the mobile menu on any route change (path or query string) so
+  // tapping a link or sub-tab always dismisses it.
   useEffect(() => {
     setMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!menuOpen) return;

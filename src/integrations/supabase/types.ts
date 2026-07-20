@@ -139,6 +139,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_quiz_reveals: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_id: string
+          quiz_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_id: string
+          quiz_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          quiz_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       assignment_submissions: {
         Row: {
           assignment_id: string

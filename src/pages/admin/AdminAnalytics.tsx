@@ -62,13 +62,14 @@ export default function AdminAnalytics() {
       // Use fetchAllRows so we never silently drop rows past the 1000-row
       // PostgREST cap — keeps Platform Analytics consistent with Marketing
       // Analytics and Overview.
-      const [courses, enrollments, profiles, promos, referrals, orders] = await Promise.all([
+      const [courses, enrollments, profiles, promos, referrals, orders, refunds] = await Promise.all([
         fetchAllRows<any>("courses", "id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
         fetchAllRows<any>("enrollments", "id, payment_status, progress_percentage, is_completed, created_at, course_id"),
         fetchAllRows<any>("profiles", "id, created_at"),
         fetchAllRows<any>("promo_codes", "id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
         fetchAllRows<any>("influencer_referrals", "id, commission_earned, final_price, original_price, discount_applied, created_at"),
         fetchAllRows<any>("orders", "id, amount, status, course_id, created_at"),
+        fetchAllRows<any>("finance_refunds", "id, amount, status, order_id").catch(() => [] as any[]),
       ]);
       const now = new Date();
 
@@ -79,7 +80,14 @@ export default function AdminAnalytics() {
       // a matching Paystack payment.
       const PAID_ORDER = new Set(["paid","success","completed","confirmed"]);
       const paidOrders = (orders as any[]).filter(o => PAID_ORDER.has(String(o.status ?? "").toLowerCase()));
-      const totalEstRevenue = paidOrders.reduce((s, o) => s + Number(o.amount || 0), 0);
+      const grossRevenue = paidOrders.reduce((s, o) => s + Number(o.amount || 0), 0);
+      // Net revenue subtracts settled refunds so the KPI reflects money we
+      // actually kept, not just what Paystack captured before chargebacks.
+      const REFUNDED = new Set(["refunded","succeeded","completed","success"]);
+      const totalRefunded = (refunds as any[])
+        .filter((r: any) => REFUNDED.has(String(r.status ?? "").toLowerCase()))
+        .reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+      const totalEstRevenue = Math.max(0, grossRevenue - totalRefunded);
       const paidEnrollments = enrollments.filter(isPaidEnrollment);
       const freeEnrollments = enrollments.filter(isFreeEnrollment);
 
