@@ -232,6 +232,7 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
 // guard every call to avoid throwing if a privacy extension nuked `fbq`.
 
 const META_PIXEL_ID = "802223455823137";
+const META_PIXEL_ID_2 = "1307808714777123";
 
 function safeFbq(...args: any[]) {
   if (typeof window === "undefined") return;
