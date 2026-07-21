@@ -4,6 +4,7 @@ import { Search, Loader2, ClipboardCheck, CheckCircle2, XCircle, TrendingUp } fr
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { EmptyState } from "@/components/EmptyState";
 
 interface QuizAttempt {
   id: string;
@@ -84,6 +85,9 @@ export default function AdminQuizAttempts() {
       {isLoading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
+        attempts.length === 0 ? (
+          <EmptyState icon={ClipboardCheck} title="No quiz attempts yet" description="Once learners take a quiz, their submissions and pass rates will appear here." />
+        ) : (
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -115,6 +119,7 @@ export default function AdminQuizAttempts() {
             </table>
           </div>
         </div>
+        )
       )}
     </div>
   );

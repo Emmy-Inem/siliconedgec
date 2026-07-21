@@ -4,9 +4,9 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CourseCard } from "@/components/CourseCard";
+import type { DbCourse } from "@/hooks/useCourses";
 
 function titleCase(slug: string) {
   return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -14,7 +14,7 @@ function titleCase(slug: string) {
 
 export default function CategoryCourses() {
   const { slug = "" } = useParams();
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<DbCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const name = titleCase(slug);
 
@@ -23,10 +23,26 @@ export default function CategoryCourses() {
       setLoading(true);
       const { data } = await supabase
         .from("courses")
-        .select("id, slug, title, description, thumbnail_url, category, difficulty_level, price_naira")
+        .select("id, slug, title, description, thumbnail_url, category, difficulty_level, price_naira, duration_hours, students_enrolled, rating, instructor_id, instructors(id, name, avatar_url)")
         .ilike("category", name)
         .eq("is_published", true);
-      setCourses(data ?? []);
+      const mapped = (data ?? []).map((c: any) => ({
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        description: c.description ?? "",
+        thumbnail_url: c.thumbnail_url,
+        category: c.category ?? "",
+        difficulty: c.difficulty_level ?? "Beginner",
+        price: c.price_naira ?? 0,
+        duration_hours: c.duration_hours ?? 0,
+        students_enrolled: c.students_enrolled ?? 0,
+        rating: c.rating ?? 0,
+        instructor: c.instructors
+          ? { id: c.instructors.id, name: c.instructors.name, avatar_url: c.instructors.avatar_url }
+          : null,
+      })) as unknown as DbCourse[];
+      setCourses(mapped);
       setLoading(false);
     })();
   }, [name]);
@@ -48,19 +64,8 @@ export default function CategoryCourses() {
           <p className="text-muted-foreground">No courses found in this category. <Link to="/courses" className="text-primary underline">Browse all courses</Link>.</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c) => (
-              <Link key={c.id} to={`/courses/${c.slug || c.id}`}>
-                <Card className="overflow-hidden hover:shadow-lg transition">
-                  {c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} className="aspect-video object-cover w-full" loading="lazy" />}
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex gap-2">
-                      <Badge variant="secondary">{c.difficulty_level}</Badge>
-                    </div>
-                    <h2 className="font-semibold line-clamp-2">{c.title}</h2>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{c.description}</p>
-                  </CardContent>
-                </Card>
-              </Link>
+            {courses.map((c, i) => (
+              <CourseCard key={c.id} course={c} index={i} />
             ))}
           </div>
         )}

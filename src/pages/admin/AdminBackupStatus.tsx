@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle2, XCircle, Loader2, RefreshCw, Database, HardDrive, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/components/EmptyState";
 
 interface BackupRun {
   id: string;
@@ -96,7 +97,7 @@ export default function AdminBackupStatus() {
         {isLoading ? (
           <div className="p-10 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : !data || data.length === 0 ? (
-          <p className="p-6 text-sm text-muted-foreground text-center">No backups recorded yet. Trigger one above.</p>
+          <div className="p-6"><EmptyState icon={Database} title="No backups yet" description="Click 'Run backup now' above to create your first Google Drive snapshot." /></div>
         ) : (
           <ul className="divide-y divide-border">
             {data.map((r) => (
