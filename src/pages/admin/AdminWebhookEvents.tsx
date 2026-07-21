@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Zap } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/components/EmptyState";
 
 export default function AdminWebhookEvents() {
   const [search, setSearch] = useState("");
@@ -36,7 +37,7 @@ export default function AdminWebhookEvents() {
         {isLoading ? (
           <Loader2 className="h-6 w-6 animate-spin" />
         ) : !data?.length ? (
-          <p className="text-sm text-muted-foreground">No webhook events recorded yet.</p>
+          <EmptyState icon={Zap} title="No webhook events yet" description="Payment and provider webhooks will be logged here as they arrive." />
         ) : (
           <div className="space-y-2">
             {data.map((e) => (

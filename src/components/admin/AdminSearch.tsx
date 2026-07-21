@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAccessibleSections } from "@/lib/admin-permissions";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminFeature {
   label: string;
@@ -67,17 +69,50 @@ export function AdminSearch() {
     [allowed]
   );
 
+  // Lazily index lessons, quizzes, assignments and courses so admins can
+  // jump straight to a specific item from the ⌘K palette.
+  const { data: deepIndex = [] } = useQuery({
+    queryKey: ["admin-search-deep-index"],
+    enabled: open,
+    staleTime: 60_000,
+    queryFn: async (): Promise<AdminFeature[]> => {
+      const [lessons, quizzes, assignments, courses] = await Promise.all([
+        supabase.from("lessons").select("id, title, modules(course_id)").limit(500),
+        supabase.from("quizzes").select("id, title").limit(300),
+        supabase.from("assignments").select("id, title").limit(300),
+        supabase.from("courses").select("id, title").limit(200),
+      ]);
+      const out: AdminFeature[] = [];
+      (lessons.data ?? []).forEach((l: any) => out.push({
+        label: l.title, href: l.modules?.course_id ? `/admin/courses/${l.modules.course_id}/modules` : "/admin/courses",
+        section: "Lessons", keywords: "lesson content",
+      }));
+      (quizzes.data ?? []).forEach((q: any) => out.push({
+        label: q.title, href: "/admin/assessments?tab=quizzes", section: "Quizzes", keywords: "quiz assessment",
+      }));
+      (assignments.data ?? []).forEach((a: any) => out.push({
+        label: a.title, href: "/admin/assessments?tab=assignments", section: "Assignments", keywords: "assignment homework",
+      }));
+      (courses.data ?? []).forEach((c: any) => out.push({
+        label: c.title, href: `/admin/courses/${c.id}/modules`, section: "Course Detail", keywords: "curriculum",
+      }));
+      return out;
+    },
+  });
+
+  const allFeatures = useMemo(() => [...features, ...deepIndex], [features, deepIndex]);
+
   const results = useMemo(() => {
     const query = q.toLowerCase().trim();
     if (!query) return features.slice(0, 8);
-    return features
+    return allFeatures
       .filter((f) =>
         f.label.toLowerCase().includes(query) ||
         f.section.toLowerCase().includes(query) ||
         (f.keywords ?? "").toLowerCase().includes(query)
       )
-      .slice(0, 10);
-  }, [features, q]);
+      .slice(0, 20);
+  }, [features, allFeatures, q]);
 
   useEffect(() => { setActiveIdx(0); }, [q]);
 

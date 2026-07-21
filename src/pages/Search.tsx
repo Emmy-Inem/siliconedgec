@@ -6,8 +6,10 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, Loader2 } from "lucide-react";
+import { CourseCard } from "@/components/CourseCard";
+import type { DbCourse } from "@/hooks/useCourses";
 
-interface CourseHit { id: string; title: string; slug: string | null; category: string | null; thumbnail_url: string | null }
+type CourseHit = DbCourse;
 interface PostHit { id: string; title: string; slug: string; excerpt: string | null }
 
 export default function Search() {
@@ -23,10 +25,18 @@ export default function Search() {
     setLoading(true);
     const term = `%${q}%`;
     Promise.all([
-      supabase.from("courses").select("id,title,slug,category,thumbnail_url").or(`title.ilike.${term},description.ilike.${term}`).limit(20),
+      supabase.from("courses").select("id,title,slug,category,thumbnail_url,description,difficulty_level,price_naira,duration_hours,students_enrolled,rating,instructor_id,instructors(id,name,avatar_url)").or(`title.ilike.${term},description.ilike.${term}`).eq("is_published", true).limit(20),
       (supabase.from("blog_posts" as any).select("id,title,slug,excerpt").eq("status", "published").or(`title.ilike.${term},excerpt.ilike.${term}`).limit(20)),
     ]).then(([c, p]) => {
-      setCourses((c.data as CourseHit[]) ?? []);
+      const mapped = ((c.data as any[]) ?? []).map((r: any) => ({
+        id: r.id, slug: r.slug, title: r.title, description: r.description ?? "",
+        thumbnail_url: r.thumbnail_url, category: r.category ?? "",
+        difficulty: r.difficulty_level ?? "Beginner", price: r.price_naira ?? 0,
+        duration_hours: r.duration_hours ?? 0, students_enrolled: r.students_enrolled ?? 0,
+        rating: r.rating ?? 0,
+        instructor: r.instructors ? { id: r.instructors.id, name: r.instructors.name, avatar_url: r.instructors.avatar_url } : null,
+      })) as unknown as CourseHit[];
+      setCourses(mapped);
       setPosts((p.data as unknown as PostHit[]) ?? []);
       setLoading(false);
     });
@@ -58,14 +68,9 @@ export default function Search() {
             <section className="mb-10">
               <h2 className="font-heading text-xl font-semibold mb-3">Courses ({courses.length})</h2>
               {courses.length === 0 ? <p className="text-muted-foreground text-sm">No matching courses.</p> : (
-                <ul className="space-y-2">
-                  {courses.map((c) => (
-                    <li key={c.id}><Link to={`/courses/${c.slug || c.id}`} className="block p-3 rounded-lg border border-border hover:border-primary/40">
-                      <p className="font-medium">{c.title}</p>
-                      {c.category && <p className="text-xs text-muted-foreground">{c.category}</p>}
-                    </Link></li>
-                  ))}
-                </ul>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {courses.map((c, i) => (<CourseCard key={c.id} course={c} index={i} />))}
+                </div>
               )}
             </section>
 

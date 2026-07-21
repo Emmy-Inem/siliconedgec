@@ -90,6 +90,28 @@ export default function AdminAssignments() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const bulkSetVisible = useMutation({
+    mutationFn: async (visible: boolean) => {
+      const ids = filteredRows.filter((a) => !!a.is_visible !== visible).map((a) => a.id);
+      if (ids.length === 0) return 0;
+      const { error } = await (supabase as any)
+        .from("assignments")
+        .update({ is_visible: visible })
+        .in("id", ids);
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (n, visible) => {
+      qc.invalidateQueries({ queryKey: ["admin-assignments"] });
+      toast({
+        title: n
+          ? `${n} assignment${n === 1 ? "" : "s"} ${visible ? "published" : "hidden"}`
+          : "Nothing to update",
+      });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const save = useMutation({
     mutationFn: async () => {
       if (!form.title.trim() || !form.lesson_id) {
@@ -234,6 +256,30 @@ export default function AdminAssignments() {
         <span className="text-xs text-muted-foreground ml-1">
           {filteredRows.length} of {rows.length}
         </span>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulkSetVisible.isPending || filteredRows.length === 0}
+            onClick={() => {
+              if (confirm(`Publish ${filteredRows.length} filtered assignment(s) to students?`))
+                bulkSetVisible.mutate(true);
+            }}
+          >
+            Publish filtered
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulkSetVisible.isPending || filteredRows.length === 0}
+            onClick={() => {
+              if (confirm(`Hide ${filteredRows.length} filtered assignment(s) from students?`))
+                bulkSetVisible.mutate(false);
+            }}
+          >
+            Hide filtered
+          </Button>
+        </div>
       </div>
       <AdminCrudTable
         title="Assignments"

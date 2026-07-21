@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Award, Search, Loader2, Download, Trash2, ExternalLink } from "lucide-react";
+import { Award, Search, Loader2, Download, Trash2, ExternalLink, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,6 +44,26 @@ export default function AdminCertificates() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-certificates"] });
       toast({ title: "Certificate revoked" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const regenerate = useMutation({
+    mutationFn: async (id: string) => {
+      // Fresh 12-char verification code so a corrected student name gets a new,
+      // clean shareable link. The old code is invalidated in place.
+      const code = Array.from({ length: 12 }, () =>
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)],
+      ).join("");
+      const { error } = await supabase
+        .from("certificates")
+        .update({ verification_code: code, issued_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-certificates"] });
+      toast({ title: "Certificate regenerated", description: "New verification code issued." });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
@@ -122,6 +142,11 @@ export default function AdminCertificates() {
                           <a href={`/verify/${c.verification_code}`} target="_blank" rel="noreferrer">
                             <ExternalLink className="h-3.5 w-3.5 mr-1" /> Verify
                           </a>
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => {
+                          if (confirm(`Regenerate verification code for ${c.verification_code}? The old link stops working.`)) regenerate.mutate(c.id);
+                        }}>
+                          <RefreshCw className="h-3.5 w-3.5 mr-1" /> Regenerate
                         </Button>
                         <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => {
                           if (confirm(`Revoke certificate ${c.verification_code}? This cannot be undone.`)) revoke.mutate(c.id);

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BookOpen, FileText } from "lucide-react";
@@ -23,6 +24,7 @@ interface Popup {
 export function NewAssessmentToast() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [queue, setQueue] = useState<Popup[]>([]);
   const current = queue[0];
 
@@ -61,6 +63,7 @@ export function NewAssessmentToast() {
     if (current) {
       try {
         await supabase.from("notifications").update({ is_read: true }).eq("id", current.id);
+        qc.invalidateQueries({ queryKey: ["user-notifications", user?.id] });
       } catch {}
     }
     setQueue((q) => q.slice(1));

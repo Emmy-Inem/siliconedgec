@@ -170,6 +170,28 @@ export default function AdminQuizzes() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const bulkSetVisible = useMutation({
+    mutationFn: async (visible: boolean) => {
+      const ids = quizzes.filter((q) => !!q.is_visible !== visible).map((q) => q.id);
+      if (ids.length === 0) return 0;
+      const { error } = await (supabase as any)
+        .from("quizzes")
+        .update({ is_visible: visible })
+        .in("id", ids);
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (n, visible) => {
+      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      toast({
+        title: n
+          ? `${n} quiz${n === 1 ? "" : "zes"} ${visible ? "published" : "hidden"}`
+          : "Nothing to update",
+      });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const addQuestion = useMutation({
     mutationFn: async () => {
       if (!selectedQuiz) return;
@@ -245,6 +267,29 @@ export default function AdminQuizzes() {
 
   return (
     <>
+      <div className="flex flex-wrap items-center justify-end gap-2 mb-3">
+        <span className="text-xs text-muted-foreground mr-auto">{quizzes.length} quiz{quizzes.length === 1 ? "" : "zes"}</span>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={bulkSetVisible.isPending || quizzes.length === 0}
+          onClick={() => {
+            if (confirm(`Publish all ${quizzes.length} quizzes to students?`)) bulkSetVisible.mutate(true);
+          }}
+        >
+          Publish all
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={bulkSetVisible.isPending || quizzes.length === 0}
+          onClick={() => {
+            if (confirm(`Hide all ${quizzes.length} quizzes from students?`)) bulkSetVisible.mutate(false);
+          }}
+        >
+          Hide all
+        </Button>
+      </div>
       <AdminCrudTable
         title="Quizzes"
         data={quizzes}
