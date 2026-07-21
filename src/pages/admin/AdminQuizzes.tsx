@@ -267,6 +267,29 @@ export default function AdminQuizzes() {
 
   return (
     <>
+      <div className="flex flex-wrap items-center justify-end gap-2 mb-3">
+        <span className="text-xs text-muted-foreground mr-auto">{quizzes.length} quiz{quizzes.length === 1 ? "" : "zes"}</span>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={bulkSetVisible.isPending || quizzes.length === 0}
+          onClick={() => {
+            if (confirm(`Publish all ${quizzes.length} quizzes to students?`)) bulkSetVisible.mutate(true);
+          }}
+        >
+          Publish all
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={bulkSetVisible.isPending || quizzes.length === 0}
+          onClick={() => {
+            if (confirm(`Hide all ${quizzes.length} quizzes from students?`)) bulkSetVisible.mutate(false);
+          }}
+        >
+          Hide all
+        </Button>
+      </div>
       <AdminCrudTable
         title="Quizzes"
         data={quizzes}
