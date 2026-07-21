@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logAdminActivity } from "@/lib/admin-logger";
 
 /**
  * Manual Access Grants — lets an admin/instructor hand a student access to a
@@ -101,6 +102,11 @@ export default function AdminAccessGrants() {
         .from("enrollments")
         .upsert(payload, { onConflict: "user_id,course_id" });
       if (error) throw error;
+      await logAdminActivity("manual_grant", "enrollment", `${selectedUser.user_id}:${courseId}`, {
+        course_title: courseCheck.title,
+        student_name: selectedUser.full_name,
+        note: note || null,
+      });
     },
     onSuccess: () => {
       toast({ title: "Access granted", description: "The student can now open the course." });
@@ -117,6 +123,7 @@ export default function AdminAccessGrants() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("enrollments").delete().eq("id", id);
       if (error) throw error;
+      await logAdminActivity("revoke_grant", "enrollment", id);
     },
     onSuccess: () => {
       toast({ title: "Access revoked" });
