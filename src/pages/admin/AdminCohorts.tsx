@@ -15,7 +15,7 @@ import { Plus, Trash2, Users, Calendar, Pencil, UserPlus, FileText, Mail, Upload
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 
-type Cohort = { id: string; name: string; slug: string | null; description: string | null; course_id: string | null; start_date: string | null; end_date: string | null; status: string };
+type Cohort = { id: string; name: string; slug: string | null; description: string | null; course_id: string | null; start_date: string | null; end_date: string | null; status: string; cohort_number: number | null };
 type Member = { id: string; user_id: string; role: string; joined_at: string; profile?: { full_name: string | null; avatar_url: string | null } };
 type Session = { id: string; title: string; description: string | null; scheduled_at: string; duration_minutes: number; meeting_url: string | null };
 
@@ -62,7 +62,12 @@ export default function AdminCohorts() {
           {cohorts.length === 0 && <p className="text-xs text-muted-foreground p-3">No cohorts yet.</p>}
           {cohorts.map((c) => (
             <button key={c.id} onClick={() => setSelected(c)} className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selected?.id === c.id ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>
-              <div className="font-medium text-sm truncate">{c.name}</div>
+              <div className="font-medium text-sm truncate flex items-center gap-1.5">
+                {c.cohort_number != null && (
+                  <Badge variant="secondary" className="h-4 px-1.5 text-[10px] shrink-0">C{c.cohort_number}</Badge>
+                )}
+                <span className="truncate">{c.name}</span>
+              </div>
               <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                 <Badge variant="outline" className="h-4 px-1.5 text-[10px]">{c.status}</Badge>
                 {c.start_date && <span>{c.start_date}</span>}
@@ -186,7 +191,12 @@ function CohortDetail({ cohort, currentUserId, onEdit, onDelete }: { cohort: Coh
     <Card className="p-5 space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="font-heading text-xl font-bold">{cohort.name}</h2>
+          <h2 className="font-heading text-xl font-bold flex items-center gap-2">
+            {cohort.cohort_number != null && (
+              <Badge variant="secondary" className="text-xs">Cohort {cohort.cohort_number}</Badge>
+            )}
+            {cohort.name}
+          </h2>
           {cohort.description && <p className="text-sm text-muted-foreground mt-1">{cohort.description}</p>}
           <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
             <Badge variant="outline">{cohort.status}</Badge>

@@ -427,6 +427,7 @@ export type Database = {
       bootcamp_cohorts: {
         Row: {
           allow_flexible_payment: boolean
+          cohort_number: number | null
           course_id: string | null
           created_at: string
           default_installments: number
@@ -442,6 +443,7 @@ export type Database = {
         }
         Insert: {
           allow_flexible_payment?: boolean
+          cohort_number?: number | null
           course_id?: string | null
           created_at?: string
           default_installments?: number
@@ -457,6 +459,7 @@ export type Database = {
         }
         Update: {
           allow_flexible_payment?: boolean
+          cohort_number?: number | null
           course_id?: string | null
           created_at?: string
           default_installments?: number
@@ -1128,6 +1131,7 @@ export type Database = {
       }
       cohorts: {
         Row: {
+          cohort_number: number | null
           course_id: string | null
           created_at: string
           created_by: string | null
@@ -1141,6 +1145,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cohort_number?: number | null
           course_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1154,6 +1159,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cohort_number?: number | null
           course_id?: string | null
           created_at?: string
           created_by?: string | null
