@@ -26,6 +26,7 @@ type Cohort = {
   default_total_amount: number;
   default_installments: number;
   is_active: boolean;
+  cohort_number: number | null;
 };
 
 type Enrollment = {
@@ -133,7 +134,12 @@ export default function AdminBootcamps() {
                 onClick={() => setSelected(c)}
                 className={`p-3 cursor-pointer ${selected?.id === c.id ? "border-primary" : ""}`}
               >
-                <div className="font-medium text-sm">{c.name}</div>
+                <div className="font-medium text-sm flex items-center gap-1.5">
+                  {c.cohort_number != null && (
+                    <Badge variant="secondary" className="h-4 px-1.5 text-[10px] shrink-0">C{c.cohort_number}</Badge>
+                  )}
+                  <span className="truncate">{c.name}</span>
+                </div>
                 <div className="text-xs text-muted-foreground">{c.start_date} → {c.end_date}</div>
                 <div className="mt-1 flex gap-1">
                   {c.is_active ? <Badge>active</Badge> : <Badge variant="secondary">inactive</Badge>}
@@ -148,7 +154,12 @@ export default function AdminBootcamps() {
                 <Card className="p-4">
                   <div className="flex items-start justify-between flex-wrap gap-3">
                     <div>
-                      <h2 className="text-lg font-semibold">{selected.name}</h2>
+                      <h2 className="text-lg font-semibold flex items-center gap-2 flex-wrap">
+                        {selected.cohort_number != null && (
+                          <Badge variant="secondary" className="text-xs">Cohort {selected.cohort_number}</Badge>
+                        )}
+                        {selected.name}
+                      </h2>
                       <p className="text-sm text-muted-foreground">
                         Default plan: {selected.default_installments} installments · ₦{Number(selected.default_total_amount).toLocaleString()} total
                       </p>
