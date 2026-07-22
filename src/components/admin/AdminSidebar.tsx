@@ -79,6 +79,8 @@ const sections: NavSection[] = [
         children: [
           { label: "Leads Hub", tab: "leads-hub" },
           { label: "Students", tab: "students" },
+          { label: "At-Risk", tab: "at-risk" },
+          { label: "Cohort Scorecard", tab: "cohort-metrics" },
           { label: "Enrollments", tab: "enrollments" },
           { label: "Access Grants", tab: "access-grants" },
           { label: "Webinar Registrations", tab: "registrations" },
