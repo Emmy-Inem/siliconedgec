@@ -100,7 +100,10 @@ export default function AdminBootcamps() {
     const paid = enrollments.filter(e => e.status === "completed").length;
     const overdue = enrollments.filter(e => e.status === "overdue").length;
     const revenue = enrollments.reduce((s, e) => s + (e.installment_amount * e.installments_paid), 0);
-    return { paid, overdue, revenue, total: enrollments.length };
+    const expected = enrollments.reduce((s, e) => s + Number(e.total_amount || 0), 0);
+    const collectionRate = expected > 0 ? Math.round((revenue / expected) * 100) : 0;
+    const outstanding = Math.max(0, expected - revenue);
+    return { paid, overdue, revenue, total: enrollments.length, expected, outstanding, collectionRate };
   }, [enrollments]);
 
   return (
@@ -175,7 +178,12 @@ export default function AdminBootcamps() {
                     <Stat label="Enrollments" value={totals.total} />
                     <Stat label="Completed" value={totals.paid} />
                     <Stat label="Overdue" value={totals.overdue} />
-                    <Stat label="Revenue (₦)" value={totals.revenue.toLocaleString()} />
+                    <Stat label="Collected (₦)" value={totals.revenue.toLocaleString()} />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                    <Stat label="Expected (₦)" value={totals.expected.toLocaleString()} />
+                    <Stat label="Outstanding (₦)" value={totals.outstanding.toLocaleString()} />
+                    <Stat label="Collection rate" value={`${totals.collectionRate}%`} />
                   </div>
                 </Card>
 

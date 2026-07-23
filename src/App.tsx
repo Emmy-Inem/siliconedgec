@@ -99,6 +99,7 @@ const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
 const AdminTags = lazy(() => import("./pages/admin/AdminTags"));
 const AdminLearningPaths = lazy(() => import("./pages/admin/AdminLearningPaths"));
 const AdminStudents = lazy(() => import("./pages/admin/AdminStudents"));
+const AdminLearnerDetail = lazy(() => import("./pages/admin/AdminLearnerDetail"));
 const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
 const AdminQuizAttempts = lazy(() => import("./pages/admin/AdminQuizAttempts"));
 const AdminQnA = lazy(() => import("./pages/admin/AdminQnA"));
@@ -271,6 +272,7 @@ const App = () => (
                 <Route path="finance" element={<AdminFinanceHub />} />
                 <Route path="cohorts" element={<AdminCohorts />} />
                 <Route path="bootcamps" element={<AdminBootcamps />} />
+                <Route path="learners/:userId" element={<AdminLearnerDetail />} />
                 <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
                 <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />
                 <Route path="finance/tax" element={<Navigate to="/admin/finance?tab=tax" replace />} />
