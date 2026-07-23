@@ -99,6 +99,7 @@ const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
 const AdminTags = lazy(() => import("./pages/admin/AdminTags"));
 const AdminLearningPaths = lazy(() => import("./pages/admin/AdminLearningPaths"));
 const AdminStudents = lazy(() => import("./pages/admin/AdminStudents"));
+const AdminLearnerDetail = lazy(() => import("./pages/admin/AdminLearnerDetail"));
 const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
 const AdminQuizAttempts = lazy(() => import("./pages/admin/AdminQuizAttempts"));
 const AdminQnA = lazy(() => import("./pages/admin/AdminQnA"));
