@@ -272,6 +272,7 @@ const App = () => (
                 <Route path="finance" element={<AdminFinanceHub />} />
                 <Route path="cohorts" element={<AdminCohorts />} />
                 <Route path="bootcamps" element={<AdminBootcamps />} />
+                <Route path="learners/:userId" element={<AdminLearnerDetail />} />
                 <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
                 <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />
                 <Route path="finance/tax" element={<Navigate to="/admin/finance?tab=tax" replace />} />

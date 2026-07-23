@@ -71,6 +71,11 @@ export default function AdminAnalytics() {
         fetchAllRows<any>("orders", "id, amount, status, course_id, created_at"),
         fetchAllRows<any>("finance_refunds", "id, amount, status, order_id").catch(() => [] as any[]),
       ]);
+      const [cohorts, cohortMembers] = await Promise.all([
+        fetchAllRows<any>("cohorts", "id, name, cohort_number, course_id").catch(() => [] as any[]),
+        fetchAllRows<any>("cohort_members", "cohort_id, user_id").catch(() => [] as any[]),
+      ]);
+      const ordersWithUser = await fetchAllRows<any>("orders", "id, amount, status, course_id, user_id, created_at").catch(() => [] as any[]);
       const now = new Date();
 
       const courseMap = new Map(courses.map(c => [c.id, c]));
@@ -118,6 +123,43 @@ export default function AdminAnalytics() {
       });
       const catRevenueData = Object.entries(catRevenue).map(([name, revenue]) => ({ name, revenue }));
 
+      // Revenue segmented by cohort: attribute each paid order to the
+      // buyer's cohort membership within the ordered course.
+      const cohortsByCourse = new Map<string, any[]>();
+      cohorts.forEach((c: any) => {
+        if (!c.course_id) return;
+        const arr = cohortsByCourse.get(c.course_id) ?? [];
+        arr.push(c);
+        cohortsByCourse.set(c.course_id, arr);
+      });
+      const membershipsByUser = new Map<string, Set<string>>();
+      cohortMembers.forEach((m: any) => {
+        const s = membershipsByUser.get(m.user_id) ?? new Set<string>();
+        s.add(m.cohort_id);
+        membershipsByUser.set(m.user_id, s);
+      });
+      const cohortRev = new Map<string, { label: string; revenue: number; orders: number }>();
+      ordersWithUser
+        .filter((o: any) => PAID_ORDER.has(String(o.status ?? "").toLowerCase()))
+        .forEach((o: any) => {
+          if (!o.course_id) return;
+          const candidates = cohortsByCourse.get(o.course_id) ?? [];
+          const userMemberships = membershipsByUser.get(o.user_id) ?? new Set();
+          const matched = candidates.find((c: any) => userMemberships.has(c.id));
+          const course = courseMap.get(o.course_id);
+          const key = matched?.id ?? `unassigned:${o.course_id}`;
+          const label = matched
+            ? `${course?.title ?? "Course"} · C${matched.cohort_number ?? "?"}`
+            : `${course?.title ?? "Course"} · Unassigned`;
+          const row = cohortRev.get(key) ?? { label, revenue: 0, orders: 0 };
+          row.revenue += Number(o.amount || 0);
+          row.orders += 1;
+          cohortRev.set(key, row);
+        });
+      const cohortRevenueData = Array.from(cohortRev.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
+
       const courseEnrMap: Record<string, number> = {};
       // Top-courses chart should reflect *paid* enrollment demand only,
       // otherwise webinar-only sign-ups inflate course numbers.
@@ -156,7 +198,7 @@ export default function AdminAnalytics() {
       const avgProgress = learnerEnrollments.length > 0 ? Math.round(learnerEnrollments.reduce((s, e) => s + Number(e.progress_percentage ?? 0), 0) / learnerEnrollments.length) : 0;
       const topPromos = [...promos].sort((a, b) => Number(b.revenue_generated) - Number(a.revenue_generated)).slice(0, 5);
 
-      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos, perCourseCompletion };
+      return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos, perCourseCompletion, cohortRevenueData };
     },
   });
 

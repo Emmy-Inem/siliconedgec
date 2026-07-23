@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { Search, Loader2 } from "lucide-react";
@@ -73,7 +74,11 @@ export default function AdminStudents() {
             const completed = s.enrollments.filter((e) => e.is_completed).length;
             const avgProgress = s.enrollments.length > 0 ? Math.round(s.enrollments.reduce((sum, e) => sum + e.progress_percentage, 0) / s.enrollments.length) : 0;
             return (
-              <div key={s.user_id} className="bg-card border border-border rounded-xl p-4">
+              <Link
+                key={s.user_id}
+                to={`/admin/learners/${s.user_id}`}
+                className="block bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
+              >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                     {(s.full_name || "U")[0].toUpperCase()}
@@ -96,7 +101,7 @@ export default function AdminStudents() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
