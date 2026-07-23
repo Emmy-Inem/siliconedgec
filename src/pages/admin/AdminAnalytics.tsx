@@ -359,6 +359,67 @@ export default function AdminAnalytics() {
 
       {/* Bottom row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+          className="lg:col-span-3 bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-heading font-semibold text-sm flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" /> Revenue by cohort
+              </h3>
+              <p className="text-xs text-muted-foreground">Paid orders attributed to the buyer's cohort within each course.</p>
+            </div>
+            <button
+              onClick={() => {
+                if (!data) return;
+                downloadCSV(
+                  "revenue-by-cohort.csv",
+                  ["Cohort", "Orders", "Revenue"],
+                  (data.cohortRevenueData ?? []).map((r: any) => [r.label, String(r.orders), String(r.revenue)])
+                );
+              }}
+              className="text-[11px] px-2 py-1 rounded border border-border hover:bg-muted"
+            >
+              <Download className="h-3 w-3 inline mr-1" />CSV
+            </button>
+          </div>
+          {(data?.cohortRevenueData ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No cohort-attributed revenue yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-[11px] uppercase text-muted-foreground">
+                  <tr>
+                    <th className="py-2 pr-3">Cohort</th>
+                    <th className="py-2 pr-3">Orders</th>
+                    <th className="py-2 pr-3">Revenue</th>
+                    <th className="py-2">Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const total = (data?.cohortRevenueData ?? []).reduce((s: number, r: any) => s + r.revenue, 0) || 1;
+                    return (data?.cohortRevenueData ?? []).map((r: any) => (
+                      <tr key={r.label} className="border-t border-border">
+                        <td className="py-2 pr-3 truncate max-w-xs">{r.label}</td>
+                        <td className="py-2 pr-3 tabular-nums">{r.orders}</td>
+                        <td className="py-2 pr-3 tabular-nums font-medium">{fmtMoney(r.revenue)}</td>
+                        <td className="py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-32 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-primary" style={{ width: `${Math.round((r.revenue / total) * 100)}%` }} />
+                            </div>
+                            <span className="text-[11px] text-muted-foreground tabular-nums">{Math.round((r.revenue / total) * 100)}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="bg-card rounded-2xl border border-border p-5 hover:border-primary/20 transition-all duration-300">
           <h3 className="font-heading font-semibold text-sm mb-4 flex items-center gap-2">
