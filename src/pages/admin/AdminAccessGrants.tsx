@@ -89,10 +89,15 @@ export default function AdminAccessGrants() {
         `Grant ${selectedUser.full_name || "this student"} access ONLY to "${courseCheck.title}"? They will not gain access to any other course.`,
       );
       if (!confirmed) throw new Error("Cancelled");
+      // NOTE: use "paid" for payment_status (a valid CHECK value) and rely
+      // on access_source="manual_grant" to identify this as a comped grant.
+      // Older code used payment_status="granted" which, while currently
+      // accepted by the CHECK constraint, is not portable across environments
+      // and can trip prevent_self_paid_enrollment for non-admin staff.
       const payload = {
         user_id: selectedUser.user_id,
         course_id: courseId,
-        payment_status: "granted",
+        payment_status: "paid",
         access_source: "manual_grant",
         granted_by: user?.id ?? null,
         progress_percentage: 0,

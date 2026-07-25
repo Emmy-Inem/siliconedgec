@@ -73,8 +73,14 @@ export function AssignmentPanel({ lessonId, onSubmitted }: { lessonId: string; o
     if (!user) return;
     if (file.size > 10 * 1024 * 1024) return toast({ title: "Too large", description: "Max 10MB", variant: "destructive" });
     const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+    // RLS on assignment-submissions requires the object key to start with the
+    // uploader's own auth uid (storage.foldername(name)[1] = auth.uid()::text).
+    // Path is unique per timestamp so upsert isn't needed — omitting it also
+    // avoids the UPDATE-policy branch that would otherwise be required.
     const path = `${user.id}/${a.id}-${Date.now()}-${safeName}`;
-    const { error } = await supabase.storage.from("assignment-submissions").upload(path, file, { upsert: true, contentType: file.type || undefined });
+    const { error } = await supabase.storage
+      .from("assignment-submissions")
+      .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
     if (error) return toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     const file_url = path;
     const existing = subs[a.id];

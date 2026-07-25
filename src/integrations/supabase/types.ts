@@ -2276,6 +2276,7 @@ export type Database = {
           created_at: string
           id: string
           is_completed: boolean
+          is_unlocked: boolean
           lesson_id: string
           user_id: string
         }
@@ -2284,6 +2285,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean
+          is_unlocked?: boolean
           lesson_id: string
           user_id: string
         }
@@ -2292,6 +2294,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean
+          is_unlocked?: boolean
           lesson_id?: string
           user_id?: string
         }
