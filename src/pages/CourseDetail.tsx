@@ -178,6 +178,24 @@ export default function CourseDetail() {
     enabled: !!user && orderedLessons.length > 0,
   });
 
+  // Authoritative unlock signal: a row in lesson_unlocks == this student can
+  // access that lesson, regardless of whether earlier lessons are completed.
+  // Keeps this page in lock-step with CourseLearning, the instructor approve
+  // panel, and the enforce_lesson_unlock_order trigger.
+  const { data: unlockRows = [] } = useQuery({
+    queryKey: ["course-detail-unlocks", courseId, user?.id, orderedLessons.length],
+    queryFn: async () => {
+      if (!user || !orderedLessons.length) return [];
+      const { data } = await (supabase as any)
+        .from("lesson_unlocks")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .in("lesson_id", orderedLessons.map((l) => l.id));
+      return data ?? [];
+    },
+    enabled: !!user && orderedLessons.length > 0,
+  });
+
   // Assignment presence per lesson (public) + this user's submission status (auth).
   // Drives the purple (pending) / grey (done) glowing dot in the curriculum.
   const { data: assignmentDots = { pending: new Set<string>(), done: new Set<string>(), has: new Set<string>() } } = useQuery({
@@ -235,9 +253,15 @@ export default function CourseDetail() {
     (completedRows as any[]).filter((r) => r.is_completed).map((r) => r.lesson_id),
   );
 
+  const unlockedIds = new Set<string>((unlockRows as any[]).map((r) => r.lesson_id));
+
   const isLessonUnlocked = (lessonId: string): boolean => {
     if (isAdmin) return true;
     if (!hasPaidAccess) return false;
+    // Single source of truth — a lesson_unlocks row means "granted".
+    if (unlockedIds.has(lessonId)) return true;
+    // Sequential fallback for legacy students without any unlock rows yet:
+    // first lesson is always open, everything else needs the previous one done.
     const idx = orderedLessons.findIndex((l) => l.id === lessonId);
     if (idx <= 0) return true;
     return completedIds.has(orderedLessons[idx - 1].id);
