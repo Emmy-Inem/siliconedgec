@@ -3580,6 +3580,10 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"]; _route: string }
         Returns: boolean
       }
+      seed_first_lesson_unlock: {
+        Args: { _course_id: string; _user_id: string }
+        Returns: undefined
+      }
       slugify: { Args: { _text: string }; Returns: string }
       unique_course_slug: {
         Args: { _base: string; _id: string }
