@@ -990,33 +990,90 @@ export type Database = {
           },
         ]
       }
+      cohort_post_reactions: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_post_reactions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_posts: {
         Row: {
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
           cohort_id: string
           content: string
           created_at: string
           id: string
           is_pinned: boolean
+          is_resolved: boolean
+          kind: string
           parent_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           cohort_id: string
           content: string
           created_at?: string
           id?: string
           is_pinned?: boolean
+          is_resolved?: boolean
+          kind?: string
           parent_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           cohort_id?: string
           content?: string
           created_at?: string
           id?: string
           is_pinned?: boolean
+          is_resolved?: boolean
+          kind?: string
           parent_id?: string | null
           updated_at?: string
           user_id?: string
@@ -1034,6 +1091,41 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_reads: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          id: string
+          last_read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_reads_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
             referencedColumns: ["id"]
           },
         ]
