@@ -13,9 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft, FileText, Link as LinkIcon, Check, X, HelpCircle, Download } from "lucide-react";
+import { Loader2, Send, Users, Calendar, MessageSquare, Pin, Trash2, ExternalLink, ArrowLeft, FileText, Link as LinkIcon, Check, X, HelpCircle, Download, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
+import CohortDiscussion from "@/components/cohort/CohortDiscussion";
+import CohortLeaderboard from "@/components/cohort/CohortLeaderboard";
+import UpcomingSessionBanner from "@/components/cohort/UpcomingSessionBanner";
 
 const db = supabase as any;
 
@@ -38,6 +41,7 @@ export default function CohortSpace() {
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
   const [stats, setStats] = useState<{ members: number; sessions: number; materials: number }>({ members: 0, sessions: 0, materials: 0 });
+  const [roster, setRoster] = useState<{ user_id: string; full_name: string | null; avatar_url?: string | null; role?: string }[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -51,6 +55,19 @@ export default function CohortSpace() {
         db.from("cohort_materials").select("id", { count: "exact", head: true }).eq("cohort_id", id),
       ]);
       setStats({ members: m.count || 0, sessions: s.count || 0, materials: mat.count || 0 });
+      const { data: memberRows } = await db.from("cohort_members").select("user_id, role").eq("cohort_id", id);
+      const ids = (memberRows || []).map((r: any) => r.user_id);
+      if (ids.length) {
+        const { data: profs } = await supabase.rpc("get_public_profiles", { p_user_ids: ids as string[] });
+        const pm = new Map<string, any>();
+        (profs || []).forEach((p: any) => pm.set(p.user_id, p));
+        setRoster((memberRows || []).map((r: any) => ({
+          user_id: r.user_id,
+          role: r.role,
+          full_name: pm.get(r.user_id)?.full_name ?? null,
+          avatar_url: pm.get(r.user_id)?.avatar_url ?? null,
+        })));
+      }
     })();
   }, [id, user]);
 
@@ -92,6 +109,7 @@ export default function CohortSpace() {
         </section>
 
         <div className="container mx-auto px-4 py-6">
+          <UpcomingSessionBanner cohortId={cohort.id} userId={user.id} />
           {/* Stat strip */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
@@ -116,12 +134,16 @@ export default function CohortSpace() {
               <TabsTrigger value="sessions" className="rounded-lg py-2 whitespace-nowrap"><Calendar className="h-3.5 w-3.5 mr-1.5 shrink-0" />Sessions</TabsTrigger>
               <TabsTrigger value="materials" className="rounded-lg py-2 whitespace-nowrap"><FileText className="h-3.5 w-3.5 mr-1.5 shrink-0" />Materials</TabsTrigger>
               <TabsTrigger value="roster" className="rounded-lg py-2 whitespace-nowrap"><Users className="h-3.5 w-3.5 mr-1.5 shrink-0" />Roster</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="rounded-lg py-2 whitespace-nowrap"><Trophy className="h-3.5 w-3.5 mr-1.5 shrink-0" />Leaderboard</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="discussion" className="pt-4"><Discussion cohortId={cohort.id} userId={user.id} isAdmin={isAdmin} /></TabsContent>
+          <TabsContent value="discussion" className="pt-4">
+            <CohortDiscussion cohortId={cohort.id} userId={user.id} isStaff={isAdmin || roster.some((m) => m.user_id === user.id && m.role === "instructor")} members={roster} />
+          </TabsContent>
           <TabsContent value="sessions" className="pt-4"><SessionsList cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
           <TabsContent value="materials" className="pt-4"><Materials cohortId={cohort.id} userId={user.id} isStaff={isAdmin} /></TabsContent>
           <TabsContent value="roster" className="pt-4"><Roster cohortId={cohort.id} /></TabsContent>
+          <TabsContent value="leaderboard" className="pt-4"><CohortLeaderboard cohortId={cohort.id} userId={user.id} /></TabsContent>
         </Tabs>
         </div>
       </main>
