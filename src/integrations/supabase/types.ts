@@ -3533,6 +3533,19 @@ export type Database = {
     Functions: {
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      get_cohort_leaderboard: {
+        Args: { p_cohort_id: string }
+        Returns: {
+          assignments_submitted: number
+          avatar_url: string
+          full_name: string
+          lessons_completed: number
+          role: string
+          user_id: string
+          weekly_xp: number
+          xp: number
+        }[]
+      }
       get_cohort_member_emails: {
         Args: { p_cohort_id: string }
         Returns: {
