@@ -990,33 +990,90 @@ export type Database = {
           },
         ]
       }
+      cohort_post_reactions: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_post_reactions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_posts: {
         Row: {
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
           cohort_id: string
           content: string
           created_at: string
           id: string
           is_pinned: boolean
+          is_resolved: boolean
+          kind: string
           parent_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           cohort_id: string
           content: string
           created_at?: string
           id?: string
           is_pinned?: boolean
+          is_resolved?: boolean
+          kind?: string
           parent_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           cohort_id?: string
           content?: string
           created_at?: string
           id?: string
           is_pinned?: boolean
+          is_resolved?: boolean
+          kind?: string
           parent_id?: string | null
           updated_at?: string
           user_id?: string
@@ -1034,6 +1091,41 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "cohort_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_reads: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          id: string
+          last_read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_reads_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
             referencedColumns: ["id"]
           },
         ]
@@ -3441,6 +3533,19 @@ export type Database = {
     Functions: {
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      get_cohort_leaderboard: {
+        Args: { p_cohort_id: string }
+        Returns: {
+          assignments_submitted: number
+          avatar_url: string
+          full_name: string
+          lessons_completed: number
+          role: string
+          user_id: string
+          weekly_xp: number
+          xp: number
+        }[]
+      }
       get_cohort_member_emails: {
         Args: { p_cohort_id: string }
         Returns: {
