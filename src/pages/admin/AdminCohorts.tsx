@@ -11,9 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Users, Calendar, Pencil, UserPlus, FileText, Mail, Upload, ClipboardList, Loader2 } from "lucide-react";
+import { Plus, Trash2, Users, Calendar, Pencil, UserPlus, FileText, Mail, Upload, ClipboardList, Loader2, ShieldCheck, BookOpen, HelpCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
+import { CohortAccessPanel } from "./cohort/CohortAccessPanel";
+import { CohortLessonsPanel } from "./cohort/CohortLessonsPanel";
+import { CohortAssessmentsPanel } from "./cohort/CohortAssessmentsPanel";
+import { CohortModerationPanel } from "./cohort/CohortModerationPanel";
 
 type Cohort = { id: string; name: string; slug: string | null; description: string | null; course_id: string | null; start_date: string | null; end_date: string | null; status: string; cohort_number: number | null };
 type Member = { id: string; user_id: string; role: string; joined_at: string; profile?: { full_name: string | null; avatar_url: string | null } };
@@ -210,14 +214,24 @@ function CohortDetail({ cohort, currentUserId, onEdit, onDelete }: { cohort: Coh
       </div>
 
       <Tabs defaultValue="members">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="members"><Users className="h-3.5 w-3.5 mr-1.5" />Members</TabsTrigger>
+          <TabsTrigger value="access"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" />Access</TabsTrigger>
+          <TabsTrigger value="lessons"><BookOpen className="h-3.5 w-3.5 mr-1.5" />Lessons</TabsTrigger>
+          <TabsTrigger value="assignments"><ClipboardList className="h-3.5 w-3.5 mr-1.5" />Assignments</TabsTrigger>
+          <TabsTrigger value="quizzes"><HelpCircle className="h-3.5 w-3.5 mr-1.5" />Quizzes</TabsTrigger>
           <TabsTrigger value="sessions"><Calendar className="h-3.5 w-3.5 mr-1.5" />Sessions</TabsTrigger>
           <TabsTrigger value="materials"><FileText className="h-3.5 w-3.5 mr-1.5" />Materials</TabsTrigger>
+          <TabsTrigger value="moderation"><MessageSquare className="h-3.5 w-3.5 mr-1.5" />Discussion</TabsTrigger>
         </TabsList>
         <TabsContent value="members" className="pt-4"><MembersPanel cohortId={cohort.id} /></TabsContent>
+        <TabsContent value="access" className="pt-4"><CohortAccessPanel cohortId={cohort.id} courseId={cohort.course_id} /></TabsContent>
+        <TabsContent value="lessons" className="pt-4"><CohortLessonsPanel cohortId={cohort.id} courseId={cohort.course_id} /></TabsContent>
+        <TabsContent value="assignments" className="pt-4"><CohortAssessmentsPanel courseId={cohort.course_id} kind="assignments" /></TabsContent>
+        <TabsContent value="quizzes" className="pt-4"><CohortAssessmentsPanel courseId={cohort.course_id} kind="quizzes" /></TabsContent>
         <TabsContent value="sessions" className="pt-4"><SessionsPanel cohortId={cohort.id} createdBy={currentUserId} /></TabsContent>
         <TabsContent value="materials" className="pt-4"><MaterialsPanel cohortId={cohort.id} createdBy={currentUserId} /></TabsContent>
+        <TabsContent value="moderation" className="pt-4"><CohortModerationPanel cohortId={cohort.id} /></TabsContent>
       </Tabs>
     </Card>
   );
