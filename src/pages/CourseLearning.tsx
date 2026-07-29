@@ -290,6 +290,16 @@ export default function CourseLearning() {
     setSearchParams(next, { replace: true });
   }, [selectedLessonId, searchParams, setSearchParams]);
 
+  // Record that this learner opened the lesson (powers the admin/instructor
+  // "Learner Activity" feed). Fire-and-forget, one call per lesson view.
+  useEffect(() => {
+    if (!user || !selectedLessonId) return;
+    (supabase as any)
+      .rpc("record_lesson_open", { _lesson_id: selectedLessonId })
+      .then(() => {})
+      .catch(() => {});
+  }, [user, selectedLessonId]);
+
   const canAccessCourse = useMemo(() => {
     if (publicAccess) return true;
     if (!user) return false;
