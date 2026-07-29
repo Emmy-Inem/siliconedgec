@@ -3690,6 +3690,13 @@ export type Database = {
         Args: { _lesson_id: string }
         Returns: boolean
       }
+      mark_submitters_complete: {
+        Args: { p_course_id: string }
+        Returns: {
+          learners: number
+          lessons_completed: number
+        }[]
+      }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       resolve_promo_slug: {
         Args: { p_slug: string }
