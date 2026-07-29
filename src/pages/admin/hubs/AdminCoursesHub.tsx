@@ -7,6 +7,7 @@ import AdminLearningPaths from "../AdminLearningPaths";
 import AdminReviews from "../AdminReviews";
 import AdminCertificates from "../AdminCertificates";
 import AdminInstructors from "../AdminInstructors";
+import AdminCourseActivity from "../AdminCourseActivity";
 
 export default function AdminCoursesHub() {
   return (
@@ -15,6 +16,7 @@ export default function AdminCoursesHub() {
       description="Manage courses, taxonomy, instructors and certifications"
       tabs={[
         { value: "courses", label: "Courses", content: <AdminCourses /> },
+        { value: "activity", label: "Learner Activity", content: <AdminCourseActivity /> },
         { value: "categories", label: "Categories", content: <AdminCategories /> },
         { value: "tags", label: "Tags", content: <AdminTags /> },
         { value: "brands", label: "Brands", content: <AdminBrands /> },
