@@ -2366,28 +2366,37 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          first_opened_at: string | null
           id: string
           is_completed: boolean
           is_unlocked: boolean
+          last_opened_at: string | null
           lesson_id: string
+          open_count: number
           user_id: string
         }
         Insert: {
           completed_at?: string | null
           created_at?: string
+          first_opened_at?: string | null
           id?: string
           is_completed?: boolean
           is_unlocked?: boolean
+          last_opened_at?: string | null
           lesson_id: string
+          open_count?: number
           user_id: string
         }
         Update: {
           completed_at?: string | null
           created_at?: string
+          first_opened_at?: string | null
           id?: string
           is_completed?: boolean
           is_unlocked?: boolean
+          last_opened_at?: string | null
           lesson_id?: string
+          open_count?: number
           user_id?: string
         }
         Relationships: [
@@ -3554,6 +3563,25 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_course_activity_feed: {
+        Args: { p_course_id?: string; p_limit?: number }
+        Returns: {
+          avatar_url: string
+          course_id: string
+          course_title: string
+          detail: string
+          email: string
+          event_type: string
+          full_name: string
+          item_title: string
+          lesson_id: string
+          lesson_title: string
+          max_score: number
+          occurred_at: string
+          score: number
+          user_id: string
+        }[]
+      }
       get_course_curriculum: {
         Args: { p_course_id: string }
         Returns: {
@@ -3662,6 +3690,7 @@ export type Database = {
         Args: { _lesson_id: string }
         Returns: boolean
       }
+      record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       resolve_promo_slug: {
         Args: { p_slug: string }
         Returns: {
