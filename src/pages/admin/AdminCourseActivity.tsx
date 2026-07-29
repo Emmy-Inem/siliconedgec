@@ -1,12 +1,24 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, CheckCircle2, FileText, HelpCircle, RefreshCw, Download } from "lucide-react";
+import { BookOpen, CheckCircle2, FileText, HelpCircle, RefreshCw, Download, Wand2, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 type EventType = "lesson_opened" | "lesson_completed" | "assignment_submitted" | "quiz_attempted";
 
@@ -81,6 +93,30 @@ export default function AdminCourseActivity() {
       if (error) throw error;
       return (data ?? []) as ActivityRow[];
     },
+  });
+
+  // Bulk: everyone who submitted an assignment gets that lesson and every
+  // lesson before it unlocked + marked complete.
+  const markSubmitters = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await (supabase as any).rpc("mark_submitters_complete", {
+        p_course_id: courseId,
+      });
+      if (error) throw error;
+      return (Array.isArray(data) ? data[0] : data) as {
+        learners: number;
+        lessons_completed: number;
+      };
+    },
+    onSuccess: (res) => {
+      toast({
+        title: "Progress synced",
+        description: `${res?.learners ?? 0} learners updated · ${res?.lessons_completed ?? 0} lessons marked complete.`,
+      });
+      refetch();
+    },
+    onError: (e: any) =>
+      toast({ title: "Could not update progress", description: e.message, variant: "destructive" }),
   });
 
   const filtered = useMemo(() => {
