@@ -187,6 +187,34 @@ export default function AdminCourseActivity() {
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={!filtered.length}>
               <Download className="h-4 w-4 mr-1" /> CSV
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" disabled={!courseId || markSubmitters.isPending}>
+                  {markSubmitters.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-4 w-4 mr-1" />
+                  )}
+                  Mark submitters complete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Mark assignment submitters complete?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    For every learner who submitted an assignment in{" "}
+                    <strong>{courses.find((c) => c.id === courseId)?.title}</strong>, that lesson and all
+                    lessons before it will be unlocked and marked complete. This cannot be undone in bulk.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => markSubmitters.mutate()}>
+                    Yes, mark complete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
