@@ -26,23 +26,19 @@ export default function AdminInstallments() {
   const [createOpen, setCreateOpen] = useState(false);
   const [payFor, setPayFor] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ email: "", course_id: "", total: "", installments: "2", first: "", days: "30", next_due: "" });
+  const [form, setForm] = useState({ user_id: "", course_id: "", total: "", installments: "2", first: "", days: "30", next_due: "" });
+  const [learnerQuery, setLearnerQuery] = useState("");
   const [pay, setPay] = useState({ amount: "", reference: "", days: "30", next_due: "" });
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-installments"],
     queryFn: async () => {
-      const [{ data: plans }, { data: courses }] = await Promise.all([
+      const [{ data: plans }, { data: courses }, { data: allProfiles }] = await Promise.all([
         supabase.from("installment_plans").select("*").order("created_at", { ascending: false }),
         supabase.from("courses").select("id, title, price").order("title"),
+        supabase.from("profiles").select("user_id, full_name").order("full_name"),
       ]);
-      const userIds = [...new Set((plans ?? []).map((p: any) => p.user_id))];
-      let profiles: any[] = [];
-      if (userIds.length) {
-        const { data: p } = await supabase.rpc("get_public_profiles", { p_user_ids: userIds as string[] });
-        profiles = p ?? [];
-      }
-      return { plans: plans ?? [], courses: courses ?? [], profiles };
+      return { plans: plans ?? [], courses: courses ?? [], profiles: allProfiles ?? [] };
     },
   });
 
@@ -52,24 +48,8 @@ export default function AdminInstallments() {
   const createPlan = async () => {
     setBusy(true);
     try {
-      const { data: users, error: uErr } = await supabase.rpc("get_public_profiles", { p_user_ids: [] as any });
-      void users; void uErr;
-      // Resolve the learner by email through the existing profiles-safe path.
-      const { data: match, error: mErr } = await supabase
-        .from("enrollments")
-        .select("user_id")
-        .limit(0);
-      void match; void mErr;
-
-      const { data: found, error: findErr } = await (supabase.rpc as any)("admin_find_user_by_email", {
-        p_email: form.email.trim().toLowerCase(),
-      });
-      if (findErr) throw findErr;
-      const userId = Array.isArray(found) ? found[0]?.user_id : (found as any)?.user_id;
-      if (!userId) throw new Error("No user found with that email");
-
       const { error } = await (supabase.rpc as any)("admin_create_installment_plan", {
-        p_user_id: userId,
+        p_user_id: form.user_id,
         p_course_id: form.course_id,
         p_total_amount: Number(form.total),
         p_total_installments: Number(form.installments),
@@ -80,7 +60,8 @@ export default function AdminInstallments() {
       });
       if (error) throw error;
       setCreateOpen(false);
-      setForm({ email: "", course_id: "", total: "", installments: "2", first: "", days: "30", next_due: "" });
+      setForm({ user_id: "", course_id: "", total: "", installments: "2", first: "", days: "30", next_due: "" });
+      setLearnerQuery("");
       qc.invalidateQueries({ queryKey: ["admin-installments"] });
       toast({ title: "Plan created", description: "Access granted for the payment window." });
     } catch (e: any) {
@@ -145,8 +126,31 @@ export default function AdminInstallments() {
                 <DialogHeader><DialogTitle>Create installment plan</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label htmlFor="ip-email">Learner email</Label>
-                    <Input id="ip-email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    <Label htmlFor="ip-learner">Learner</Label>
+                    <Input
+                      id="ip-learner"
+                      placeholder="Search by name"
+                      value={form.user_id ? nameFor(form.user_id) : learnerQuery}
+                      onChange={(e) => { setLearnerQuery(e.target.value); setForm({ ...form, user_id: "" }); }}
+                    />
+                    {!form.user_id && learnerQuery.trim().length > 1 && (
+                      <ul className="max-h-40 overflow-y-auto rounded-md border border-border divide-y divide-border">
+                        {(data?.profiles ?? [])
+                          .filter((p: any) => (p.full_name || "").toLowerCase().includes(learnerQuery.toLowerCase()))
+                          .slice(0, 8)
+                          .map((p: any) => (
+                            <li key={p.user_id}>
+                              <button
+                                type="button"
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                onClick={() => { setForm({ ...form, user_id: p.user_id }); setLearnerQuery(""); }}
+                              >
+                                {p.full_name || p.user_id.slice(0, 8)}
+                              </button>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Course</Label>
@@ -183,7 +187,7 @@ export default function AdminInstallments() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={createPlan} disabled={busy || !form.email || !form.course_id || !form.total}>
+                  <Button onClick={createPlan} disabled={busy || !form.user_id || !form.course_id || !form.total}>
                     {busy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Create plan
                   </Button>
                 </DialogFooter>
