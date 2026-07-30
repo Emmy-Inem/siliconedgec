@@ -147,7 +147,6 @@ const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
 const AdminFinanceHub = lazy(() => import("./pages/admin/hubs/AdminFinanceHub"));
 const AdminCohorts = lazy(() => import("./pages/admin/AdminCohorts"));
 const AdminBootcamps = lazy(() => import("./pages/admin/AdminBootcamps"));
-const AdminAffiliates = lazy(() => import("./pages/admin/AdminAffiliates"));
 const Bootcamp = lazy(() => import("./pages/Bootcamp"));
 
 const AdminFallback = () => (
