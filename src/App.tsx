@@ -10,6 +10,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { UtmTracker } from "@/components/UtmTracker";
+import { AffiliateTracker } from "@/components/AffiliateTracker";
 import { InfluencerSignupPrompt } from "@/components/InfluencerSignupPrompt";
 import { SignupPromptModal } from "@/components/SignupPromptModal";
 import Index from "./pages/Index";
@@ -21,6 +22,8 @@ const Cart = lazy(() => import("./pages/Cart"));
 const ForBusinesses = lazy(() => import("./pages/ForBusinesses"));
 const Certificates = lazy(() => import("./pages/Certificates"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Affiliates = lazy(() => import("./pages/Affiliates"));
+const AffiliateDashboard = lazy(() => import("./pages/affiliate/AffiliateDashboard"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -181,6 +184,7 @@ const App = () => (
         <AuthProvider>
           <ScrollToTop />
           <UtmTracker />
+          <AffiliateTracker />
           <CartProvider>
             <MaintenanceBanner />
             <NewAssessmentToast />
@@ -193,6 +197,8 @@ const App = () => (
               <Route path="/for-businesses" element={<ForBusinesses />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/affiliates" element={<Affiliates />} />
+              <Route path="/affiliate" element={<AffiliateDashboard />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/reset-password" element={<ResetPassword />} />

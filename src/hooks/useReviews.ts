@@ -21,11 +21,10 @@ export function useReviews(courseId: string | undefined) {
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["reviews", courseId],
     queryFn: async () => {
-      // Anonymous visitors read the PII-free view; signed-in users read the
-      // full table so we can identify their own review.
-      const table = user ? "reviews" : ("reviews_public" as const);
+      // Everyone reads the PII-free view; a signed-in user's own review is
+      // fetched separately (RLS on `reviews` now scopes reads to own rows).
       const { data, error } = await supabase
-        .from(table as any)
+        .from("reviews_public" as any)
         .select("*")
         .eq("course_id", courseId!)
         .order("created_at", { ascending: false });
@@ -49,6 +48,20 @@ export function useReviews(courseId: string | undefined) {
     enabled: !!courseId,
   });
 
+  const { data: ownReview } = useQuery({
+    queryKey: ["review-own", courseId, user?.id],
+    enabled: !!courseId && !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("course_id", courseId!)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return (data as any) ?? null;
+    },
+  });
+
   const submitReview = useMutation({
     mutationFn: async ({ rating, comment }: { rating: number; comment: string }) => {
       if (!user) throw new Error("Not authenticated");
@@ -60,12 +73,13 @@ export function useReviews(courseId: string | undefined) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reviews", courseId] });
+      qc.invalidateQueries({ queryKey: ["review-own", courseId, user?.id] });
       toast({ title: "Review submitted!" });
     },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
-  const userReview = reviews.find((r) => r.user_id === user?.id);
+  const userReview = (ownReview as Review | null) ?? undefined;
   const avgRating = reviews.length > 0 ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10 : 0;
 
   return { reviews, isLoading, submitReview, userReview, avgRating, reviewCount: reviews.length };
