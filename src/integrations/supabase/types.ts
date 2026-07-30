@@ -44,6 +44,193 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_clicks: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          landing_path: string | null
+          referrer: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          landing_path?: string | null
+          referrer?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          landing_path?: string | null
+          referrer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_payouts: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          affiliate_id: string
+          amount: number
+          commission: number
+          conversion_type: string
+          course_id: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          amount?: number
+          commission?: number
+          conversion_type?: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          amount?: number
+          commission?: number
+          conversion_type?: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_referrals_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          audience: string | null
+          channels: string | null
+          code: string
+          commission_percentage: number
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          payout_details: string | null
+          payout_method: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          audience?: string | null
+          channels?: string | null
+          code: string
+          commission_percentage?: number
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          payout_details?: string | null
+          payout_method?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string | null
+          channels?: string | null
+          code?: string
+          commission_percentage?: number
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          payout_details?: string | null
+          payout_method?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_conversations: {
         Row: {
           created_at: string
@@ -1618,6 +1805,7 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          access_expires_at: string | null
           access_source: string
           course_id: string
           created_at: string
@@ -1633,6 +1821,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          access_expires_at?: string | null
           access_source?: string
           course_id: string
           created_at?: string
@@ -1648,6 +1837,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          access_expires_at?: string | null
           access_source?: string
           course_id?: string
           created_at?: string
@@ -1913,6 +2103,109 @@ export type Database = {
             columns: ["promo_code_id"]
             isOneToOne: false
             referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installment_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string | null
+          paid_at: string
+          plan_id: string
+          recorded_by: string | null
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          paid_at?: string
+          plan_id: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          paid_at?: string
+          plan_id?: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installment_payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "installment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installment_plans: {
+        Row: {
+          access_expires_at: string | null
+          amount_paid: number
+          course_id: string
+          created_at: string
+          created_by: string | null
+          final_due_date: string | null
+          id: string
+          installments_paid: number
+          next_due_date: string | null
+          note: string | null
+          status: string
+          total_amount: number
+          total_installments: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_expires_at?: string | null
+          amount_paid?: number
+          course_id: string
+          created_at?: string
+          created_by?: string | null
+          final_due_date?: string | null
+          id?: string
+          installments_paid?: number
+          next_due_date?: string | null
+          note?: string | null
+          status?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_expires_at?: string | null
+          amount_paid?: number
+          course_id?: string
+          created_at?: string
+          created_by?: string | null
+          final_due_date?: string | null
+          id?: string
+          installments_paid?: number
+          next_due_date?: string | null
+          note?: string | null
+          status?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installment_plans_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]
@@ -3540,8 +3833,32 @@ export type Database = {
       }
     }
     Functions: {
+      admin_create_installment_plan: {
+        Args: {
+          p_access_days: number
+          p_course_id: string
+          p_first_payment: number
+          p_next_due: string
+          p_note?: string
+          p_total_amount: number
+          p_total_installments: number
+          p_user_id: string
+        }
+        Returns: string
+      }
+      admin_record_installment_payment: {
+        Args: {
+          p_amount: number
+          p_extend_days?: number
+          p_next_due?: string
+          p_plan_id: string
+          p_reference?: string
+        }
+        Returns: undefined
+      }
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      expire_overdue_installments: { Args: never; Returns: number }
       get_cohort_leaderboard: {
         Args: { p_cohort_id: string }
         Returns: {
@@ -3698,6 +4015,15 @@ export type Database = {
         }[]
       }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
+      resolve_affiliate_code: {
+        Args: { p_code: string }
+        Returns: {
+          code: string
+          full_name: string
+          id: string
+          status: string
+        }[]
+      }
       resolve_promo_slug: {
         Args: { p_slug: string }
         Returns: {
@@ -3779,6 +4105,7 @@ export type Database = {
         | "support"
         | "finance"
         | "content_editor"
+        | "affiliate"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3914,6 +4241,7 @@ export const Constants = {
         "support",
         "finance",
         "content_editor",
+        "affiliate",
       ],
     },
   },
