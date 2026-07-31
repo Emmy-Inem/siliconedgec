@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -31,6 +34,7 @@ export default function Affiliates() {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [courseIds, setCourseIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -41,6 +45,22 @@ export default function Affiliates() {
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const { data: courses = [] } = useQuery({
+    queryKey: ["career-published-courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title, slug")
+        .eq("is_published", true)
+        .order("title");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const toggleCourse = (id: string) =>
+    setCourseIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.full_name.trim() || !form.email.trim()) return;
@@ -48,7 +68,7 @@ export default function Affiliates() {
     try {
       const code = `${slugifyCode(form.full_name)}-${Math.random().toString(36).slice(2, 6)}`;
       const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase.from("affiliates").insert({
+      const { data: created, error } = await supabase.from("affiliates").insert({
         user_id: auth?.user?.id ?? null,
         full_name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
@@ -57,8 +77,13 @@ export default function Affiliates() {
         channels: form.channels.trim() || null,
         code,
         status: "pending",
-      } as any);
+      } as any).select("id").maybeSingle();
       if (error) throw error;
+      if (created?.id && courseIds.length) {
+        await (supabase as any).from("affiliate_course_selections").insert(
+          courseIds.map((cid) => ({ affiliate_id: created.id, course_id: cid, status: "pending" })),
+        );
+      }
       setDone(true);
       toast({ title: "Application received", description: "We'll review and get back to you shortly." });
     } catch (err: any) {
