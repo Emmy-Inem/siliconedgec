@@ -47,6 +47,7 @@ export type Database = {
       affiliate_clicks: {
         Row: {
           affiliate_id: string
+          course_id: string | null
           created_at: string
           id: string
           landing_path: string | null
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           affiliate_id: string
+          course_id?: string | null
           created_at?: string
           id?: string
           landing_path?: string | null
@@ -61,6 +63,7 @@ export type Database = {
         }
         Update: {
           affiliate_id?: string
+          course_id?: string | null
           created_at?: string
           id?: string
           landing_path?: string | null
@@ -72,6 +75,67 @@ export type Database = {
             columns: ["affiliate_id"]
             isOneToOne: false
             referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_clicks_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_course_selections: {
+        Row: {
+          affiliate_id: string
+          approved_at: string | null
+          commission_percentage: number | null
+          course_id: string
+          created_at: string
+          id: string
+          referral_code: string | null
+          selected_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          approved_at?: string | null
+          commission_percentage?: number | null
+          course_id: string
+          created_at?: string
+          id?: string
+          referral_code?: string | null
+          selected_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          approved_at?: string | null
+          commission_percentage?: number | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          referral_code?: string | null
+          selected_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_course_selections_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_course_selections_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]
@@ -179,6 +243,7 @@ export type Database = {
       }
       affiliates: {
         Row: {
+          approved_at: string | null
           audience: string | null
           channels: string | null
           code: string
@@ -196,6 +261,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          approved_at?: string | null
           audience?: string | null
           channels?: string | null
           code: string
@@ -213,6 +279,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          approved_at?: string | null
           audience?: string | null
           channels?: string | null
           code?: string
@@ -3856,6 +3923,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_affiliate_course: {
+        Args: { p_selection_id: string }
+        Returns: string
+      }
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
       expire_overdue_installments: { Args: never; Returns: number }
@@ -4021,6 +4092,15 @@ export type Database = {
           code: string
           full_name: string
           id: string
+          status: string
+        }[]
+      }
+      resolve_affiliate_ref: {
+        Args: { p_code: string }
+        Returns: {
+          affiliate_id: string
+          course_id: string
+          full_name: string
           status: string
         }[]
       }

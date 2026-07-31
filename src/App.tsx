@@ -197,8 +197,10 @@ const App = () => (
               <Route path="/for-businesses" element={<ForBusinesses />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/pricing" element={<Pricing />} />
-              <Route path="/affiliates" element={<Affiliates />} />
-              <Route path="/affiliate" element={<AffiliateDashboard />} />
+              <Route path="/career" element={<Affiliates />} />
+              <Route path="/affiliates" element={<Navigate to="/career" replace />} />
+              <Route path="/career/dashboard" element={<AffiliateDashboard />} />
+              <Route path="/affiliate" element={<Navigate to="/career/dashboard" replace />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/reset-password" element={<ResetPassword />} />

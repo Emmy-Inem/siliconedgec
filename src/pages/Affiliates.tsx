@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -31,6 +34,7 @@ export default function Affiliates() {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [courseIds, setCourseIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -41,6 +45,22 @@ export default function Affiliates() {
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const { data: courses = [] } = useQuery({
+    queryKey: ["career-published-courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title, slug")
+        .eq("is_published", true)
+        .order("title");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const toggleCourse = (id: string) =>
+    setCourseIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.full_name.trim() || !form.email.trim()) return;
@@ -48,7 +68,7 @@ export default function Affiliates() {
     try {
       const code = `${slugifyCode(form.full_name)}-${Math.random().toString(36).slice(2, 6)}`;
       const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase.from("affiliates").insert({
+      const { data: created, error } = await supabase.from("affiliates").insert({
         user_id: auth?.user?.id ?? null,
         full_name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
@@ -57,8 +77,13 @@ export default function Affiliates() {
         channels: form.channels.trim() || null,
         code,
         status: "pending",
-      } as any);
+      } as any).select("id").maybeSingle();
       if (error) throw error;
+      if (created?.id && courseIds.length) {
+        await (supabase as any).from("affiliate_course_selections").insert(
+          courseIds.map((cid) => ({ affiliate_id: created.id, course_id: cid, status: "pending" })),
+        );
+      }
       setDone(true);
       toast({ title: "Application received", description: "We'll review and get back to you shortly." });
     } catch (err: any) {
@@ -71,22 +96,25 @@ export default function Affiliates() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="Affiliate Marketing Partner Program | Silicon Edge Consulting"
-        description="Earn commission promoting job-ready AI, Cloud and DevOps training. Apply to the Silicon Edge affiliate program and track every referral in your own dashboard."
+        title="Career | Silicon Edge Consulting"
+        description="Build a career with Silicon Edge Consulting. Join the partner program, promote job-ready AI, Cloud and DevOps courses and earn commission on every enrolment."
       />
       <Header />
       <main className="flex-1">
         <section className="bg-gradient-to-b from-primary/10 to-background pt-28 pb-16">
           <div className="container mx-auto px-4 max-w-4xl text-center space-y-5">
             <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary">
-              Careers · Affiliate Marketing
+              Career · Partner Program
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold">
-              Get paid to grow Africa's next tech workforce
+              Build a career growing Africa's next tech workforce
             </h1>
             <p className="text-muted-foreground text-lg">
-              Join the Silicon Edge Consulting affiliate program. Share your unique link, bring learners
-              into our AI, Cloud and DevOps bootcamps, and earn commission on every enrolment.
+              Join the Silicon Edge Consulting partner program. Pick the courses you want to promote,
+              share your unique link for each one, and earn commission on every enrolment.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Already a partner? <Link to="/career/dashboard" className="text-primary underline">Open your dashboard</Link>
             </p>
           </div>
         </section>
@@ -108,7 +136,7 @@ export default function Affiliates() {
         <section className="container mx-auto px-4 pb-20 max-w-2xl">
           <Card>
             <CardHeader>
-              <CardTitle className="font-heading text-2xl">Apply to become an affiliate</CardTitle>
+              <CardTitle className="font-heading text-2xl">Apply to become a partner</CardTitle>
             </CardHeader>
             <CardContent>
               {done ? (
@@ -116,8 +144,10 @@ export default function Affiliates() {
                   <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
                   <h2 className="font-heading text-xl font-semibold">Application received</h2>
                   <p className="text-sm text-muted-foreground">
-                    Once approved you'll get your referral code and access to your affiliate dashboard.
+                    Once approved you'll get a referral link for each course you chose, plus access to your
+                    partner dashboard.
                   </p>
+                  <Button asChild variant="outline"><Link to="/career/dashboard">Go to dashboard</Link></Button>
                 </div>
               ) : (
                 <form onSubmit={submit} className="space-y-4">
@@ -142,6 +172,27 @@ export default function Affiliates() {
                   <div className="space-y-2">
                     <Label htmlFor="aff-channels">Where will you promote? (links to socials, blog, community)</Label>
                     <Textarea id="aff-channels" rows={3} value={form.channels} onChange={(e) => set("channels", e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Which courses do you want to promote?</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Pick one or more. You'll get a unique referral link per approved course.
+                    </p>
+                    <div className="max-h-56 overflow-y-auto rounded-md border border-border/60 divide-y divide-border/40">
+                      {courses.length === 0 ? (
+                        <p className="text-sm text-muted-foreground p-3">No published courses available yet.</p>
+                      ) : (
+                        courses.map((c: any) => (
+                          <label key={c.id} className="flex items-start gap-3 p-3 cursor-pointer">
+                            <Checkbox
+                              checked={courseIds.includes(c.id)}
+                              onCheckedChange={() => toggleCourse(c.id)}
+                            />
+                            <span className="text-sm leading-snug">{c.title}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={submitting}>
                     {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
