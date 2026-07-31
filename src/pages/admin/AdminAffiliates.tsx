@@ -146,11 +146,20 @@ export default function AdminAffiliates() {
               <TableBody>
                 {rows.map((a: any) => {
                   const s = statFor(a.id);
+                  const sels = (data?.selections ?? []).filter((x: any) => x.affiliate_id === a.id);
                   return (
+                    <>
                     <TableRow key={a.id}>
                       <TableCell>
                         <div className="font-medium">{a.full_name}</div>
                         <div className="text-xs text-muted-foreground">{a.email}</div>
+                        <button
+                          type="button"
+                          className="mt-1 inline-flex items-center gap-1 text-xs text-primary"
+                          onClick={() => setExpanded(expanded === a.id ? null : a.id)}
+                        >
+                          <ChevronDown className="h-3 w-3" /> {sels.length} course{sels.length === 1 ? "" : "s"}
+                        </button>
                       </TableCell>
                       <TableCell className="font-mono text-xs">{a.code}</TableCell>
                       <TableCell>
@@ -184,6 +193,54 @@ export default function AdminAffiliates() {
                         </Button>
                       </TableCell>
                     </TableRow>
+                    {expanded === a.id && (
+                      <TableRow key={`${a.id}-courses`}>
+                        <TableCell colSpan={9} className="bg-muted/30">
+                          {sels.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-2">No course selections.</p>
+                          ) : (
+                            <div className="space-y-2 py-2">
+                              {sels.map((sel: any) => (
+                                <div key={sel.id} className="flex flex-wrap items-center gap-3">
+                                  <span className="text-sm font-medium min-w-[14rem]">{courseTitle(sel.course_id)}</span>
+                                  <Badge variant={sel.status === "approved" ? "default" : "secondary"} className="capitalize">
+                                    {sel.status}
+                                  </Badge>
+                                  {sel.referral_code && (
+                                    <span className="font-mono text-xs text-muted-foreground">{sel.referral_code}</span>
+                                  )}
+                                  <Input
+                                    type="number"
+                                    className="w-24 h-8"
+                                    placeholder="Rate %"
+                                    defaultValue={sel.commission_percentage ?? ""}
+                                    onBlur={(e) => {
+                                      const v = e.target.value === "" ? null : Number(e.target.value);
+                                      if (v !== (sel.commission_percentage ?? null)) {
+                                        setSelectionField(sel.id, { commission_percentage: v });
+                                      }
+                                    }}
+                                  />
+                                  {sel.status !== "approved" ? (
+                                    <>
+                                      <Button size="sm" onClick={() => approveSelection(sel.id)}>Approve</Button>
+                                      <Button size="sm" variant="ghost" onClick={() => setSelectionField(sel.id, { status: "rejected" })}>
+                                        Reject
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button size="sm" variant="ghost" onClick={() => setSelectionField(sel.id, { status: "paused" })}>
+                                      Pause
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </>
                   );
                 })}
               </TableBody>
