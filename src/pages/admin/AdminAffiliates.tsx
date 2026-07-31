@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,8 +148,8 @@ export default function AdminAffiliates() {
                   const s = statFor(a.id);
                   const sels = (data?.selections ?? []).filter((x: any) => x.affiliate_id === a.id);
                   return (
-                    <>
-                    <TableRow key={a.id}>
+                    <Fragment key={a.id}>
+                    <TableRow>
                       <TableCell>
                         <div className="font-medium">{a.full_name}</div>
                         <div className="text-xs text-muted-foreground">{a.email}</div>
@@ -194,7 +194,7 @@ export default function AdminAffiliates() {
                       </TableCell>
                     </TableRow>
                     {expanded === a.id && (
-                      <TableRow key={`${a.id}-courses`}>
+                      <TableRow>
                         <TableCell colSpan={9} className="bg-muted/30">
                           {sels.length === 0 ? (
                             <p className="text-sm text-muted-foreground py-2">No course selections.</p>
@@ -240,7 +240,7 @@ export default function AdminAffiliates() {
                         </TableCell>
                       </TableRow>
                     )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </TableBody>
