@@ -29,11 +29,13 @@ export function AffiliateTracker() {
     sessionStorage.setItem(sessionKey, "1");
 
     (async () => {
-      const { data } = await (supabase.rpc as any)("resolve_affiliate_code", { p_code: code });
+      const { data } = await (supabase.rpc as any)("resolve_affiliate_ref", { p_code: code });
       const row = Array.isArray(data) ? data[0] : data;
-      if (!row?.id) return;
+      const affiliateId = row?.affiliate_id ?? row?.id;
+      if (!affiliateId) return;
       await supabase.from("affiliate_clicks").insert({
-        affiliate_id: row.id,
+        affiliate_id: affiliateId,
+        course_id: row?.course_id ?? null,
         landing_path: location.pathname,
         referrer: document.referrer || null,
       } as any);
