@@ -87,7 +87,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
               <li><Link to="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
               <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-              <li><Link to="/affiliates" className="hover:text-primary transition-colors">Affiliate Program</Link></li>
+              <li><Link to="/career" className="hover:text-primary transition-colors">Career</Link></li>
             </ul>
             <h4 className="font-heading font-semibold text-hero mt-6 mb-4">Legal &amp; Support</h4>
             <ul className="space-y-2 text-sm">
