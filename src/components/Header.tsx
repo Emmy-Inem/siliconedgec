@@ -16,6 +16,7 @@ const baseNavLinks = [
   { label: "Pricing", href: "/pricing" },
   { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
+  { label: "Career", href: "/career" },
 ];
 
 export function Header() {
