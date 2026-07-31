@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Search, Wallet } from "lucide-react";
+import { Loader2, Search, Wallet, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
@@ -21,19 +21,41 @@ export default function AdminAffiliates() {
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutRef, setPayoutRef] = useState("");
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-affiliates"],
     queryFn: async () => {
-      const [{ data: affiliates }, { data: referrals }, { data: payouts }, { data: clicks }] = await Promise.all([
+      const [{ data: affiliates }, { data: referrals }, { data: payouts }, { data: clicks }, { data: selections }, { data: courses }] = await Promise.all([
         supabase.from("affiliates").select("*").order("created_at", { ascending: false }),
         supabase.from("affiliate_referrals").select("affiliate_id, amount, commission, status"),
         supabase.from("affiliate_payouts").select("affiliate_id, amount, status"),
         supabase.from("affiliate_clicks").select("affiliate_id"),
+        (supabase as any).from("affiliate_course_selections").select("*"),
+        supabase.from("courses").select("id, title"),
       ]);
-      return { affiliates: affiliates ?? [], referrals: referrals ?? [], payouts: payouts ?? [], clicks: clicks ?? [] };
+      return {
+        affiliates: affiliates ?? [], referrals: referrals ?? [], payouts: payouts ?? [],
+        clicks: clicks ?? [], selections: selections ?? [], courses: courses ?? [],
+      };
     },
   });
+
+  const courseTitle = (id: string) =>
+    (data?.courses ?? []).find((c: any) => c.id === id)?.title ?? "Course";
+
+  const approveSelection = async (selectionId: string) => {
+    const { error } = await (supabase.rpc as any)("approve_affiliate_course", { p_selection_id: selectionId });
+    if (error) return toast({ title: "Approval failed", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["admin-affiliates"] });
+    toast({ title: "Course approved", description: "Referral link generated." });
+  };
+
+  const setSelectionField = async (selectionId: string, patch: Record<string, unknown>) => {
+    const { error } = await (supabase as any).from("affiliate_course_selections").update(patch).eq("id", selectionId);
+    if (error) return toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["admin-affiliates"] });
+  };
 
   const statFor = (id: string) => {
     const refs = (data?.referrals ?? []).filter((r: any) => r.affiliate_id === id);
@@ -77,8 +99,28 @@ export default function AdminAffiliates() {
     !q.trim() ? true : `${a.full_name} ${a.email} ${a.code}`.toLowerCase().includes(q.toLowerCase())
   );
 
+  const totals = {
+    affiliates: (data?.affiliates ?? []).length,
+    revenue: (data?.referrals ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0),
+    commission: (data?.referrals ?? []).reduce((s: number, r: any) => s + Number(r.commission ?? 0), 0),
+  };
+
   return (
     <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          { label: "Total affiliates", value: String(totals.affiliates) },
+          { label: "Affiliate-driven revenue", value: formatNaira(totals.revenue) },
+          { label: "Commission owed (lifetime)", value: formatNaira(totals.commission) },
+        ].map((s) => (
+          <Card key={s.label}>
+            <CardContent className="p-5 space-y-1">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className="font-heading text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle className="text-base">Affiliates</CardTitle>
