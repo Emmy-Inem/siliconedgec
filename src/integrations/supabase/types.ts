@@ -94,6 +94,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          landing_path: string | null
           referral_code: string | null
           selected_at: string
           status: string
@@ -106,6 +107,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          landing_path?: string | null
           referral_code?: string | null
           selected_at?: string
           status?: string
@@ -118,6 +120,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          landing_path?: string | null
           referral_code?: string | null
           selected_at?: string
           status?: string

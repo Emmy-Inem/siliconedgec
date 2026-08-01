@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -16,18 +16,19 @@ import {
   Loader2, Copy, MousePointerClick, Users, Wallet, TrendingUp,
   GraduationCap, Share2, Linkedin, Download,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { QRCodeCanvas } from "qrcode.react";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { siteUrl } from "@/lib/site-url";
+import { buildAffiliateLink, defaultLandingPath, landingOptions } from "@/lib/affiliate-link";
 
 type Row = Record<string, any>;
 
-function linkFor(course: Row | undefined, code: string) {
-  const slug = course?.slug || course?.id;
-  return slug ? siteUrl(`/courses/${slug}?ref=${code}`) : siteUrl(`/?ref=${code}`);
-}
+const MIN_PAYOUT = 10000;
 
 export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -93,6 +94,23 @@ export default function AffiliateDashboard() {
   const earned = referrals.reduce((s, r) => s + Number(r.commission ?? 0), 0);
   const paid = payouts.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount ?? 0), 0);
   const pending = Math.max(earned - paid, 0);
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+  const earnedThisMonth = referrals
+    .filter((r) => new Date(r.created_at).getTime() >= monthStart)
+    .reduce((s, r) => s + Number(r.commission ?? 0), 0);
+  const clicksSeries = useMemo(() => {
+    const days: { day: string; clicks: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({
+        day: key.slice(5),
+        clicks: clicks.filter((c) => String(c.created_at).slice(0, 10) === key).length,
+      });
+    }
+    return days;
+  }, [clicks]);
   const lastPayout = payouts.find((p) => p.status === "paid");
   const conversions = referrals.filter((r) => String(r.conversion_type).includes("paid"));
   const signups = referrals.length - conversions.length;
@@ -138,6 +156,16 @@ export default function AffiliateDashboard() {
     if (error) return toast({ title: "Update failed", description: error.message, variant: "destructive" });
     qc.invalidateQueries({ queryKey: ["affiliate-self", user?.id] });
     toast({ title: "Profile updated" });
+  };
+
+  const saveLanding = async (selectionId: string, landingPath: string) => {
+    const { error } = await (supabase as any)
+      .from("affiliate_course_selections")
+      .update({ landing_path: landingPath })
+      .eq("id", selectionId);
+    if (error) return toast({ title: "Could not save destination", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["affiliate-self", user?.id] });
+    toast({ title: "Destination saved" });
   };
 
   const statsFor = (courseId: string) => {
@@ -187,17 +215,21 @@ export default function AffiliateDashboard() {
               </div>
             </div>
 
+            {!affiliate.payout_details && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+                <strong>Add your payout details</strong> — we can't send your commission until your bank
+                account is on file. Add it under <em>Settings</em>.
+              </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               {[
                 { icon: MousePointerClick, label: "Clicks", value: String(clicks.length) },
                 { icon: Users, label: "Sign-ups", value: String(signups) },
                 { icon: TrendingUp, label: "Conversions", value: String(conversions.length) },
-                { icon: Wallet, label: "Commission earned", value: formatNaira(earned) },
+                { icon: Wallet, label: "Earned this month", value: formatNaira(earnedThisMonth) },
+                { icon: Wallet, label: "Lifetime commission", value: formatNaira(earned) },
                 { icon: Wallet, label: "Pending payout", value: formatNaira(pending) },
-                {
-                  icon: Wallet, label: "Last payout",
-                  value: lastPayout ? new Date(lastPayout.paid_at ?? lastPayout.created_at).toLocaleDateString() : "—",
-                },
               ].map(({ icon: Icon, label, value }) => (
                 <Card key={label}>
                   <CardContent className="p-5 space-y-1">
@@ -234,49 +266,33 @@ export default function AffiliateDashboard() {
                   <Card><CardContent className="p-6 text-sm text-muted-foreground">
                     No courses selected yet — add courses under Settings to get a link per course.
                   </CardContent></Card>
-                ) : selections.map((s) => {
-                  const course = courseById[s.course_id];
-                  const code = s.referral_code || affiliate.code;
-                  const url = linkFor(course, code);
-                  return (
-                    <Card key={s.id}>
-                      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
-                        <CardTitle className="text-base">{course?.title ?? "Course"}</CardTitle>
-                        <Badge variant={s.status === "approved" ? "default" : "secondary"} className="capitalize">{s.status}</Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {s.status === "approved" ? (
-                          <>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <Input readOnly value={url} />
-                              <Button variant="outline" className="gap-2" onClick={() => copy(url)}>
-                                <Copy className="h-4 w-4" /> Copy
-                              </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              <Button size="sm" variant="secondary" className="gap-2" onClick={() => share(url, course?.title ?? "", "whatsapp")}>
-                                <Share2 className="h-3.5 w-3.5" /> WhatsApp
-                              </Button>
-                              <Button size="sm" variant="secondary" className="gap-2" onClick={() => share(url, course?.title ?? "", "x")}>
-                                <Share2 className="h-3.5 w-3.5" /> X
-                              </Button>
-                              <Button size="sm" variant="secondary" className="gap-2" onClick={() => share(url, course?.title ?? "", "linkedin")}>
-                                <Linkedin className="h-3.5 w-3.5" /> LinkedIn
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">
-                            Awaiting admin approval — your link appears here once approved.
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                ) : selections.map((s) => (
+                  <SelectionLinkCard
+                    key={s.id}
+                    selection={s}
+                    course={courseById[s.course_id]}
+                    fallbackCode={affiliate.code}
+                    onCopy={copy}
+                    onShare={share}
+                    onSaveLanding={saveLanding}
+                  />
+                ))}
               </TabsContent>
 
               <TabsContent value="courses" className="pt-4">
+                <Card className="mb-4">
+                  <CardHeader><CardTitle className="text-base">Clicks — last 30 days</CardTitle></CardHeader>
+                  <CardContent className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={clicksSeries}>
+                        <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={4} />
+                        <YAxis allowDecimals={false} width={28} tick={{ fontSize: 10 }} />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="clicks" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.2)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
                 <Card>
                   <CardHeader><CardTitle className="text-base">Performance by course</CardTitle></CardHeader>
                   <CardContent className="overflow-x-auto">
@@ -351,7 +367,9 @@ export default function AffiliateDashboard() {
                   <CardHeader><CardTitle className="text-base">Payouts</CardTitle></CardHeader>
                   <CardContent className="overflow-x-auto space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Payouts run monthly. Pending balance: <strong>{formatNaira(pending)}</strong>.
+                      Payouts run monthly once your confirmed balance passes {formatNaira(MIN_PAYOUT)}.
+                      Pending balance: <strong>{formatNaira(pending)}</strong>
+                      {lastPayout && ` · last payout ${new Date(lastPayout.paid_at ?? lastPayout.created_at).toLocaleDateString()}`}.
                     </p>
                     {payouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-6 text-center">No payouts yet.</p>
@@ -384,7 +402,10 @@ export default function AffiliateDashboard() {
                       <p className="text-sm text-muted-foreground">Approved courses will show copy-ready briefs here.</p>
                     ) : selections.filter((s) => s.status === "approved").map((s) => {
                       const course = courseById[s.course_id];
-                      const url = linkFor(course, s.referral_code || affiliate.code);
+                      const url = buildAffiliateLink(
+                        defaultLandingPath(s, course),
+                        s.referral_code || affiliate.code,
+                      );
                       const brief = `${course?.title ?? "Silicon Edge course"} — job-ready training from Silicon Edge Consulting. Live cohorts, hands-on projects and a certificate on completion.\n\nEnrol here: ${url}`;
                       return (
                         <div key={s.id} className="rounded-lg border border-border/60 p-4 space-y-2">
@@ -467,5 +488,98 @@ export default function AffiliateDashboard() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function SelectionLinkCard({
+  selection, course, fallbackCode, onCopy, onShare, onSaveLanding,
+}: {
+  selection: Row;
+  course?: Row;
+  fallbackCode: string;
+  onCopy: (text: string) => void;
+  onShare: (url: string, title: string, network: "whatsapp" | "x" | "linkedin") => void;
+  onSaveLanding: (selectionId: string, landingPath: string) => void;
+}) {
+  const options = landingOptions(course);
+  const [path, setPath] = useState(defaultLandingPath(selection, course));
+  const [campaign, setCampaign] = useState("");
+  const qrRef = useRef<HTMLDivElement | null>(null);
+  const code = selection.referral_code || fallbackCode;
+  const url = buildAffiliateLink(path, code, campaign);
+  const approved = selection.status === "approved";
+  const dirty = path !== defaultLandingPath(selection, course);
+
+  const downloadQr = () => {
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `${code}-qr.png`;
+    a.click();
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
+        <CardTitle className="text-base">{course?.title ?? "Course"}</CardTitle>
+        <Badge variant={approved ? "default" : "secondary"} className="capitalize shrink-0">{selection.status}</Badge>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {!approved && (
+          <p className="text-sm text-muted-foreground">
+            Awaiting admin approval. You can already set up the link — it starts tracking once approved.
+          </p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Send visitors to</Label>
+            <Select value={path} onValueChange={(v) => setPath(v)}>
+              <SelectTrigger><SelectValue placeholder="Choose destination" /></SelectTrigger>
+              <SelectContent>
+                {options.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Campaign tag (optional)</Label>
+            <Input value={campaign} placeholder="e.g. june-newsletter" onChange={(e) => setCampaign(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input readOnly value={url} className="font-mono text-xs" />
+          <Button variant="outline" className="gap-2 shrink-0" onClick={() => onCopy(url)}>
+            <Copy className="h-4 w-4" /> Copy
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" className="gap-2" onClick={() => onShare(url, course?.title ?? "", "whatsapp")}>
+            <Share2 className="h-3.5 w-3.5" /> WhatsApp
+          </Button>
+          <Button size="sm" variant="secondary" className="gap-2" onClick={() => onShare(url, course?.title ?? "", "x")}>
+            <Share2 className="h-3.5 w-3.5" /> X
+          </Button>
+          <Button size="sm" variant="secondary" className="gap-2" onClick={() => onShare(url, course?.title ?? "", "linkedin")}>
+            <Linkedin className="h-3.5 w-3.5" /> LinkedIn
+          </Button>
+          <Button size="sm" variant="ghost" className="gap-2" onClick={downloadQr}>
+            <Download className="h-3.5 w-3.5" /> QR code
+          </Button>
+          {dirty && (
+            <Button size="sm" className="gap-2" onClick={() => onSaveLanding(selection.id, path)}>
+              Save as default
+            </Button>
+          )}
+        </div>
+
+        <div ref={qrRef} className="hidden">
+          <QRCodeCanvas value={url} size={512} includeMargin />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

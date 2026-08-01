@@ -221,6 +221,17 @@ export default function AdminAffiliates() {
                                       }
                                     }}
                                   />
+                                  <Input
+                                    className="w-56 h-8 font-mono text-xs"
+                                    placeholder="/courses/slug"
+                                    defaultValue={sel.landing_path ?? ""}
+                                    onBlur={(e) => {
+                                      const v = e.target.value.trim() || null;
+                                      if (v !== (sel.landing_path ?? null)) {
+                                        setSelectionField(sel.id, { landing_path: v });
+                                      }
+                                    }}
+                                  />
                                   {sel.status !== "approved" ? (
                                     <>
                                       <Button size="sm" onClick={() => approveSelection(sel.id)}>Approve</Button>

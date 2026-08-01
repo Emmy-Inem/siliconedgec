@@ -3,10 +3,20 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const KEY = "affiliate_ref";
+const COURSE_KEY = "affiliate_ref_course";
 
 export function getStoredAffiliateCode(): string | null {
   try {
     return localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Course the stored referral code was issued for, if any. */
+export function getStoredAffiliateCourseId(): string | null {
+  try {
+    return localStorage.getItem(COURSE_KEY);
   } catch {
     return null;
   }
@@ -25,7 +35,7 @@ export function AffiliateTracker() {
       /* storage unavailable */
     }
     const sessionKey = `aff_click_${code}`;
-    if (sessionStorage.getItem(sessionKey)) return;
+    const alreadyLogged = sessionStorage.getItem(sessionKey);
     sessionStorage.setItem(sessionKey, "1");
 
     (async () => {
@@ -33,6 +43,14 @@ export function AffiliateTracker() {
       const row = Array.isArray(data) ? data[0] : data;
       const affiliateId = row?.affiliate_id ?? row?.id;
       if (!affiliateId) return;
+      // Keep the course attribution even when the visitor lands on a non-course page.
+      try {
+        if (row?.course_id) localStorage.setItem(COURSE_KEY, row.course_id);
+        else localStorage.removeItem(COURSE_KEY);
+      } catch {
+        /* storage unavailable */
+      }
+      if (alreadyLogged) return;
       await supabase.from("affiliate_clicks").insert({
         affiliate_id: affiliateId,
         course_id: row?.course_id ?? null,
