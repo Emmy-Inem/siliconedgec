@@ -1,64 +1,48 @@
-## Goal
+# Career page, partner dashboard, referral links & security fixes
 
-Two things: (1) make the Cohort Space something students *want* to open daily instead of asking for WhatsApp/Telegram, and (2) put every cohort-related control (members, course, lessons, assignments, quizzes, access) into one admin page under Cohorts.
+## 1. Career page (`/career`) — full content + imagery
 
----
+Currently the page is a hero, three benefit cards and a form. Expand to a real partner landing page:
 
-## Part 1 — Make the Cohort Space sticky
+- Hero with a generated stock image (African tech creator/mentor with laptop and phone, warm premium look) and clear stats strip (courses, learners, commission).
+- "How it works" — 4 steps: apply, pick courses, share your link, get paid monthly.
+- "Who this is for" — creators, community leads, corporate trainers, alumni (with an image).
+- Commission & payout table (rate tiers, cookie window, payout schedule, Naira payouts).
+- Earnings estimator (slider: referrals/month × average course price → monthly commission).
+- Success/testimonial section and partner FAQ accordion.
+- Final CTA + application form (kept, with course multi-select).
+- SEO: title/description, single H1, alt text on all images, FAQ JSON-LD.
 
-Today the Discussion tab is a plain post list: no live updates, no reactions, no read state, no presence, no notifications when someone posts. It feels dead, so people leave for WhatsApp. Fixes, in order of impact:
+Images generated into `src/assets/` (hero, who-it's-for, payout/earnings visual), imported directly.
 
-**1. Real-time chat feel**
-- Subscribe to `cohort_posts` via Realtime so new messages appear instantly without refresh (channel created/torn down in `useEffect`).
-- Live "X is typing…" and an online-members presence row using a Realtime presence channel (no DB writes).
-- Auto-scroll to newest, day separators ("Today", "Yesterday"), grouped consecutive messages by the same author.
+## 2. Referral links that actually land on the chosen course
 
-**2. Reactions and replies that feel native**
-- Emoji reactions on posts (new `cohort_post_reactions` table) with counts and tap-to-toggle.
-- Existing thread replies get a compact "N replies" affordance that expands inline.
-- @mention autocomplete of cohort members; a mention creates a notification linking straight to the post.
+Verified in the database: the one existing course selection is still `status = 'pending'` with `referral_code = NULL`, so the dashboard shows no course link and any code in circulation falls back to the site root — this is the root cause of links not reaching the course.
 
-**3. Unread + notification loop (the main retention driver)**
-- Per-user last-read marker (new `cohort_reads` table) → unread badge on the Cohorts nav item, on each cohort card, and on the Discussion tab.
-- Notification on: new post in your cohort (throttled), a reply to your post, an @mention, a pinned announcement, a new session, new material.
-- Mobile: existing notification bell deep-links into `/cohorts/:id?post=…`.
+Fixes:
+- Generate the per-course referral code at selection time (not only at approval) so the link exists immediately; approval only flips the status.
+- Add a `landing_path` column to `affiliate_course_selections` so a partner can choose the destination themselves: course page (default), course checkout/enrol, pricing, bootcamp, or home. Editable in the dashboard with a live link preview.
+- Build links from the selection's `landing_path` (falling back to the course slug) instead of hardcoded `/courses/{slug}`.
+- `AffiliateTracker`: keep the stored code, and after resolving a course-specific code, if the visitor landed on a non-course page, do not lose the course attribution — store the resolved `course_id` alongside the code so enrolment attribution stays correct.
+- Add UTM parameters to generated links for analytics.
 
-**4. Reasons to come back daily**
-- **Pinned welcome/announcement bar** at the top of Discussion so the space never looks empty.
-- **Upcoming session banner** with countdown + one-tap RSVP and "Join now" when live.
-- **Cohort leaderboard** tab powered by existing XP (`get_user_xp` + `user_xp_events`): weekly points, lessons completed, assignments submitted. Small, friendly, opt-out-safe.
-- **Progress strip**: "You: 6/20 lessons · Cohort average: 8/20" to create healthy pull.
-- **Ask instructor** quick action that posts a question tagged `question`, filterable, and instructors can mark "answered".
-- Rich composer: paste/upload images + files into the chat (reuse cohort materials bucket), link previews for URLs.
+## 3. Partner dashboard gaps
 
-**5. Presence and polish**
-- Member avatars in the roster show online dot; instructors get a badge.
-- Empty state replaced with prompts ("Introduce yourself 👋") and starter buttons.
-- WhatsApp-style mobile layout: sticky composer at the bottom, full-height scroll area, no double scrollbars.
+- Referral link builder: choose destination page, optional campaign tag, QR code download, and copy/share per link.
+- Pending vs approved courses clearly separated, with "request more courses" inline.
+- Earnings summary: this-month vs lifetime, next payout date, minimum payout threshold.
+- Clicks-over-time chart and click→signup→paid conversion funnel.
+- Payout details form validation (bank name, account number, account name) with a warning banner when payout details are missing.
+- Notifications/empty states, mobile layout pass (tabs scroll, tables become cards), and a downloadable marketing kit (copy blocks, banner assets).
 
----
+## 4. Security fixes (4 findings)
 
-## Part 2 — One admin Cohort control center
-
-Rebuild `AdminCohorts` cohort detail into a tabbed workspace so nothing requires jumping to another page:
-
-- **Overview** — cohort meta (name, number, dates, status, linked course), quick stats, danger zone.
-- **Members** — existing add/remove/role, plus: bulk add by email/CSV, set instructor, and per-member access state (enrolled? cohort-only access? lessons unlocked?) with fix-it buttons.
-- **Access** — grant/revoke the linked course to any member or the whole cohort in one click (reuses the manual-grant path with `access_source='manual_grant'`), admin-only.
-- **Lessons** — full lesson list of the linked course with per-member and bulk **Unlock / Lock / Mark complete** toggles (folds `AdminLessonAccess` into this page).
-- **Assignments** — create, edit, attach to a lesson, publish/hide, see submission counts, and open grading, scoped to the cohort's course.
-- **Quizzes** — same: create manually with questions/options, publish/hide, AI-generated badge, per-lesson attach.
-- **Sessions** and **Materials** — as today, with attendance marking.
-- **Discussion moderation** — pin/delete posts, post an announcement to the cohort from admin.
-
-Everything writes with admin-activity logging, and each tab refreshes the others' caches so the Courses ↔ Assessments ↔ Cohort views stay in sync.
-
----
+1. `assignment_submissions` — students can insert a row with `grade`/`graded_by`/`graded_at` already set. Add a WITH CHECK/trigger forcing those to NULL on insert for non-staff.
+2. `quiz_attempts` — client-supplied `score` is trusted. Force scoring through the existing `grade_quiz_submission` security-definer function and block direct score writes from learners via trigger.
+3. `orders` — self-insert allows arbitrary `amount`/`status`. Constrain inserts to `status = 'pending'` and let the Paystack webhook be the only path to `completed`.
+4. RLS policies using `USING (true)`/`WITH CHECK (true)` on write operations — tighten each to an ownership or role check.
 
 ## Technical notes
 
-- New tables (migration, with GRANTs + RLS scoped to cohort membership): `cohort_post_reactions`, `cohort_reads`; add `attachment_url`/`kind` columns to `cohort_posts`.
-- Add `cohort_posts`, `cohort_post_reactions` to the `supabase_realtime` publication.
-- New notification triggers for posts/replies/mentions, all gated on cohort membership and `is_visible` where relevant.
-- Reuse existing helpers: `is_cohort_member`, `is_cohort_instructor`, `user_can_access_course`, `seed_first_lesson_unlock`, `lesson_unlocks`.
-- Admin cohort page split into small panel components under `src/pages/admin/cohort/` to keep files manageable.
+- One migration: `landing_path` on `affiliate_course_selections`, code generation on insert, plus the four security changes (triggers/policies).
+- Frontend: `src/pages/Affiliates.tsx` (career page), `src/pages/affiliate/AffiliateDashboard.tsx`, `src/components/AffiliateTracker.tsx`, `src/pages/admin/AdminAffiliates.tsx` (show/override landing path).
