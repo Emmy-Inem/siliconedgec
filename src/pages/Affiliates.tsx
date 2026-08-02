@@ -14,16 +14,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import {
   CheckCircle2, Coins, LineChart, Users, Loader2, Link2, Share2, Wallet, ClipboardList,
 } from "lucide-react";
-import heroImg from "@/assets/career-hero.jpg";
-import communityImg from "@/assets/career-community.jpg";
-import payoutImg from "@/assets/career-payout.jpg";
+import heroAsset from "@/assets/career-hero-team.png.asset.json";
+import communityAsset from "@/assets/career-earnings.jpg.asset.json";
+import payoutAsset from "@/assets/career-mobile-tracking.jpg.asset.json";
+
+const heroImg = heroAsset.url;
+const communityImg = communityAsset.url;
+const payoutImg = payoutAsset.url;
 
 const BENEFITS = [
-  { icon: Coins, title: "Up to 20% commission", body: "Earn on every learner who enrols through your referral link — paid in Naira, monthly." },
+  { icon: Coins, title: "Up to 20% commission", body: "Earn on every learner who enrols through your referral link — paid out monthly, worldwide." },
   { icon: LineChart, title: "Private performance dashboard", body: "Track clicks, sign-ups, conversions and payouts. You only ever see your own numbers." },
   { icon: Users, title: "Marketing support", body: "Get creatives, course briefs and discount codes tailored to your audience." },
 ];
@@ -49,9 +53,9 @@ const TIERS = [
 ];
 
 const FAQS = [
-  { q: "How much can I earn?", a: "Commission starts at 10% of the amount a learner pays and rises to 20% as your volume grows. Payouts are made in Naira." },
+  { q: "How much can I earn?", a: "Commission starts at 10% of the amount a learner pays and rises to 20% as your volume grows." },
   { q: "How long does my referral link track for?", a: "Your referral is stored on the visitor's device for 30 days, so you're still credited if they come back later to enrol." },
-  { q: "When do I get paid?", a: "Commission is confirmed when the learner's payment clears. Payouts run monthly, once your confirmed balance is above ₦10,000." },
+  { q: "When do I get paid?", a: "Commission is confirmed when the learner's payment clears. Payouts run monthly, once your confirmed balance passes the minimum threshold shown in your dashboard." },
   { q: "Do I need to be a past student?", a: "No. Anyone with a relevant audience can apply — creators, community leads, trainers and alumni are all welcome." },
   { q: "Can I promote more than one course?", a: "Yes. Select as many published courses as you like; each approved course gets its own trackable link and its own performance stats." },
   { q: "Can I choose where my link sends people?", a: "Yes. In your partner dashboard you can point each link at the course page, the checkout, the pricing page or the homepage." },
@@ -69,6 +73,7 @@ function slugifyCode(name: string) {
 
 export default function Affiliates() {
   const { toast } = useToast();
+  const { format: formatPrice } = useLocalizedPrice();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [courseIds, setCourseIds] = useState<string[]>([]);
