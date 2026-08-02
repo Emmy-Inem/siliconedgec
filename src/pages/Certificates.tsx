@@ -237,7 +237,7 @@ export default function Certificates() {
                   courseName="Cloud Engineering Crash Course"
                   date="March 7, 2026"
                   certId="SE-2026-A1B2C3"
-                  instructorName="Ayodele Oluwatayo Olaniyi"
+                  instructorName="Fauziyah Zakariyah"
                 />
               </div>
             </div>
@@ -424,69 +424,28 @@ function CertificateForPDF({
 }: {
   studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
+  // The downloaded PDF renders the exact same design as the on-page sample.
   return (
-    <div style={{ width: 900, background: "#fff", padding: 0, fontFamily: "'Space Grotesk', sans-serif" }}>
-      <div style={{ border: "3px solid #d4a017", borderRadius: 16, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
-        </div>
-        <div style={{ position: "absolute", top: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
-        </div>
-        <div style={{ position: "absolute", bottom: 0, left: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, left: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
-        </div>
-        <div style={{ position: "absolute", bottom: 0, right: 0, width: 60, height: 60, overflow: "hidden" }}>
-          <div style={{ position: "absolute", bottom: -30, right: -30, width: 84, height: 84, transform: "rotate(45deg)", background: "#b13bff" }} />
-        </div>
-
-        <div style={{ padding: "50px 60px", textAlign: "center" }}>
-          <div style={{ width: 120, height: 4, background: "#d4a017", margin: "0 auto 30px", borderRadius: 2 }} />
-          <img src={logoDark} alt="Silicon Edge Consulting" style={{ height: 44, marginBottom: 24 }} crossOrigin="anonymous" />
-          <div style={{ display: "inline-block", padding: "8px 24px", border: "2px solid #d4a017", borderRadius: 4, background: "rgba(212,160,23,0.1)", marginBottom: 30 }}>
-            <p style={{ fontSize: 11, letterSpacing: "0.35em", textTransform: "uppercase", fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Certificate of Completion</p>
-          </div>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>This is to certify that</p>
-          <p style={{ fontSize: 34, fontWeight: 700, color: "#b13bff", margin: "0 0 16px" }}>{studentName}</p>
-          <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 12px" }}>has successfully completed</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: "0 0 30px" }}>{courseName}</p>
-          <div style={{ width: "100%", height: 1, background: "#d4a017", marginBottom: 24 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1a1a2e", borderRadius: 8, padding: 16 }}>
-            <div style={{ textAlign: "left" }}>
-              <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Date Issued</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0 }}>{date}</p>
-            </div>
-            {instructorName && (
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Instructor</p>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0 }}>{instructorName}</p>
-              </div>
-            )}
-            <div style={{ textAlign: "right" }}>
-              <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#d4a017", margin: "0 0 4px", fontWeight: 600 }}>Certificate ID</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "monospace" }}>{certId}</p>
-            </div>
-            {verifyUrl && (
-              <div style={{ background: "#fff", padding: 6, borderRadius: 4, marginLeft: 16 }}>
-                <QRCodeSVG value={verifyUrl} size={64} level="M" />
-              </div>
-            )}
-          </div>
-          <p style={{ fontSize: 10, color: "#9ca3af", letterSpacing: "0.15em", marginTop: 20 }}>
-            {verifyUrl ? `Verify at: ${verifyUrl}` : "www.siliconedgec.com"}
-          </p>
-        </div>
-      </div>
+    <div style={{ width: 1100, background: "#fff" }}>
+      <BrandedCertificate
+        studentName={studentName}
+        courseName={courseName}
+        date={date}
+        certId={certId}
+        instructorName={instructorName}
+        verifyUrl={verifyUrl}
+      />
     </div>
   );
 }
 
 
 function BrandedCertificate({
-  studentName, courseName, date, certId, instructorName,
+  studentName, courseName, date, certId, instructorName, verifyUrl,
 }: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string;
+  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
+  const lead = instructorName?.trim() || "Fauziyah Zakariyah";
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
       {/* Outer double border — gold + thin navy inner */}
@@ -578,18 +537,21 @@ function BrandedCertificate({
         <div className="grid grid-cols-3 gap-4 mt-6 items-end">
           <div className="text-center">
             <p
-              className="text-xl md:text-2xl mb-1"
+              className="text-3xl md:text-4xl mb-1 leading-none"
               style={{
                 color: "hsl(var(--navy))",
-                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
-                transform: "rotate(-2deg)",
+                fontFamily: "'Great Vibes', 'Brush Script MT', cursive",
+                transform: "rotate(-3deg)",
                 display: "inline-block",
               }}
             >
-              {instructorName ?? "Ayodele Oluwatayo Olaniyi"}
+              {lead}
             </p>
             <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+            <p className="text-[10px] md:text-xs font-semibold mt-1.5" style={{ color: "hsl(var(--navy))" }}>
+              {lead}
+            </p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-0.5 font-semibold" style={{ color: "#6b7280" }}>
               Lead Instructor
             </p>
           </div>
@@ -615,23 +577,38 @@ function BrandedCertificate({
           </div>
 
           <div className="text-center">
-            <p
-              className="text-2xl md:text-3xl mb-1"
-              style={{
-                color: "hsl(var(--navy))",
-                fontFamily: "'Brush Script MT', 'Lucida Handwriting', 'Segoe Script', cursive",
-                fontStyle: "italic",
-                transform: "rotate(-4deg)",
-                display: "inline-block",
-                letterSpacing: "0.5px",
-              }}
-            >
-              Tayo
-            </p>
-            <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
-              Digital Signature
-            </p>
+            {verifyUrl ? (
+              <div className="flex flex-col items-center">
+                <div className="bg-white p-1.5 rounded" style={{ border: "1px solid hsl(var(--navy) / 0.15)" }}>
+                  <QRCodeSVG value={verifyUrl} size={56} level="M" />
+                </div>
+                <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+                <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+                  Scan to verify
+                </p>
+              </div>
+            ) : (
+              <>
+                <p
+                  className="text-3xl md:text-4xl mb-1 leading-none"
+                  style={{
+                    color: "hsl(var(--navy))",
+                    fontFamily: "'Great Vibes', 'Brush Script MT', cursive",
+                    transform: "rotate(-3deg)",
+                    display: "inline-block",
+                  }}
+                >
+                  Silicon Edge
+                </p>
+                <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+                <p className="text-[10px] md:text-xs font-semibold mt-1.5" style={{ color: "hsl(var(--navy))" }}>
+                  Silicon Edge Consulting
+                </p>
+                <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-0.5 font-semibold" style={{ color: "#6b7280" }}>
+                  Digital Signature
+                </p>
+              </>
+            )}
           </div>
         </div>
 
