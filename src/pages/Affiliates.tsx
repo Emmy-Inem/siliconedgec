@@ -165,7 +165,7 @@ export default function Affiliates() {
     <div className="min-h-screen flex flex-col">
       <SEO
         title="Career Partner Program | Silicon Edge Consulting"
-        description="Earn up to 20% commission promoting job-ready AI, Cloud and DevOps courses. Get a trackable link per course, a private dashboard and monthly Naira payouts."
+        description="Earn up to 20% commission promoting job-ready AI, Cloud and DevOps courses. Get a trackable link per course, a private dashboard and monthly payouts."
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <Header />
@@ -178,7 +178,7 @@ export default function Affiliates() {
                 Career · Partner Program
               </span>
               <h1 className="font-heading text-4xl md:text-5xl font-bold leading-tight">
-                Build a career growing Africa's next tech workforce
+                Build a career growing the world's next tech workforce
               </h1>
               <p className="text-muted-foreground text-lg">
                 Join the Silicon Edge Consulting partner program. Pick the courses you want to promote,
@@ -194,7 +194,7 @@ export default function Affiliates() {
                 {[
                   { k: "Up to 20%", v: "Commission" },
                   { k: "30 days", v: "Cookie window" },
-                  { k: "Monthly", v: "Naira payouts" },
+                  { k: "Monthly", v: "Global payouts" },
                 ].map((s) => (
                   <div key={s.v}>
                     <p className="font-heading text-xl font-bold">{s.k}</p>
@@ -203,13 +203,16 @@ export default function Affiliates() {
                 ))}
               </div>
             </div>
-            <img
-              src={heroImg}
-              alt="Partner tracking her referral performance on a laptop and phone"
-              width={1280}
-              height={960}
-              className="rounded-2xl shadow-xl w-full h-auto object-cover"
-            />
+            <div className="relative order-first lg:order-last">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" aria-hidden="true" />
+              <img
+                src={heroImg}
+                alt="Marketing team reviewing partner campaign performance on a laptop"
+                width={1024}
+                height={1057}
+                className="relative rounded-2xl shadow-xl w-full h-auto object-cover lg:ml-auto lg:max-w-md"
+              />
+            </div>
           </div>
         </section>
 
@@ -258,7 +261,7 @@ export default function Affiliates() {
         <section className="container mx-auto px-4 py-16 grid gap-10 lg:grid-cols-2 items-center">
           <img
             src={communityImg}
-            alt="Community members reviewing a course together on a laptop"
+            alt="Two partners counting their referral earnings at a desk"
             loading="lazy"
             width={1280}
             height={853}
@@ -304,7 +307,7 @@ export default function Affiliates() {
               </div>
               <ul className="text-sm text-muted-foreground space-y-2">
                 <li className="flex gap-2"><Link2 className="h-4 w-4 text-primary shrink-0 mt-0.5" /> 30-day attribution window on every referral link.</li>
-                <li className="flex gap-2"><Wallet className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Payouts run monthly in Naira, once your confirmed balance passes ₦10,000.</li>
+                <li className="flex gap-2"><Wallet className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Payouts run monthly, once your confirmed balance passes the minimum threshold.</li>
                 <li className="flex gap-2"><LineChart className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Commission confirms as soon as the learner's payment clears.</li>
               </ul>
             </div>
@@ -330,17 +333,17 @@ export default function Affiliates() {
                 </div>
                 <div className="rounded-xl bg-primary/5 p-5 space-y-1">
                   <p className="text-xs text-muted-foreground">Estimated monthly commission</p>
-                  <p className="font-heading text-3xl font-bold text-primary">{formatNaira(monthly)}</p>
+                  <p className="font-heading text-3xl font-bold text-primary">{formatPrice(monthly)}</p>
                   <p className="text-xs text-muted-foreground">
-                    At {Math.round(rate * 100)}% on an average course price of {formatNaira(avgPrice)}.
+                    At {Math.round(rate * 100)}% on an average course price of {formatPrice(avgPrice)}.
                   </p>
                 </div>
                 <img
                   src={payoutImg}
-                  alt="Partner receiving a payout notification on his phone"
+                  alt="Partner checking her payout balance on a mobile banking app"
                   loading="lazy"
-                  width={1280}
-                  height={853}
+                  width={736}
+                  height={1104}
                   className="rounded-xl w-full h-40 object-cover"
                 />
               </CardContent>
