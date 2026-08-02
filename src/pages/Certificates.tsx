@@ -537,18 +537,21 @@ function BrandedCertificate({
         <div className="grid grid-cols-3 gap-4 mt-6 items-end">
           <div className="text-center">
             <p
-              className="text-xl md:text-2xl mb-1"
+              className="text-3xl md:text-4xl mb-1 leading-none"
               style={{
                 color: "hsl(var(--navy))",
-                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
-                transform: "rotate(-2deg)",
+                fontFamily: "'Great Vibes', 'Brush Script MT', cursive",
+                transform: "rotate(-3deg)",
                 display: "inline-block",
               }}
             >
-              {instructorName ?? "Ayodele Oluwatayo Olaniyi"}
+              {lead}
             </p>
             <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+            <p className="text-[10px] md:text-xs font-semibold mt-1.5" style={{ color: "hsl(var(--navy))" }}>
+              {lead}
+            </p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-0.5 font-semibold" style={{ color: "#6b7280" }}>
               Lead Instructor
             </p>
           </div>
@@ -574,23 +577,38 @@ function BrandedCertificate({
           </div>
 
           <div className="text-center">
-            <p
-              className="text-2xl md:text-3xl mb-1"
-              style={{
-                color: "hsl(var(--navy))",
-                fontFamily: "'Brush Script MT', 'Lucida Handwriting', 'Segoe Script', cursive",
-                fontStyle: "italic",
-                transform: "rotate(-4deg)",
-                display: "inline-block",
-                letterSpacing: "0.5px",
-              }}
-            >
-              Tayo
-            </p>
-            <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
-              Digital Signature
-            </p>
+            {verifyUrl ? (
+              <div className="flex flex-col items-center">
+                <div className="bg-white p-1.5 rounded" style={{ border: "1px solid hsl(var(--navy) / 0.15)" }}>
+                  <QRCodeSVG value={verifyUrl} size={56} level="M" />
+                </div>
+                <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+                <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+                  Scan to verify
+                </p>
+              </div>
+            ) : (
+              <>
+                <p
+                  className="text-3xl md:text-4xl mb-1 leading-none"
+                  style={{
+                    color: "hsl(var(--navy))",
+                    fontFamily: "'Great Vibes', 'Brush Script MT', cursive",
+                    transform: "rotate(-3deg)",
+                    display: "inline-block",
+                  }}
+                >
+                  Silicon Edge
+                </p>
+                <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
+                <p className="text-[10px] md:text-xs font-semibold mt-1.5" style={{ color: "hsl(var(--navy))" }}>
+                  Silicon Edge Consulting
+                </p>
+                <p className="text-[9px] md:text-[10px] uppercase tracking-widest mt-0.5 font-semibold" style={{ color: "#6b7280" }}>
+                  Digital Signature
+                </p>
+              </>
+            )}
           </div>
         </div>
 
