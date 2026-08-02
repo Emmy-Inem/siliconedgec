@@ -441,10 +441,11 @@ function CertificateForPDF({
 
 
 function BrandedCertificate({
-  studentName, courseName, date, certId, instructorName,
+  studentName, courseName, date, certId, instructorName, verifyUrl,
 }: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string;
+  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
+  const lead = instructorName?.trim() || "Fauziyah Zakariyah";
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
       {/* Outer double border — gold + thin navy inner */}
