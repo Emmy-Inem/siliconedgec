@@ -18,13 +18,9 @@ import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import {
   CheckCircle2, Coins, LineChart, Users, Loader2, Link2, Share2, Wallet, ClipboardList,
 } from "lucide-react";
-import heroAsset from "@/assets/career-hero-team.png.asset.json";
-import communityAsset from "@/assets/career-earnings.jpg.asset.json";
-import payoutAsset from "@/assets/career-mobile-tracking.jpg.asset.json";
-
-const heroImg = heroAsset.url;
-const communityImg = communityAsset.url;
-const payoutImg = payoutAsset.url;
+import heroImg from "@/assets/career-hero-team.png";
+import communityImg from "@/assets/career-earnings.jpg";
+import payoutImg from "@/assets/career-mobile-tracking.jpg";
 
 const BENEFITS = [
   { icon: Coins, title: "Up to 20% commission", body: "Earn on every learner who enrols through your referral link — paid out monthly, worldwide." },
