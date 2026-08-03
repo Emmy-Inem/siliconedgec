@@ -491,7 +491,6 @@ function BrandedCertificate({
 }) {
   const lead = instructorName?.trim() || "Fauziyah Zakariyah";
   // In print mode we hard-code the desktop scale so the PDF is identical everywhere.
-  const c = (mobile: string, desktop: string) => (print ? desktop : `${mobile} ${desktop.split(" ").map((k) => `md:${k}`).join(" ")}`);
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
       {/* Outer double border — gold + thin navy inner */}
@@ -526,27 +525,27 @@ function BrandedCertificate({
         <div className="w-72 h-72 rounded-full border-[12px]" style={{ borderColor: "hsl(var(--navy))" }} />
       </div>
 
-      <div className={`relative text-center h-full flex flex-col ${px-16} ${py-10}`}>
+      <div className={`relative text-center h-full flex flex-col px-16 py-10`}>
         {/* Header — logo */}
         <div className="flex justify-center mb-3">
           <img src={logoDark} alt="Silicon Edge Consulting" className={h-10} />
         </div>
-        <p className={`${text-[11px]} uppercase tracking-[0.4em] font-semibold mb-5`} style={{ color: "hsl(var(--navy) / 0.55)" }}>
+        <p className={`text-[11px] uppercase tracking-[0.4em] font-semibold mb-5`} style={{ color: "hsl(var(--navy) / 0.55)" }}>
           Silicon Edge Consulting · Tech Academy
         </p>
 
         {/* Title with flanking ornaments */}
         <div className="flex items-center justify-center gap-4 mb-1">
-          <span className={`h-px ${w-16}`} style={{ background: "hsl(var(--gold))" }} />
-          <p className={`${text-xs} uppercase tracking-[0.45em] font-bold`} style={{ color: "hsl(var(--gold))" }}>
+          <span className={`h-px w-16`} style={{ background: "hsl(var(--gold))" }} />
+          <p className={`text-xs uppercase tracking-[0.45em] font-bold`} style={{ color: "hsl(var(--gold))" }}>
             Certificate of Completion
           </p>
-          <span className={`h-px ${w-16}`} style={{ background: "hsl(var(--gold))" }} />
+          <span className={`h-px w-16`} style={{ background: "hsl(var(--gold))" }} />
         </div>
 
-        <p className={`${text-sm} italic mb-2 mt-4`} style={{ color: "#6b7280" }}>This is to proudly certify that</p>
+        <p className={`text-sm italic mb-2 mt-4`} style={{ color: "#6b7280" }}>This is to proudly certify that</p>
         <p
-          className={`font-bold ${text-5xl} mb-2 leading-tight`}
+          className={`font-bold text-5xl mb-2 leading-tight`}
           style={{
             color: "hsl(var(--navy))",
             fontFamily: "'Playfair Display', Georgia, serif",
@@ -555,16 +554,16 @@ function BrandedCertificate({
         >
           {studentName}
         </p>
-        <div className={`mx-auto h-px ${w-64} mb-4`} style={{ background: "hsl(var(--navy) / 0.2)" }} />
+        <div className={`mx-auto h-px w-64 mb-4`} style={{ background: "hsl(var(--navy) / 0.2)" }} />
 
-        <p className={`${text-sm} mb-2`} style={{ color: "#6b7280" }}>
+        <p className={`text-sm mb-2`} style={{ color: "#6b7280" }}>
           has successfully completed the live, instructor-led program
         </p>
-        <p className={`font-heading font-semibold ${text-2xl} mb-5`} style={{ color: "hsl(var(--primary))" }}>
+        <p className={`font-heading font-semibold text-2xl mb-5`} style={{ color: "hsl(var(--primary))" }}>
           {courseName}
         </p>
 
-        <div className={`flex items-center justify-center ${gap-8} ${text-xs} mb-auto`} style={{ color: "#6b7280" }}>
+        <div className={`flex items-center justify-center gap-8 text-xs mb-auto`} style={{ color: "#6b7280" }}>
           <span className="inline-flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
             All modules completed
@@ -584,7 +583,7 @@ function BrandedCertificate({
           <div className="text-center">
             <SignatureMark name={lead} print={print} />
             <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className={`${text-[10px]} uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
+            <p className={`text-[10px] uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
               {lead} · Lead Instructor
             </p>
           </div>
@@ -592,7 +591,7 @@ function BrandedCertificate({
           {/* Center seal */}
           <div className="flex justify-center">
             <div
-              className={`relative ${w-24} ${h-24} rounded-full flex items-center justify-center`}
+              className={`relative w-24 h-24 rounded-full flex items-center justify-center`}
               style={{
                 background: "radial-gradient(circle at 30% 30%, hsl(45 100% 65%), hsl(45 90% 45%) 60%, hsl(45 80% 35%))",
                 boxShadow: "0 6px 16px -4px hsl(var(--gold) / 0.6), inset 0 0 0 2px hsl(var(--gold) / 0.4)",
@@ -603,8 +602,8 @@ function BrandedCertificate({
                 style={{ borderColor: "hsl(var(--navy) / 0.35)", borderStyle: "dashed" }}
               />
               <div className="text-center" style={{ color: "hsl(var(--navy))" }}>
-                <Award className={`${h-6} ${w-6} mx-auto`} strokeWidth={2.4} />
-                <p className={`${text-[8px]} font-bold tracking-widest leading-none mt-0.5`}>VERIFIED</p>
+                <Award className={`h-6 w-6 mx-auto`} strokeWidth={2.4} />
+                <p className={`text-[8px] font-bold tracking-widest leading-none mt-0.5`}>VERIFIED</p>
               </div>
             </div>
           </div>
@@ -616,7 +615,7 @@ function BrandedCertificate({
                   <QRCodeSVG value={verifyUrl} size={print ? 72 : 56} level="M" />
                 </div>
                 <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-                <p className={`${text-[10px]} uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
+                <p className={`text-[10px] uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
                   Scan to verify
                 </p>
               </div>
@@ -624,7 +623,7 @@ function BrandedCertificate({
               <>
                 <SignatureMark name="Silicon Edge" print={print} />
                 <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-                <p className={`${text-[10px]} uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
+                <p className={`text-[10px] uppercase tracking-widest mt-1.5 font-semibold`} style={{ color: "#6b7280" }}>
                   Silicon Edge Consulting · Digital Signature
                 </p>
               </>
@@ -638,16 +637,16 @@ function BrandedCertificate({
           style={{ background: "hsl(var(--navy))" }}
         >
           <div>
-            <p className={`${text-[9px]} uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Issued</p>
-            <p className={`${text-xs} font-semibold text-white`}>{date}</p>
+            <p className={`text-[9px] uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Issued</p>
+            <p className={`text-xs font-semibold text-white`}>{date}</p>
           </div>
           <div className="text-center">
-            <p className={`${text-[9px]} uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Verify at</p>
-            <p className={`${text-xs} font-semibold text-white`}>siliconedgec.com/verify</p>
+            <p className={`text-[9px] uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Verify at</p>
+            <p className={`text-xs font-semibold text-white`}>siliconedgec.com/verify</p>
           </div>
           <div className="text-right">
-            <p className={`${text-[9px]} uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Certificate ID</p>
-            <p className={`${text-xs} font-mono font-semibold text-white`}>{certId}</p>
+            <p className={`text-[9px] uppercase tracking-widest font-medium`} style={{ color: "hsl(var(--gold))" }}>Certificate ID</p>
+            <p className={`text-xs font-mono font-semibold text-white`}>{certId}</p>
           </div>
         </div>
       </div>
