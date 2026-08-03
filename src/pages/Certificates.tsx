@@ -274,6 +274,8 @@ function CertificateCardWithDownload({
     setShowCert(true);
     setDownloading(true);
     await new Promise((r) => setTimeout(r, 300));
+    // Wait for Great Vibes / Playfair to load, else html2canvas rasterises fallbacks.
+    try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     if (!certRef.current) return;
     try {
       const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
