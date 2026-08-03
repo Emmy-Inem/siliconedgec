@@ -231,7 +231,7 @@ export default function Certificates() {
             </p>
             {/* Mobile: horizontally scrollable so the full landscape cert stays readable. */}
             <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-thin">
-              <div className="min-w-[640px] sm:min-w-0">
+              <div className="min-w-[900px]">
                 <BrandedCertificate
                   studentName={userName}
                   courseName="Cloud Engineering Crash Course"
