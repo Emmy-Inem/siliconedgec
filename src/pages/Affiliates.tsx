@@ -199,14 +199,14 @@ export default function Affiliates() {
                 ))}
               </div>
             </div>
-            <div className="relative order-first lg:order-last">
+            <div className="relative order-last">
               <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" aria-hidden="true" />
               <img
                 src={heroImg}
                 alt="Marketing team reviewing partner campaign performance on a laptop"
                 width={1024}
                 height={1057}
-                className="relative rounded-2xl shadow-xl w-full h-auto object-cover lg:ml-auto lg:max-w-md"
+                className="relative rounded-2xl shadow-xl w-full aspect-video object-cover object-top lg:aspect-auto lg:h-auto lg:ml-auto lg:max-w-md"
               />
             </div>
           </div>
@@ -332,6 +332,7 @@ export default function Affiliates() {
                   <p className="font-heading text-3xl font-bold text-primary">{formatPrice(monthly)}</p>
                   <p className="text-xs text-muted-foreground">
                     At {Math.round(rate * 100)}% on an average course price of {formatPrice(avgPrice)}.
+                    Shown in {currency} based on your location.
                   </p>
                 </div>
                 <img
