@@ -377,6 +377,7 @@ function DownloadableCertificate({
   const handleDownload = useCallback(async () => {
     if (!certRef.current) return;
     setDownloading(true);
+    try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     try {
       const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
@@ -403,8 +404,13 @@ function DownloadableCertificate({
 
   return (
     <div>
-      <div ref={certRef}>
-        <BrandedCertificate studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
+      <div className="overflow-x-auto -mx-4 px-4">
+        <div className="min-w-[900px]">
+          <BrandedCertificate studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
+        </div>
+      </div>
+      <div className="fixed -left-[9999px] top-0" ref={certRef}>
+        <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
       </div>
       <motion.div
         className="flex justify-center mt-6"
