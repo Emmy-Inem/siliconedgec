@@ -69,7 +69,7 @@ function slugifyCode(name: string) {
 
 export default function Affiliates() {
   const { toast } = useToast();
-  const { format: formatPrice } = useLocalizedPrice();
+  const { format: formatPrice, currency } = useLocalizedPrice();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [courseIds, setCourseIds] = useState<string[]>([]);
