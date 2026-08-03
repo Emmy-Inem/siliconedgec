@@ -424,10 +424,13 @@ function CertificateForPDF({
 }: {
   studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
-  // The downloaded PDF renders the exact same design as the on-page sample.
+  // Rendered off-screen at a fixed 1400px width with `print` so the layout never
+  // depends on the visitor's viewport (Tailwind md: breakpoints are viewport-based,
+  // which is why mobile downloads used to look nothing like the on-page sample).
   return (
-    <div style={{ width: 1100, background: "#fff" }}>
+    <div style={{ width: 1400, background: "#fff" }}>
       <BrandedCertificate
+        print
         studentName={studentName}
         courseName={courseName}
         date={date}
@@ -439,13 +442,56 @@ function CertificateForPDF({
   );
 }
 
+/** Hand-drawn ink signature: a real stroke path, not just the name typed out. */
+function SignatureMark({ name, print }: { name: string; print?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 320 90"
+      className={print ? "h-[68px] w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
+      fill="none"
+      role="img"
+      aria-label={`Signature of ${name}`}
+    >
+      <text
+        x="160"
+        y="52"
+        textAnchor="middle"
+        style={{ fontFamily: "'Great Vibes', 'Brush Script MT', cursive", fontSize: 44 }}
+        fill="hsl(var(--navy))"
+        transform="rotate(-3 160 52)"
+      >
+        {name}
+      </text>
+      {/* Ink flourish underneath, drawn as a single continuous pen stroke */}
+      <path
+        d="M18 70 C70 58, 120 82, 176 66 S268 50, 306 62"
+        stroke="hsl(var(--navy))"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.85"
+      />
+      <path
+        d="M292 62 C300 56, 304 66, 296 70"
+        stroke="hsl(var(--navy))"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
+
 
 function BrandedCertificate({
-  studentName, courseName, date, certId, instructorName, verifyUrl,
+  studentName, courseName, date, certId, instructorName, verifyUrl, print,
 }: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
+  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string; print?: boolean;
 }) {
   const lead = instructorName?.trim() || "Fauziyah Zakariyah";
+  // In print mode we hard-code the desktop scale so the PDF is identical everywhere.
+  const c = (mobile: string, desktop: string) => (print ? desktop : `${mobile} ${desktop.split(" ").map((k) => `md:${k}`).join(" ")}`);
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
       {/* Outer double border — gold + thin navy inner */}
