@@ -278,10 +278,10 @@ function CertificateCardWithDownload({
     try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     if (!certRef.current) return;
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
       pdf.save(`${certId}-certificate.pdf`);
       // TikTok conversion: certificate download is a post-completion action.
       tikTokEvent("Download", {
@@ -379,10 +379,10 @@ function DownloadableCertificate({
     setDownloading(true);
     try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
       pdf.save(`${certId}-certificate.pdf`);
       // TikTok conversion: sample/preview certificate download.
       tikTokEvent("Download", {
@@ -436,7 +436,7 @@ function CertificateForPDF({
   // depends on the visitor's viewport (Tailwind md: breakpoints are viewport-based,
   // which is why mobile downloads used to look nothing like the on-page sample).
   return (
-    <div style={{ width: 1400, background: "#fff" }}>
+    <div style={{ width: 900, background: "#fff" }}>
       <BrandedCertificate
         print
         studentName={studentName}
@@ -455,7 +455,7 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
   return (
     <svg
       viewBox="0 0 320 90"
-      className={print ? "h-[68px] w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
+      className={print ? "h-16 w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
       fill="none"
       role="img"
       aria-label={`Signature of ${name}`}
@@ -464,6 +464,8 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
         x="160"
         y="52"
         textAnchor="middle"
+        textLength={name.length > 12 ? 280 : undefined}
+        lengthAdjust="spacingAndGlyphs"
         style={{ fontFamily: "'Great Vibes', 'Brush Script MT', cursive", fontSize: 44 }}
         fill="hsl(var(--navy))"
         transform="rotate(-3 160 52)"
@@ -491,6 +493,44 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
   );
 }
 
+
+/** Gold wax-style seal drawn entirely in SVG so it rasterises crisply in the PDF. */
+function SealMark() {
+  return (
+    <svg viewBox="0 0 96 96" className="w-24 h-24" role="img" aria-label="Verified seal">
+      <defs>
+        <radialGradient id="sealGold" cx="32%" cy="30%" r="78%">
+          <stop offset="0%" stopColor="hsl(45 100% 70%)" />
+          <stop offset="60%" stopColor="hsl(45 90% 48%)" />
+          <stop offset="100%" stopColor="hsl(45 82% 34%)" />
+        </radialGradient>
+      </defs>
+      <circle cx="48" cy="48" r="46" fill="url(#sealGold)" />
+      <circle cx="48" cy="48" r="45" fill="none" stroke="hsl(45 60% 30%)" strokeWidth="1.5" opacity="0.5" />
+      <circle
+        cx="48" cy="48" r="39"
+        fill="none"
+        stroke="hsl(var(--navy))"
+        strokeOpacity="0.4"
+        strokeWidth="1.6"
+        strokeDasharray="5 4"
+      />
+      {/* Award mark */}
+      <g stroke="hsl(var(--navy))" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="48" cy="38" r="10" />
+        <path d="M41 47 L38 61 L48 56 L58 61 L55 47" />
+      </g>
+      <text
+        x="48" y="79"
+        textAnchor="middle"
+        fill="hsl(var(--navy))"
+        style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.6 }}
+      >
+        VERIFIED
+      </text>
+    </svg>
+  );
+}
 
 function BrandedCertificate({
   studentName, courseName, date, certId, instructorName, verifyUrl, print,
@@ -598,29 +638,14 @@ function BrandedCertificate({
 
           {/* Center seal */}
           <div className="flex justify-center">
-            <div
-              className="relative w-24 h-24 rounded-full flex items-center justify-center"
-              style={{
-                background: "radial-gradient(circle at 30% 30%, hsl(45 100% 65%), hsl(45 90% 45%) 60%, hsl(45 80% 35%))",
-                boxShadow: "0 6px 16px -4px hsl(var(--gold) / 0.6), inset 0 0 0 2px hsl(var(--gold) / 0.4)",
-              }}
-            >
-              <div
-                className="absolute inset-1 rounded-full border-2"
-                style={{ borderColor: "hsl(var(--navy) / 0.35)", borderStyle: "dashed" }}
-              />
-              <div className="text-center" style={{ color: "hsl(var(--navy))" }}>
-                <Award className="h-6 w-6 mx-auto" strokeWidth={2.4} />
-                <p className="text-[8px] font-bold tracking-widest leading-none mt-0.5">VERIFIED</p>
-              </div>
-            </div>
+            <SealMark />
           </div>
 
           <div className="text-center">
             {verifyUrl ? (
               <div className="flex flex-col items-center">
                 <div className="bg-white p-1.5 rounded" style={{ border: "1px solid hsl(var(--navy) / 0.15)" }}>
-                  <QRCodeSVG value={verifyUrl} size={print ? 72 : 56} level="M" />
+                  <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
                 <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
                 <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
