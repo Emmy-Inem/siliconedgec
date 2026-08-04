@@ -494,6 +494,44 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
 }
 
 
+/** Gold wax-style seal drawn entirely in SVG so it rasterises crisply in the PDF. */
+function SealMark() {
+  return (
+    <svg viewBox="0 0 96 96" className="w-24 h-24" role="img" aria-label="Verified seal">
+      <defs>
+        <radialGradient id="sealGold" cx="32%" cy="30%" r="78%">
+          <stop offset="0%" stopColor="hsl(45 100% 70%)" />
+          <stop offset="60%" stopColor="hsl(45 90% 48%)" />
+          <stop offset="100%" stopColor="hsl(45 82% 34%)" />
+        </radialGradient>
+      </defs>
+      <circle cx="48" cy="48" r="46" fill="url(#sealGold)" />
+      <circle cx="48" cy="48" r="45" fill="none" stroke="hsl(45 60% 30%)" strokeWidth="1.5" opacity="0.5" />
+      <circle
+        cx="48" cy="48" r="39"
+        fill="none"
+        stroke="hsl(var(--navy))"
+        strokeOpacity="0.4"
+        strokeWidth="1.6"
+        strokeDasharray="5 4"
+      />
+      {/* Award mark */}
+      <g stroke="hsl(var(--navy))" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="48" cy="38" r="10" />
+        <path d="M41 47 L38 61 L48 56 L58 61 L55 47" />
+      </g>
+      <text
+        x="48" y="79"
+        textAnchor="middle"
+        fill="hsl(var(--navy))"
+        style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.6 }}
+      >
+        VERIFIED
+      </text>
+    </svg>
+  );
+}
+
 function BrandedCertificate({
   studentName, courseName, date, certId, instructorName, verifyUrl, print,
 }: {
