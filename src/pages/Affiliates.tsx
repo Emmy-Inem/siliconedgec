@@ -69,7 +69,8 @@ function slugifyCode(name: string) {
 
 export default function Affiliates() {
   const { toast } = useToast();
-  const { format: formatPrice, currency } = useLocalizedPrice();
+  // The partner program is marketed globally, so earnings are always quoted in USD.
+  const { format: formatPrice } = useLocalizedPrice({ forceCurrency: "USD" });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [courseIds, setCourseIds] = useState<string[]>([]);
@@ -206,7 +207,7 @@ export default function Affiliates() {
                 alt="Marketing team reviewing partner campaign performance on a laptop"
                 width={1024}
                 height={1057}
-                className="relative rounded-2xl shadow-xl w-full aspect-video object-cover object-top lg:aspect-auto lg:h-auto lg:ml-auto lg:max-w-md"
+                className="relative rounded-2xl shadow-xl w-full aspect-[16/10] object-cover object-center lg:aspect-auto lg:h-auto lg:ml-auto lg:max-w-md"
               />
             </div>
           </div>
@@ -332,7 +333,7 @@ export default function Affiliates() {
                   <p className="font-heading text-3xl font-bold text-primary">{formatPrice(monthly)}</p>
                   <p className="text-xs text-muted-foreground">
                     At {Math.round(rate * 100)}% on an average course price of {formatPrice(avgPrice)}.
-                    Shown in {currency} based on your location.
+                    All partner earnings are quoted and paid in USD.
                   </p>
                 </div>
                 <img
