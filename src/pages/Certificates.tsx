@@ -278,10 +278,10 @@ function CertificateCardWithDownload({
     try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     if (!certRef.current) return;
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
       pdf.save(`${certId}-certificate.pdf`);
       // TikTok conversion: certificate download is a post-completion action.
       tikTokEvent("Download", {
@@ -379,10 +379,10 @@ function DownloadableCertificate({
     setDownloading(true);
     try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
       pdf.save(`${certId}-certificate.pdf`);
       // TikTok conversion: sample/preview certificate download.
       tikTokEvent("Download", {
@@ -436,7 +436,7 @@ function CertificateForPDF({
   // depends on the visitor's viewport (Tailwind md: breakpoints are viewport-based,
   // which is why mobile downloads used to look nothing like the on-page sample).
   return (
-    <div style={{ width: 1400, background: "#fff" }}>
+    <div style={{ width: 900, background: "#fff" }}>
       <BrandedCertificate
         print
         studentName={studentName}
