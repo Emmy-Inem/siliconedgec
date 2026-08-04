@@ -497,8 +497,6 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
 function BrandedCertificate({
   studentName, courseName, date, certId, instructorName, verifyUrl, print,
 }: {
-  studentName, courseName, date, certId, instructorName, verifyUrl, print,
-}: {
   studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string; print?: boolean;
 }) {
   const lead = instructorName?.trim() || "Fauziyah Zakariyah";
