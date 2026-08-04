@@ -600,22 +600,7 @@ function BrandedCertificate({
 
           {/* Center seal */}
           <div className="flex justify-center">
-            <div
-              className="relative w-24 h-24 rounded-full flex items-center justify-center"
-              style={{
-                background: "radial-gradient(circle at 30% 30%, hsl(45 100% 65%), hsl(45 90% 45%) 60%, hsl(45 80% 35%))",
-                boxShadow: "0 6px 16px -4px hsl(var(--gold) / 0.6), inset 0 0 0 2px hsl(var(--gold) / 0.4)",
-              }}
-            >
-              <div
-                className="absolute inset-1 rounded-full border-2"
-                style={{ borderColor: "hsl(var(--navy) / 0.35)", borderStyle: "dashed" }}
-              />
-              <div className="text-center" style={{ color: "hsl(var(--navy))" }}>
-                <Award className="h-6 w-6 mx-auto" strokeWidth={2.4} />
-                <p className="text-[8px] font-bold tracking-widest leading-none mt-0.5">VERIFIED</p>
-              </div>
-            </div>
+            <SealMark />
           </div>
 
           <div className="text-center">
