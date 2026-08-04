@@ -455,7 +455,7 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
   return (
     <svg
       viewBox="0 0 320 90"
-      className={print ? "h-[68px] w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
+      className={print ? "h-16 w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
       fill="none"
       role="img"
       aria-label={`Signature of ${name}`}
@@ -464,6 +464,8 @@ function SignatureMark({ name, print }: { name: string; print?: boolean }) {
         x="160"
         y="52"
         textAnchor="middle"
+        textLength={name.length > 12 ? 280 : undefined}
+        lengthAdjust="spacingAndGlyphs"
         style={{ fontFamily: "'Great Vibes', 'Brush Script MT', cursive", fontSize: 44 }}
         fill="hsl(var(--navy))"
         transform="rotate(-3 160 52)"
