@@ -645,7 +645,7 @@ function BrandedCertificate({
             {verifyUrl ? (
               <div className="flex flex-col items-center">
                 <div className="bg-white p-1.5 rounded" style={{ border: "1px solid hsl(var(--navy) / 0.15)" }}>
-                  <QRCodeSVG value={verifyUrl} size={print ? 72 : 56} level="M" />
+                  <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
                 <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
                 <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
