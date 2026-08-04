@@ -9,7 +9,7 @@ import { formatNaira } from "@/lib/format-currency";
  * Live FX is fetched once per 24h from open.er-api.com (free, no key);
  * falls back to bundled rates if unreachable.
  */
-export function useLocalizedPrice() {
+export function useLocalizedPrice(opts?: { forceCurrency?: string }) {
   // Re-evaluate after IP geo resolves so visitors abroad don't get stuck on
   // the timezone fallback.
   const [tick, setTick] = useState(0);
@@ -19,7 +19,8 @@ export function useLocalizedPrice() {
     return () => { active = false; };
   }, []);
 
-  const currency = typeof window === "undefined" ? "NGN" : detectVisitorCurrency();
+  const currency =
+    opts?.forceCurrency ?? (typeof window === "undefined" ? "NGN" : detectVisitorCurrency());
   const isNgn = currency === "NGN";
   // tick is referenced so React re-runs detection after IP geo lands
   void tick;
