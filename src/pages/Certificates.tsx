@@ -632,13 +632,13 @@ function BrandedCertificate({
         {/* Footer — signatures + seal */}
         {/* Every column reserves the same 72px mark area so the three rule lines and
             the captions below them land on exactly the same baseline in the PDF. */}
-        <div className="grid grid-cols-3 gap-4 mt-6 items-end">
+        <div className="grid grid-cols-3 gap-4 mt-6 items-start">
           <div className="text-center">
             <div className="flex items-end justify-center" style={{ height: 72 }}>
               <SignatureMark name={lead} print={print} />
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280", minHeight: 26 }}>
               {lead} · Lead Instructor
             </p>
           </div>
@@ -659,7 +659,7 @@ function BrandedCertificate({
               )}
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280", minHeight: 26 }}>
               {verifyUrl ? "Scan to verify" : "Silicon Edge Consulting · Digital Signature"}
             </p>
           </div>
