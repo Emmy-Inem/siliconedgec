@@ -611,56 +611,57 @@ function BrandedCertificate({
           {courseName}
         </p>
 
-        <div className="flex items-center justify-center gap-8 text-xs mb-auto" style={{ color: "#6b7280" }}>
-          <span className="inline-flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
-            All modules completed
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
-            Digitally verified
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Award className="h-3.5 w-3.5" style={{ color: "hsl(var(--gold))" }} />
-            Hands-on capstone graded
-          </span>
+        {/* Badge row. html2canvas mis-computes the baseline of inline SVGs, which is
+            what pushed these icons out of line in the exported PDF — so each icon
+            sits in its own fixed-size flex box with an explicit line-height. */}
+        <div className="flex items-center justify-center gap-8 text-xs mb-auto" style={{ color: "#6b7280", lineHeight: 1 }}>
+          {[
+            { Icon: CheckCircle2, label: "All modules completed", color: "hsl(var(--primary))" },
+            { Icon: Shield, label: "Digitally verified", color: "hsl(var(--primary))" },
+            { Icon: Award, label: "Hands-on capstone graded", color: "hsl(var(--gold))" },
+          ].map(({ Icon, label, color }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <span className="flex items-center justify-center" style={{ width: 14, height: 14 }}>
+                <Icon style={{ width: 14, height: 14, color, display: "block" }} />
+              </span>
+              <span style={{ display: "block" }}>{label}</span>
+            </span>
+          ))}
         </div>
 
         {/* Footer — signatures + seal */}
-        <div className="grid grid-cols-3 gap-4 mt-6 items-end">
+        {/* Every column reserves the same 72px mark area so the three rule lines and
+            the captions below them land on exactly the same baseline in the PDF. */}
+        <div className="grid grid-cols-3 gap-4 mt-6 items-start">
           <div className="text-center">
-            <SignatureMark name={lead} print={print} />
-            <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
+            <div className="flex items-end justify-center" style={{ height: 72 }}>
+              <SignatureMark name={lead} print={print} />
+            </div>
+            <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
+            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280", minHeight: 26 }}>
               {lead} · Lead Instructor
             </p>
           </div>
 
-          {/* Center seal */}
-          <div className="flex justify-center">
+          {/* Center seal — same mark area, no rule underneath */}
+          <div className="flex items-end justify-center" style={{ height: 72 }}>
             <SealMark />
           </div>
 
           <div className="text-center">
-            {verifyUrl ? (
-              <div className="flex flex-col items-center">
+            <div className="flex items-end justify-center" style={{ height: 72 }}>
+              {verifyUrl ? (
                 <div className="bg-white p-1.5 rounded" style={{ border: "1px solid hsl(var(--navy) / 0.15)" }}>
                   <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
-                <div className="h-px w-full mt-2" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-                <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
-                  Scan to verify
-                </p>
-              </div>
-            ) : (
-              <>
+              ) : (
                 <SignatureMark name="Silicon Edge" print={print} />
-                <div className="h-px w-full mt-1" style={{ background: "hsl(var(--navy) / 0.4)" }} />
-                <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280" }}>
-                  Silicon Edge Consulting · Digital Signature
-                </p>
-              </>
-            )}
+              )}
+            </div>
+            <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
+            <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280", minHeight: 26 }}>
+              {verifyUrl ? "Scan to verify" : "Silicon Edge Consulting · Digital Signature"}
+            </p>
           </div>
         </div>
 
