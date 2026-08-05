@@ -582,13 +582,31 @@ function BrandedCertificate({
           Silicon Edge Consulting · Tech Academy
         </p>
 
-        {/* Title with flanking ornaments */}
-        <div className="flex items-center justify-center gap-4 mb-1">
-          <span className="h-px w-16" style={{ background: "hsl(var(--gold))" }} />
-          <p className="text-xs uppercase tracking-[0.45em] font-bold" style={{ color: "hsl(var(--gold))" }}>
+        {/* Title with flanking ornaments.
+            html2canvas does not resolve flex cross-axis centering for 1px rules,
+            so this row is laid out inline with explicit vertical-align. */}
+        <div className="mb-1" style={{ textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
+          <span
+            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
+          />
+          <span
+            className="uppercase font-bold"
+            style={{
+              display: "inline-block",
+              verticalAlign: "middle",
+              margin: "0 16px",
+              fontSize: 12,
+              lineHeight: "16px",
+              letterSpacing: "0.45em",
+              textIndent: "0.45em",
+              color: "hsl(var(--gold))",
+            }}
+          >
             Certificate of Completion
-          </p>
-          <span className="h-px w-16" style={{ background: "hsl(var(--gold))" }} />
+          </span>
+          <span
+            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
+          />
         </div>
 
         <p className="text-sm italic mb-2 mt-4" style={{ color: "#6b7280" }}>This is to proudly certify that</p>
@@ -614,17 +632,19 @@ function BrandedCertificate({
         {/* Badge row. html2canvas mis-computes the baseline of inline SVGs, which is
             what pushed these icons out of line in the exported PDF — so each icon
             sits in its own fixed-size flex box with an explicit line-height. */}
-        <div className="flex items-center justify-center gap-8 text-xs mb-auto" style={{ color: "#6b7280", lineHeight: 1 }}>
+        <div className="mb-auto" style={{ color: "#6b7280", textAlign: "center", fontSize: 0 }}>
           {[
             { Icon: CheckCircle2, label: "All modules completed", color: "hsl(var(--primary))" },
             { Icon: Shield, label: "Digitally verified", color: "hsl(var(--primary))" },
             { Icon: Award, label: "Hands-on capstone graded", color: "hsl(var(--gold))" },
           ].map(({ Icon, label, color }) => (
-            <span key={label} className="flex items-center gap-1.5">
-              <span className="flex items-center justify-center" style={{ width: 14, height: 14 }}>
+            <span key={label} style={{ display: "inline-block", verticalAlign: "middle", margin: "0 16px" }}>
+              <span style={{ display: "inline-block", verticalAlign: "middle", width: 14, height: 14, lineHeight: "14px" }}>
                 <Icon style={{ width: 14, height: 14, color, display: "block" }} />
               </span>
-              <span style={{ display: "block" }}>{label}</span>
+              <span style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 6, fontSize: 12, lineHeight: "14px" }}>
+                {label}
+              </span>
             </span>
           ))}
         </div>
