@@ -44,17 +44,25 @@ export default function AdminQuizzes({ courseId }: { courseId?: string } = {}) {
   const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
 
   const { data: quizzes = [], isLoading } = useQuery({
-    queryKey: ["admin-quizzes", courseId, lessons.map((lesson: any) => lesson.id).join(",")],
+    queryKey: ["admin-quizzes", courseId],
     queryFn: async () => {
-      const lessonIds = courseId ? lessons.map((lesson: any) => lesson.id) : [];
-      if (courseId && lessonIds.length === 0) return [];
+      let lessonIds: string[] = [];
+      if (courseId) {
+        const { data: courseModules, error: moduleError } = await supabase.from("modules").select("id").eq("course_id", courseId);
+        if (moduleError) throw moduleError;
+        const moduleIds = (courseModules ?? []).map((module) => module.id);
+        if (moduleIds.length === 0) return [];
+        const { data: courseLessons, error: lessonError } = await supabase.from("lessons").select("id").in("module_id", moduleIds);
+        if (lessonError) throw lessonError;
+        lessonIds = (courseLessons ?? []).map((lesson) => lesson.id);
+        if (lessonIds.length === 0) return [];
+      }
       let query = supabase.from("quizzes").select("*, lessons(title, modules(courses(title)))").order("created_at", { ascending: false });
       if (courseId) query = query.in("lesson_id", lessonIds);
       const { data, error } = await query;
       if (error) throw error;
       return data as Quiz[];
     },
-    enabled: !courseId || lessons.length > 0,
   });
 
   const { data: lessons = [] } = useQuery({

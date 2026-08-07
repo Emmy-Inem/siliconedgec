@@ -71,7 +71,7 @@ export function MockInterviewDialog({ defaultRole, courseId, cohortId }: { defau
           strengths: Array.isArray(data.strengths) ? data.strengths : [],
           improvements: Array.isArray(data.improvements) ? data.improvements : [],
           transcript: history,
-        });
+        } as any);
         if (saveError) toast({ title: "Report created but not saved", description: saveError.message, variant: "destructive" });
         else queryClient.invalidateQueries({ queryKey: ["mock-interview-history"] });
       }
