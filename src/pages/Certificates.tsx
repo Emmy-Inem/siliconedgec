@@ -273,12 +273,23 @@ function CertificateCardWithDownload({
   const handleDownload = useCallback(async () => {
     setShowCert(true);
     setDownloading(true);
-    await new Promise((r) => setTimeout(r, 300));
-    // Wait for Great Vibes / Playfair to load, else html2canvas rasterises fallbacks.
-    try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
-    if (!certRef.current) return;
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      try { await document.fonts?.ready; } catch { /* older browsers */ }
+      const surface = certRef.current;
+      if (!surface) throw new Error("Certificate surface is unavailable");
+      await Promise.all(Array.from(surface.querySelectorAll("img")).map(async (image) => {
+        if (image.complete && image.naturalWidth > 0) return;
+        try { await image.decode(); } catch { /* html2canvas will report an asset error */ }
+      }));
+      const canvas = await html2canvas(surface, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        width: 900,
+        height: 637,
+        logging: false,
+      });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
@@ -298,11 +309,12 @@ function CertificateCardWithDownload({
       });
     } catch (e) {
       console.error("PDF generation failed", e);
+      toast({ title: "Certificate download failed", description: "Please try again.", variant: "destructive" });
     } finally {
       setDownloading(false);
       setShowCert(false);
     }
-  }, [certId]);
+  }, [certId, courseName]);
 
   // Auto-trigger PDF generation once when the user lands here from the
   // "Course completed!" notification.
@@ -358,7 +370,7 @@ function CertificateCardWithDownload({
       {showCert && (
         <div className="fixed -left-[9999px] top-0">
           <div ref={certRef}>
-            <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} verifyUrl={verifyUrl} />
+            <BrandedCertificate studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} verifyUrl={verifyUrl} />
           </div>
         </div>
       )}
@@ -366,96 +378,12 @@ function CertificateCardWithDownload({
   );
 }
 
-function DownloadableCertificate({
-  studentName, courseName, date, certId, instructorName,
-}: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string;
-}) {
-  const certRef = useRef<HTMLDivElement>(null);
-  const [downloading, setDownloading] = useState(false);
-
-  const handleDownload = useCallback(async () => {
-    if (!certRef.current) return;
-    setDownloading(true);
-    try { await (document as any).fonts?.ready; } catch { /* older browsers */ }
-    try {
-      const canvas = await html2canvas(certRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 3, canvas.height / 3] });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 3, canvas.height / 3);
-      pdf.save(`${certId}-certificate.pdf`);
-      // TikTok conversion: sample/preview certificate download.
-      tikTokEvent("Download", {
-        content_id: certId,
-        content_name: courseName,
-        content_type: "certificate",
-      });
-      metaCustomEvent("DownloadCertificate", {
-        content_ids: [certId],
-        content_name: courseName,
-        content_type: "certificate",
-      });
-    } catch (e) {
-      console.error("PDF generation failed", e);
-    } finally {
-      setDownloading(false);
-    }
-  }, [certId]);
-
-  return (
-    <div>
-      <div className="overflow-x-auto -mx-4 px-4">
-        <div className="min-w-[900px]">
-          <BrandedCertificate studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
-        </div>
-      </div>
-      <div className="fixed -left-[9999px] top-0" ref={certRef}>
-        <CertificateForPDF studentName={studentName} courseName={courseName} date={date} certId={certId} instructorName={instructorName} />
-      </div>
-      <motion.div
-        className="flex justify-center mt-6"
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <Button onClick={handleDownload} disabled={downloading} className="hover-scale gap-2">
-          {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Download Certificate as PDF
-        </Button>
-      </motion.div>
-    </div>
-  );
-}
-
-function CertificateForPDF({
-  studentName, courseName, date, certId, instructorName, verifyUrl,
-}: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
-}) {
-  // Rendered off-screen at a fixed 1400px width with `print` so the layout never
-  // depends on the visitor's viewport (Tailwind md: breakpoints are viewport-based,
-  // which is why mobile downloads used to look nothing like the on-page sample).
-  return (
-    <div style={{ width: 900, background: "#fff" }}>
-      <BrandedCertificate
-        print
-        studentName={studentName}
-        courseName={courseName}
-        date={date}
-        certId={certId}
-        instructorName={instructorName}
-        verifyUrl={verifyUrl}
-      />
-    </div>
-  );
-}
-
 /** Hand-drawn ink signature: a real stroke path, not just the name typed out. */
-function SignatureMark({ name, print }: { name: string; print?: boolean }) {
+function SignatureMark({ name }: { name: string }) {
   return (
     <svg
       viewBox="0 0 320 90"
-      className={print ? "h-16 w-auto mx-auto" : "h-12 md:h-16 w-auto mx-auto"}
+      style={{ width: 256, height: 64, margin: "0 auto" }}
       fill="none"
       role="img"
       aria-label={`Signature of ${name}`}
@@ -533,14 +461,13 @@ function SealMark() {
 }
 
 function BrandedCertificate({
-  studentName, courseName, date, certId, instructorName, verifyUrl, print,
+  studentName, courseName, date, certId, instructorName, verifyUrl,
 }: {
-  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string; print?: boolean;
+  studentName: string; courseName: string; date: string; certId: string; instructorName?: string; verifyUrl?: string;
 }) {
   const lead = instructorName?.trim() || "Fauziyah Zakariyah";
-  // In print mode we hard-code the desktop scale so the PDF is identical everywhere.
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-white aspect-[1.414/1]">
+    <div className="relative overflow-hidden bg-white" style={{ width: 900, height: 637 }} data-certificate-surface>
       {/* Outer double border — gold + thin navy inner */}
       <div className="absolute inset-3 rounded-xl border-[2px] pointer-events-none" style={{ borderColor: "hsl(var(--gold))" }} />
       <div className="absolute inset-[18px] rounded-lg border pointer-events-none" style={{ borderColor: "hsl(var(--navy) / 0.25)" }} />
@@ -573,9 +500,9 @@ function BrandedCertificate({
         <div className="w-72 h-72 rounded-full border-[12px]" style={{ borderColor: "hsl(var(--navy))" }} />
       </div>
 
-      <div className="relative text-center h-full flex flex-col px-16 py-10">
+      <div className="relative text-center h-full flex flex-col" style={{ padding: "40px 64px" }}>
         {/* Header — logo */}
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center" style={{ marginBottom: 12 }}>
           <img src={logoDark} alt="Silicon Edge Consulting" className="h-10" />
         </div>
         <p className="text-[11px] uppercase tracking-[0.4em] font-semibold mb-5" style={{ color: "hsl(var(--navy) / 0.55)" }}>
@@ -652,10 +579,10 @@ function BrandedCertificate({
         {/* Footer — signatures + seal */}
         {/* Every column reserves the same 72px mark area so the three rule lines and
             the captions below them land on exactly the same baseline in the PDF. */}
-        <div className="grid grid-cols-3 gap-4 mt-6 items-start">
+        <div className="grid grid-cols-3 items-start" style={{ columnGap: 16, marginTop: 24 }}>
           <div className="text-center">
             <div className="flex items-end justify-center" style={{ height: 72 }}>
-              <SignatureMark name={lead} print={print} />
+              <SignatureMark name={lead} />
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
             <p className="text-[10px] uppercase tracking-widest mt-1.5 font-semibold" style={{ color: "#6b7280", minHeight: 26 }}>
@@ -675,7 +602,7 @@ function BrandedCertificate({
                   <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
               ) : (
-                <SignatureMark name="Silicon Edge" print={print} />
+                <SignatureMark name="Silicon Edge" />
               )}
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
@@ -687,8 +614,8 @@ function BrandedCertificate({
 
         {/* Bottom meta strip */}
         <div
-          className="mt-6 grid grid-cols-3 gap-3 rounded-md text-left px-4 py-2.5"
-          style={{ background: "hsl(var(--navy))" }}
+          className="grid grid-cols-3 rounded-md text-left px-4 py-2.5"
+          style={{ background: "hsl(var(--navy))", columnGap: 12, marginTop: 24 }}
         >
           <div>
             <p className="text-[9px] uppercase tracking-widest font-medium" style={{ color: "hsl(var(--gold))" }}>Issued</p>
