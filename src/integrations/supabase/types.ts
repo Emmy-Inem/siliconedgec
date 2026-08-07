@@ -3060,6 +3060,69 @@ export type Database = {
         }
         Relationships: []
       }
+      mock_interview_sessions: {
+        Row: {
+          cohort_id: string | null
+          course_id: string | null
+          created_at: string
+          experience_level: string
+          id: string
+          improvements: Json
+          score: number
+          strengths: Json
+          summary: string
+          target_role: string
+          transcript: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cohort_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          experience_level: string
+          id?: string
+          improvements?: Json
+          score: number
+          strengths?: Json
+          summary?: string
+          target_role: string
+          transcript?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cohort_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          experience_level?: string
+          id?: string
+          improvements?: Json
+          score?: number
+          strengths?: Json
+          summary?: string
+          target_role?: string
+          transcript?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mock_interview_sessions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mock_interview_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modules: {
         Row: {
           course_id: string
@@ -4089,6 +4152,26 @@ export type Database = {
         }[]
       }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
+      request_affiliate_payout: {
+        Args: never
+        Returns: {
+          affiliate_id: string
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          paid_at: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliate_payouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_affiliate_code: {
         Args: { p_code: string }
         Returns: {

@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useHasPublishedJobs } from "@/hooks/useHasPublishedJobs";
 import { UserNotificationBell } from "@/components/UserNotificationBell";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
 
@@ -27,7 +29,15 @@ export function Header() {
   const location = useLocation();
   const darkHeroPages = ["/", "/for-businesses", "/certificates", "/pricing"];
   const isHeroPage = darkHeroPages.includes(location.pathname);
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, adminRole, signOut } = useAuth();
+  const { data: isPartner = false } = useQuery({
+    queryKey: ["header-partner", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("affiliates").select("id").eq("user_id", user?.id ?? "").eq("status", "approved").maybeSingle();
+      return !!data;
+    },
+  });
   const { count } = useCart();
   const { data: hasJobs } = useHasPublishedJobs();
   const navLinks = hasJobs
@@ -126,6 +136,16 @@ export function Header() {
                   <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
                 </Button>
               )}
+              {(adminRole === "instructor" || adminRole === "admin") && (
+                <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
+                  <Link to="/instructor">Instructor</Link>
+                </Button>
+              )}
+              {isPartner && (
+                <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
+                  <Link to="/career/dashboard">Partner</Link>
+                </Button>
+              )}
               <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold" title="My favorites">
                 <Link to="/bookmarks" aria-label="Favorites"><Heart className="h-4 w-4" /></Link>
               </Button>
@@ -199,6 +219,16 @@ export function Header() {
           <div className="flex gap-2 pt-2">
             {user ? (
               <>
+                {(adminRole === "instructor" || adminRole === "admin") && (
+                  <Button variant="ghost" size="sm" className="flex-1" asChild>
+                    <Link to="/instructor" onClick={() => setMenuOpen(false)}>Instructor</Link>
+                  </Button>
+                )}
+                {isPartner && (
+                  <Button variant="ghost" size="sm" className="flex-1" asChild>
+                    <Link to="/career/dashboard" onClick={() => setMenuOpen(false)}>Partner</Link>
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" className="flex-1" asChild>
                   <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
                 </Button>

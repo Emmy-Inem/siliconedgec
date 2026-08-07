@@ -6,6 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Star, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
 
 const ACTIONS = [
   { id: "outline", label: "Course outline", ph: "Topic, audience and target outcome…" },
@@ -19,6 +21,23 @@ export default function AdminInstructorAssist() {
   const [ctx, setCtx] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const { data: interviewSessions = [] } = useQuery({
+    queryKey: ["staff-mock-interview-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mock_interview_sessions")
+        .select("id, user_id, target_role, experience_level, score, summary, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (error) throw error;
+      const userIds = Array.from(new Set((data ?? []).map((row) => row.user_id)));
+      const { data: profiles } = userIds.length
+        ? await supabase.rpc("get_public_profiles", { p_user_ids: userIds })
+        : { data: [] };
+      const names = new Map((profiles ?? []).map((profile) => [profile.user_id, profile.full_name]));
+      return (data ?? []).map((row) => ({ ...row, learner: names.get(row.user_id) ?? "Learner" }));
+    },
+  });
 
   const run = async () => {
     if (!ctx.trim()) return;
@@ -57,6 +76,19 @@ export default function AdminInstructorAssist() {
           <pre className="text-xs whitespace-pre-wrap overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
+      <div className="pt-4 border-t border-border space-y-3">
+        <div><h3 className="font-heading text-lg font-semibold">Learner interview results</h3><p className="text-sm text-muted-foreground">Results are limited by your course and cohort access.</p></div>
+        {interviewSessions.length === 0 ? <p className="text-sm text-muted-foreground">No saved interview sessions yet.</p> : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {interviewSessions.map((session) => (
+              <Card key={session.id} className="p-3 flex items-start justify-between gap-3">
+                <div className="min-w-0"><p className="font-medium truncate">{session.learner}</p><p className="text-xs text-muted-foreground truncate">{session.target_role} · {session.experience_level}</p><p className="text-xs text-muted-foreground">{new Date(session.created_at).toLocaleDateString()}</p></div>
+                <span className="font-heading font-bold text-primary shrink-0">{session.score}/100</span>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -36,6 +36,7 @@ export default function AffiliateDashboard() {
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [requestingPayout, setRequestingPayout] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["affiliate-self", user?.id],
@@ -166,6 +167,15 @@ export default function AffiliateDashboard() {
     if (error) return toast({ title: "Could not save destination", description: error.message, variant: "destructive" });
     qc.invalidateQueries({ queryKey: ["affiliate-self", user?.id] });
     toast({ title: "Destination saved" });
+  };
+
+  const requestPayout = async () => {
+    setRequestingPayout(true);
+    const { error } = await supabase.rpc("request_affiliate_payout");
+    setRequestingPayout(false);
+    if (error) return toast({ title: "Payout request failed", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["affiliate-self", user?.id] });
+    toast({ title: "Payout requested", description: "Your request is now awaiting review." });
   };
 
   const statsFor = (courseId: string) => {
@@ -371,6 +381,13 @@ export default function AffiliateDashboard() {
                       Pending balance: <strong>{formatNaira(pending)}</strong>
                       {lastPayout && ` · last payout ${new Date(lastPayout.paid_at ?? lastPayout.created_at).toLocaleDateString()}`}.
                     </p>
+                    <Button
+                      onClick={requestPayout}
+                      disabled={requestingPayout || pending < MIN_PAYOUT || !affiliate.payout_details || payouts.some((p) => ["pending", "processing", "approved"].includes(p.status))}
+                    >
+                      {requestingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
+                      Request {formatNaira(pending)} payout
+                    </Button>
                     {payouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-6 text-center">No payouts yet.</p>
                     ) : (

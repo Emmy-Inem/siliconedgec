@@ -28,6 +28,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
 import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
 import { courseHref, courseLearnHref } from "@/lib/course-url";
+import { MockInterviewDialog } from "@/components/ai/MockInterviewDialog";
 
 interface EnrolledCourse {
   id: string;
@@ -298,6 +299,7 @@ export default function Dashboard() {
                 <TabsTrigger value="bookmarks">Bookmarks ({bookmarks.length})</TabsTrigger>
                 <TabsTrigger value="calendar">Live Classes ({liveClasses.length})</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="interviews">Mock Interviews</TabsTrigger>
                 <TabsTrigger value="applications">Job Applications ({applications.length})</TabsTrigger>
                 <TabsTrigger value="receipts">Receipts</TabsTrigger>
                 <TabsTrigger value="profile"><Settings className="h-3.5 w-3.5 mr-1" />Profile</TabsTrigger>
@@ -603,6 +605,16 @@ export default function Dashboard() {
                     Sign in to see your learning analytics.
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="interviews">
+                <Card>
+                  <CardHeader><CardTitle>Interview practice</CardTitle></CardHeader>
+                  <CardContent className="flex flex-col items-start gap-3">
+                    <p className="text-sm text-muted-foreground">Practise role-specific questions and revisit your saved scores after every session.</p>
+                    <MockInterviewDialog defaultRole="Cloud Engineer" />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="applications">
