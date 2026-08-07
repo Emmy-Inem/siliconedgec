@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import { MarkdownView } from "./MarkdownView";
 
 interface Turn { q: string; a: string; feedback?: string | null }
 
-export function MockInterviewDialog({ defaultRole }: { defaultRole?: string }) {
+export function MockInterviewDialog({ defaultRole, courseId, cohortId }: { defaultRole?: string; courseId?: string; cohortId?: string }) {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [started, setStarted] = useState(false);
   const [role, setRole] = useState(defaultRole ?? "Software Engineer");
@@ -20,6 +22,14 @@ export function MockInterviewDialog({ defaultRole }: { defaultRole?: string }) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [finalReport, setFinalReport] = useState<any>(null);
+  const { data: history = [] } = useQuery({
+    queryKey: ["mock-interview-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("mock_interview_sessions").select("id, target_role, experience_level, score, summary, strengths, improvements, created_at").order("created_at", { ascending: false }).limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const start = async () => {
     setLoading(true); setStarted(true); setTurns([]); setFinalReport(null);
@@ -46,7 +56,26 @@ export function MockInterviewDialog({ defaultRole }: { defaultRole?: string }) {
     setLoading(true);
     const history = current && answer ? [...turns, { q: current.q, a: answer }] : turns;
     const { data, error } = await supabase.functions.invoke("ai-mock-interview", { body: { action: "finish", role, level, history } });
-    if (!error) setFinalReport(data);
+    if (!error) {
+      setFinalReport(data);
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth.user) {
+        const { error: saveError } = await supabase.from("mock_interview_sessions").insert({
+          user_id: auth.user.id,
+          course_id: courseId ?? null,
+          cohort_id: cohortId ?? null,
+          target_role: role.trim(),
+          experience_level: level,
+          score: Number(data.score) || 0,
+          summary: String(data.summary ?? ""),
+          strengths: Array.isArray(data.strengths) ? data.strengths : [],
+          improvements: Array.isArray(data.improvements) ? data.improvements : [],
+          transcript: history,
+        });
+        if (saveError) toast({ title: "Report created but not saved", description: saveError.message, variant: "destructive" });
+        else queryClient.invalidateQueries({ queryKey: ["mock-interview-history"] });
+      }
+    }
     else toast({ title: "Error", description: error.message, variant: "destructive" });
     setLoading(false);
   };
@@ -71,6 +100,17 @@ export function MockInterviewDialog({ defaultRole }: { defaultRole?: string }) {
               ))}
             </div>
             <Button onClick={start} disabled={loading} className="w-full">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start interview"}</Button>
+            {history.length > 0 && (
+              <div className="border-t border-border pt-3 space-y-2">
+                <p className="text-sm font-semibold">Recent reports</p>
+                {history.map((session) => (
+                  <div key={session.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-2 text-sm">
+                    <div className="min-w-0"><p className="font-medium truncate">{session.target_role}</p><p className="text-xs text-muted-foreground">{new Date(session.created_at).toLocaleDateString()} · {session.experience_level}</p></div>
+                    <span className="font-heading font-bold text-primary">{session.score}/100</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

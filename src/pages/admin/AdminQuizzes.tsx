@@ -44,7 +44,7 @@ export default function AdminQuizzes({ courseId }: { courseId?: string } = {}) {
   const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
 
   const { data: quizzes = [], isLoading } = useQuery({
-    queryKey: ["admin-quizzes", courseId],
+    queryKey: ["admin-quizzes", courseId, lessons.map((lesson: any) => lesson.id).join(",")],
     queryFn: async () => {
       const lessonIds = courseId ? lessons.map((lesson: any) => lesson.id) : [];
       if (courseId && lessonIds.length === 0) return [];
@@ -54,6 +54,7 @@ export default function AdminQuizzes({ courseId }: { courseId?: string } = {}) {
       if (error) throw error;
       return data as Quiz[];
     },
+    enabled: !courseId || lessons.length > 0,
   });
 
   const { data: lessons = [] } = useQuery({
