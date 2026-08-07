@@ -72,6 +72,7 @@ const InstructorCohort = lazy(() => import("./pages/instructor/InstructorCohort"
 const InstructorAssignments = lazy(() => import("./pages/instructor/InstructorAssignments"));
 const InstructorAssignmentGrading = lazy(() => import("./pages/instructor/InstructorAssignmentGrading"));
 const InstructorQuizzes = lazy(() => import("./pages/instructor/InstructorQuizzes"));
+const InstructorAssist = lazy(() => import("./pages/admin/AdminInstructorAssist"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
@@ -249,6 +250,7 @@ const App = () => (
                 <Route path="assignments" element={<InstructorAssignments />} />
                 <Route path="assignments/:assignmentId" element={<InstructorAssignmentGrading />} />
                 <Route path="quizzes" element={<InstructorQuizzes />} />
+                <Route path="assist" element={<InstructorAssist />} />
               </Route>
               <Route path="/terms" element={<Legal />} />
               <Route path="/privacy" element={<Legal />} />

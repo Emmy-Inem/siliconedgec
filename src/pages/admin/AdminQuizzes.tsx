@@ -29,7 +29,7 @@ interface QuizQuestion {
   order_index: number;
 }
 
-export default function AdminQuizzes() {
+export default function AdminQuizzes({ courseId }: { courseId?: string } = {}) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -44,18 +44,31 @@ export default function AdminQuizzes() {
   const [qForm, setQForm] = useState({ question_text: "", options: ["", "", "", ""], correct_answer: "" });
 
   const { data: quizzes = [], isLoading } = useQuery({
-    queryKey: ["admin-quizzes"],
+    queryKey: ["admin-quizzes", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("quizzes").select("*, lessons(title, modules(courses(title)))").order("created_at", { ascending: false });
+      const lessonIds = courseId ? lessons.map((lesson: any) => lesson.id) : [];
+      if (courseId && lessonIds.length === 0) return [];
+      let query = supabase.from("quizzes").select("*, lessons(title, modules(courses(title)))").order("created_at", { ascending: false });
+      if (courseId) query = query.in("lesson_id", lessonIds);
+      const { data, error } = await query;
       if (error) throw error;
       return data as Quiz[];
     },
   });
 
   const { data: lessons = [] } = useQuery({
-    queryKey: ["admin-all-lessons"],
+    queryKey: ["admin-all-lessons", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("lessons").select("id, title, modules(courses(title))").order("title");
+      let moduleIds: string[] | null = null;
+      if (courseId) {
+        const { data: modules, error: moduleError } = await supabase.from("modules").select("id").eq("course_id", courseId);
+        if (moduleError) throw moduleError;
+        moduleIds = (modules ?? []).map((module) => module.id);
+        if (moduleIds.length === 0) return [];
+      }
+      let query = supabase.from("lessons").select("id, title, modules(courses(title))").order("title");
+      if (moduleIds) query = query.in("module_id", moduleIds);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -106,7 +119,7 @@ export default function AdminQuizzes() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes", courseId] });
       setDialogOpen(false);
       toast({ title: editing ? "Quiz updated" : "Quiz created with questions" });
     },
@@ -143,7 +156,7 @@ export default function AdminQuizzes() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes", courseId] });
       setDialogOpen(false);
       toast({ title: "AI quiz saved with questions" });
     },
@@ -152,7 +165,7 @@ export default function AdminQuizzes() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("quizzes").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes"] }); toast({ title: "Quiz deleted" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-quizzes", courseId] }); toast({ title: "Quiz deleted" }); },
   });
 
   const toggleVisible = useMutation({
@@ -164,7 +177,7 @@ export default function AdminQuizzes() {
       if (error) throw error;
     },
     onSuccess: (_d, q) => {
-      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes", courseId] });
       toast({ title: q.is_visible ? "Quiz hidden from students" : "Quiz published to students" });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -182,7 +195,7 @@ export default function AdminQuizzes() {
       return ids.length;
     },
     onSuccess: (n, visible) => {
-      qc.invalidateQueries({ queryKey: ["admin-quizzes"] });
+      qc.invalidateQueries({ queryKey: ["admin-quizzes", courseId] });
       toast({
         title: n
           ? `${n} quiz${n === 1 ? "" : "zes"} ${visible ? "published" : "hidden"}`

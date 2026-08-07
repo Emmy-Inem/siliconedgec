@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Loader2,
   ChevronsUpDown,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ const NAV = [
   { to: "/instructor/cohort", label: "Cohort Space", icon: MessagesSquare },
   { to: "/instructor/assignments", label: "Assignments", icon: FileCheck2 },
   { to: "/instructor/quizzes", label: "Quizzes", icon: ClipboardList },
+  { to: "/instructor/assist", label: "Instructor Assist", icon: Sparkles },
 ];
 
 export default function InstructorLayout() {

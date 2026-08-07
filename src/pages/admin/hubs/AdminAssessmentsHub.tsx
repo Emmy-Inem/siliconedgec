@@ -3,6 +3,7 @@ import AdminQuizzes from "../AdminQuizzes";
 import AdminQuizAttempts from "../AdminQuizAttempts";
 import AdminAssignmentSubmissions from "../AdminAssignmentSubmissions";
 import AdminAssignments from "../AdminAssignments";
+import AdminInstructorAssist from "../AdminInstructorAssist";
 
 export default function AdminAssessmentsHub() {
   return (
@@ -14,6 +15,7 @@ export default function AdminAssessmentsHub() {
         { value: "attempts", label: "Quiz Attempts", content: <AdminQuizAttempts /> },
         { value: "assignments", label: "Assignments", content: <AdminAssignments /> },
         { value: "submissions", label: "Submissions", content: <AdminAssignmentSubmissions /> },
+        { value: "assist", label: "Instructor Assist", content: <AdminInstructorAssist /> },
       ]}
     />
   );
