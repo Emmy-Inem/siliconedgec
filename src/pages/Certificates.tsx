@@ -18,6 +18,7 @@ import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { tikTokEvent, metaCustomEvent } from "@/lib/analytics";
 import { usePageImage } from "@/hooks/usePageImage";
+import { toast } from "@/hooks/use-toast";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
