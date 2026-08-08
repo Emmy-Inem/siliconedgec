@@ -293,7 +293,7 @@ function Tile({
           <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             {icon}
           </div>
-          <div className="text-2xl font-heading font-bold">{value}</div>
+          <div className="text-2xl font-heading font-bold">{value}{suffix}</div>
         </div>
         <div className="text-sm font-medium">{label}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
