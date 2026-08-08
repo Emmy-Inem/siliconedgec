@@ -27,6 +27,7 @@ const sections: NavSection[] = [
     label: "Workspace",
     items: [
       { label: "Overview", href: "/admin", icon: LayoutDashboard },
+      { label: "All Dashboards", href: "/admin/dashboards", icon: LayoutDashboard },
       {
         label: "Analytics",
         href: "/admin/analytics",
