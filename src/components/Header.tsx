@@ -136,22 +136,30 @@ export function Header() {
                   <Link to="/admin"><LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Admin</Link>
                 </Button>
               )}
-              {(adminRole === "instructor" || adminRole === "admin") && (
+              {/* One dashboard per role. Admins get every dashboard through the
+                  combined admin view; instructors, partners and students each
+                  only see their own. */}
+              {adminRole === "admin" ? (
+                <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
+                  <Link to="/admin/dashboards">Dashboards</Link>
+                </Button>
+              ) : adminRole === "instructor" ? (
                 <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                   <Link to="/instructor">Instructor</Link>
                 </Button>
-              )}
-              {isPartner && (
+              ) : isPartner ? (
                 <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
                   <Link to="/career/dashboard">Partner</Link>
                 </Button>
-              )}
+              ) : null}
               <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold" title="My favorites">
                 <Link to="/bookmarks" aria-label="Favorites"><Heart className="h-4 w-4" /></Link>
               </Button>
-              <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
-                <Link to="/dashboard"><User className="h-3.5 w-3.5 mr-1" /> Dashboard</Link>
-              </Button>
+              {adminRole !== "instructor" && !isPartner && (
+                <Button variant="ghost" size="sm" asChild className="h-8 px-2.5 text-sm font-semibold">
+                  <Link to="/dashboard"><User className="h-3.5 w-3.5 mr-1" /> Dashboard</Link>
+                </Button>
+              )}
               <Button variant="ghost" size="sm" onClick={signOut} className="h-8 px-2.5 text-sm font-semibold">
                 <LogOut className="h-3.5 w-3.5" />
               </Button>
@@ -219,19 +227,24 @@ export function Header() {
           <div className="flex gap-2 pt-2">
             {user ? (
               <>
-                {(adminRole === "instructor" || adminRole === "admin") && (
+                {adminRole === "admin" ? (
+                  <Button variant="ghost" size="sm" className="flex-1" asChild>
+                    <Link to="/admin/dashboards" onClick={() => setMenuOpen(false)}>Dashboards</Link>
+                  </Button>
+                ) : adminRole === "instructor" ? (
                   <Button variant="ghost" size="sm" className="flex-1" asChild>
                     <Link to="/instructor" onClick={() => setMenuOpen(false)}>Instructor</Link>
                   </Button>
-                )}
-                {isPartner && (
+                ) : isPartner ? (
                   <Button variant="ghost" size="sm" className="flex-1" asChild>
                     <Link to="/career/dashboard" onClick={() => setMenuOpen(false)}>Partner</Link>
                   </Button>
+                ) : null}
+                {adminRole !== "instructor" && !isPartner && (
+                  <Button variant="ghost" size="sm" className="flex-1" asChild>
+                    <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                  </Button>
                 )}
-                <Button variant="ghost" size="sm" className="flex-1" asChild>
-                  <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                </Button>
                 <Button size="sm" className="flex-1" onClick={() => { signOut(); setMenuOpen(false); }}>
                   Sign Out
                 </Button>
