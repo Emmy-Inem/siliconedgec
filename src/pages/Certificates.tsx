@@ -540,28 +540,22 @@ function BrandedCertificate({
         </p>
 
         {/* Title with flanking ornaments.
-            html2canvas does not resolve flex cross-axis centering for 1px rules,
-            so this row is laid out inline with explicit vertical-align. */}
-        <div className="mb-1" style={{ textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
+            Neither flex centering nor inline vertical-align survives the
+            html2canvas raster for 1px rules, so the rules are absolutely
+            positioned inside a fixed-height row — geometry html2canvas
+            reproduces exactly. */}
+        <div className="mb-1" style={{ position: "relative", height: 16, textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
           <span
-            style={{
-              display: "inline-block",
-              verticalAlign: "middle",
-              width: 64,
-              height: 16,
-              // The rule is painted as a centered 1px band inside a 16px box so it
-              // shares the exact vertical centre of the title text in both the DOM
-              // render and the html2canvas raster (which ignores 1px box centering).
-              backgroundImage:
-                "linear-gradient(to bottom, transparent 0, transparent 7px, hsl(var(--gold)) 7px, hsl(var(--gold)) 8px, transparent 8px, transparent 16px)",
-            }}
+            style={{ position: "absolute", top: 8, left: 155, width: 64, height: 1, background: "hsl(var(--gold))" }}
+          />
+          <span
+            style={{ position: "absolute", top: 8, right: 155, width: 64, height: 1, background: "hsl(var(--gold))" }}
           />
           <span
             className="uppercase font-bold"
             style={{
               display: "inline-block",
-              verticalAlign: "middle",
-              margin: "0 16px",
+              verticalAlign: "top",
               fontSize: 12,
               lineHeight: "16px",
               letterSpacing: "0.45em",
@@ -571,16 +565,6 @@ function BrandedCertificate({
           >
             Certificate of Completion
           </span>
-          <span
-            style={{
-              display: "inline-block",
-              verticalAlign: "middle",
-              width: 64,
-              height: 16,
-              backgroundImage:
-                "linear-gradient(to bottom, transparent 0, transparent 7px, hsl(var(--gold)) 7px, hsl(var(--gold)) 8px, transparent 8px, transparent 16px)",
-            }}
-          />
         </div>
 
         <p className="text-sm italic mb-2 mt-4" style={{ color: "#6b7280" }}>This is to proudly certify that</p>
