@@ -491,17 +491,30 @@ function BrandedCertificate({
       />
 
       {/* Soft gold corner flourishes (top-left & bottom-right) */}
-      <svg className="absolute top-3 left-3 w-16 h-16 pointer-events-none" viewBox="0 0 64 64" fill="none">
+      {/* Explicit width/height (not utility classes) and an in-SVG rotation:
+          html2canvas rasterises the SVG on its own, so CSS transforms and
+          class-driven sizing on the element are not reliably applied. */}
+      <svg
+        style={{ position: "absolute", top: 12, left: 12, width: 64, height: 64, pointerEvents: "none" }}
+        viewBox="0 0 64 64"
+        fill="none"
+      >
         <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
         <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
         <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
         <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
       </svg>
-      <svg className="absolute bottom-3 right-3 w-16 h-16 pointer-events-none rotate-180" viewBox="0 0 64 64" fill="none">
-        <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
-        <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
-        <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
-        <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+      <svg
+        style={{ position: "absolute", bottom: 12, right: 12, width: 64, height: 64, pointerEvents: "none" }}
+        viewBox="0 0 64 64"
+        fill="none"
+      >
+        <g transform="rotate(180 32 32)">
+          <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
+          <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
+          <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
+          <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+        </g>
       </svg>
 
       {/* Watermark seal in background */}
