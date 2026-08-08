@@ -536,7 +536,17 @@ function BrandedCertificate({
             so this row is laid out inline with explicit vertical-align. */}
         <div className="mb-1" style={{ textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
           <span
-            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
+            style={{
+              display: "inline-block",
+              verticalAlign: "middle",
+              width: 64,
+              height: 16,
+              // The rule is painted as a centered 1px band inside a 16px box so it
+              // shares the exact vertical centre of the title text in both the DOM
+              // render and the html2canvas raster (which ignores 1px box centering).
+              backgroundImage:
+                "linear-gradient(to bottom, transparent 0, transparent 7px, hsl(var(--gold)) 7px, hsl(var(--gold)) 8px, transparent 8px, transparent 16px)",
+            }}
           />
           <span
             className="uppercase font-bold"
@@ -554,7 +564,14 @@ function BrandedCertificate({
             Certificate of Completion
           </span>
           <span
-            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
+            style={{
+              display: "inline-block",
+              verticalAlign: "middle",
+              width: 64,
+              height: 16,
+              backgroundImage:
+                "linear-gradient(to bottom, transparent 0, transparent 7px, hsl(var(--gold)) 7px, hsl(var(--gold)) 8px, transparent 8px, transparent 16px)",
+            }}
           />
         </div>
 
@@ -587,11 +604,21 @@ function BrandedCertificate({
             { Icon: Shield, label: "Digitally verified", color: "hsl(var(--primary))" },
             { Icon: Award, label: "Hands-on capstone graded", color: "hsl(var(--gold))" },
           ].map(({ Icon, label, color }) => (
-            <span key={label} style={{ display: "inline-block", verticalAlign: "middle", margin: "0 16px" }}>
-              <span style={{ display: "inline-block", verticalAlign: "middle", width: 14, height: 14, lineHeight: "14px" }}>
+            <span key={label} style={{ display: "inline-block", verticalAlign: "middle", margin: "0 16px", lineHeight: "16px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  width: 14,
+                  height: 16,
+                  lineHeight: "16px",
+                  paddingTop: 1,
+                  boxSizing: "border-box",
+                }}
+              >
                 <Icon style={{ width: 14, height: 14, color, display: "block" }} />
               </span>
-              <span style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 6, fontSize: 12, lineHeight: "14px" }}>
+              <span style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 6, fontSize: 12, lineHeight: "16px", height: 16 }}>
                 {label}
               </span>
             </span>
