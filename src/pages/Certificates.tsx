@@ -651,7 +651,7 @@ function BrandedCertificate({
                   <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
               ) : (
-                <SignatureMark name="Silicon Edge" />
+                <SignatureMark name="Silicon Edge" variant="b" />
               )}
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
