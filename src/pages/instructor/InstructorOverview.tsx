@@ -11,6 +11,9 @@ import {
   CalendarClock,
   Loader2,
   GraduationCap,
+  TrendingUp,
+  Activity,
+  Award,
 } from "lucide-react";
 import type { InstructorOutletContext } from "./InstructorLayout";
 import { format } from "date-fns";
@@ -202,6 +205,42 @@ export default function InstructorOverview() {
             />
           </div>
 
+          {/* Course health — the admin-level numbers for the cohort's course */}
+          <div>
+            <h3 className="font-heading font-semibold text-sm mb-3">Course health</h3>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Tile
+                to="/instructor/students"
+                icon={<Users className="h-5 w-5" />}
+                label="Enrolled learners"
+                value={stats?.enrolled ?? 0}
+                hint="With access to the course"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<TrendingUp className="h-5 w-5" />}
+                label="Completion rate"
+                value={stats?.completionRate ?? 0}
+                suffix="%"
+                hint="Learners who finished"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<Activity className="h-5 w-5" />}
+                label="Active learners (7d)"
+                value={stats?.activeLearners7d ?? 0}
+                hint="Opened or completed a lesson"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<Award className="h-5 w-5" />}
+                label="Certificates issued"
+                value={stats?.certificates ?? 0}
+                hint="Verified completions"
+              />
+            </div>
+          </div>
+
           {(stats?.upcoming ?? []).length > 0 && (
             <Card className="p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -233,6 +272,7 @@ function Tile({
   value,
   hint,
   accent,
+  suffix,
 }: {
   to: string;
   icon: React.ReactNode;
@@ -240,6 +280,7 @@ function Tile({
   value: number;
   hint?: string;
   accent?: "warn";
+  suffix?: string;
 }) {
   return (
     <Link to={to}>
