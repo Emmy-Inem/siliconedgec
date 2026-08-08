@@ -379,45 +379,53 @@ function CertificateCardWithDownload({
   );
 }
 
-/** Hand-drawn ink signature: a real stroke path, not just the name typed out. */
-function SignatureMark({ name }: { name: string }) {
+/**
+ * Hand-drawn ink signature drawn entirely with SVG *paths*.
+ *
+ * It deliberately contains no <text> and no web font: html2canvas serialises
+ * SVG nodes into a standalone image, which drops any externally loaded font
+ * (Great Vibes) and fell back to a serif face — that was the single biggest
+ * visual difference between the on-page sample and the exported PDF.
+ */
+function SignatureMark({ name, variant = "a" }: { name: string; variant?: "a" | "b" }) {
+  const strokes =
+    variant === "a"
+      ? [
+          "M14 62 C26 30, 40 18, 48 24 C56 30, 44 52, 36 60 C28 68, 30 44, 46 34 C58 27, 70 44, 78 52 C86 60, 96 52, 100 40",
+          "M104 56 C112 34, 122 24, 130 28 C138 32, 126 52, 120 58 C132 52, 146 34, 158 30 C168 27, 166 46, 176 50 C186 54, 196 36, 204 26",
+          "M206 54 C216 34, 228 22, 238 26 C248 30, 236 50, 228 58 C242 52, 258 34, 270 32 C280 30, 282 46, 292 44",
+        ]
+      : [
+          "M18 58 C30 28, 44 18, 52 24 C60 30, 46 54, 38 60 C50 56, 66 34, 78 32 C88 30, 88 48, 98 50 C108 52, 118 36, 124 26",
+          "M132 56 C144 30, 158 20, 168 26 C178 32, 162 54, 154 58 C170 52, 188 32, 202 32 C214 32, 210 50, 222 48",
+          "M232 50 C244 34, 258 26, 268 30 C278 34, 268 48, 258 52 C272 50, 284 42, 292 36",
+        ];
   return (
     <svg
       viewBox="0 0 320 90"
-      style={{ width: 256, height: 64, margin: "0 auto" }}
+      style={{ width: 256, height: 64, margin: "0 auto", display: "block" }}
       fill="none"
       role="img"
       aria-label={`Signature of ${name}`}
     >
-      <text
-        x="160"
-        y="52"
-        textAnchor="middle"
-        textLength={name.length > 12 ? 280 : undefined}
-        lengthAdjust="spacingAndGlyphs"
-        style={{ fontFamily: "'Great Vibes', 'Brush Script MT', cursive", fontSize: 44 }}
-        fill="hsl(var(--navy))"
-        transform="rotate(-3 160 52)"
+      <g
+        stroke="hsl(var(--navy))"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        transform="rotate(-3 160 48)"
       >
-        {name}
-      </text>
-      {/* Ink flourish underneath, drawn as a single continuous pen stroke */}
-      <path
-        d="M18 70 C70 58, 120 82, 176 66 S268 50, 306 62"
-        stroke="hsl(var(--navy))"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.85"
-      />
-      <path
-        d="M292 62 C300 56, 304 66, 296 70"
-        stroke="hsl(var(--navy))"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.7"
-      />
+        {strokes.map((d, i) => (
+          <path key={i} d={d} strokeWidth={2.4} opacity={0.92} />
+        ))}
+        {/* Long underline flourish, a single continuous pen stroke */}
+        <path
+          d="M16 74 C70 62, 120 86, 176 70 S268 54, 304 66"
+          strokeWidth={2.2}
+          opacity={0.85}
+        />
+        <path d="M290 66 C298 60, 302 70, 294 74" strokeWidth={1.6} opacity={0.7} />
+      </g>
     </svg>
   );
 }
