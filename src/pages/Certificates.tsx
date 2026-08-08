@@ -379,46 +379,62 @@ function CertificateCardWithDownload({
   );
 }
 
-/** Hand-drawn ink signature: a real stroke path, not just the name typed out. */
-function SignatureMark({ name }: { name: string }) {
+/**
+ * Hand-drawn ink signature drawn entirely with SVG *paths*.
+ *
+ * It deliberately contains no <text> and no web font: html2canvas serialises
+ * SVG nodes into a standalone image, which drops any externally loaded font
+ * (Great Vibes) and fell back to a serif face — that was the single biggest
+ * visual difference between the on-page sample and the exported PDF.
+ */
+function SignatureMark({ name }: { name: string; variant?: "a" | "b" }) {
   return (
-    <svg
-      viewBox="0 0 320 90"
-      style={{ width: 256, height: 64, margin: "0 auto" }}
-      fill="none"
-      role="img"
-      aria-label={`Signature of ${name}`}
-    >
-      <text
-        x="160"
-        y="52"
-        textAnchor="middle"
-        textLength={name.length > 12 ? 280 : undefined}
-        lengthAdjust="spacingAndGlyphs"
-        style={{ fontFamily: "'Great Vibes', 'Brush Script MT', cursive", fontSize: 44 }}
-        fill="hsl(var(--navy))"
-        transform="rotate(-3 160 52)"
+    <div style={{ width: 260, height: 64, margin: "0 auto", position: "relative" }} aria-label={`Signature of ${name}`}>
+      {/* The name is HTML text, not SVG <text>: html2canvas serialises SVG into a
+          standalone image and drops externally loaded fonts, which made the
+          exported signature fall back to a serif face. */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 48,
+          lineHeight: "48px",
+          textAlign: "center",
+          fontFamily: "'Great Vibes', 'Brush Script MT', cursive",
+          fontSize: name.length > 16 ? 34 : 40,
+          color: "hsl(var(--navy))",
+          whiteSpace: "nowrap",
+          transform: "rotate(-2deg)",
+        }}
       >
         {name}
-      </text>
-      {/* Ink flourish underneath, drawn as a single continuous pen stroke */}
-      <path
-        d="M18 70 C70 58, 120 82, 176 66 S268 50, 306 62"
-        stroke="hsl(var(--navy))"
-        strokeWidth="2.2"
-        strokeLinecap="round"
+      </div>
+      {/* Ink flourish drawn under the name as a single continuous pen stroke */}
+      <svg
+        viewBox="0 0 320 32"
+        style={{ position: "absolute", left: 0, bottom: 0, width: 260, height: 22, display: "block" }}
         fill="none"
-        opacity="0.85"
-      />
-      <path
-        d="M292 62 C300 56, 304 66, 296 70"
-        stroke="hsl(var(--navy))"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.7"
-      />
-    </svg>
+      >
+        <path
+          d="M12 18 C70 6, 120 28, 176 14 S268 0, 306 12"
+          stroke="hsl(var(--navy))"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.85"
+        />
+        <path
+          d="M292 12 C300 6, 304 16, 296 20"
+          stroke="hsl(var(--navy))"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.7"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -483,17 +499,30 @@ function BrandedCertificate({
       />
 
       {/* Soft gold corner flourishes (top-left & bottom-right) */}
-      <svg className="absolute top-3 left-3 w-16 h-16 pointer-events-none" viewBox="0 0 64 64" fill="none">
+      {/* Explicit width/height (not utility classes) and an in-SVG rotation:
+          html2canvas rasterises the SVG on its own, so CSS transforms and
+          class-driven sizing on the element are not reliably applied. */}
+      <svg
+        style={{ position: "absolute", top: 12, left: 12, width: 64, height: 64, pointerEvents: "none" }}
+        viewBox="0 0 64 64"
+        fill="none"
+      >
         <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
         <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
         <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
         <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
       </svg>
-      <svg className="absolute bottom-3 right-3 w-16 h-16 pointer-events-none rotate-180" viewBox="0 0 64 64" fill="none">
-        <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
-        <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
-        <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
-        <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+      <svg
+        style={{ position: "absolute", bottom: 12, right: 12, width: 64, height: 64, pointerEvents: "none" }}
+        viewBox="0 0 64 64"
+        fill="none"
+      >
+        <g transform="rotate(180 32 32)">
+          <path d="M2 32 Q2 2 32 2" stroke="hsl(var(--gold))" strokeWidth="1.5" />
+          <path d="M10 32 Q10 10 32 10" stroke="hsl(var(--gold) / 0.5)" strokeWidth="1" />
+          <circle cx="32" cy="2" r="1.5" fill="hsl(var(--gold))" />
+          <circle cx="2" cy="32" r="1.5" fill="hsl(var(--gold))" />
+        </g>
       </svg>
 
       {/* Watermark seal in background */}
@@ -511,18 +540,22 @@ function BrandedCertificate({
         </p>
 
         {/* Title with flanking ornaments.
-            html2canvas does not resolve flex cross-axis centering for 1px rules,
-            so this row is laid out inline with explicit vertical-align. */}
-        <div className="mb-1" style={{ textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
+            Neither flex centering nor inline vertical-align survives the
+            html2canvas raster for 1px rules, so the rules are absolutely
+            positioned inside a fixed-height row — geometry html2canvas
+            reproduces exactly. */}
+        <div className="mb-1" style={{ position: "relative", height: 16, textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
           <span
-            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
+            style={{ position: "absolute", top: 8, left: 155, width: 64, height: 1, background: "hsl(var(--gold))" }}
+          />
+          <span
+            style={{ position: "absolute", top: 8, right: 155, width: 64, height: 1, background: "hsl(var(--gold))" }}
           />
           <span
             className="uppercase font-bold"
             style={{
               display: "inline-block",
-              verticalAlign: "middle",
-              margin: "0 16px",
+              verticalAlign: "top",
               fontSize: 12,
               lineHeight: "16px",
               letterSpacing: "0.45em",
@@ -532,9 +565,6 @@ function BrandedCertificate({
           >
             Certificate of Completion
           </span>
-          <span
-            style={{ display: "inline-block", verticalAlign: "middle", width: 64, height: 1, background: "hsl(var(--gold))" }}
-          />
         </div>
 
         <p className="text-sm italic mb-2 mt-4" style={{ color: "#6b7280" }}>This is to proudly certify that</p>
@@ -566,11 +596,21 @@ function BrandedCertificate({
             { Icon: Shield, label: "Digitally verified", color: "hsl(var(--primary))" },
             { Icon: Award, label: "Hands-on capstone graded", color: "hsl(var(--gold))" },
           ].map(({ Icon, label, color }) => (
-            <span key={label} style={{ display: "inline-block", verticalAlign: "middle", margin: "0 16px" }}>
-              <span style={{ display: "inline-block", verticalAlign: "middle", width: 14, height: 14, lineHeight: "14px" }}>
+            <span key={label} style={{ display: "inline-block", verticalAlign: "middle", margin: "0 16px", lineHeight: "16px" }}>
+              <span
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  width: 14,
+                  height: 16,
+                  lineHeight: "16px",
+                  paddingTop: 1,
+                  boxSizing: "border-box",
+                }}
+              >
                 <Icon style={{ width: 14, height: 14, color, display: "block" }} />
               </span>
-              <span style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 6, fontSize: 12, lineHeight: "14px" }}>
+              <span style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 6, fontSize: 12, lineHeight: "16px", height: 16 }}>
                 {label}
               </span>
             </span>
@@ -603,7 +643,7 @@ function BrandedCertificate({
                   <QRCodeSVG value={verifyUrl} size={56} level="M" />
                 </div>
               ) : (
-                <SignatureMark name="Silicon Edge" />
+                <SignatureMark name="Silicon Edge" variant="b" />
               )}
             </div>
             <div className="w-full" style={{ height: 1, background: "hsl(var(--navy) / 0.4)" }} />
