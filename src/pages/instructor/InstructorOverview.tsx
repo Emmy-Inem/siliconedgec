@@ -46,6 +46,10 @@ export default function InstructorOverview() {
       let ungraded = 0;
       let quizAttemptsWeek = 0;
       let unansweredQna = 0;
+      let enrolled = 0;
+      let completionRate = 0;
+      let activeLearners7d = 0;
+      let certificates = 0;
       if (courseId) {
         const { data: mods } = await db
           .from("modules")
@@ -83,6 +87,27 @@ export default function InstructorOverview() {
           .eq("course_id", courseId)
           .or("answer.is.null,answer.eq.");
         unansweredQna = qnaCount ?? 0;
+
+        // Admin-grade course health numbers instructors previously had to ask
+        // an admin for: enrolment, completion, weekly activity, certificates.
+        const [{ data: enrolRows }, { data: activeRows }, { count: certCount }] = await Promise.all([
+          db.from("enrollments").select("user_id, progress, completed_at").eq("course_id", courseId),
+          db
+            .from("lesson_progress")
+            .select("user_id")
+            .eq("course_id", courseId)
+            .gte("updated_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
+          db
+            .from("certificates")
+            .select("id", { count: "exact", head: true })
+            .eq("course_id", courseId),
+        ]);
+        const rows = (enrolRows ?? []) as any[];
+        enrolled = rows.length;
+        const done = rows.filter((r) => r.completed_at || Number(r.progress ?? 0) >= 100).length;
+        completionRate = enrolled ? Math.round((done / enrolled) * 100) : 0;
+        activeLearners7d = new Set((activeRows ?? []).map((r: any) => r.user_id)).size;
+        certificates = certCount ?? 0;
       }
 
       return {
@@ -92,6 +117,10 @@ export default function InstructorOverview() {
         ungraded,
         quizAttemptsWeek,
         unansweredQna,
+        enrolled,
+        completionRate,
+        activeLearners7d,
+        certificates,
       };
     },
   });
