@@ -72,6 +72,7 @@ const InstructorCohort = lazy(() => import("./pages/instructor/InstructorCohort"
 const InstructorAssignments = lazy(() => import("./pages/instructor/InstructorAssignments"));
 const InstructorAssignmentGrading = lazy(() => import("./pages/instructor/InstructorAssignmentGrading"));
 const InstructorQuizzes = lazy(() => import("./pages/instructor/InstructorQuizzes"));
+const AdminDashboards = lazy(() => import("./pages/admin/AdminDashboards"));
 const InstructorAssist = lazy(() => import("./pages/admin/AdminInstructorAssist"));
 import { LiveChat } from "./components/LiveChat";
 import { CustomScripts } from "./components/CustomScripts";
@@ -268,6 +269,7 @@ const App = () => (
                 }
               >
                 <Route index element={<AdminOverview />} />
+                <Route path="dashboards" element={<AdminDashboards />} />
 
                 {/* Hub routes (primary) */}
                 <Route path="analytics" element={<AdminAnalyticsHub />} />

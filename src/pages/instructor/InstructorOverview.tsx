@@ -11,6 +11,9 @@ import {
   CalendarClock,
   Loader2,
   GraduationCap,
+  TrendingUp,
+  Activity,
+  Award,
 } from "lucide-react";
 import type { InstructorOutletContext } from "./InstructorLayout";
 import { format } from "date-fns";
@@ -46,6 +49,10 @@ export default function InstructorOverview() {
       let ungraded = 0;
       let quizAttemptsWeek = 0;
       let unansweredQna = 0;
+      let enrolled = 0;
+      let completionRate = 0;
+      let activeLearners7d = 0;
+      let certificates = 0;
       if (courseId) {
         const { data: mods } = await db
           .from("modules")
@@ -83,6 +90,27 @@ export default function InstructorOverview() {
           .eq("course_id", courseId)
           .or("answer.is.null,answer.eq.");
         unansweredQna = qnaCount ?? 0;
+
+        // Admin-grade course health numbers instructors previously had to ask
+        // an admin for: enrolment, completion, weekly activity, certificates.
+        const [{ data: enrolRows }, { data: activeRows }, { count: certCount }] = await Promise.all([
+          db.from("enrollments").select("user_id, progress, completed_at").eq("course_id", courseId),
+          db
+            .from("lesson_progress")
+            .select("user_id")
+            .eq("course_id", courseId)
+            .gte("updated_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
+          db
+            .from("certificates")
+            .select("id", { count: "exact", head: true })
+            .eq("course_id", courseId),
+        ]);
+        const rows = (enrolRows ?? []) as any[];
+        enrolled = rows.length;
+        const done = rows.filter((r) => r.completed_at || Number(r.progress ?? 0) >= 100).length;
+        completionRate = enrolled ? Math.round((done / enrolled) * 100) : 0;
+        activeLearners7d = new Set((activeRows ?? []).map((r: any) => r.user_id)).size;
+        certificates = certCount ?? 0;
       }
 
       return {
@@ -92,6 +120,10 @@ export default function InstructorOverview() {
         ungraded,
         quizAttemptsWeek,
         unansweredQna,
+        enrolled,
+        completionRate,
+        activeLearners7d,
+        certificates,
       };
     },
   });
@@ -173,6 +205,42 @@ export default function InstructorOverview() {
             />
           </div>
 
+          {/* Course health — the admin-level numbers for the cohort's course */}
+          <div>
+            <h3 className="font-heading font-semibold text-sm mb-3">Course health</h3>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Tile
+                to="/instructor/students"
+                icon={<Users className="h-5 w-5" />}
+                label="Enrolled learners"
+                value={stats?.enrolled ?? 0}
+                hint="With access to the course"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<TrendingUp className="h-5 w-5" />}
+                label="Completion rate"
+                value={stats?.completionRate ?? 0}
+                suffix="%"
+                hint="Learners who finished"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<Activity className="h-5 w-5" />}
+                label="Active learners (7d)"
+                value={stats?.activeLearners7d ?? 0}
+                hint="Opened or completed a lesson"
+              />
+              <Tile
+                to="/instructor/students"
+                icon={<Award className="h-5 w-5" />}
+                label="Certificates issued"
+                value={stats?.certificates ?? 0}
+                hint="Verified completions"
+              />
+            </div>
+          </div>
+
           {(stats?.upcoming ?? []).length > 0 && (
             <Card className="p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -204,6 +272,7 @@ function Tile({
   value,
   hint,
   accent,
+  suffix,
 }: {
   to: string;
   icon: React.ReactNode;
@@ -211,6 +280,7 @@ function Tile({
   value: number;
   hint?: string;
   accent?: "warn";
+  suffix?: string;
 }) {
   return (
     <Link to={to}>
@@ -223,7 +293,7 @@ function Tile({
           <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             {icon}
           </div>
-          <div className="text-2xl font-heading font-bold">{value}</div>
+          <div className="text-2xl font-heading font-bold">{value}{suffix}</div>
         </div>
         <div className="text-sm font-medium">{label}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
