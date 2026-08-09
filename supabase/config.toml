@@ -62,3 +62,12 @@ verify_jwt = false
 
 [functions.bootcamp-check-overdue]
 verify_jwt = false
+
+[functions.ai-support]
+verify_jwt = true
+
+[functions.support-notify]
+verify_jwt = false
+
+[functions.run-automations]
+verify_jwt = false
