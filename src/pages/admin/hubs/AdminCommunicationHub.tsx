@@ -3,6 +3,7 @@ import AdminCourseAnnouncements from "../AdminCourseAnnouncements";
 import AdminNotifications from "../AdminNotifications";
 import AdminLiveClasses from "../AdminLiveClasses";
 import AdminChat from "../AdminChat";
+import AdminSupportTickets from "../AdminSupportTickets";
 import AdminEmail from "../AdminEmail";
 import AdminEmailTemplates from "../AdminEmailTemplates";
 
@@ -16,6 +17,7 @@ export default function AdminCommunicationHub() {
         { value: "notifications", label: "Notifications", content: <AdminNotifications /> },
         { value: "live-classes", label: "Live Classes", content: <AdminLiveClasses /> },
         { value: "chat", label: "Live Chat", content: <AdminChat /> },
+        { value: "tickets", label: "Support Tickets", content: <AdminSupportTickets /> },
         { value: "email", label: "Email Blasts", content: <AdminEmail /> },
         { value: "email-templates", label: "Email Templates", content: <AdminEmailTemplates /> },
       ]}

@@ -142,6 +142,8 @@ const AdminCoursesHub = lazy(() => import("./pages/admin/hubs/AdminCoursesHub"))
 const AdminPeopleHub = lazy(() => import("./pages/admin/hubs/AdminPeopleHub"));
 const AdminAssessmentsHub = lazy(() => import("./pages/admin/hubs/AdminAssessmentsHub"));
 const AdminCommunicationHub = lazy(() => import("./pages/admin/hubs/AdminCommunicationHub"));
+const Support = lazy(() => import("./pages/Support"));
+const SupportTicket = lazy(() => import("./pages/SupportTicket"));
 const AdminCommerceHub = lazy(() => import("./pages/admin/hubs/AdminCommerceHub"));
 const AdminJobsHub = lazy(() => import("./pages/admin/hubs/AdminJobsHub"));
 const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"));
@@ -236,6 +238,8 @@ const App = () => (
               <Route path="/bookmarks" element={<Bookmarks />} />
               <Route path="/wishlist" element={<Bookmarks />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/support/:id" element={<SupportTicket />} />
               <Route path="/orders/:id" element={<OrderDetail />} />
               <Route path="/refer" element={<Refer />} />
               <Route path="/search" element={<SearchPage />} />
@@ -318,6 +322,7 @@ const App = () => (
                 <Route path="notifications" element={<Navigate to="/admin/communication?tab=notifications" replace />} />
                 <Route path="live-classes" element={<Navigate to="/admin/communication?tab=live-classes" replace />} />
                 <Route path="chat" element={<Navigate to="/admin/communication?tab=chat" replace />} />
+                <Route path="support-tickets" element={<Navigate to="/admin/communication?tab=tickets" replace />} />
                 <Route path="email" element={<Navigate to="/admin/communication?tab=email" replace />} />
                 <Route path="email-templates" element={<Navigate to="/admin/communication?tab=email-templates" replace />} />
 
