@@ -210,7 +210,7 @@ export function LiveChat() {
                     {assistant.messages.map((m, i) => (
                       <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
-                          {m.role === "user" ? m.content : <MarkdownView content={m.content} className="text-sm" />}
+                          {m.role === "user" ? m.content : <MarkdownView className="text-sm">{m.content}</MarkdownView>}
                         </div>
                       </div>
                     ))}
