@@ -514,6 +514,45 @@ export type Database = {
           },
         ]
       }
+      automation_events: {
+        Row: {
+          automation_key: string
+          created_at: string
+          dedupe_key: string
+          error: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          ref_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          automation_key: string
+          created_at?: string
+          dedupe_key: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          ref_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          automation_key?: string
+          created_at?: string
+          dedupe_key?: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          ref_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       backup_runs: {
         Row: {
           bytes_uploaded: number | null
@@ -3729,6 +3768,107 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ticket_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_internal: boolean
+          sender_id: string | null
+          sender_role: string
+          ticket_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          sender_id?: string | null
+          sender_role?: string
+          ticket_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          sender_id?: string | null
+          sender_role?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          body: string
+          category: string
+          conversation_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          last_activity_at: string
+          priority: string
+          resolution_note: string | null
+          source: string
+          status: string
+          subject: string
+          ticket_number: number
+          unread_admin_count: number
+          unread_user_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          body?: string
+          category?: string
+          conversation_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_activity_at?: string
+          priority?: string
+          resolution_note?: string | null
+          source?: string
+          status?: string
+          subject: string
+          ticket_number?: number
+          unread_admin_count?: number
+          unread_user_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          body?: string
+          category?: string
+          conversation_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_activity_at?: string
+          priority?: string
+          resolution_note?: string | null
+          source?: string
+          status?: string
+          subject?: string
+          ticket_number?: number
+          unread_admin_count?: number
+          unread_user_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -4150,6 +4290,10 @@ export type Database = {
           learners: number
           lessons_completed: number
         }[]
+      }
+      queue_automation: {
+        Args: { _key: string; _payload: Json; _ref: string; _user_id: string }
+        Returns: undefined
       }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       request_affiliate_payout: {
