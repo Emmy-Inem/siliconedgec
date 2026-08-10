@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, MinusCircle, Sparkles, Headphones, LifeBuoy, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,19 +17,16 @@ interface Message {
   created_at: string;
 }
 
-type Mode = "ai" | "human";
-
 export function LiveChat() {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("ai");
+  const [escalated, setEscalated] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const aiScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const assistant = useSupportAssistant();
@@ -38,11 +35,13 @@ export function LiveChat() {
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
-  // Load or create the human conversation only when that mode is active.
-  useEffect(() => {
-    if (!open || !user || mode !== "human") return;
-    (async () => {
-      setLoading(true);
+  // Once the assistant hands over (it could not answer, or the user asked for a
+  // person) the SAME thread continues with a human — we just open/attach the
+  // live conversation behind the scenes.
+  const ensureConversation = useCallback(async () => {
+    if (!user) return null;
+    setLoading(true);
+    try {
       const { data: convs } = await supabase
         .from("chat_conversations")
         .select("*")
@@ -59,8 +58,7 @@ export function LiveChat() {
           .single();
         if (error) {
           toast({ title: "Chat error", description: error.message, variant: "destructive" });
-          setLoading(false);
-          return;
+          return null;
         }
         conv = newConv;
       }
@@ -72,9 +70,18 @@ export function LiveChat() {
         .order("created_at", { ascending: true });
       setMessages((msgs || []) as Message[]);
       await supabase.from("chat_conversations").update({ unread_user_count: 0 }).eq("id", conv.id);
+      return conv.id as string;
+    } finally {
       setLoading(false);
-    })();
-  }, [open, user, mode]);
+    }
+  }, [user, toast]);
+
+  // Escalation is driven entirely by the assistant.
+  useEffect(() => {
+    if (!assistant.escalated || escalated) return;
+    setEscalated(true);
+    ensureConversation();
+  }, [assistant.escalated, escalated, ensureConversation]);
 
   // Realtime subscription for the human conversation
   useEffect(() => {
@@ -90,42 +97,37 @@ export function LiveChat() {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId]);
 
-  // Auto-scroll both panes
+  // Auto-scroll the single thread
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-  useEffect(() => {
-    aiScrollRef.current?.scrollTo({ top: aiScrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [assistant.messages, assistant.loading]);
+  }, [messages, assistant.messages, assistant.loading]);
 
   // Keep the composer focused during normal use
   useEffect(() => {
     if (open && user) inputRef.current?.focus();
-  }, [open, user, mode, assistant.loading]);
+  }, [open, user, escalated, assistant.loading]);
 
   const send = async () => {
     const content = draft.trim();
     if (!content) return;
     setDraft("");
-    if (mode === "ai") {
+    if (!escalated) {
       await assistant.send(content);
       return;
     }
-    if (!conversationId || !user) return;
+    const convId = conversationId ?? (await ensureConversation());
+    if (!convId || !user) return;
     const { error } = await supabase.from("chat_messages").insert({
-      conversation_id: conversationId, sender_id: user.id, sender_role: "user", content,
+      conversation_id: convId, sender_id: user.id, sender_role: "user", content,
     });
     if (error) toast({ title: "Send failed", description: error.message, variant: "destructive" });
   };
 
-  const talkToHuman = async () => {
-    const res = await assistant.requestHuman();
-    if (res) setMode("human");
-  };
+  const talkToHuman = async () => { await assistant.requestHuman(); };
 
   if (onAdminRoute) return null;
 
-  const busy = mode === "ai" ? assistant.loading : loading;
+  const busy = escalated ? loading : assistant.loading;
 
   return (
     <>
