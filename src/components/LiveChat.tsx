@@ -143,10 +143,10 @@ export function LiveChat() {
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  {mode === "ai" ? <><Sparkles className="h-4 w-4" /> Silicon Edge Assistant</> : <><Headphones className="h-4 w-4" /> Human support</>}
+                  {escalated ? <><Headphones className="h-4 w-4" /> Silicon Edge Support</> : <><Sparkles className="h-4 w-4" /> Silicon Edge Support</>}
                 </h3>
                 <p className="text-[10px] opacity-80">
-                  {mode === "ai" ? "Instant answers, 24/7" : "Our team replies here and by email"}
+                  {escalated ? "Connected to our team — they reply here and by email" : "Instant answers, 24/7"}
                 </p>
               </div>
               <button onClick={() => setOpen(false)} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
@@ -165,20 +165,11 @@ export function LiveChat() {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/30">
-                  <button
-                    onClick={() => setMode("ai")}
-                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${mode === "ai" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    AI assistant
-                  </button>
-                  <button
-                    onClick={() => setMode("human")}
-                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${mode === "human" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    Human support
-                  </button>
-                  {mode === "ai" && (
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/30">
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full ${escalated ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+                    {escalated ? "Human agent joined" : "AI assistant"}
+                  </span>
+                  {!escalated ? (
                     <button
                       onClick={talkToHuman}
                       disabled={assistant.loading}
@@ -186,17 +177,15 @@ export function LiveChat() {
                     >
                       Talk to a human
                     </button>
-                  )}
-                  {mode === "human" && (
+                  ) : (
                     <Link to="/support" className="ml-auto text-[11px] text-primary hover:underline" onClick={() => setOpen(false)}>
                       My tickets
                     </Link>
                   )}
                 </div>
 
-                {mode === "ai" ? (
-                  <div ref={aiScrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
-                    {assistant.messages.length === 0 && (
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
+                    {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
                         <Sparkles className="h-10 w-10 text-primary/40 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">Hi {user.email?.split("@")[0]}! Ask me anything about courses, pricing, access, cohorts or certificates.</p>
@@ -223,32 +212,22 @@ export function LiveChat() {
                         </div>
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
-                    {loading && <p className="text-xs text-muted-foreground text-center">Loading…</p>}
-                    {!loading && messages.length === 0 && (
-                      <div className="text-center pt-8">
-                        <MessageCircle className="h-10 w-10 text-primary/40 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">Send a message and our team will reply here and by email.</p>
-                      </div>
-                    )}
                     {messages.map(m => (
                       <div key={m.id} className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.sender_role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
+                          {m.sender_role !== "user" && <span className="block text-[10px] font-medium text-primary mb-0.5">Support team</span>}
                           {m.content}
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
+                </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 border-t border-border flex gap-2">
                   <input
                     ref={inputRef}
                     value={draft}
                     onChange={e => setDraft(e.target.value)}
-                    placeholder={mode === "ai" ? "Ask the assistant…" : "Type your message…"}
+                    placeholder={escalated ? "Message our team…" : "Ask anything…"}
                     className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                   <button type="submit" disabled={!draft.trim() || busy} className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50">
