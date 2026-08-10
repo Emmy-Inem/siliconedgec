@@ -83,6 +83,25 @@ export function LiveChat() {
     ensureConversation();
   }, [assistant.escalated, escalated, ensureConversation]);
 
+  // Re-opening the widget after a handover keeps the same thread: if an open
+  // conversation with the team already exists, resume it instead of the AI.
+  useEffect(() => {
+    if (!open || !user || escalated) return;
+    (async () => {
+      const { data } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "open")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data?.[0]) {
+        setEscalated(true);
+        await ensureConversation();
+      }
+    })();
+  }, [open, user, escalated, ensureConversation]);
+
   // Realtime subscription for the human conversation
   useEffect(() => {
     if (!conversationId) return;
