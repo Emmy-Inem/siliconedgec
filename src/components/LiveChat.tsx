@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, MinusCircle, Sparkles, Headphones, LifeBuoy, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,19 +17,16 @@ interface Message {
   created_at: string;
 }
 
-type Mode = "ai" | "human";
-
 export function LiveChat() {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("ai");
+  const [escalated, setEscalated] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const aiScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const assistant = useSupportAssistant();
@@ -38,11 +35,13 @@ export function LiveChat() {
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
-  // Load or create the human conversation only when that mode is active.
-  useEffect(() => {
-    if (!open || !user || mode !== "human") return;
-    (async () => {
-      setLoading(true);
+  // Once the assistant hands over (it could not answer, or the user asked for a
+  // person) the SAME thread continues with a human — we just open/attach the
+  // live conversation behind the scenes.
+  const ensureConversation = useCallback(async () => {
+    if (!user) return null;
+    setLoading(true);
+    try {
       const { data: convs } = await supabase
         .from("chat_conversations")
         .select("*")
@@ -59,8 +58,7 @@ export function LiveChat() {
           .single();
         if (error) {
           toast({ title: "Chat error", description: error.message, variant: "destructive" });
-          setLoading(false);
-          return;
+          return null;
         }
         conv = newConv;
       }
@@ -72,9 +70,37 @@ export function LiveChat() {
         .order("created_at", { ascending: true });
       setMessages((msgs || []) as Message[]);
       await supabase.from("chat_conversations").update({ unread_user_count: 0 }).eq("id", conv.id);
+      return conv.id as string;
+    } finally {
       setLoading(false);
+    }
+  }, [user, toast]);
+
+  // Escalation is driven entirely by the assistant.
+  useEffect(() => {
+    if (!assistant.escalated || escalated) return;
+    setEscalated(true);
+    ensureConversation();
+  }, [assistant.escalated, escalated, ensureConversation]);
+
+  // Re-opening the widget after a handover keeps the same thread: if an open
+  // conversation with the team already exists, resume it instead of the AI.
+  useEffect(() => {
+    if (!open || !user || escalated) return;
+    (async () => {
+      const { data } = await supabase
+        .from("chat_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "open")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data?.[0]) {
+        setEscalated(true);
+        await ensureConversation();
+      }
     })();
-  }, [open, user, mode]);
+  }, [open, user, escalated, ensureConversation]);
 
   // Realtime subscription for the human conversation
   useEffect(() => {
@@ -90,42 +116,37 @@ export function LiveChat() {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId]);
 
-  // Auto-scroll both panes
+  // Auto-scroll the single thread
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-  useEffect(() => {
-    aiScrollRef.current?.scrollTo({ top: aiScrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [assistant.messages, assistant.loading]);
+  }, [messages, assistant.messages, assistant.loading]);
 
   // Keep the composer focused during normal use
   useEffect(() => {
     if (open && user) inputRef.current?.focus();
-  }, [open, user, mode, assistant.loading]);
+  }, [open, user, escalated, assistant.loading]);
 
   const send = async () => {
     const content = draft.trim();
     if (!content) return;
     setDraft("");
-    if (mode === "ai") {
+    if (!escalated) {
       await assistant.send(content);
       return;
     }
-    if (!conversationId || !user) return;
+    const convId = conversationId ?? (await ensureConversation());
+    if (!convId || !user) return;
     const { error } = await supabase.from("chat_messages").insert({
-      conversation_id: conversationId, sender_id: user.id, sender_role: "user", content,
+      conversation_id: convId, sender_id: user.id, sender_role: "user", content,
     });
     if (error) toast({ title: "Send failed", description: error.message, variant: "destructive" });
   };
 
-  const talkToHuman = async () => {
-    const res = await assistant.requestHuman();
-    if (res) setMode("human");
-  };
+  const talkToHuman = async () => { await assistant.requestHuman(); };
 
   if (onAdminRoute) return null;
 
-  const busy = mode === "ai" ? assistant.loading : loading;
+  const busy = escalated ? loading : assistant.loading;
 
   return (
     <>
@@ -141,10 +162,10 @@ export function LiveChat() {
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  {mode === "ai" ? <><Sparkles className="h-4 w-4" /> Silicon Edge Assistant</> : <><Headphones className="h-4 w-4" /> Human support</>}
+                  {escalated ? <><Headphones className="h-4 w-4" /> Silicon Edge Support</> : <><Sparkles className="h-4 w-4" /> Silicon Edge Support</>}
                 </h3>
                 <p className="text-[10px] opacity-80">
-                  {mode === "ai" ? "Instant answers, 24/7" : "Our team replies here and by email"}
+                  {escalated ? "Connected to our team — they reply here and by email" : "Instant answers, 24/7"}
                 </p>
               </div>
               <button onClick={() => setOpen(false)} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
@@ -163,20 +184,11 @@ export function LiveChat() {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/30">
-                  <button
-                    onClick={() => setMode("ai")}
-                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${mode === "ai" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    AI assistant
-                  </button>
-                  <button
-                    onClick={() => setMode("human")}
-                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${mode === "human" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    Human support
-                  </button>
-                  {mode === "ai" && (
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/30">
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full ${escalated ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+                    {escalated ? "Human agent joined" : "AI assistant"}
+                  </span>
+                  {!escalated ? (
                     <button
                       onClick={talkToHuman}
                       disabled={assistant.loading}
@@ -184,17 +196,15 @@ export function LiveChat() {
                     >
                       Talk to a human
                     </button>
-                  )}
-                  {mode === "human" && (
+                  ) : (
                     <Link to="/support" className="ml-auto text-[11px] text-primary hover:underline" onClick={() => setOpen(false)}>
                       My tickets
                     </Link>
                   )}
                 </div>
 
-                {mode === "ai" ? (
-                  <div ref={aiScrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
-                    {assistant.messages.length === 0 && (
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
+                    {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
                         <Sparkles className="h-10 w-10 text-primary/40 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">Hi {user.email?.split("@")[0]}! Ask me anything about courses, pricing, access, cohorts or certificates.</p>
@@ -221,32 +231,22 @@ export function LiveChat() {
                         </div>
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
-                    {loading && <p className="text-xs text-muted-foreground text-center">Loading…</p>}
-                    {!loading && messages.length === 0 && (
-                      <div className="text-center pt-8">
-                        <MessageCircle className="h-10 w-10 text-primary/40 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">Send a message and our team will reply here and by email.</p>
-                      </div>
-                    )}
                     {messages.map(m => (
                       <div key={m.id} className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.sender_role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
+                          {m.sender_role !== "user" && <span className="block text-[10px] font-medium text-primary mb-0.5">Support team</span>}
                           {m.content}
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
+                </div>
 
                 <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 border-t border-border flex gap-2">
                   <input
                     ref={inputRef}
                     value={draft}
                     onChange={e => setDraft(e.target.value)}
-                    placeholder={mode === "ai" ? "Ask the assistant…" : "Type your message…"}
+                    placeholder={escalated ? "Message our team…" : "Ask anything…"}
                     className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                   <button type="submit" disabled={!draft.trim() || busy} className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50">

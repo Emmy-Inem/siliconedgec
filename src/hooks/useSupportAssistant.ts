@@ -15,6 +15,7 @@ export const stripMarker = (s: string) => s.replace(ESCALATE_RE, "").trim();
 export function useSupportAssistant() {
   const [messages, setMessages] = useState<SupportMsg[]>([]);
   const [loading, setLoading] = useState(false);
+  const [escalated, setEscalated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const call = useCallback(async (body: Record<string, unknown>, signal?: AbortSignal) => {
@@ -81,9 +82,10 @@ export function useSupportAssistant() {
       }
       if (ESCALATE_RE.test(acc)) {
         ESCALATE_RE.lastIndex = 0;
+        setEscalated(true);
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: "I've opened a support ticket for this and emailed our team — you'll get a reply by email and in **Support** on your dashboard.",
+          content: "I've passed this to our team and opened a support ticket — you can keep typing right here and a human will reply in this chat and by email.",
         }]);
       }
     } catch (e: any) {
@@ -105,15 +107,16 @@ export function useSupportAssistant() {
       }
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: `A human is on the way. I've created ticket **#${json.ticketNumber ?? "—"}** and emailed the team — you can keep chatting here or follow up on the ticket.`,
+        content: `A human is on the way. I've created ticket **#${json.ticketNumber ?? "—"}** and emailed the team — keep typing here and they'll reply in this chat.`,
       }]);
+      setEscalated(true);
       return json as { ticketId: string | null; ticketNumber: number | null };
     } finally {
       setLoading(false);
     }
   }, [messages, call]);
 
-  const reset = useCallback(() => setMessages([]), []);
+  const reset = useCallback(() => { setMessages([]); setEscalated(false); }, []);
 
-  return { messages, loading, send, requestHuman, reset };
+  return { messages, loading, escalated, send, requestHuman, reset };
 }
