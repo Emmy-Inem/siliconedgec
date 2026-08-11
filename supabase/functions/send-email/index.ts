@@ -3,6 +3,7 @@
 // If RESEND_API_KEY is missing, the call is logged and returns 200 so
 // product flows are never blocked.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,27 +49,27 @@ const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
 const LEGACY_TEMPLATES = {
   welcome: (name: string) => ({
     subject: "Welcome to Silicon Edge Consulting",
-    html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
-      <h1 style="color:#a855f7">Welcome aboard, ${name}!</h1>
-      <p>Your Silicon Edge account is ready. Start exploring our job-ready IT training programs in AI, Cloud, and DevOps.</p>
-      <a href="https://siliconedgec.com/courses" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Browse Courses</a>
-    </div>`,
+    html: brandEmail({
+      title: `Welcome aboard, ${name}!`,
+      bodyHtml: textToHtml("Your Silicon Edge account is ready. Start exploring our job-ready IT training programs in AI, Cloud and DevOps."),
+      cta: { label: "Browse courses", url: `${BRAND.site}/courses` },
+    }),
   }),
   enrollment: (name: string, course: string) => ({
     subject: `You're enrolled in ${course}`,
-    html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
-      <h1 style="color:#a855f7">Enrollment confirmed</h1>
-      <p>Hi ${name}, you now have lifetime access to <strong>${course}</strong>.</p>
-      <a href="https://siliconedgec.com/dashboard" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">Go to Dashboard</a>
-    </div>`,
+    html: brandEmail({
+      title: "Enrollment confirmed",
+      bodyHtml: textToHtml(`Hi ${name}, you now have access to ${course}.`),
+      cta: { label: "Go to dashboard", url: `${BRAND.site}/dashboard` },
+    }),
   }),
   certificate: (name: string, course: string, code: string) => ({
     subject: `Your certificate for ${course} is ready`,
-    html: `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#0f172a;color:#fff;border-radius:12px">
-      <h1 style="color:#fbbf24">Congratulations, ${name}! 🎓</h1>
-      <p>You've completed <strong>${course}</strong>. Verification code: <code>${code}</code></p>
-      <a href="https://siliconedgec.com/certificates" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">View Certificate</a>
-    </div>`,
+    html: brandEmail({
+      title: `Congratulations, ${name}!`,
+      bodyHtml: textToHtml(`You've completed ${course}.\n\nVerification code: ${code}`),
+      cta: { label: "View certificate", url: `${BRAND.site}/certificates` },
+    }),
   }),
 } as const;
 
@@ -80,18 +81,13 @@ function applyVars(s: string, vars: Record<string, string>) {
   return out;
 }
 
-function wrapHtml(subject: string, body: string) {
-  const renderedBody = body
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#a78bfa">${u}</a>`)
-    .replace(/\n/g, "<br/>");
-  return `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#0f172a;color:#fff;border-radius:14px;line-height:1.55;font-size:14px">
-    <div style="font-weight:600;font-size:13px;color:#a78bfa;letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;border-bottom:1px solid #1e293b;padding-bottom:12px">${subject}</div>
-    <div>${renderedBody}</div>
-    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #1e293b;font-size:11px;color:#64748b">Silicon Edge Consulting · Job-Ready Tech Training</div>
-  </div>`;
+function wrapHtml(subject: string, body: string, unsubscribeUrl?: string) {
+  return brandEmail({
+    title: subject,
+    preheader: body.slice(0, 120).replace(/\n/g, " "),
+    bodyHtml: textToHtml(body),
+    unsubscribeUrl,
+  });
 }
 
 Deno.serve(async (req) => {
@@ -135,7 +131,7 @@ Deno.serve(async (req) => {
       };
       const subject = applyVars(rawSubject, vars);
       const renderedBody = applyVars(rawBody, vars);
-      payload = { to, subject, html: wrapHtml(subject, renderedBody) };
+      payload = { to, subject, html: wrapHtml(subject, renderedBody, (body as any).unsubscribe_url) };
     } else if (template && LEGACY_TEMPLATES[template]) {
       const built = (LEGACY_TEMPLATES[template] as any)(...(data ?? []));
       payload = { to, subject: built.subject, html: built.html };

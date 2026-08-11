@@ -3194,6 +3194,111 @@ export type Database = {
           },
         ]
       }
+      newsletter_campaigns: {
+        Row: {
+          audience: string
+          body: string
+          course_id: string | null
+          created_at: string
+          failed_count: number
+          group_name: string | null
+          id: string
+          recipient_count: number
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_by: string | null
+          sent_count: number
+          status: string
+          subject: string
+          target_email: string | null
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          body: string
+          course_id?: string | null
+          created_at?: string
+          failed_count?: number
+          group_name?: string | null
+          id?: string
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          target_email?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          course_id?: string | null
+          created_at?: string
+          failed_count?: number
+          group_name?: string | null
+          id?: string
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          target_email?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          confirm_token: string
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          groups: string[]
+          id: string
+          source: string
+          status: string
+          unsubscribe_token: string
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          groups?: string[]
+          id?: string
+          source?: string
+          status?: string
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          groups?: string[]
+          id?: string
+          source?: string
+          status?: string
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -3895,31 +4000,43 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          is_published: boolean
+          media_type: string
           name: string
           order_index: number | null
           quote: string
           rating: number | null
           role: string | null
+          thumbnail_url: string | null
+          video_url: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
+          media_type?: string
           name: string
           order_index?: number | null
           quote: string
           rating?: number | null
           role?: string | null
+          thumbnail_url?: string | null
+          video_url?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
+          media_type?: string
           name?: string
           order_index?: number | null
           quote?: string
           rating?: number | null
           role?: string | null
+          thumbnail_url?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -4291,6 +4408,8 @@ export type Database = {
           lessons_completed: number
         }[]
       }
+      newsletter_confirm: { Args: { _token: string }; Returns: string }
+      newsletter_unsubscribe: { Args: { _token: string }; Returns: string }
       queue_automation: {
         Args: { _key: string; _payload: Json; _ref: string; _user_id: string }
         Returns: undefined

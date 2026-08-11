@@ -55,6 +55,7 @@ const About = lazy(() => import("./pages/About"));
 const Faq = lazy(() => import("./pages/Faq"));
 const InstructorsIndex = lazy(() => import("./pages/Instructors"));
 const TestimonialsPage = lazy(() => import("./pages/Testimonials"));
+const NewsletterAction = lazy(() => import("./pages/NewsletterAction"));
 const Bookmarks = lazy(() => import("./pages/Bookmarks"));
 const Account = lazy(() => import("./pages/Account"));
 const OrderDetail = lazy(() => import("./pages/OrderDetail"));
@@ -235,6 +236,8 @@ const App = () => (
               <Route path="/faq" element={<Faq />} />
               <Route path="/instructors" element={<InstructorsIndex />} />
               <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/newsletter/confirm" element={<NewsletterAction mode="confirm" />} />
+              <Route path="/newsletter/unsubscribe" element={<NewsletterAction mode="unsubscribe" />} />
               <Route path="/bookmarks" element={<Bookmarks />} />
               <Route path="/wishlist" element={<Bookmarks />} />
               <Route path="/account" element={<Account />} />

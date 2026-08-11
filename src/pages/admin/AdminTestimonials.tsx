@@ -25,12 +25,37 @@ const columns: Column<Testimonial>[] = [
   },
   { key: "name", label: "Name" },
   { key: "role", label: "Role" },
+  {
+    key: "media_type",
+    label: "Type",
+    render: (t) => (
+      <span className="text-xs rounded-full px-2 py-0.5 border border-border">
+        {t.media_type === "video" ? "Video" : "Text"}
+      </span>
+    ),
+  },
+  {
+    key: "is_published",
+    label: "Published",
+    render: (t) => (t.is_published === false ? "No" : "Yes"),
+  },
   { key: "quote", label: "Quote", render: (t) => <span className="line-clamp-2 max-w-xs">{t.quote}</span> },
   { key: "rating", label: "Rating" },
   { key: "order_index", label: "Order" },
 ];
 
-const emptyForm = { name: "", role: "", quote: "", rating: 5, order_index: 0, avatar_url: "" };
+const emptyForm = {
+  name: "",
+  role: "",
+  quote: "",
+  rating: 5,
+  order_index: 0,
+  avatar_url: "",
+  media_type: "text",
+  video_url: "",
+  thumbnail_url: "",
+  is_published: true,
+};
 
 export default function AdminTestimonials() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -71,13 +96,32 @@ export default function AdminTestimonials() {
     <>
       <AdminCrudTable title="Testimonials" data={data} columns={columns} isLoading={isLoading} addLabel="Add Testimonial"
         onAdd={() => { setEditing(null); setForm(emptyForm); setDialogOpen(true); }}
-        onEdit={(t) => { setEditing(t); setForm({ name: t.name, role: t.role ?? "", quote: t.quote, rating: t.rating ?? 5, order_index: t.order_index ?? 0, avatar_url: t.avatar_url ?? "" }); setDialogOpen(true); }}
+        onEdit={(t) => { setEditing(t); setForm({ name: t.name, role: t.role ?? "", quote: t.quote ?? "", rating: t.rating ?? 5, order_index: t.order_index ?? 0, avatar_url: t.avatar_url ?? "", media_type: t.media_type ?? "text", video_url: t.video_url ?? "", thumbnail_url: t.thumbnail_url ?? "", is_published: t.is_published ?? true }); setDialogOpen(true); }}
         onDelete={(id) => del.mutate(id)}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Testimonial" : "Add Testimonial"}</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Testimonial type</label>
+              <select value={form.media_type} onChange={(e) => setForm({ ...form, media_type: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm">
+                <option value="text">Text</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+            {form.media_type === "video" && (
+              <>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Video URL (YouTube, Vimeo or direct MP4)</label>
+                  <input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtu.be/..." className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Video thumbnail</label>
+                  <ImageUploader value={form.thumbnail_url} onChange={(url) => setForm({ ...form, thumbnail_url: url })} folder="testimonials" />
+                </div>
+              </>
+            )}
             <div>
               <label className="text-sm font-medium block mb-1">Display Picture</label>
               <ImageUploader
@@ -89,7 +133,11 @@ export default function AdminTestimonials() {
             </div>
             <div><label className="text-sm font-medium block mb-1">Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
             <div><label className="text-sm font-medium block mb-1">Role</label><input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
-            <div><label className="text-sm font-medium block mb-1">Quote</label><textarea value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })} required rows={4} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
+            <div><label className="text-sm font-medium block mb-1">Quote {form.media_type === "video" && <span className="text-muted-foreground font-normal">(optional caption)</span>}</label><textarea value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })} required={form.media_type !== "video"} rows={4} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" checked={form.is_published} onChange={(e) => setForm({ ...form, is_published: e.target.checked })} />
+              Published on the public testimonials page
+            </label>
             <div className="grid grid-cols-2 gap-4">
               <div><label className="text-sm font-medium block mb-1">Rating (1-5)</label><input type="number" min="1" max="5" value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></div>
               <div><label className="text-sm font-medium block mb-1">Order</label><input type="number" value={form.order_index} onChange={(e) => setForm({ ...form, order_index: Number(e.target.value) })} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></div>

@@ -14,15 +14,16 @@ export function NewsletterSignup({ compact = false }: { compact?: boolean }) {
     if (!email.includes("@")) return;
     setBusy(true);
     try {
-      const { error } = await supabase.from("business_leads").insert({
-        email: email.trim(),
-        full_name: "Newsletter Subscriber",
-        company_name: "Newsletter",
-        message: "Subscribed via newsletter signup",
-        source: "newsletter",
-      } as any);
+      const { data, error } = await supabase.functions.invoke("newsletter-subscribe", {
+        body: { email: email.trim(), source: "signup" },
+      });
       if (error) throw error;
-      toast({ title: "Subscribed!", description: "Thanks — check your inbox for updates." });
+      toast({
+        title: data?.already ? "You're already subscribed" : "Almost there!",
+        description: data?.already
+          ? "This email is already on our list."
+          : "Check your inbox to confirm your subscription.",
+      });
       setEmail("");
     } catch (err: any) {
       toast({ title: "Couldn't subscribe", description: err.message, variant: "destructive" });

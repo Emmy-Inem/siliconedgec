@@ -1,6 +1,7 @@
 // Drains the automation_events queue and sends milestone emails.
 // Scheduled via pg_cron; also safe to invoke manually.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandEmail } from "../_shared/brand-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,12 +45,14 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
 }
 
 function html(b: Built) {
-  return `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#0f172a;color:#fff;border-radius:14px;line-height:1.6;font-size:14px">
-    <h2 style="color:#a78bfa;margin:0 0 14px;font-size:19px">${b.title}</h2>
-    ${b.lines.map((l) => `<p style="margin:8px 0">${l}</p>`).join("")}
-    ${b.cta ? `<a href="${b.cta.url}" style="display:inline-block;margin-top:18px;padding:10px 20px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px">${b.cta.label}</a>` : ""}
-    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #1e293b;font-size:11px;color:#64748b">Silicon Edge Consulting · Job-Ready Tech Training</div>
-  </div>`;
+  return brandEmail({
+    title: b.title,
+    preheader: b.subject,
+    bodyHtml: b.lines
+      .map((l) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#1e293b">${l}</p>`)
+      .join(""),
+    cta: b.cta,
+  });
 }
 
 Deno.serve(async (req) => {

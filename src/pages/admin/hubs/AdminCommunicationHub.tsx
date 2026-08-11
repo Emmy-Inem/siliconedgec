@@ -6,6 +6,7 @@ import AdminChat from "../AdminChat";
 import AdminSupportTickets from "../AdminSupportTickets";
 import AdminEmail from "../AdminEmail";
 import AdminEmailTemplates from "../AdminEmailTemplates";
+import AdminNewsletter from "../AdminNewsletter";
 
 export default function AdminCommunicationHub() {
   return (
@@ -20,6 +21,7 @@ export default function AdminCommunicationHub() {
         { value: "tickets", label: "Support Tickets", content: <AdminSupportTickets /> },
         { value: "email", label: "Email Blasts", content: <AdminEmail /> },
         { value: "email-templates", label: "Email Templates", content: <AdminEmailTemplates /> },
+        { value: "newsletter", label: "Newsletter", content: <AdminNewsletter /> },
       ]}
     />
   );
