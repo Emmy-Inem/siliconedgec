@@ -4362,6 +4362,20 @@ export type Database = {
         Returns: undefined
       }
       slugify: { Args: { _text: string }; Returns: string }
+      ticket_staff_fields_unchanged: {
+        Args: {
+          _assigned_to: string
+          _id: string
+          _priority: string
+          _resolution_note: string
+          _source: string
+          _status: string
+          _ticket_number: number
+          _unread_admin_count: number
+          _user_id: string
+        }
+        Returns: boolean
+      }
       unique_course_slug: {
         Args: { _base: string; _id: string }
         Returns: string
