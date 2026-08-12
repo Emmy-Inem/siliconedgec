@@ -90,7 +90,14 @@ Deno.serve(async (req) => {
         await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
-          body: JSON.stringify({ to: email, subject: built.subject, html: html(built) }),
+          body: JSON.stringify({
+            to: email,
+            subject: built.subject,
+            html: html(built),
+            category: "automation",
+            template_key: ev.automation_key,
+            user_id: ev.user_id,
+          }),
         });
         await admin.from("automation_events").update({ status: "sent", processed_at: new Date().toISOString() }).eq("id", ev.id);
         sent++;

@@ -1912,6 +1912,78 @@ export type Database = {
         }
         Relationships: []
       }
+      email_delivery_log: {
+        Row: {
+          bounce_type: string | null
+          bounced_at: string | null
+          campaign_id: string | null
+          category: string
+          click_count: number
+          clicked_at: string | null
+          complained_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          metadata: Json
+          open_count: number
+          opened_at: string | null
+          provider: string
+          recipient_email: string
+          status: string
+          subject: string | null
+          template_key: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bounce_type?: string | null
+          bounced_at?: string | null
+          campaign_id?: string | null
+          category?: string
+          click_count?: number
+          clicked_at?: string | null
+          complained_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json
+          open_count?: number
+          opened_at?: string | null
+          provider?: string
+          recipient_email: string
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bounce_type?: string | null
+          bounced_at?: string | null
+          campaign_id?: string | null
+          category?: string
+          click_count?: number
+          clicked_at?: string | null
+          complained_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json
+          open_count?: number
+          opened_at?: string | null
+          provider?: string
+          recipient_email?: string
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           access_expires_at: string | null

@@ -6,11 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { VideoUploader } from "@/components/admin/VideoUploader";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Testimonial = Tables<"testimonials">;
 
-const columns: Column<Testimonial>[] = [
+const buildColumns = (
+  onTogglePublish: (t: Testimonial) => void,
+): Column<Testimonial>[] => [
   {
     key: "avatar_url",
     label: "Photo",
@@ -37,7 +40,19 @@ const columns: Column<Testimonial>[] = [
   {
     key: "is_published",
     label: "Published",
-    render: (t) => (t.is_published === false ? "No" : "Yes"),
+    render: (t) => (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onTogglePublish(t); }}
+        className={`text-xs rounded-full px-2 py-0.5 border transition-colors ${
+          t.is_published === false
+            ? "border-border text-muted-foreground hover:bg-muted"
+            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+        }`}
+      >
+        {t.is_published === false ? "Draft — publish" : "Published — unpublish"}
+      </button>
+    ),
   },
   { key: "quote", label: "Quote", render: (t) => <span className="line-clamp-2 max-w-xs">{t.quote}</span> },
   { key: "rating", label: "Rating" },
@@ -92,6 +107,20 @@ export default function AdminTestimonials() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-testimonials"] }); toast({ title: "Deleted" }); },
   });
 
+  const togglePublish = useMutation({
+    mutationFn: async (t: Testimonial) => {
+      const { error } = await supabase
+        .from("testimonials")
+        .update({ is_published: t.is_published === false })
+        .eq("id", t.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-testimonials"] }); toast({ title: "Visibility updated" }); },
+    onError: (e) => toast({ title: "Error", description: (e as Error).message, variant: "destructive" }),
+  });
+
+  const columns = buildColumns((t) => togglePublish.mutate(t));
+
   return (
     <>
       <AdminCrudTable title="Testimonials" data={data} columns={columns} isLoading={isLoading} addLabel="Add Testimonial"
@@ -113,11 +142,21 @@ export default function AdminTestimonials() {
             {form.media_type === "video" && (
               <>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Video URL (YouTube, Vimeo or direct MP4)</label>
+                  <label className="text-sm font-medium block mb-1">Upload video</label>
+                  <VideoUploader
+                    value={form.video_url?.startsWith("http") && !/youtu|vimeo/.test(form.video_url) ? form.video_url : ""}
+                    thumbnail={form.thumbnail_url}
+                    onChange={(videoUrl, thumbUrl) =>
+                      setForm((f) => ({ ...f, video_url: videoUrl, thumbnail_url: thumbUrl ?? f.thumbnail_url }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">…or paste a video URL (YouTube, Vimeo or direct MP4)</label>
                   <input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtu.be/..." className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Video thumbnail</label>
+                  <label className="text-sm font-medium block mb-1">Video thumbnail (auto-generated on upload — override here if needed)</label>
                   <ImageUploader value={form.thumbnail_url} onChange={(url) => setForm({ ...form, thumbnail_url: url })} folder="testimonials" />
                 </div>
               </>
