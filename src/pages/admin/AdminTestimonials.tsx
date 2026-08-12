@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploader } from "@/components/admin/ImageUploader";
+import { VideoUploader } from "@/components/admin/VideoUploader";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Testimonial = Tables<"testimonials">;
@@ -113,11 +114,21 @@ export default function AdminTestimonials() {
             {form.media_type === "video" && (
               <>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Video URL (YouTube, Vimeo or direct MP4)</label>
+                  <label className="text-sm font-medium block mb-1">Upload video</label>
+                  <VideoUploader
+                    value={form.video_url?.startsWith("http") && !/youtu|vimeo/.test(form.video_url) ? form.video_url : ""}
+                    thumbnail={form.thumbnail_url}
+                    onChange={(videoUrl, thumbUrl) =>
+                      setForm((f) => ({ ...f, video_url: videoUrl, thumbnail_url: thumbUrl ?? f.thumbnail_url }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">…or paste a video URL (YouTube, Vimeo or direct MP4)</label>
                   <input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtu.be/..." className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Video thumbnail</label>
+                  <label className="text-sm font-medium block mb-1">Video thumbnail (auto-generated on upload — override here if needed)</label>
                   <ImageUploader value={form.thumbnail_url} onChange={(url) => setForm({ ...form, thumbnail_url: url })} folder="testimonials" />
                 </div>
               </>
