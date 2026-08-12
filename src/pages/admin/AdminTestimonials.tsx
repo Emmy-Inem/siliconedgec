@@ -11,7 +11,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Testimonial = Tables<"testimonials">;
 
-const columns: Column<Testimonial>[] = [
+const buildColumns = (
+  onTogglePublish: (t: Testimonial) => void,
+): Column<Testimonial>[] => [
   {
     key: "avatar_url",
     label: "Photo",
@@ -38,7 +40,19 @@ const columns: Column<Testimonial>[] = [
   {
     key: "is_published",
     label: "Published",
-    render: (t) => (t.is_published === false ? "No" : "Yes"),
+    render: (t) => (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onTogglePublish(t); }}
+        className={`text-xs rounded-full px-2 py-0.5 border transition-colors ${
+          t.is_published === false
+            ? "border-border text-muted-foreground hover:bg-muted"
+            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+        }`}
+      >
+        {t.is_published === false ? "Draft — publish" : "Published — unpublish"}
+      </button>
+    ),
   },
   { key: "quote", label: "Quote", render: (t) => <span className="line-clamp-2 max-w-xs">{t.quote}</span> },
   { key: "rating", label: "Rating" },
@@ -92,6 +106,20 @@ export default function AdminTestimonials() {
     mutationFn: async (id: string) => { const { error } = await supabase.from("testimonials").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-testimonials"] }); toast({ title: "Deleted" }); },
   });
+
+  const togglePublish = useMutation({
+    mutationFn: async (t: Testimonial) => {
+      const { error } = await supabase
+        .from("testimonials")
+        .update({ is_published: t.is_published === false })
+        .eq("id", t.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-testimonials"] }); toast({ title: "Visibility updated" }); },
+    onError: (e) => toast({ title: "Error", description: (e as Error).message, variant: "destructive" }),
+  });
+
+  const columns = buildColumns((t) => togglePublish.mutate(t));
 
   return (
     <>
