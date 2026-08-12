@@ -7,6 +7,7 @@ import AdminSupportTickets from "../AdminSupportTickets";
 import AdminEmail from "../AdminEmail";
 import AdminEmailTemplates from "../AdminEmailTemplates";
 import AdminNewsletter from "../AdminNewsletter";
+import AdminEmailDelivery from "../AdminEmailDelivery";
 
 export default function AdminCommunicationHub() {
   return (
@@ -22,6 +23,7 @@ export default function AdminCommunicationHub() {
         { value: "email", label: "Email Blasts", content: <AdminEmail /> },
         { value: "email-templates", label: "Email Templates", content: <AdminEmailTemplates /> },
         { value: "newsletter", label: "Newsletter", content: <AdminNewsletter /> },
+        { value: "email-delivery", label: "Email Delivery", content: <AdminEmailDelivery /> },
       ]}
     />
   );
