@@ -4,6 +4,7 @@
 // product flows are never blocked.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
+import { logEmail } from "../_shared/email-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -143,9 +144,20 @@ Deno.serve(async (req) => {
       payload.attachments = (body as any).attachments;
     }
 
+    const category = (body as any).category ?? (template_key ? "transactional" : "transactional");
+    const logBase = {
+      recipient_email: payload.to,
+      subject: payload.subject,
+      category,
+      template_key: template_key ?? (template as string | undefined) ?? null,
+      campaign_id: (body as any).campaign_id ?? null,
+      user_id: (body as any).user_id ?? null,
+    };
+
     const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_KEY) {
       console.log("[send-email] RESEND_API_KEY not configured, skipping send", { to: payload.to, subject: payload.subject });
+      await logEmail({ ...logBase, status: "skipped", error_message: "No sender domain / provider key configured" });
       return new Response(JSON.stringify({ skipped: true, reason: "RESEND_API_KEY not set" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -169,7 +181,12 @@ Deno.serve(async (req) => {
     });
 
     const result = await res.json();
-    if (!res.ok) throw new Error(JSON.stringify(result));
+    if (!res.ok) {
+      await logEmail({ ...logBase, status: "failed", error_message: JSON.stringify(result) });
+      throw new Error(JSON.stringify(result));
+    }
+
+    await logEmail({ ...logBase, status: "sent", message_id: result.id ?? null });
 
     return new Response(JSON.stringify({ ok: true, id: result.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
