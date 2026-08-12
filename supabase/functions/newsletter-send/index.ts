@@ -116,6 +116,9 @@ Deno.serve(async (req) => {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
           body: JSON.stringify({
             to: r.email,
+            category: "newsletter",
+            campaign_id: campaign_id ?? null,
+            template_key: test ? "newsletter_test" : "newsletter",
             subject,
             html: brandEmail({
               title: subject,
