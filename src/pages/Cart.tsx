@@ -215,6 +215,7 @@ export default function Cart() {
           callback_url: `${window.location.origin}/cart`,
           utm,
           promo_code_id: appliedPromo?.id ?? null,
+          affiliate_code: getStoredAffiliateCode(),
         },
       });
       if (error) throw error;
