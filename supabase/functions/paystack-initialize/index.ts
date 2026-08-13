@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { course_id, promo_code_id, callback_url, utm } = body;
+    const { course_id, promo_code_id, callback_url, utm, affiliate_code } = body;
     if (!course_id) {
       return new Response(JSON.stringify({ error: "course_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       status: "pending",
       promo_code_id: promo_code_id ?? null,
       discount_amount: discount,
-      metadata: { course_title: course.title, utm: utm ?? null },
+      metadata: { course_title: course.title, utm: utm ?? null, affiliate_code: affiliate_code ?? null },
     });
     if (orderErr) throw orderErr;
 
