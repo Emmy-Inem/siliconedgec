@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { course_ids, callback_url, utm, promo_code_id } = await req.json();
+    const { course_ids, callback_url, utm, promo_code_id, affiliate_code } = await req.json();
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         status: "pending",
         promo_code_id: validPromoId,
         discount_amount: lineDiscount,
-        metadata: { cart_reference: reference, course_title: c.title, utm: utm ?? null },
+        metadata: { cart_reference: reference, course_title: c.title, utm: utm ?? null, affiliate_code: affiliate_code ?? null },
       });
     }
 
