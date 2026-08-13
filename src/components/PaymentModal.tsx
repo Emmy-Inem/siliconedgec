@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format-currency";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
+import { getStoredAffiliateCode } from "@/components/AffiliateTracker";
 
 interface PromoResult {
   id: string;
@@ -110,6 +111,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           promo_code_id: appliedPromo?.id ?? null,
           callback_url: `${window.location.origin}/courses/${courseId}?verify=1`,
           utm,
+          affiliate_code: getStoredAffiliateCode(),
         },
       });
       if (error) throw error;
