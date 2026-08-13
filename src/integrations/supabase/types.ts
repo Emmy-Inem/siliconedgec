@@ -4615,6 +4615,7 @@ export type Database = {
         Args: { _key: string; _payload: Json; _ref: string; _user_id: string }
         Returns: undefined
       }
+      queue_scheduled_automations: { Args: never; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -4622,6 +4623,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_affiliate_referral: {
+        Args: { _order_id: string }
+        Returns: undefined
       }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       request_affiliate_payout: {
