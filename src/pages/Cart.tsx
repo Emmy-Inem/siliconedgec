@@ -6,6 +6,7 @@ import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getStoredAffiliateCode } from "@/components/AffiliateTracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X } from "lucide-react";
@@ -215,6 +216,7 @@ export default function Cart() {
           callback_url: `${window.location.origin}/cart`,
           utm,
           promo_code_id: appliedPromo?.id ?? null,
+          affiliate_code: getStoredAffiliateCode(),
         },
       });
       if (error) throw error;

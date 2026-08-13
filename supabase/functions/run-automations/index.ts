@@ -21,6 +21,22 @@ async function courseTitle(id?: string) {
   return data?.title ?? "your course";
 }
 
+async function lessonTitle(id?: string) {
+  if (!id) return "a new lesson";
+  const { data } = await admin.from("lessons").select("title").eq("id", id).maybeSingle();
+  return data?.title ?? "a new lesson";
+}
+
+function money(amount?: number | null, currency?: string | null) {
+  const n = Number(amount ?? 0);
+  const cur = (currency || "NGN").toUpperCase();
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n);
+  } catch {
+    return `${cur} ${n.toLocaleString()}`;
+  }
+}
+
 async function build(key: string, payload: any, name: string): Promise<Built | null> {
   switch (key) {
     case "welcome":
@@ -39,6 +55,70 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
       return { subject: "Assignment submitted", title: "Submission received", lines: [`Thanks ${name} — your assignment is in and your instructor will grade it shortly.`], cta: { label: "View assignments", url: `${SITE}/dashboard` } };
     case "assignment_graded":
       return { subject: "Your assignment has been graded", title: "Feedback is ready", lines: [`Hi ${name}, your instructor graded your assignment${payload?.grade != null ? ` — score: <strong>${payload.grade}</strong>` : ""}.`], cta: { label: "See feedback", url: `${SITE}/dashboard` } };
+
+    // ---------- commerce ----------
+    case "cart_added": {
+      const t = await courseTitle(payload?.course_id);
+      return { subject: `${t} is waiting in your cart`, title: "Ready when you are", lines: [`Hi ${name}, you added <strong>${t}</strong> to your cart. Complete checkout to unlock the lessons straight away.`], cta: { label: "Complete checkout", url: `${SITE}/cart` } };
+    }
+    case "cart_abandoned":
+      return { subject: "You left something in your cart", title: "Still interested?", lines: [`Hi ${name}, the course${Number(payload?.items ?? 1) > 1 ? "s" : ""} in your cart ${Number(payload?.items ?? 1) > 1 ? "are" : "is"} still available. Checkout takes under a minute.`], cta: { label: "Return to cart", url: `${SITE}/cart` } };
+    case "purchase_confirmed": {
+      const t = await courseTitle(payload?.course_id);
+      return {
+        subject: `Payment received — ${t}`,
+        title: "Thank you for your purchase",
+        lines: [
+          `Hi ${name}, we've received your payment of <strong>${money(payload?.amount, payload?.currency)}</strong> for <strong>${t}</strong>.`,
+          payload?.reference ? `Reference: <code>${payload.reference}</code>` : "",
+        ].filter(Boolean),
+        cta: { label: "Start learning", url: `${SITE}/dashboard` },
+      };
+    }
+    case "payment_failed": {
+      const t = await courseTitle(payload?.course_id);
+      return { subject: "Your payment didn't go through", title: "Payment unsuccessful", lines: [`Hi ${name}, your payment for <strong>${t}</strong> was not completed. No money has left your account — you can try again any time.`], cta: { label: "Try again", url: `${SITE}/courses` } };
+    }
+    case "installment_due":
+      return { subject: "Your next instalment is due soon", title: "Instalment reminder", lines: [`Hi ${name}, your next instalment${payload?.due_date ? ` is due on <strong>${payload.due_date}</strong>` : " is due soon"}${payload?.balance != null ? ` — outstanding balance ${money(payload.balance)}` : ""}. Keeping payments current keeps your course access active.`], cta: { label: "View my plan", url: `${SITE}/account` } };
+
+    // ---------- learning ----------
+    case "lesson_unlocked": {
+      const l = await lessonTitle(payload?.lesson_id);
+      return { subject: `New lesson unlocked: ${l}`, title: "A new lesson is open", lines: [`Hi ${name}, <strong>${l}</strong> is now unlocked for you. Pick up where you left off.`], cta: { label: "Open lesson", url: `${SITE}/dashboard` } };
+    }
+    case "assignment_published": {
+      const t = await courseTitle(payload?.course_id);
+      return { subject: `New assignment in ${t}`, title: "New assignment published", lines: [`Hi ${name}, your instructor published <strong>${payload?.title ?? "a new assignment"}</strong> in ${t}.`], cta: { label: "View assignment", url: `${SITE}/dashboard` } };
+    }
+    case "inactivity_nudge":
+      return { subject: "Your course is waiting", title: "Let's get back to it", lines: [`Hi ${name}, it's been a week since your last lesson. Even 15 minutes today keeps your momentum going.`], cta: { label: "Resume learning", url: `${SITE}/dashboard` } };
+
+    // ---------- support ----------
+    case "ticket_created":
+      return { subject: `We've got your request (#${payload?.ticket_number ?? ""})`, title: "Support request received", lines: [`Hi ${name}, thanks for reaching out about <strong>${payload?.subject ?? "your question"}</strong>. A member of our team will reply shortly.`], cta: { label: "View your ticket", url: `${SITE}/support` } };
+    case "ticket_resolved":
+      return { subject: `Your request has been resolved (#${payload?.ticket_number ?? ""})`, title: "All sorted", lines: [`Hi ${name}, we've marked <strong>${payload?.subject ?? "your request"}</strong> as resolved. Reply on the ticket if anything is still outstanding.`], cta: { label: "Open ticket", url: `${SITE}/support` } };
+
+    // ---------- partner programme ----------
+    case "affiliate_application_received":
+      return { subject: "We received your partner application", title: "Application received", lines: [`Thanks ${name} — your partner application is in review. We usually respond within two working days.`], cta: { label: "Visit the partner page", url: `${SITE}/career` } };
+    case "affiliate_approved":
+      return { subject: "You're approved as a Silicon Edge partner", title: "Welcome to the partner programme", lines: [`Congratulations ${name}! Your partner account is live${payload?.code ? ` and your referral code is <code>${payload.code}</code>` : ""}. Head to your dashboard to build links and track earnings.`], cta: { label: "Open partner dashboard", url: `${SITE}/partner` } };
+    case "affiliate_declined":
+      return { subject: "Update on your partner application", title: "Application update", lines: [`Hi ${name}, we're not able to approve your partner application at this time. You're welcome to reapply as your audience grows.`] };
+    case "affiliate_course_approved": {
+      const t = await courseTitle(payload?.course_id);
+      return { subject: `Your link for ${t} is live`, title: "Course approved", lines: [`Hi ${name}, you're now approved to promote <strong>${t}</strong>${payload?.referral_code ? ` with code <code>${payload.referral_code}</code>` : ""}.`], cta: { label: "Get your link", url: `${SITE}/partner` } };
+    }
+    case "affiliate_conversion": {
+      const t = await courseTitle(payload?.course_id);
+      return { subject: "You earned a commission", title: "New conversion", lines: [`Nice work ${name} — someone bought <strong>${t}</strong> through your link. Commission earned: <strong>${money(payload?.commission)}</strong>.`], cta: { label: "See your earnings", url: `${SITE}/partner` } };
+    }
+    case "payout_requested":
+      return { subject: "Payout request received", title: "We're on it", lines: [`Hi ${name}, we've received your payout request for <strong>${money(payload?.amount)}</strong>. You'll get another email once it's paid.`], cta: { label: "View payouts", url: `${SITE}/partner` } };
+    case "payout_paid":
+      return { subject: "Your payout has been sent", title: "Payout sent", lines: [`Hi ${name}, we've sent <strong>${money(payload?.amount)}</strong> to your payout account. Thanks for partnering with us.`], cta: { label: "View payouts", url: `${SITE}/partner` } };
     default:
       return null;
   }
@@ -58,6 +138,13 @@ function html(b: Built) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // Queue time-based automations (abandoned carts, inactivity, instalments, referral confirmation)
+    try {
+      await admin.rpc("queue_scheduled_automations");
+    } catch (e) {
+      console.error("[run-automations] scheduled queue failed", e);
+    }
+
     const { data: events } = await admin
       .from("automation_events")
       .select("*")
