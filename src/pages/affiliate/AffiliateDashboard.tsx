@@ -22,7 +22,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { siteUrl } from "@/lib/site-url";
 import { buildAffiliateLink, defaultLandingPath, landingOptions } from "@/lib/affiliate-link";
 
@@ -34,6 +34,8 @@ export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  // Partner earnings are quoted globally in USD, matching the Career page.
+  const { format: money } = useLocalizedPrice({ forceCurrency: "USD" });
   const [saving, setSaving] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [requestingPayout, setRequestingPayout] = useState(false);
@@ -237,9 +239,9 @@ export default function AffiliateDashboard() {
                 { icon: MousePointerClick, label: "Clicks", value: String(clicks.length) },
                 { icon: Users, label: "Sign-ups", value: String(signups) },
                 { icon: TrendingUp, label: "Conversions", value: String(conversions.length) },
-                { icon: Wallet, label: "Earned this month", value: formatNaira(earnedThisMonth) },
-                { icon: Wallet, label: "Lifetime commission", value: formatNaira(earned) },
-                { icon: Wallet, label: "Pending payout", value: formatNaira(pending) },
+                { icon: Wallet, label: "Earned this month", value: money(earnedThisMonth) },
+                { icon: Wallet, label: "Lifetime commission", value: money(earned) },
+                { icon: Wallet, label: "Pending payout", value: money(pending) },
               ].map(({ icon: Icon, label, value }) => (
                 <Card key={label}>
                   <CardContent className="p-5 space-y-1">
@@ -325,7 +327,7 @@ export default function AffiliateDashboard() {
                                 <TableCell>{st.clicks}</TableCell>
                                 <TableCell>{st.signups}</TableCell>
                                 <TableCell>{st.conversions}</TableCell>
-                                <TableCell>{formatNaira(st.earned)}</TableCell>
+                                <TableCell>{money(st.earned)}</TableCell>
                               </TableRow>
                             );
                           })}
@@ -360,8 +362,8 @@ export default function AffiliateDashboard() {
                                 {r.user_id ? `Learner ${String(r.user_id).slice(0, 4).toUpperCase()}` : "—"}
                               </TableCell>
                               <TableCell className="capitalize">{String(r.conversion_type).replace(/_/g, " ")}</TableCell>
-                              <TableCell>{formatNaira(Number(r.amount ?? 0))}</TableCell>
-                              <TableCell>{formatNaira(Number(r.commission ?? 0))}</TableCell>
+                              <TableCell>{money(Number(r.amount ?? 0))}</TableCell>
+                              <TableCell>{money(Number(r.commission ?? 0))}</TableCell>
                               <TableCell><Badge variant="secondary" className="capitalize">{r.status}</Badge></TableCell>
                             </TableRow>
                           ))}
@@ -377,8 +379,8 @@ export default function AffiliateDashboard() {
                   <CardHeader><CardTitle className="text-base">Payouts</CardTitle></CardHeader>
                   <CardContent className="overflow-x-auto space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Payouts run monthly once your confirmed balance passes {formatNaira(MIN_PAYOUT)}.
-                      Pending balance: <strong>{formatNaira(pending)}</strong>
+                      Payouts run monthly once your confirmed balance passes {money(MIN_PAYOUT)}.
+                      Pending balance: <strong>{money(pending)}</strong>
                       {lastPayout && ` · last payout ${new Date(lastPayout.paid_at ?? lastPayout.created_at).toLocaleDateString()}`}.
                     </p>
                     <Button
@@ -386,7 +388,7 @@ export default function AffiliateDashboard() {
                       disabled={requestingPayout || pending < MIN_PAYOUT || !affiliate.payout_details || payouts.some((p) => ["pending", "processing", "approved"].includes(p.status))}
                     >
                       {requestingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
-                      Request {formatNaira(pending)} payout
+                      Request {money(pending)} payout
                     </Button>
                     {payouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-6 text-center">No payouts yet.</p>
@@ -399,7 +401,7 @@ export default function AffiliateDashboard() {
                           {payouts.map((p) => (
                             <TableRow key={p.id}>
                               <TableCell>{new Date(p.paid_at ?? p.created_at).toLocaleDateString()}</TableCell>
-                              <TableCell>{formatNaira(Number(p.amount ?? 0))}</TableCell>
+                              <TableCell>{money(Number(p.amount ?? 0))}</TableCell>
                               <TableCell><Badge variant="secondary" className="capitalize">{p.status}</Badge></TableCell>
                               <TableCell className="text-muted-foreground">{p.reference ?? "—"}</TableCell>
                             </TableRow>
