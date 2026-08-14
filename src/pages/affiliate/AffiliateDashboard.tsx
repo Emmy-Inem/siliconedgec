@@ -227,10 +227,11 @@ export default function AffiliateDashboard() {
               </div>
             </div>
 
-            {!affiliate.payout_details && (
+            {!payoutDetailsValid(affiliate.payout_details) && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
-                <strong>Add your payout details</strong> — we can't send your commission until your bank
-                account is on file. Add it under <em>Settings</em>.
+                <strong>{affiliate.payout_details ? "Payout details look incomplete" : "Add your payout details"}</strong>{" "}
+                — we can't send your commission until a full account name, number and bank are on file.
+                Add them under <em>Settings</em>. Payouts settle in USD.
               </div>
             )}
 
@@ -252,6 +253,31 @@ export default function AffiliateDashboard() {
                 </Card>
               ))}
             </div>
+
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Conversion funnel</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: "Clicks", value: clicks.length, rate: null as string | null },
+                  {
+                    label: "Sign-ups",
+                    value: signups,
+                    rate: clicks.length ? `${((signups / clicks.length) * 100).toFixed(1)}% of clicks` : null,
+                  },
+                  {
+                    label: "Paid conversions",
+                    value: conversions.length,
+                    rate: clicks.length ? `${((conversions.length / clicks.length) * 100).toFixed(1)}% of clicks` : null,
+                  },
+                ].map((step) => (
+                  <div key={step.label} className="rounded-lg border border-border/60 p-4">
+                    <p className="text-xs text-muted-foreground">{step.label}</p>
+                    <p className="font-heading text-2xl font-bold">{step.value}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{step.rate ?? "Top of funnel"}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
             <Tabs defaultValue="links">
               <TabsList className="flex-wrap h-auto">
