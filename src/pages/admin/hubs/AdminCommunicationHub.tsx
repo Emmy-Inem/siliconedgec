@@ -8,6 +8,7 @@ import AdminEmail from "../AdminEmail";
 import AdminEmailTemplates from "../AdminEmailTemplates";
 import AdminNewsletter from "../AdminNewsletter";
 import AdminEmailDelivery from "../AdminEmailDelivery";
+import AdminAutomations from "../AdminAutomations";
 
 export default function AdminCommunicationHub() {
   return (
@@ -24,6 +25,7 @@ export default function AdminCommunicationHub() {
         { value: "email-templates", label: "Email Templates", content: <AdminEmailTemplates /> },
         { value: "newsletter", label: "Newsletter", content: <AdminNewsletter /> },
         { value: "email-delivery", label: "Email Delivery", content: <AdminEmailDelivery /> },
+        { value: "automations", label: "Automations", content: <AdminAutomations /> },
       ]}
     />
   );
