@@ -138,6 +138,36 @@ function html(b: Built) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // ---- admin test send: { test_key, to } ----
+    let body: any = null;
+    try { body = await req.json(); } catch { /* cron posts no body */ }
+    if (body?.test_key) {
+      const to = String(body.to ?? "").trim();
+      if (!to) {
+        return new Response(JSON.stringify({ error: "Recipient email required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const built = await build(String(body.test_key), body.payload ?? {}, "there");
+      if (!built) {
+        return new Response(JSON.stringify({ error: `Unknown automation: ${body.test_key}` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
+        body: JSON.stringify({
+          to,
+          subject: `[Test] ${built.subject}`,
+          html: html(built),
+          category: "automation",
+          template_key: body.test_key,
+        }),
+      });
+      const detail = await res.text();
+      return new Response(JSON.stringify({ test: true, ok: res.ok, detail }), {
+        status: res.ok ? 200 : 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Queue time-based automations (abandoned carts, inactivity, instalments, referral confirmation)
     try {
       await admin.rpc("queue_scheduled_automations");
@@ -193,6 +223,11 @@ Deno.serve(async (req) => {
         await admin.from("automation_events").update({ status: "failed", error: String(e), processed_at: new Date().toISOString() }).eq("id", ev.id);
       }
     }
+
+    await admin.from("site_content").upsert(
+      { key: "automation_last_run", value: new Date().toISOString() },
+      { onConflict: "key" },
+    );
 
     return new Response(JSON.stringify({ processed: (events ?? []).length, sent, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
