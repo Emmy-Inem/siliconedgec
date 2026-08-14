@@ -377,7 +377,24 @@ export default function AffiliateDashboard() {
                     {referrals.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-6 text-center">No referrals recorded yet.</p>
                     ) : (
-                      <Table>
+                      <>
+                      <div className="space-y-3 md:hidden">
+                        {referrals.map((r) => (
+                          <div key={r.id} className="rounded-lg border border-border/60 p-3 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-medium truncate">{courseById[r.course_id]?.title ?? "—"}</p>
+                              <Badge variant="secondary" className="capitalize shrink-0">{r.status}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {new Date(r.created_at).toLocaleDateString()} · {String(r.conversion_type).replace(/_/g, " ")}
+                            </p>
+                            <p className="text-sm">
+                              Sale {money(Number(r.amount ?? 0))} · <strong>{money(Number(r.commission ?? 0))}</strong> commission
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <Table className="hidden md:table">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Date</TableHead><TableHead>Course</TableHead><TableHead>Referred user</TableHead>
@@ -401,6 +418,7 @@ export default function AffiliateDashboard() {
                           ))}
                         </TableBody>
                       </Table>
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -414,7 +432,13 @@ export default function AffiliateDashboard() {
                       Payouts run monthly once your confirmed balance passes {money(MIN_PAYOUT)}.
                       Pending balance: <strong>{money(pending)}</strong>
                       {lastPayout && ` · last payout ${new Date(lastPayout.paid_at ?? lastPayout.created_at).toLocaleDateString()}`}.
+                      {" "}All amounts are shown and settled in USD.
                     </p>
+                    {!payoutDetailsValid(affiliate.payout_details) && (
+                      <p className="text-sm text-destructive">
+                        Complete your payout details in Settings before requesting a payout.
+                      </p>
+                    )}
                     <Button
                       onClick={requestPayout}
                       disabled={requestingPayout || pending < MIN_PAYOUT || !payoutDetailsValid(affiliate.payout_details) || payouts.some((p) => ["pending", "processing", "approved"].includes(p.status))}
@@ -425,7 +449,21 @@ export default function AffiliateDashboard() {
                     {payouts.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-6 text-center">No payouts yet.</p>
                     ) : (
-                      <Table>
+                      <>
+                      <div className="space-y-3 md:hidden">
+                        {payouts.map((p) => (
+                          <div key={p.id} className="rounded-lg border border-border/60 p-3 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-medium">{money(Number(p.amount ?? 0))}</p>
+                              <Badge variant="secondary" className="capitalize shrink-0">{p.status}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(p.paid_at ?? p.created_at).toLocaleDateString()} · {p.reference ?? "no reference"}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <Table className="hidden md:table">
                         <TableHeader>
                           <TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Reference</TableHead></TableRow>
                         </TableHeader>
@@ -440,6 +478,7 @@ export default function AffiliateDashboard() {
                           ))}
                         </TableBody>
                       </Table>
+                      </>
                     )}
                   </CardContent>
                 </Card>
