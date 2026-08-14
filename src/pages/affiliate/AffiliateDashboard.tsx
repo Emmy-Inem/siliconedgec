@@ -30,6 +30,12 @@ type Row = Record<string, any>;
 
 const MIN_PAYOUT = 10000;
 
+/** Payout details must carry a name, an account number and a bank to be actionable. */
+export function payoutDetailsValid(details?: string | null): boolean {
+  const v = (details ?? "").trim();
+  return v.length >= 12 && /\d{6,}/.test(v) && v.split(/\s+/).length >= 3;
+}
+
 export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -411,7 +417,7 @@ export default function AffiliateDashboard() {
                     </p>
                     <Button
                       onClick={requestPayout}
-                      disabled={requestingPayout || pending < MIN_PAYOUT || !affiliate.payout_details || payouts.some((p) => ["pending", "processing", "approved"].includes(p.status))}
+                      disabled={requestingPayout || pending < MIN_PAYOUT || !payoutDetailsValid(affiliate.payout_details) || payouts.some((p) => ["pending", "processing", "approved"].includes(p.status))}
                     >
                       {requestingPayout ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
                       Request {money(pending)} payout
