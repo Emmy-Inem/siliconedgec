@@ -81,6 +81,18 @@ export default function AdminAffiliates() {
     toast({ title: "Affiliate updated" });
   };
 
+  const affiliateName = (id: string) =>
+    (data?.affiliates ?? []).find((a: any) => a.id === id)?.full_name ?? "Partner";
+
+  const setPayoutStatus = async (id: string, status: string) => {
+    const patch: Record<string, unknown> = { status };
+    if (status === "paid") patch.paid_at = new Date().toISOString();
+    const { error } = await supabase.from("affiliate_payouts").update(patch as any).eq("id", id);
+    if (error) return toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["admin-affiliates"] });
+    toast({ title: `Payout marked ${status}` });
+  };
+
   const recordPayout = async () => {
     if (!payoutFor || !Number(payoutAmount)) return;
     setSaving(true);
