@@ -11,7 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Search, Wallet, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
+
+// Partner earnings are quoted globally in USD, matching the Career page and partner dashboard.
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
+    Number(n) || 0,
+  );
 
 export default function AdminAffiliates() {
   const qc = useQueryClient();
@@ -29,7 +34,7 @@ export default function AdminAffiliates() {
       const [{ data: affiliates }, { data: referrals }, { data: payouts }, { data: clicks }, { data: selections }, { data: courses }] = await Promise.all([
         supabase.from("affiliates").select("*").order("created_at", { ascending: false }),
         supabase.from("affiliate_referrals").select("affiliate_id, amount, commission, status"),
-        supabase.from("affiliate_payouts").select("affiliate_id, amount, status"),
+        supabase.from("affiliate_payouts").select("*").order("created_at", { ascending: false }),
         supabase.from("affiliate_clicks").select("affiliate_id"),
         (supabase as any).from("affiliate_course_selections").select("*"),
         supabase.from("courses").select("id, title"),
@@ -76,6 +81,18 @@ export default function AdminAffiliates() {
     toast({ title: "Affiliate updated" });
   };
 
+  const affiliateName = (id: string) =>
+    (data?.affiliates ?? []).find((a: any) => a.id === id)?.full_name ?? "Partner";
+
+  const setPayoutStatus = async (id: string, status: string) => {
+    const patch: Record<string, unknown> = { status };
+    if (status === "paid") patch.paid_at = new Date().toISOString();
+    const { error } = await supabase.from("affiliate_payouts").update(patch as any).eq("id", id);
+    if (error) return toast({ title: "Update failed", description: error.message, variant: "destructive" });
+    qc.invalidateQueries({ queryKey: ["admin-affiliates"] });
+    toast({ title: `Payout marked ${status}` });
+  };
+
   const recordPayout = async () => {
     if (!payoutFor || !Number(payoutAmount)) return;
     setSaving(true);
@@ -110,8 +127,8 @@ export default function AdminAffiliates() {
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           { label: "Total affiliates", value: String(totals.affiliates) },
-          { label: "Affiliate-driven revenue", value: formatNaira(totals.revenue) },
-          { label: "Commission owed (lifetime)", value: formatNaira(totals.commission) },
+          { label: "Affiliate-driven revenue", value: money(totals.revenue) },
+          { label: "Commission owed (lifetime)", value: money(totals.commission) },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="p-5 space-y-1">
@@ -175,8 +192,8 @@ export default function AdminAffiliates() {
                       </TableCell>
                       <TableCell>{s.clicks}</TableCell>
                       <TableCell>{s.referrals}</TableCell>
-                      <TableCell>{formatNaira(s.earned)}</TableCell>
-                      <TableCell>{formatNaira(s.paid)}</TableCell>
+                      <TableCell>{money(s.earned)}</TableCell>
+                      <TableCell>{money(s.paid)}</TableCell>
                       <TableCell>
                         <Select value={a.status} onValueChange={(v) => update(a.id, { status: v })}>
                           <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
@@ -260,12 +277,63 @@ export default function AdminAffiliates() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Payout queue</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {(data?.payouts ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No payout requests yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Partner</TableHead><TableHead>Amount</TableHead><TableHead>Requested</TableHead>
+                  <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(data?.payouts ?? []).map((p: any) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{affiliateName(p.affiliate_id)}</TableCell>
+                    <TableCell>{money(Number(p.amount ?? 0))}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={p.status === "paid" ? "default" : "secondary"} className="capitalize">
+                        {p.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      {p.status !== "paid" && p.status !== "approved" && (
+                        <Button size="sm" variant="outline" onClick={() => setPayoutStatus(p.id, "approved")}>
+                          Approve
+                        </Button>
+                      )}
+                      {p.status !== "paid" && (
+                        <Button size="sm" onClick={() => setPayoutStatus(p.id, "paid")}>Mark paid</Button>
+                      )}
+                      {p.status !== "paid" && p.status !== "rejected" && (
+                        <Button size="sm" variant="ghost" onClick={() => setPayoutStatus(p.id, "rejected")}>
+                          Reject
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       <Dialog open={!!payoutFor} onOpenChange={(o) => !o && setPayoutFor(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Record payout — {payoutFor?.full_name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="po-amount">Amount (₦)</Label>
+              <Label htmlFor="po-amount">Amount (USD)</Label>
               <Input id="po-amount" type="number" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} />
             </div>
             <div className="space-y-2">

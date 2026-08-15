@@ -4433,6 +4433,14 @@ export type Database = {
         Args: { p_selection_id: string }
         Returns: string
       }
+      career_program_stats: {
+        Args: never
+        Returns: {
+          courses_count: number
+          max_commission: number
+          partners_count: number
+        }[]
+      }
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
       delete_email: {

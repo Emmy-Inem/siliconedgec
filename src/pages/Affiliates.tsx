@@ -98,6 +98,33 @@ export default function Affiliates() {
     },
   });
 
+  const { data: programStats } = useQuery({
+    queryKey: ["career-program-stats"],
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as any)("career_program_stats");
+      if (error) throw error;
+      return (Array.isArray(data) ? data[0] : data) ?? null;
+    },
+  });
+
+  const heroStats = [
+    {
+      k: `Up to ${Math.round(Number(programStats?.max_commission ?? 20))}%`,
+      v: "Commission",
+    },
+    {
+      k: courses.length > 0 ? `${courses.length}` : "30 days",
+      v: courses.length > 0 ? "Courses to promote" : "Cookie window",
+    },
+    {
+      k:
+        Number(programStats?.partners_count ?? 0) > 0
+          ? `${programStats.partners_count}`
+          : "Monthly",
+      v: Number(programStats?.partners_count ?? 0) > 0 ? "Active partners" : "Global payouts",
+    },
+  ];
+
   const avgPrice =
     courses.length > 0
       ? Math.round(
@@ -188,11 +215,7 @@ export default function Affiliates() {
                 </Button>
               </div>
               <div className="grid grid-cols-3 gap-4 pt-4 max-w-md">
-                {[
-                  { k: "Up to 20%", v: "Commission" },
-                  { k: "30 days", v: "Cookie window" },
-                  { k: "Monthly", v: "Global payouts" },
-                ].map((s) => (
+                {heroStats.map((s) => (
                   <div key={s.v}>
                     <p className="font-heading text-xl font-bold">{s.k}</p>
                     <p className="text-xs text-muted-foreground">{s.v}</p>
