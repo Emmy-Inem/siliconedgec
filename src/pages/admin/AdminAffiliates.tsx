@@ -11,7 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Search, Wallet, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
+
+// Partner earnings are quoted globally in USD, matching the Career page and partner dashboard.
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
+    Number(n) || 0,
+  );
 
 export default function AdminAffiliates() {
   const qc = useQueryClient();
@@ -29,7 +34,7 @@ export default function AdminAffiliates() {
       const [{ data: affiliates }, { data: referrals }, { data: payouts }, { data: clicks }, { data: selections }, { data: courses }] = await Promise.all([
         supabase.from("affiliates").select("*").order("created_at", { ascending: false }),
         supabase.from("affiliate_referrals").select("affiliate_id, amount, commission, status"),
-        supabase.from("affiliate_payouts").select("affiliate_id, amount, status"),
+        supabase.from("affiliate_payouts").select("*").order("created_at", { ascending: false }),
         supabase.from("affiliate_clicks").select("affiliate_id"),
         (supabase as any).from("affiliate_course_selections").select("*"),
         supabase.from("courses").select("id, title"),
