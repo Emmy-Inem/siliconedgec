@@ -115,8 +115,8 @@ export default function AdminAffiliates() {
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           { label: "Total affiliates", value: String(totals.affiliates) },
-          { label: "Affiliate-driven revenue", value: formatNaira(totals.revenue) },
-          { label: "Commission owed (lifetime)", value: formatNaira(totals.commission) },
+          { label: "Affiliate-driven revenue", value: money(totals.revenue) },
+          { label: "Commission owed (lifetime)", value: money(totals.commission) },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="p-5 space-y-1">
@@ -180,8 +180,8 @@ export default function AdminAffiliates() {
                       </TableCell>
                       <TableCell>{s.clicks}</TableCell>
                       <TableCell>{s.referrals}</TableCell>
-                      <TableCell>{formatNaira(s.earned)}</TableCell>
-                      <TableCell>{formatNaira(s.paid)}</TableCell>
+                      <TableCell>{money(s.earned)}</TableCell>
+                      <TableCell>{money(s.paid)}</TableCell>
                       <TableCell>
                         <Select value={a.status} onValueChange={(v) => update(a.id, { status: v })}>
                           <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
@@ -270,7 +270,7 @@ export default function AdminAffiliates() {
           <DialogHeader><DialogTitle>Record payout — {payoutFor?.full_name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="po-amount">Amount (₦)</Label>
+              <Label htmlFor="po-amount">Amount (USD)</Label>
               <Input id="po-amount" type="number" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} />
             </div>
             <div className="space-y-2">
