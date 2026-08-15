@@ -277,9 +277,59 @@ export default function AdminAffiliates() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Payout queue</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {(data?.payouts ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No payout requests yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Partner</TableHead><TableHead>Amount</TableHead><TableHead>Requested</TableHead>
+                  <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(data?.payouts ?? []).map((p: any) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{affiliateName(p.affiliate_id)}</TableCell>
+                    <TableCell>{money(Number(p.amount ?? 0))}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={p.status === "paid" ? "default" : "secondary"} className="capitalize">
+                        {p.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      {p.status !== "paid" && p.status !== "approved" && (
+                        <Button size="sm" variant="outline" onClick={() => setPayoutStatus(p.id, "approved")}>
+                          Approve
+                        </Button>
+                      )}
+                      {p.status !== "paid" && (
+                        <Button size="sm" onClick={() => setPayoutStatus(p.id, "paid")}>Mark paid</Button>
+                      )}
+                      {p.status !== "paid" && p.status !== "rejected" && (
+                        <Button size="sm" variant="ghost" onClick={() => setPayoutStatus(p.id, "rejected")}>
+                          Reject
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       <Dialog open={!!payoutFor} onOpenChange={(o) => !o && setPayoutFor(null)}>
         <DialogContent>
-          <div />
           <DialogHeader><DialogTitle>Record payout — {payoutFor?.full_name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
