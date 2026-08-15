@@ -279,6 +279,7 @@ export default function AdminAffiliates() {
 
       <Dialog open={!!payoutFor} onOpenChange={(o) => !o && setPayoutFor(null)}>
         <DialogContent>
+          <div />
           <DialogHeader><DialogTitle>Record payout — {payoutFor?.full_name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
