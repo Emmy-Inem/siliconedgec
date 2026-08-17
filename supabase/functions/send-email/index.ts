@@ -1,10 +1,13 @@
 // Transactional email sender. Loads admin-managed templates (tpl_*) from
-// site_content, applies {{variables}}, and sends via Resend if configured.
-// If RESEND_API_KEY is missing, the call is logged and returns 200 so
-// product flows are never blocked.
+// site_content, applies {{variables}}, and enqueues the message on the
+// platform email queue (sender domain notify.siliconedgec.com).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
 import { logEmail } from "../_shared/email-log.ts";
+
+const SENDER_DOMAIN = "notify.siliconedgec.com";
+const DEFAULT_FROM = `Silicon Edge Consulting <info@${SENDER_DOMAIN}>`;
+const EXTRA_ADMIN_EMAILS = ["inememmanuel@gmail.com"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
