@@ -1,10 +1,13 @@
 // Transactional email sender. Loads admin-managed templates (tpl_*) from
-// site_content, applies {{variables}}, and sends via Resend if configured.
-// If RESEND_API_KEY is missing, the call is logged and returns 200 so
-// product flows are never blocked.
+// site_content, applies {{variables}}, and enqueues the message on the
+// platform email queue (sender domain notify.siliconedgec.com).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
 import { logEmail } from "../_shared/email-log.ts";
+
+const SENDER_DOMAIN = "notify.siliconedgec.com";
+const DEFAULT_FROM = `Silicon Edge Consulting <info@${SENDER_DOMAIN}>`;
+const EXTRA_ADMIN_EMAILS = ["inememmanuel@gmail.com"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,6 +99,10 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    );
     const {
       template_key,
       variables,
@@ -114,11 +121,7 @@ Deno.serve(async (req) => {
 
     if (template_key) {
       // New path: load admin-managed template from site_content (tpl_* keys)
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      );
-      const { data: rows } = await supabase
+      const { data: rows } = await admin
         .from("site_content")
         .select("key, value")
         .in("key", [`${template_key}_subject`, `${template_key}_body`]);
@@ -154,41 +157,70 @@ Deno.serve(async (req) => {
       user_id: (body as any).user_id ?? null,
     };
 
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_KEY) {
-      console.log("[send-email] RESEND_API_KEY not configured, skipping send", { to: payload.to, subject: payload.subject });
-      await logEmail({ ...logBase, status: "skipped", error_message: "No sender domain / provider key configured" });
-      return new Response(JSON.stringify({ skipped: true, reason: "RESEND_API_KEY not set" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // ---- recipients: the addressee plus (optionally) the internal team ----
+    const recipients = new Set<string>([payload.to]);
+    const wantsAdminCopy =
+      (body as any).copy_admins === true ||
+      ((body as any).copy_admins !== false && category === "automation");
+
+    if (wantsAdminCopy) {
+      const { data: toggle } = await admin
+        .from("site_content").select("value").eq("key", "automation_admin_copy").maybeSingle();
+      if (toggle?.value !== "off") {
+        const { data: staff } = await admin
+          .from("profiles").select("email").ilike("email", "%@siliconedgec.com");
+        for (const s of staff ?? []) if (s?.email) recipients.add(s.email as string);
+        for (const e of EXTRA_ADMIN_EMAILS) recipients.add(e);
+      }
     }
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: payload.from ?? "Silicon Edge <onboarding@resend.dev>",
-        to: [payload.to],
-        subject: payload.subject,
-        html: payload.html,
-        ...(payload.attachments && payload.attachments.length
-          ? { attachments: payload.attachments }
-          : {}),
-      }),
-    });
-
-    const result = await res.json();
-    if (!res.ok) {
-      await logEmail({ ...logBase, status: "failed", error_message: JSON.stringify(result) });
-      throw new Error(JSON.stringify(result));
+    const results: { to: string; ok: boolean; error?: string }[] = [];
+    for (const to of recipients) {
+      const messageId = crypto.randomUUID();
+      const isPrimary = to === payload.to;
+      const subject = isPrimary ? payload.subject : `[Silicon Edge copy] ${payload.subject}`;
+      try {
+        const { error } = await admin.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload: {
+            to,
+            from: payload.from ?? DEFAULT_FROM,
+            sender_domain: SENDER_DOMAIN,
+            subject,
+            html: payload.html,
+            purpose: "transactional",
+            label: template_key ?? (template as string | undefined) ?? category,
+            idempotency_key: messageId,
+            message_id: messageId,
+            queued_at: new Date().toISOString(),
+          },
+        });
+        if (error) throw new Error(error.message);
+        await logEmail({
+          ...logBase,
+          recipient_email: to,
+          subject,
+          status: "queued",
+          provider: "lovable",
+          message_id: messageId,
+        });
+        results.push({ to, ok: true });
+      } catch (e: any) {
+        await logEmail({
+          ...logBase,
+          recipient_email: to,
+          subject,
+          status: "failed",
+          provider: "lovable",
+          error_message: e?.message ?? String(e),
+        });
+        results.push({ to, ok: false, error: e?.message ?? String(e) });
+      }
     }
 
-    await logEmail({ ...logBase, status: "sent", message_id: result.id ?? null });
-
-    return new Response(JSON.stringify({ ok: true, id: result.id }), {
+    const ok = results.some((r) => r.ok);
+    return new Response(JSON.stringify({ ok, queued: results.filter((r) => r.ok).length, results }), {
+      status: ok ? 200 : 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
