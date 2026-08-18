@@ -167,9 +167,29 @@ Deno.serve(async (req) => {
       const { data: toggle } = await admin
         .from("site_content").select("value").eq("key", "automation_admin_copy").maybeSingle();
       if (toggle?.value !== "off") {
-        const { data: staff } = await admin
-          .from("profiles").select("email").ilike("email", "%@siliconedgec.com");
-        for (const s of staff ?? []) if (s?.email) recipients.add(s.email as string);
+        // profiles has no email column — resolve staff addresses from auth users
+        // (admins/support roles + anyone on the company domain).
+        try {
+          const { data: roles } = await admin
+            .from("user_roles").select("user_id").in("role", ["admin", "support"]);
+          const staffIds = new Set((roles ?? []).map((r: any) => r.user_id));
+          let page = 1;
+          while (page <= 10) {
+            const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+            const users = list?.users ?? [];
+            for (const u of users) {
+              const em = u.email ?? "";
+              if (!em) continue;
+              if (em.toLowerCase().endsWith("@siliconedgec.com") || staffIds.has(u.id)) {
+                recipients.add(em);
+              }
+            }
+            if (users.length < 200) break;
+            page++;
+          }
+        } catch (e) {
+          console.error("[send-email] staff lookup failed", e);
+        }
         for (const e of EXTRA_ADMIN_EMAILS) recipients.add(e);
       }
     }
