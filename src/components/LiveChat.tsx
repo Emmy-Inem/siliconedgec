@@ -178,7 +178,7 @@ export function LiveChat() {
                 <LifeBuoy className="h-10 w-10 text-primary/50" />
                 <p className="text-sm font-medium">Sign in to chat with our assistant</p>
                 <p className="text-xs text-muted-foreground">The AI assistant answers questions about courses, payments, cohorts and certificates — and can hand you over to a human any time.</p>
-                <Link to="/signin" className="mt-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium" onClick={() => setOpen(false)}>
+                <Link to="/sign-in" className="mt-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium" onClick={() => setOpen(false)}>
                   Sign in
                 </Link>
               </div>
