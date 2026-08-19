@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+        const res2 = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
           body: JSON.stringify({
@@ -216,6 +216,10 @@ Deno.serve(async (req) => {
             user_id: ev.user_id,
           }),
         });
+        if (!res2.ok) {
+          const detail = await res2.text().catch(() => "");
+          throw new Error(`send-email ${res2.status}: ${detail.slice(0, 500)}`);
+        }
         await admin.from("automation_events").update({ status: "sent", processed_at: new Date().toISOString() }).eq("id", ev.id);
         sent++;
       } catch (e) {
