@@ -225,6 +225,7 @@ Deno.serve(async (req) => {
             sender_domain: SENDER_DOMAIN,
             subject,
             html: payload.html,
+            text: htmlToText(payload.html) || subject,
             purpose: "transactional",
             label: template_key ?? (template as string | undefined) ?? category,
             idempotency_key: messageId,
