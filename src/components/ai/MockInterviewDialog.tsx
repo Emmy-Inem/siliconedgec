@@ -55,26 +55,11 @@ export function MockInterviewDialog({ defaultRole, courseId, cohortId }: { defau
   const finish = async () => {
     setLoading(true);
     const history = current && answer ? [...turns, { q: current.q, a: answer }] : turns;
-    const { data, error } = await supabase.functions.invoke("ai-mock-interview", { body: { action: "finish", role, level, history } });
+    const { data, error } = await supabase.functions.invoke("ai-mock-interview", { body: { action: "finish", role, level, history, courseId, cohortId } });
     if (!error) {
       setFinalReport(data);
-      const { data: auth } = await supabase.auth.getUser();
-      if (auth.user) {
-        const { error: saveError } = await supabase.from("mock_interview_sessions").insert({
-          user_id: auth.user.id,
-          course_id: courseId ?? null,
-          cohort_id: cohortId ?? null,
-          target_role: role.trim(),
-          experience_level: level,
-          score: Number(data.score) || 0,
-          summary: String(data.summary ?? ""),
-          strengths: Array.isArray(data.strengths) ? data.strengths : [],
-          improvements: Array.isArray(data.improvements) ? data.improvements : [],
-          transcript: history,
-        } as any);
-        if (saveError) toast({ title: "Report created but not saved", description: saveError.message, variant: "destructive" });
-        else queryClient.invalidateQueries({ queryKey: ["mock-interview-history"] });
-      }
+      if (data?.saved === false) toast({ title: "Report created but not saved", variant: "destructive" });
+      else queryClient.invalidateQueries({ queryKey: ["mock-interview-history"] });
     }
     else toast({ title: "Error", description: error.message, variant: "destructive" });
     setLoading(false);

@@ -19,6 +19,8 @@ Deno.serve(async (req) => {
     const role: string = (body.role ?? "Software Engineer").toString().slice(0, 120);
     const level: string = (body.level ?? "mid").toString().slice(0, 40);
     const history: { q: string; a: string }[] = Array.isArray(body.history) ? body.history.slice(0, 10) : [];
+    const courseId: string | null = typeof body.courseId === "string" ? body.courseId : null;
+    const cohortId: string | null = typeof body.cohortId === "string" ? body.cohortId : null;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
@@ -51,6 +53,28 @@ Deno.serve(async (req) => {
     const raw = j.choices?.[0]?.message?.content ?? "{}";
     let parsed: any = {};
     try { parsed = JSON.parse(raw); } catch { parsed = { question: raw }; }
+
+    if (action === "finish") {
+      // Persist the AI-produced report server-side so scores can never be client-supplied.
+      const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const score = Math.max(0, Math.min(100, Math.round(Number(parsed.score) || 0)));
+      const { error: saveError } = await admin.from("mock_interview_sessions").insert({
+        user_id: ur.user.id,
+        course_id: courseId,
+        cohort_id: cohortId,
+        target_role: role,
+        experience_level: level,
+        score,
+        summary: String(parsed.summary ?? "").slice(0, 4000),
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 10) : [],
+        improvements: Array.isArray(parsed.improvements) ? parsed.improvements.slice(0, 10) : [],
+        transcript: history,
+      });
+      if (saveError) console.error("save interview session failed", saveError.message);
+      parsed.score = score;
+      parsed.saved = !saveError;
+    }
+
     return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error(e);
