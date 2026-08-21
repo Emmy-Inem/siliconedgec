@@ -26,6 +26,7 @@ export default function AdminCommunicationHub() {
         { value: "email-templates", label: "Email Templates", content: <AdminEmailTemplates /> },
         { value: "newsletter", label: "Newsletter", content: <AdminNewsletter /> },
         { value: "email-delivery", label: "Email Delivery", content: <AdminEmailDelivery /> },
+        { value: "email-queue", label: "Email Queue", content: <AdminEmailQueue /> },
         { value: "automations", label: "Automations", content: <AdminAutomations /> },
       ]}
     />
