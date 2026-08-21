@@ -8,6 +8,7 @@ import AdminEmail from "../AdminEmail";
 import AdminEmailTemplates from "../AdminEmailTemplates";
 import AdminNewsletter from "../AdminNewsletter";
 import AdminEmailDelivery from "../AdminEmailDelivery";
+import AdminEmailQueue from "../AdminEmailQueue";
 import AdminAutomations from "../AdminAutomations";
 
 export default function AdminCommunicationHub() {
