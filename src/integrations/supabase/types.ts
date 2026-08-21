@@ -4419,6 +4419,7 @@ export type Database = {
         }
         Returns: string
       }
+      admin_email_queue_overview: { Args: { p_limit?: number }; Returns: Json }
       admin_record_installment_payment: {
         Args: {
           p_amount: number
