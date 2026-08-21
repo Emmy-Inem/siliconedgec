@@ -52,6 +52,24 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
+// The email API requires a plain-text alternative. Some enqueuers only provide
+// HTML, so derive a text part when it is missing.
+function htmlToText(html: string): string {
+  return (html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
   supabase: ReturnType<typeof createClient>,
@@ -258,7 +276,7 @@ Deno.serve(async (req) => {
             sender_domain: payload.sender_domain,
             subject: payload.subject,
             html: payload.html,
-            text: payload.text,
+            text: payload.text || htmlToText(payload.html) || payload.subject,
             purpose: payload.purpose,
             label: payload.label,
             idempotency_key: payload.idempotency_key,
