@@ -74,40 +74,23 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
               </span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
-              Cloud, AI, DevOps, Cybersecurity, Web — taught live by engineers actively shipping in tech.
-              No filler, no fluff — only the skills employers actually pay for.
+              Cloud, AI, DevOps, Cybersecurity and Web programmes, taught live by working engineers
+              and built around the skills employers hire for.
             </p>
 
             {/* Trust strip */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-8 pt-7 border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-1.5">
-                  {LEARNER_AVATARS.map((src, i) => (
-                    <img
-                      key={i}
-                      src={src}
-                      alt={`Silicon Edge learner ${i + 1}`}
-                      loading="lazy"
-                      className="w-7 h-7 rounded-full ring-2 ring-white object-cover shadow-sm"
-                    />
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground"><span className="font-bold text-foreground">2,000+</span> learners</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-gold text-gold" />
-                ))}
-                <span className="text-xs text-muted-foreground ml-1"><span className="font-bold text-foreground">4.9</span> avg rating</span>
+              <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="font-bold text-foreground">{coursesCount}</span> programme{coursesCount === 1 ? "" : "s"} available
               </div>
               <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span><span className="font-bold text-foreground">{Math.max(coursesCount, 1)}</span> live program{coursesCount === 1 ? "" : "s"} now</span>
+                Live sessions with recordings
+              </div>
+              <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                Verified certificate on completion
               </div>
             </div>
+
           </motion.div>
 
           {/* Right — floating track tiles */}
