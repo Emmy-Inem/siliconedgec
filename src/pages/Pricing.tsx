@@ -98,21 +98,6 @@ const faqs = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Sarah K.",
-    role: "Cloud Administrator",
-    quote:
-      "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer.",
-  },
-  {
-    name: "David C.",
-    role: "Junior Software Engineer",
-    quote:
-      "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role.",
-  },
-];
-
 const staggerContainer = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12 } },
