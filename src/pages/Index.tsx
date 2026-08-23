@@ -1285,21 +1285,23 @@ export default function Index() {
       {/* ───────────────── TRUST + TESTIMONIALS (masonry) ───────────────── */}
       <section className="py-20 md:py-24">
         <div className="container mx-auto px-5 sm:px-6">
-          <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
-            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              {home?.testimonials_title ? (
-                <span className="text-gradient">{home.testimonials_title}</span>
-              ) : (
-                <>Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span></>
-              )}
-            </h2>
-          </motion.div>
+          {testimonials.length > 0 && (
+            <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Student feedback"}</p>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
+                {home?.testimonials_title ? (
+                  <span className="text-gradient">{home.testimonials_title}</span>
+                ) : (
+                  <>What our <span className="text-gradient">students say</span><span className="text-gold">.</span></>
+                )}
+              </h2>
+            </motion.div>
+          )}
 
           {/* trust chips */}
           <motion.div
             {...sectionReveal}
-            className="flex flex-wrap justify-center gap-2 mb-12"
+            className="flex flex-wrap justify-center gap-2"
           >
             {[
               { icon: BadgeCheck, label: "Verified Certificates" },
@@ -1316,7 +1318,12 @@ export default function Index() {
           </motion.div>
 
           {/* vertical scrolling columns */}
-          <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
+          {testimonials.length > 0 && (
+            <div className="mt-12">
+              <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
+            </div>
+          )}
+
         </div>
       </section>
 
