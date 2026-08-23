@@ -624,25 +624,17 @@ export default function Index() {
     countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 0,
   };
 
-  const baseInstructors = (dbInstructors && dbInstructors.length > 0)
-    ? dbInstructors.map((i, idx) => ({
-        id: i.id,
-        name: i.name,
-        role: i.role ?? "Instructor",
-        rating: Number(i.rating ?? 4.8),
-        students: i.students_count ?? 0,
-        courses: i.courses_count ?? 0,
-        image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
-      }))
-    : fallbackInstructorImages.map((image, idx) => ({
-        id: `placeholder-${idx}`,
-        name: ["Emeka Obi", "Ngozi Adekunle", "Tobi Balogun", "Amara Eze"][idx],
-        role: ["Senior Software Engineer", "Cloud Architect", "DevOps Lead", "AI/ML Specialist"][idx],
-        rating: 4.9,
-        students: 0,
-        courses: 0,
-        image,
-      }));
+  /* Only real instructors from the database — no invented profiles or ratings. */
+  const baseInstructors = (dbInstructors ?? []).map((i, idx) => ({
+    id: i.id,
+    name: i.name,
+    role: i.role ?? "Instructor",
+    rating: i.rating != null ? Number(i.rating) : null,
+    students: i.students_count ?? 0,
+    courses: i.courses_count ?? 0,
+    image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
+  }));
+
 
   /* admin can override the 4 hero collage images by URL */
   const heroOverrides = [home?.hero_image_1, home?.hero_image_2, home?.hero_image_3, home?.hero_image_4];
