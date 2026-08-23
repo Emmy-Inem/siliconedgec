@@ -98,21 +98,6 @@ const faqs = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Sarah K.",
-    role: "Cloud Administrator",
-    quote:
-      "Finally, a course I finished! The live tutors at Silicon Edge kept me on track. Built a solid portfolio, and their job readiness training helped me land a remote Cloud role fast. Game-changer.",
-  },
-  {
-    name: "David C.",
-    role: "Junior Software Engineer",
-    quote:
-      "Silicon Edge's support is top-notch. Tutors were always there. Lifetime access to recordings and real-life projects made learning effective. Now thriving in my Software Engineering role.",
-  },
-];
-
 const staggerContainer = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12 } },
@@ -346,68 +331,8 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 bg-hero relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-30" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div {...sectionReveal} className="text-center mb-10">
-            <p className="text-gold font-semibold text-sm tracking-widest uppercase mb-3 drop-shadow-[0_2px_8px_rgba(177,59,255,0.35)]">
-              We build tech Careers
-            </p>
-            <h2 className="font-heading text-2xl md:text-4xl font-bold text-white mb-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
-              Our average call quality rating is 4.4 out of 5.
-            </h2>
-            <p className="text-white/80 text-base">
-              That leads to happy tweets like these:
-            </p>
-          </motion.div>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
-          >
-            {testimonials.map((t) => (
-              <motion.div
-                key={t.name}
-                variants={staggerItem}
-                whileHover={{ y: -5 }}
-                className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-md p-6 space-y-4 hover:border-primary/60 hover:bg-white/[0.14] transition-all shadow-xl shadow-black/20"
-              >
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <Star
-                      key={j}
-                      className="h-4 w-4 fill-gold text-gold"
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-white leading-relaxed italic">
-                  "{t.quote}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/30 ring-1 ring-white/30 flex items-center justify-center">
-                    <span className="font-heading font-bold text-white text-sm">
-                      {t.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-heading font-semibold text-sm text-white">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-white/70">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* FAQ */}
       <section className="py-20">

@@ -143,12 +143,8 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
 
   return (
     <div ref={ref} onMouseMove={handle} onMouseLeave={reset} className="relative w-full aspect-square max-w-[520px] mx-auto" style={{ perspective: 1200 }}>
-      {/* rotating glow */}
-      <motion.div
-        className="absolute inset-[12%] rounded-full bg-gradient-to-tr from-primary/40 via-accent/20 to-gold/30 blur-3xl opacity-60"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-      />
+      <div className="absolute inset-[12%] rounded-full bg-primary/10 blur-3xl" />
+
       <motion.div style={{ rotateX: rotX, rotateY: rotY, transformStyle: "preserve-3d" }} className="absolute inset-0">
         {cards.map((inst, i) => {
           const p = positions[i];
@@ -170,30 +166,6 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
             </motion.div>
           );
         })}
-        {/* floating UI snippet */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, type: "spring" }}
-          className="absolute -bottom-4 -left-4 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
-          style={{ transform: "translateZ(60px)" }}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-[11px] font-medium">Live class · 24 online</span>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.75, type: "spring" }}
-          className="absolute -top-3 right-2 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
-          style={{ transform: "translateZ(60px)" }}
-        >
-          <Trophy className="h-3.5 w-3.5 text-gold" />
-          <span className="text-[11px] font-medium">Project graded · A+</span>
-        </motion.div>
       </motion.div>
     </div>
   );
@@ -574,14 +546,10 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
   );
 }
 
-const fallbackTestimonials = [
-  { id: "fb1", name: "Chiamaka Okonkwo", role: "Cloud Administrator at Flutterwave", quote: "Finally, a course I actually finished. The live tutors kept me accountable and the projects landed me a remote Cloud role within months. Genuinely a game-changer.", avatar_url: testimonial1 as string | null, rating: 5 },
-  { id: "fb2", name: "Daniel Adeyemi", role: "Junior Software Engineer at Andela", quote: "The support is on another level. Tutors replied within minutes, and the lifetime access to recordings meant I never fell behind. Highly recommend.", avatar_url: testimonial2 as string | null, rating: 5 },
-  { id: "fb3", name: "Aisha Bello", role: "DevOps Engineer at Paystack", quote: "I switched careers in seven months. The mock interviews were brutal in the best possible way and prepared me for every question I got asked.", avatar_url: testimonial3 as string | null, rating: 5 },
-  { id: "fb4", name: "Tunde Ogunbiyi", role: "Data Analyst at MTN Nigeria", quote: "Cohort energy is unreal. I built a portfolio I'm genuinely proud to show recruiters and made friends I still ship code with today.", avatar_url: testimonial4 as string | null, rating: 5 },
-  { id: "fb5", name: "Priya Ramachandran", role: "Software Engineer at Microsoft", quote: "Mentors actually working at Google, AWS and Microsoft. The bar is high — exactly what I needed to make the leap to a senior role.", avatar_url: testimonial5 as string | null, rating: 5 },
-  { id: "fb6", name: "Kwame Asante", role: "ML Engineer at Spotify", quote: "Real projects, real code reviews, no fluff. The career support after the course is honestly what closed the deal for me. Best investment I've made.", avatar_url: testimonial6 as string | null, rating: 5 },
-];
+type FallbackTestimonial = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
+/* No invented testimonials — only real entries from the database are shown. */
+const fallbackTestimonials: FallbackTestimonial[] = [];
+
 
 const staggerContainer = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const staggerItem = {
@@ -656,25 +624,17 @@ export default function Index() {
     countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 0,
   };
 
-  const baseInstructors = (dbInstructors && dbInstructors.length > 0)
-    ? dbInstructors.map((i, idx) => ({
-        id: i.id,
-        name: i.name,
-        role: i.role ?? "Instructor",
-        rating: Number(i.rating ?? 4.8),
-        students: i.students_count ?? 0,
-        courses: i.courses_count ?? 0,
-        image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
-      }))
-    : fallbackInstructorImages.map((image, idx) => ({
-        id: `placeholder-${idx}`,
-        name: ["Emeka Obi", "Ngozi Adekunle", "Tobi Balogun", "Amara Eze"][idx],
-        role: ["Senior Software Engineer", "Cloud Architect", "DevOps Lead", "AI/ML Specialist"][idx],
-        rating: 4.9,
-        students: 0,
-        courses: 0,
-        image,
-      }));
+  /* Only real instructors from the database — no invented profiles or ratings. */
+  const baseInstructors = (dbInstructors ?? []).map((i, idx) => ({
+    id: i.id,
+    name: i.name,
+    role: i.role ?? "Instructor",
+    rating: i.rating != null ? Number(i.rating) : null,
+    students: i.students_count ?? 0,
+    courses: i.courses_count ?? 0,
+    image: i.avatar_url || fallbackInstructorImages[idx % fallbackInstructorImages.length],
+  }));
+
 
   /* admin can override the 4 hero collage images by URL */
   const heroOverrides = [home?.hero_image_1, home?.hero_image_2, home?.hero_image_3, home?.hero_image_4];
@@ -734,7 +694,7 @@ export default function Index() {
     }
   };
 
-  const heroAvatars = instructors.slice(0, 5).map((i) => i.image);
+  const heroAvatars = (instructors.length > 0 ? instructors.map((i) => i.image) : fallbackInstructorImages).slice(0, 5);
 
   return (
     <div className="min-h-screen">
@@ -1151,20 +1111,21 @@ export default function Index() {
       </section>
 
       {/* ───────────────── INSTRUCTORS RAIL ───────────────── */}
+      {instructors.length > 0 && (
       <section className="py-20">
         <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
+              <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "Our instructors"}</p>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
                 {home?.instructors_title ? (
                   <span className="text-gradient">{home.instructors_title}</span>
                 ) : (
-                  <>Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span></>
+                  <>Taught by people <span className="text-gradient">actively working</span> in tech<span className="text-gold">.</span></>
                 )}
               </h2>
             </div>
-            <a href={communityUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></a>
+            <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">View all instructors <ChevronRight className="h-4 w-4 ml-1" /></Link>
           </motion.div>
 
           <motion.div
@@ -1194,10 +1155,12 @@ export default function Index() {
                   <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
                     <p className="text-white/75 text-sm mt-0.5">{inst.role}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star className="h-4 w-4 fill-gold text-gold" />
-                      <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
-                    </div>
+                    {inst.rating != null && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star className="h-4 w-4 fill-gold text-gold" />
+                        <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </motion.div>
@@ -1205,6 +1168,8 @@ export default function Index() {
           </motion.div>
         </div>
       </section>
+      )}
+
 
       {/* ───────────────── MENTORS BLOCK ───────────────── */}
       <section className="py-20 bg-hero relative overflow-hidden">
@@ -1320,21 +1285,23 @@ export default function Index() {
       {/* ───────────────── TRUST + TESTIMONIALS (masonry) ───────────────── */}
       <section className="py-20 md:py-24">
         <div className="container mx-auto px-5 sm:px-6">
-          <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
-            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-              {home?.testimonials_title ? (
-                <span className="text-gradient">{home.testimonials_title}</span>
-              ) : (
-                <>Don't take <span className="text-gradient">our word for it</span><span className="text-gold">.</span></>
-              )}
-            </h2>
-          </motion.div>
+          {testimonials.length > 0 && (
+            <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
+              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Student feedback"}</p>
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
+                {home?.testimonials_title ? (
+                  <span className="text-gradient">{home.testimonials_title}</span>
+                ) : (
+                  <>What our <span className="text-gradient">students say</span><span className="text-gold">.</span></>
+                )}
+              </h2>
+            </motion.div>
+          )}
 
           {/* trust chips */}
           <motion.div
             {...sectionReveal}
-            className="flex flex-wrap justify-center gap-2 mb-12"
+            className="flex flex-wrap justify-center gap-2"
           >
             {[
               { icon: BadgeCheck, label: "Verified Certificates" },
@@ -1351,7 +1318,12 @@ export default function Index() {
           </motion.div>
 
           {/* vertical scrolling columns */}
-          <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
+          {testimonials.length > 0 && (
+            <div className="mt-12">
+              <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
+            </div>
+          )}
+
         </div>
       </section>
 
@@ -1362,22 +1334,18 @@ export default function Index() {
           <div className="perspective-grid absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-t from-hero via-hero/80 to-transparent" />
         </div>
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          style={{ willChange: "opacity" }}
-        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl" />
         <div className="container mx-auto px-5 sm:px-6 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Your edge starts now"}</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Enrolment is open"}</p>
             <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">
               {home?.cta_title ? (
                 <span className="text-gradient">{home.cta_title}</span>
               ) : (
-              <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start learning</span><span className="text-gold">.</span></>
+              <>Start your <span className="text-gradient">next career move</span><span className="text-gold">.</span></>
               )}
             </h2>
+
             <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">
               {home?.cta_subtitle ?? "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere."}
             </p>

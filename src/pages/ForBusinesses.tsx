@@ -41,19 +41,6 @@ const techCategories = [
   { icon: Brain, title: "Data & AI", desc: "PyTorch, Tensorflow, SQL, etc" },
 ];
 
-const testimonials = [
-  {
-    quote: "Silicon Edge Consulting delivered exactly what we needed. Their customized IT training for our team was exceptional; the instructor-led format truly engaged our staff. We've seen a noticeable improvement in productivity and confidence. Highly recommend for any business looking to effectively upskill their workforce.",
-    name: "Adaobi Eze",
-    role: "Head of People, Flutterwave",
-  },
-  {
-    quote: "We engaged Silicon Edge for a cybersecurity training program, and the experience was seamless. The courses were highly practical, with real-world applications, and their dedicated support ensured our team got the most out of every session. A great partner for corporate learning.",
-    name: "Bernhard Müller",
-    role: "CTO, Global Innovations Ltd.",
-  },
-];
-
 const packages = [
   {
     icon: Users,
@@ -379,29 +366,6 @@ export default function ForBusinesses() {
           </div>
 
           <p className="text-hero-muted text-center mt-8 text-sm">... and many more technologies</p>
-        </div>
-      </section>
-
-      {/* ─── Testimonials ─── */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                {...fadeUp}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-card rounded-xl border border-border p-8"
-              >
-                <Quote className="h-6 w-6 text-primary/30 mb-4" />
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6">"{t.quote}"</p>
-                <div>
-                  <p className="font-heading font-semibold text-sm">{t.name}</p>
-                  <p className="text-muted-foreground text-xs">{t.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
