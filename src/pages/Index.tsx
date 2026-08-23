@@ -143,12 +143,8 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
 
   return (
     <div ref={ref} onMouseMove={handle} onMouseLeave={reset} className="relative w-full aspect-square max-w-[520px] mx-auto" style={{ perspective: 1200 }}>
-      {/* rotating glow */}
-      <motion.div
-        className="absolute inset-[12%] rounded-full bg-gradient-to-tr from-primary/40 via-accent/20 to-gold/30 blur-3xl opacity-60"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-      />
+      <div className="absolute inset-[12%] rounded-full bg-primary/10 blur-3xl" />
+
       <motion.div style={{ rotateX: rotX, rotateY: rotY, transformStyle: "preserve-3d" }} className="absolute inset-0">
         {cards.map((inst, i) => {
           const p = positions[i];
