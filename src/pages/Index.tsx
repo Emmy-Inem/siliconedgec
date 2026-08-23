@@ -166,30 +166,6 @@ function TiltCollage({ instructors }: { instructors: { name: string; role: strin
             </motion.div>
           );
         })}
-        {/* floating UI snippet */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, type: "spring" }}
-          className="absolute -bottom-4 -left-4 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
-          style={{ transform: "translateZ(60px)" }}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-[11px] font-medium">Live class · 24 online</span>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.75, type: "spring" }}
-          className="absolute -top-3 right-2 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border shadow-xl"
-          style={{ transform: "translateZ(60px)" }}
-        >
-          <Trophy className="h-3.5 w-3.5 text-gold" />
-          <span className="text-[11px] font-medium">Project graded · A+</span>
-        </motion.div>
       </motion.div>
     </div>
   );
