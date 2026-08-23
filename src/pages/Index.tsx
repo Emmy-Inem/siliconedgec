@@ -1334,22 +1334,18 @@ export default function Index() {
           <div className="perspective-grid absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-t from-hero via-hero/80 to-transparent" />
         </div>
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl"
-          animate={reduce ? {} : { opacity: [0.6, 0.9, 0.6] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          style={{ willChange: "opacity" }}
-        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl" />
         <div className="container mx-auto px-5 sm:px-6 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
-            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Your edge starts now"}</p>
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Enrolment is open"}</p>
             <h2 className="font-heading text-4xl md:text-6xl font-bold text-hero mb-5 text-balance leading-[1.05]">
               {home?.cta_title ? (
                 <span className="text-gradient">{home.cta_title}</span>
               ) : (
-              <>Stop scrolling. <br className="hidden sm:block" /><span className="text-gradient">Start learning</span><span className="text-gold">.</span></>
+              <>Start your <span className="text-gradient">next career move</span><span className="text-gold">.</span></>
               )}
             </h2>
+
             <p className="text-hero-muted max-w-lg mx-auto mb-8 text-base md:text-lg">
               {home?.cta_subtitle ?? "Join the next cohort and graduate with a portfolio, a network, and the confidence to compete anywhere."}
             </p>
