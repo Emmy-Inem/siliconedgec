@@ -694,7 +694,7 @@ export default function Index() {
     }
   };
 
-  const heroAvatars = instructors.slice(0, 5).map((i) => i.image);
+  const heroAvatars = (instructors.length > 0 ? instructors.map((i) => i.image) : fallbackInstructorImages).slice(0, 5);
 
   return (
     <div className="min-h-screen">
