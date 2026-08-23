@@ -1111,20 +1111,21 @@ export default function Index() {
       </section>
 
       {/* ───────────────── INSTRUCTORS RAIL ───────────────── */}
+      {instructors.length > 0 && (
       <section className="py-20">
         <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "World-class instructors"}</p>
+              <p className="text-foreground font-semibold text-sm tracking-widest uppercase mb-3">{home?.instructors_eyebrow ?? "Our instructors"}</p>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance max-w-2xl">
                 {home?.instructors_title ? (
                   <span className="text-gradient">{home.instructors_title}</span>
                 ) : (
-                  <>Taught by people <span className="text-gradient">actively shipping</span> in tech<span className="text-gold">.</span></>
+                  <>Taught by people <span className="text-gradient">actively working</span> in tech<span className="text-gold">.</span></>
                 )}
               </h2>
             </div>
-            <a href={communityUrl} target="_blank" rel="noopener noreferrer" className="text-primary font-medium text-sm flex items-center hover:underline">Meet them all <ChevronRight className="h-4 w-4 ml-1" /></a>
+            <Link to="/instructors" className="text-primary font-medium text-sm flex items-center hover:underline">View all instructors <ChevronRight className="h-4 w-4 ml-1" /></Link>
           </motion.div>
 
           <motion.div
@@ -1154,10 +1155,12 @@ export default function Index() {
                   <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <h3 className="font-heading font-semibold text-white text-lg leading-tight">{inst.name}</h3>
                     <p className="text-white/75 text-sm mt-0.5">{inst.role}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star className="h-4 w-4 fill-gold text-gold" />
-                      <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
-                    </div>
+                    {inst.rating != null && (
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star className="h-4 w-4 fill-gold text-gold" />
+                        <span className="text-xs text-white/90 font-medium">{inst.rating}</span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </motion.div>
@@ -1165,6 +1168,8 @@ export default function Index() {
           </motion.div>
         </div>
       </section>
+      )}
+
 
       {/* ───────────────── MENTORS BLOCK ───────────────── */}
       <section className="py-20 bg-hero relative overflow-hidden">
