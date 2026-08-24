@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, Star } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -147,23 +147,8 @@ export default function Pricing() {
         {/* Decorative blobs */}
         <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
-        {/* Floating sparkle pills */}
-        <motion.div
-          aria-hidden
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden md:flex absolute top-24 left-12 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-primary"
-        >
-          <span className="w-2 h-2 rounded-full bg-gold" /> Job-ready
-        </motion.div>
-        <motion.div
-          aria-hidden
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          className="hidden md:flex absolute top-32 right-12 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-foreground"
-        >
-          <span className="w-2 h-2 rounded-full bg-primary" /> Cohort starts soon
-        </motion.div>
+        {/* Floating sparkle pills removed */}
+
         <div className="container mx-auto px-4 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

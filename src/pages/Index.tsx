@@ -741,14 +741,15 @@ export default function Index() {
         >
           <div className="max-w-3xl mx-auto text-center relative z-10">
             {/* eyebrow pill */}
-            <motion.div
+            <motion.p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-6"
             >
-              <Star className="h-3 w-3" /> {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
-            </motion.div>
+              {home?.hero_eyebrow ?? "Live, instructor-led tech training"}
+            </motion.p>
+
 
             {/* center brand mark — favicon */}
             <motion.div

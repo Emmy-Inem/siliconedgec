@@ -8,7 +8,6 @@ import { SEO } from "@/components/SEO";
 import { Loader2, ArrowLeft, FileText, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
 
 interface CmsPage {
   title: string;
@@ -118,10 +117,10 @@ export default function CmsPagePublic() {
                 </nav>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-                      <Star className="h-3 w-3" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-5">
                       {hero.eyebrow ?? "Silicon Edge Consulting"}
-                    </div>
+                    </p>
+
                     <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
                       <span className="text-gradient">{page.title}</span>
                       <span className="text-gold">.</span>
