@@ -185,20 +185,13 @@ export default function ForBusinesses() {
         />
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
-        <motion.div
-          aria-hidden
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden xl:flex absolute top-24 right-8 items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-primary/15 shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.4)] text-xs font-medium text-primary z-10"
-        >
-          <span className="w-2 h-2 rounded-full bg-gold" /> Trusted by 50+ teams
-        </motion.div>
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-5">
-                <Star className="h-3 w-3" /> Corporate training partner
-              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-5">
+                Corporate training partner
+              </p>
+
               <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05] tracking-tight">
                 Give your workforce a <span className="text-gradient">winning edge</span><span className="text-gold">.</span>
               </h1>
