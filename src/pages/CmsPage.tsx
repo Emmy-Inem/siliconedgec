@@ -8,7 +8,6 @@ import { SEO } from "@/components/SEO";
 import { Loader2, ArrowLeft, FileText, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
 
 interface CmsPage {
   title: string;
