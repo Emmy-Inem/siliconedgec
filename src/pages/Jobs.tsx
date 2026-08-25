@@ -26,8 +26,8 @@ export default function Jobs() {
       <section className="pt-28 pb-12 bg-gradient-to-b from-primary/5 to-background border-b border-border">
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary">
-              <Briefcase className="h-3 w-3" /> Career Opportunities
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Career opportunities
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold mt-4">Land your next tech role<span className="text-gold">.</span></h1>
             <p className="text-muted-foreground mt-4 text-lg">Curated jobs from our hiring partners — exclusively for the Silicon Edge community.</p>

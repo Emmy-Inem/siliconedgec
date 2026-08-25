@@ -95,9 +95,8 @@ export default function Certificates() {
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-5">
-                <Award className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-primary">Verifiable · QR-Coded · LinkedIn-ready</span>
+              <div className="mb-5">
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Verifiable · QR-coded · LinkedIn-ready</span>
               </div>
               <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 leading-[1.05]">
                 Certificates that <span className="text-gradient">open doors</span><span className="text-gold">.</span>
