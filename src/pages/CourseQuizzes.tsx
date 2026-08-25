@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LessonQuiz } from "@/components/LessonQuiz";
 import { useCourse } from "@/hooks/useCourses";
-import { ClipboardCheck, ChevronLeft, Loader2, Trophy, Sparkles } from "lucide-react";
+import { ClipboardCheck, ChevronLeft, Loader2, Trophy, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { courseHref, courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { SEO } from "@/components/SEO";
@@ -107,14 +107,14 @@ export default function CourseQuizzes() {
           <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (data?.quizzes ?? []).length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center space-y-4">
-            <Sparkles className="h-6 w-6 text-primary mx-auto" />
+            <ClipboardList className="h-6 w-6 text-muted-foreground mx-auto" />
             <div>
               <p className="font-medium">No quizzes published yet</p>
               <p className="text-sm text-muted-foreground">Generate AI-powered practice quizzes to test yourself on every lesson.</p>
             </div>
             {user && (
               <Button onClick={() => revealAll.mutate()} disabled={revealAll.isPending}>
-                {revealAll.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing…</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate practice quizzes</>}
+                {revealAll.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing…</> : <><ClipboardList className="h-4 w-4 mr-2" /> Generate practice quizzes</>}
               </Button>
             )}
           </div>

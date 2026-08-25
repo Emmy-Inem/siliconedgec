@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, MinusCircle, Sparkles, Headphones, LifeBuoy, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -162,7 +162,7 @@ export function LiveChat() {
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  {escalated ? <><Headphones className="h-4 w-4" /> Silicon Edge Support</> : <><Sparkles className="h-4 w-4" /> Silicon Edge Support</>}
+                  <><Headphones className="h-4 w-4" /> Silicon Edge Support</>
                 </h3>
                 <p className="text-[10px] opacity-80">
                   {escalated ? "Connected to our team — they reply here and by email" : "Instant answers, 24/7"}
@@ -206,7 +206,7 @@ export function LiveChat() {
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
                     {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
-                        <Sparkles className="h-10 w-10 text-primary/40 mx-auto mb-2" />
+                        <LifeBuoy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">Hi {user.email?.split("@")[0]}! Ask me anything about courses, pricing, access, cohorts or certificates.</p>
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
                           {["What courses do you offer?", "Can I pay in installments?", "How do I get my certificate?"].map(q => (

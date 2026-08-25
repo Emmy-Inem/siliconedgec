@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, ArrowRight, Sparkles, Loader2, AlertCircle, ChevronDown, Check } from "lucide-react";
+import { Users, ArrowRight, Loader2, AlertCircle, ChevronDown, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const db = supabase as any;

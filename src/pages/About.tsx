@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Link } from "react-router-dom";
-import { Award, Users, Target, Sparkles } from "lucide-react";
+import { Award, Users, Target, LifeBuoy } from "lucide-react";
 
 export default function About() {
   const { data: settings } = useSiteSettings();
@@ -21,7 +21,7 @@ export default function About() {
     { icon: Target, title: "Job-Ready Outcomes", body: "Every program is engineered to land roles, not just hand out certificates." },
     { icon: Users, title: "Live, Mentor-Led", body: "Learn from senior engineers in interactive cohorts, not pre-recorded silos." },
     { icon: Award, title: "Industry-Recognized", body: "Curricula aligned with AWS, Azure, GCP, and modern DevOps practices." },
-    { icon: Sparkles, title: "Career Support", body: "Resume reviews, mock interviews, and direct introductions to hiring partners." },
+    { icon: LifeBuoy, title: "Career Support", body: "Resume reviews, mock interviews, and direct introductions to hiring partners." },
   ];
 
   return (

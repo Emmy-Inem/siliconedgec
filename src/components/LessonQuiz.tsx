@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ClipboardCheck, Trophy, RotateCcw, History, ChevronDown, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -122,13 +122,13 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
   if (!quiz) {
     return (
       <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-5 text-center space-y-3">
-        <Sparkles className="h-5 w-5 text-primary mx-auto" />
+        <ClipboardList className="h-5 w-5 text-muted-foreground mx-auto" />
         <div>
           <p className="text-sm font-medium">Test yourself on this lesson</p>
           <p className="text-xs text-muted-foreground">Generate an AI-powered practice quiz to check what you've learned.</p>
         </div>
         <Button size="sm" onClick={() => reveal.mutate()} disabled={reveal.isPending} className="mx-auto">
-          {reveal.isPending ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Preparing…</> : <><Sparkles className="h-3.5 w-3.5 mr-1.5" /> Generate practice quiz</>}
+          {reveal.isPending ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Preparing…</> : <><ClipboardList className="h-3.5 w-3.5 mr-1.5" /> Generate practice quiz</>}
         </Button>
       </div>
     );
