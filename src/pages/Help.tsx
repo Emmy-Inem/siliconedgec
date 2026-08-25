@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Search, Loader2, HelpCircle } from "lucide-react";
+import { BookOpen, Search, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
 export default function Help() {
