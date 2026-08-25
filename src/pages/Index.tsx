@@ -368,8 +368,7 @@ function SkillChipsTile() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.05, type: "spring" }}
-          whileHover={{ y: -3, scale: 1.06 }}
-          className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+          className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground border border-border"
         >
           {s}
         </motion.span>
@@ -394,15 +393,6 @@ function AvatarStackTile({ avatars }: { avatars: string[] }) {
           style={{ marginLeft: i === 0 ? 0 : -10 }}
         />
       ))}
-      <motion.div
-        initial={{ x: -10, opacity: 0 }}
-        whileInView={{ x: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.5 }}
-        className="ml-2 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold"
-      >
-        +2,000 learners
-      </motion.div>
     </div>
   );
 }
@@ -806,7 +796,7 @@ export default function Index() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 }}
-              className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white border border-primary/15 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.3)] mb-8"
+              className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-card border border-border mb-8"
             >
               <div className="flex -space-x-1.5 sm:-space-x-2">
                 {heroAvatars.slice(0, 4).map((a, i) => (
@@ -1097,9 +1087,8 @@ export default function Index() {
                     <span className="font-heading text-5xl md:text-6xl font-bold text-gradient leading-none">{step.n}</span>
                   </div>
                   <div className={`pl-16 md:pl-0 ${left ? "md:pl-12" : "md:text-right md:pr-12"}`}>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3 ${left ? "md:flex-row" : "md:flex-row-reverse"}`}>
-                      <step.icon className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-xs font-medium text-primary">Step {step.n}</span>
+                    <div className="mb-3">
+                      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Step {step.n}</span>
                     </div>
                     <h3 className="font-heading text-xl md:text-2xl font-semibold mb-2">{step.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>

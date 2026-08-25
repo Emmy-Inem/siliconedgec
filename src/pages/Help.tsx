@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Search, Loader2, HelpCircle } from "lucide-react";
+import { BookOpen, Search, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
 export default function Help() {
@@ -34,8 +34,8 @@ export default function Help() {
       <Header />
       <main className="flex-1 container mx-auto px-5 sm:px-6 py-12 max-w-5xl">
         <header className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-medium mb-3">
-            <HelpCircle className="h-3.5 w-3.5" /> Help Center
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            Help Center
           </div>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold">How can we help you?</h1>
           <p className="text-muted-foreground mt-2">Browse guides or search for an answer.</p>

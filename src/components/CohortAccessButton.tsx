@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, ArrowRight, Sparkles, Loader2, AlertCircle, ChevronDown, Check } from "lucide-react";
+import { Users, ArrowRight, Loader2, AlertCircle, ChevronDown, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const db = supabase as any;
@@ -167,8 +167,8 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
             <Users className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary font-semibold">
-              <Sparkles className="h-3 w-3" /> Cohort access
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+              Cohort access
             </div>
             <div className="font-heading font-semibold truncate mt-0.5">{cohort.name}</div>
             <p className="text-xs text-muted-foreground mt-0.5">Discussion, live sessions, materials, roster.</p>
