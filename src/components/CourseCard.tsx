@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Users, Star, Heart } from "lucide-react";
+import { Clock, Users, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
@@ -25,11 +25,10 @@ function pickFallbackAvatar(seed: string): string {
   return FALLBACK_AVATARS[hash % FALLBACK_AVATARS.length];
 }
 
-const difficultyColor: Record<string, string> = {
-  Beginner: "bg-green-100 text-green-700",
-  Intermediate: "bg-amber-100 text-amber-700",
-  Expert: "bg-red-100 text-red-700",
-};
+/** Neutral, non-decorative pill used for all overlay badges on the thumbnail. */
+const OVERLAY_PILL =
+  "bg-black/60 backdrop-blur-sm text-white border border-white/15";
+
 
 export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
   function CourseCard({ course, index = 0 }, ref) {
@@ -78,18 +77,16 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 </span>
               </div>
             )}
-            {/* Gradient overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             {isWebinar && (
-              <div className="absolute top-2.5 left-2.5 flex items-center gap-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-lg">
-                <Star className="h-3 w-3" />
+              <div className={cn("absolute top-2.5 left-2.5 text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full", OVERLAY_PILL)}>
                 Free webinar
               </div>
             )}
             <div className="absolute top-2.5 right-2.5">
-              <span className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full ${difficultyColor[course.difficulty] ?? ""}`}>
+              <span className={cn("text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full", OVERLAY_PILL)}>
                 {course.difficulty}
               </span>
+
             </div>
             <button
               type="button"
