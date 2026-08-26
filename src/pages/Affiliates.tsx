@@ -18,7 +18,7 @@ import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import {
   CheckCircle2, Coins, LineChart, Users, Loader2, Link2, Share2, Wallet, ClipboardList,
 } from "lucide-react";
-import heroImg from "@/assets/career-hero-team.jpg";
+import heroImg from "@/assets/career-hero-team.png";
 import communityImg from "@/assets/career-earnings.jpg";
 import payoutImg from "@/assets/career-mobile-tracking.jpg";
 
