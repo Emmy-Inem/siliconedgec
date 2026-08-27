@@ -46,7 +46,7 @@
   <url><loc>https://siliconedgec.com/p/refund</loc><lastmod>2026-04-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://siliconedgec.com/p/terms</loc><lastmod>2026-04-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://siliconedgec.com/trust</loc><lastmod>2026-06-19</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://siliconedgec.com/blog</loc><lastmod>2026-06-20</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://siliconedgec.com/contact</loc><lastmod>2026-06-20</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://siliconedgec.com/about</loc><lastmod>2026-06-21</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://siliconedgec.com/faq</loc><lastmod>2026-06-21</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -56,4 +56,19 @@
   <url><loc>https://siliconedgec.com/privacy</loc><lastmod>2026-06-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://siliconedgec.com/refund-policy</loc><lastmod>2026-06-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://siliconedgec.com/cookie-policy</loc><lastmod>2026-06-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://siliconedgec.com/blog/cloud-portfolio-projects-that-get-interviews</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/az-104-study-guide-8-weeks</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/kubernetes-for-beginners-30-day-plan</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/aws-vs-azure-vs-google-cloud-which-to-learn-first</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/how-to-become-a-cloud-engineer-in-2026</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/data-engineering-vs-cloud-engineering</loc><lastmod>2026-08-26</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/azure-certification-path-az900-to-az104</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/remote-tech-jobs-from-nigeria-2026</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/ai-skills-for-nigerian-professionals-2026</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/cloud-engineering-jobs-nigeria-2026</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/ai-engineering-career-guide-2026</loc><lastmod>2026-06-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/blog/devops-roadmap-2026-from-zero-to-hired</loc><lastmod>2026-06-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://siliconedgec.com/career</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://siliconedgec.com/help</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://siliconedgec.com/support</loc><lastmod>2026-08-27</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
 </urlset>
