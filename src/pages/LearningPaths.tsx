@@ -22,7 +22,7 @@ export default function LearningPaths() {
 
   return (
     <>
-      <SEO title="Learning paths · Silicon Edge" description="Step-by-step learning paths to take you from beginner to job-ready." />
+      <SEO title="Career Learning Paths | Silicon Edge Consulting" description="Structured, role-based training paths for Cloud Engineers, Full-Stack Developers, and DevOps Specialists." canonical="https://siliconedgec.com/paths" />
       <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mb-10">

@@ -281,8 +281,9 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="All Tech Courses & Bootcamps"
-        description="Browse live, expert-led courses in Cloud, AI, DevOps, Cybersecurity, Web Development and more. Filter by category and difficulty to find the right path."
+        title="Tech Courses & Bootcamps | Silicon Edge Consulting"
+        description="Explore live, instructor-led courses in Cloud Engineering, AWS, Azure, DevOps, Kubernetes, and Data."
+        canonical="https://siliconedgec.com/courses"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "ItemList",
