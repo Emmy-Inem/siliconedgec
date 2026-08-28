@@ -157,8 +157,9 @@ export default function ForBusinesses() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Corporate Tech Training for Businesses — Silicon Edge"
-        description="Upskill your team with custom corporate training in Cloud, AI, DevOps, and Cybersecurity. Live instructor-led sessions, real projects, and verifiable certificates."
+        title="Corporate AI, Cloud & DevOps Training for Teams | Silicon Edge"
+        description="Scalable corporate IT training, cloud workshops, and workforce upskilling customized for engineering teams."
+        canonical="https://siliconedgec.com/for-businesses"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "FAQPage",

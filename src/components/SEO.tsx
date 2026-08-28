@@ -70,6 +70,8 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
       {url && <link rel="canonical" href={url} />}
 
       <meta property="og:type" content={type} />
+      <meta property="og:site_name" content="Silicon Edge Consulting" />
+      <meta property="og:locale" content="en_NG" />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={finalImage} />

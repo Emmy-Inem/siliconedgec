@@ -65,8 +65,9 @@ export default function Contact() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Contact Us"
-        description={`Get in touch with ${brand} — questions about courses, corporate training, partnerships, or support.`}
+        title="Contact Us | Silicon Edge Consulting"
+        description="Get in touch with Silicon Edge Consulting for course inquiries, corporate partnerships, and admissions."
+        canonical="https://siliconedgec.com/contact"
         jsonLd={jsonLd}
       />
       <Header />

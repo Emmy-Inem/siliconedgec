@@ -1,5 +1,7 @@
 # Silicon Edge Consulting
 
+> Silicon Edge Consulting is a technology training provider delivering live, instructor-led training in Cloud Engineering, DevOps, Artificial Intelligence, Cybersecurity, Data Engineering, and Software Engineering.
+
 > Job-ready, instructor-led training in AI, Cloud, DevOps, Data and Cybersecurity. Live cohorts, verified certificates, and a job board for graduates.
 
 ## Pages
@@ -10,6 +12,12 @@
 - [For Businesses](/for-businesses): Team training and B2B enablement.
 - [Certificates](/certificates): How verified certificates work and how to verify one.
 - [Jobs](/jobs): Open roles for graduates and partners.
+- [Learning Paths](/paths): Role-based sequences for Cloud, DevOps and Full-Stack careers.
+- [Blog](/blog): Career guides on cloud, DevOps, AI and certifications.
+- [About](/about): What Silicon Edge Consulting is and who it serves.
+- [Contact](/contact): Course inquiries, corporate partnerships and admissions.
+- [FAQ](/faq): Delivery format, certificates, payments and refunds.
+- [Instructors](/instructors): Instructor profiles.
 
 ## Optional
 

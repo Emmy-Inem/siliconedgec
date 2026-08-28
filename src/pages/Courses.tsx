@@ -8,6 +8,8 @@ import { useCourses } from "@/hooks/useCourses";
 import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, ArrowRight, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +22,13 @@ import instructor4 from "@/assets/stock/instructor-4.jpg";
 const LEARNER_AVATARS = [instructor1, instructor2, instructor3, instructor4];
 
 const difficulties = ["All Levels", "Beginner", "Intermediate", "Expert"];
+
+const COURSE_FAQS = [
+  { q: "What courses does Silicon Edge Consulting offer?", a: "Live, instructor-led courses in Cloud Engineering, DevOps, AI, Data Engineering, Cybersecurity and Software Engineering." },
+  { q: "Who are the courses designed for?", a: "Career changers, early-career engineers, and working professionals upskilling into cloud, data and AI roles." },
+  { q: "Are the courses instructor-led?", a: "Yes. Every cohort runs live with an instructor, and sessions are recorded for later review." },
+  { q: "Do courses include practical projects?", a: "Yes. Each course includes hands-on labs and portfolio projects graded by your instructor." },
+];
 
 /* ----------------------------- premium hero ----------------------------- */
 
@@ -281,17 +290,30 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="All Tech Courses & Bootcamps"
-        description="Browse live, expert-led courses in Cloud, AI, DevOps, Cybersecurity, Web Development and more. Filter by category and difficulty to find the right path."
+        title="Tech Courses & Bootcamps | Silicon Edge Consulting"
+        description="Explore live, instructor-led courses in Cloud Engineering, AWS, Azure, DevOps, Kubernetes, and Data."
+        canonical="https://siliconedgec.com/courses"
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "ItemList",
-          itemListElement: filtered.slice(0, 10).map((c, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            name: c.title,
-            url: siteUrl(`/courses/${c.slug ?? c.id}`),
-          })),
+          "@graph": [
+            {
+              "@type": "ItemList",
+              itemListElement: filtered.slice(0, 10).map((c, i) => ({
+                "@type": "ListItem",
+                position: i + 1,
+                name: c.title,
+                url: siteUrl(`/courses/${c.slug ?? c.id}`),
+              })),
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: COURSE_FAQS.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ],
         }}
       />
       <Header />
@@ -483,6 +505,27 @@ export default function Courses() {
               )}
             </>
           )}
+        </div>
+      </section>
+
+      {/* ── Common questions ── */}
+      <section className="pb-16">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <h2 className="font-heading text-2xl md:text-3xl font-bold mb-6">Common questions</h2>
+          <Accordion type="single" collapsible className="w-full">
+            {COURSE_FAQS.map((f, i) => (
+              <AccordionItem key={i} value={`course-faq-${i}`} className="border-border/60">
+                <AccordionTrigger className="text-left font-medium hover:no-underline">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+          <p className="text-sm text-muted-foreground mt-6">
+            Prefer a guided sequence? Browse our{" "}
+            <Link to="/paths" className="text-primary hover:underline">career learning paths</Link>{" "}
+            or see{" "}
+            <Link to="/for-businesses" className="text-primary hover:underline">corporate team training</Link>.
+          </p>
         </div>
       </section>
 

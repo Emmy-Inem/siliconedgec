@@ -26,7 +26,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`About ${brand} — Our Mission`} description={`${brand} trains professionals into job-ready cloud, AI, and DevOps engineers.`} canonical="/about" jsonLd={jsonLd} />
+      <SEO title="About Silicon Edge Consulting | Global IT Training" description="Learn how Silicon Edge Consulting provides practical, project-driven IT training to learners worldwide." canonical="https://siliconedgec.com/about" jsonLd={jsonLd} />
       <Header />
       <main className="container mx-auto px-5 sm:px-6 py-16">
         <section className="max-w-3xl mx-auto text-center">
