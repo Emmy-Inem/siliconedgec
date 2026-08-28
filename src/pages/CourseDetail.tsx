@@ -491,7 +491,16 @@ export default function CourseDetail() {
         canonical={siteUrl(`/courses/${courseSlug}`)}
         jsonLd={{
           "@context": "https://schema.org",
+          "@graph": [{
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
+              { "@type": "ListItem", position: 2, name: "Courses", item: siteUrl("/courses") },
+              { "@type": "ListItem", position: 3, name: course.title, item: siteUrl(`/courses/${courseSlug}`) },
+            ],
+          }, {
           "@type": "Course",
+          url: siteUrl(`/courses/${courseSlug}`),
           name: course.title,
           description: course.description ?? undefined,
           provider: { "@type": "Organization", name: "Silicon Edge Consulting" },
@@ -501,11 +510,18 @@ export default function CourseDetail() {
             priceCurrency: (course as any).currency ?? "NGN",
             availability: "https://schema.org/InStock",
           },
+          educationalLevel: (course as any).difficulty ?? undefined,
+          hasCourseInstance: {
+            "@type": "CourseInstance",
+            courseMode: "online",
+            courseWorkload: course.duration_hours ? `PT${Math.round(course.duration_hours)}H` : undefined,
+          },
           aggregateRating: (course.rating && (reviewCount ?? 0) > 0) ? {
             "@type": "AggregateRating",
             ratingValue: course.rating,
             ratingCount: reviewCount,
           } : undefined,
+          }],
         }}
       />
       <Header />
