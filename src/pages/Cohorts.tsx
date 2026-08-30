@@ -71,7 +71,7 @@ export default function Cohorts() {
               <Link key={c.id} to={`/cohorts/${c.id}`} className="group">
                 <Card className="h-full overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all">
                   <div className="relative h-32 overflow-hidden">
-                    <img src={coverFor(c.id)} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={coverFor(c.id)} alt={`${c.name} cohort cover`} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
                     <Badge variant="outline" className="absolute top-3 left-3 bg-background/80 backdrop-blur">{c.status}</Badge>
                   </div>
