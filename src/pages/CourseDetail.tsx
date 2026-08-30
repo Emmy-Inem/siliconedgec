@@ -739,7 +739,7 @@ export default function CourseDetail() {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                             {review.profile?.avatar_url ? (
-                              <img src={review.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                              <img src={review.profile.avatar_url} alt={`${review.profile?.full_name ?? "Student"} profile photo`} loading="lazy" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-bold text-primary">
                                 {(review.profile?.full_name ?? "U").charAt(0).toUpperCase()}
