@@ -1216,7 +1216,7 @@ export default function Index() {
               <div className="absolute inset-0 rounded-3xl overflow-hidden glow-purple">
                 <img
                   src={(home?.mentor_image && home.mentor_image.trim().length > 0) ? home.mentor_image : (instructors[0]?.image ?? instructor1)}
-                  alt="Mentor"
+                  alt="Silicon Edge Consulting instructor mentoring a live cloud engineering cohort"
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />
