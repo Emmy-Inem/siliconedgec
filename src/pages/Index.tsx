@@ -805,6 +805,8 @@ export default function Index() {
                     key={i}
                     src={a || fallbackInstructorImages[i % fallbackInstructorImages.length]}
                     alt=""
+                    aria-hidden
+
                     loading="lazy"
                     onError={(e) => {
                       const img = e.currentTarget as HTMLImageElement;
