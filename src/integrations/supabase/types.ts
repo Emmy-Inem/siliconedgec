@@ -516,6 +516,7 @@ export type Database = {
       }
       automation_events: {
         Row: {
+          attempts: number
           automation_key: string
           created_at: string
           dedupe_key: string
@@ -528,6 +529,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          attempts?: number
           automation_key: string
           created_at?: string
           dedupe_key: string
@@ -540,6 +542,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          attempts?: number
           automation_key?: string
           created_at?: string
           dedupe_key?: string
