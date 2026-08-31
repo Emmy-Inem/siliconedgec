@@ -1,0 +1,2 @@
+ALTER TABLE public.automation_events ADD COLUMN IF NOT EXISTS attempts integer NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS automation_events_status_created_idx ON public.automation_events (status, created_at);
