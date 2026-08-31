@@ -175,15 +175,28 @@ Deno.serve(async (req) => {
       console.error("[run-automations] scheduled queue failed", e);
     }
 
-    const { data: events } = await admin
+    // Pending first, then previously failed events that still have retries left.
+    const { data: pending } = await admin
       .from("automation_events")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: true })
-      .limit(50);
+      .limit(25);
+
+    let events = pending ?? [];
+    if (events.length < 25) {
+      const { data: retries } = await admin
+        .from("automation_events")
+        .select("*")
+        .eq("status", "failed")
+        .lt("attempts", 3)
+        .order("created_at", { ascending: true })
+        .limit(25 - events.length);
+      events = events.concat(retries ?? []);
+    }
 
     let sent = 0, skipped = 0;
-    for (const ev of events ?? []) {
+    for (const ev of events) {
       try {
         // automation can be switched off by admins via site_content
         const { data: flag } = await admin.from("site_content").select("value").eq("key", `automation_${ev.automation_key}`).maybeSingle();
@@ -220,13 +233,17 @@ Deno.serve(async (req) => {
           const detail = await res2.text().catch(() => "");
           throw new Error(`send-email ${res2.status}: ${detail.slice(0, 500)}`);
         }
-        await admin.from("automation_events").update({ status: "sent", processed_at: new Date().toISOString() }).eq("id", ev.id);
+        await admin.from("automation_events").update({ status: "sent", attempts: (ev.attempts ?? 0) + 1, processed_at: new Date().toISOString() }).eq("id", ev.id);
         sent++;
+        // Gentle pacing so a large batch never trips the email rate limit.
+        await new Promise((r) => setTimeout(r, 400));
       } catch (e) {
         console.error("[run-automations]", ev.id, e);
-        await admin.from("automation_events").update({ status: "failed", error: String(e), processed_at: new Date().toISOString() }).eq("id", ev.id);
+        await admin.from("automation_events").update({ status: "failed", attempts: (ev.attempts ?? 0) + 1, error: String(e), processed_at: new Date().toISOString() }).eq("id", ev.id);
+        await new Promise((r) => setTimeout(r, 1000));
       }
     }
+
 
     await admin.from("site_content").upsert(
       { key: "automation_last_run", value: new Date().toISOString() },
