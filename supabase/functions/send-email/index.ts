@@ -176,40 +176,43 @@ Deno.serve(async (req) => {
 
     // ---- recipients: the addressee plus (optionally) the internal team ----
     const recipients = new Set<string>([payload.to]);
+    // Bulk/nudge automations go to learners only — copying staff on hundreds of
+    // these floods inboxes and trips the provider rate limit.
+    const BULK_KEYS = new Set(["inactivity_nudge", "cart_abandoned", "cart_added", "lesson_unlocked", "installment_due"]);
+    const label = template_key ?? (template as string | undefined) ?? "";
     const wantsAdminCopy =
       (body as any).copy_admins === true ||
-      ((body as any).copy_admins !== false && category === "automation");
+      ((body as any).copy_admins !== false && category === "automation" && !BULK_KEYS.has(label));
 
     if (wantsAdminCopy) {
       const { data: toggle } = await admin
         .from("site_content").select("value").eq("key", "automation_admin_copy").maybeSingle();
       if (toggle?.value !== "off") {
-        // profiles has no email column — resolve staff addresses from auth users
-        // (admins/support roles + anyone on the company domain).
+        // Resolve a small set of admin addresses (admins only, capped) from auth users.
         try {
           const { data: roles } = await admin
-            .from("user_roles").select("user_id").in("role", ["admin", "support"]);
+            .from("user_roles").select("user_id").eq("role", "admin");
           const staffIds = new Set((roles ?? []).map((r: any) => r.user_id));
+          const staff: string[] = [];
           let page = 1;
-          while (page <= 10) {
+          while (page <= 5 && staff.length < 3) {
             const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
             const users = list?.users ?? [];
             for (const u of users) {
               const em = u.email ?? "";
-              if (!em) continue;
-              if (em.toLowerCase().endsWith("@siliconedgec.com") || staffIds.has(u.id)) {
-                recipients.add(em);
-              }
+              if (em && staffIds.has(u.id)) staff.push(em);
             }
             if (users.length < 200) break;
             page++;
           }
+          for (const em of staff.slice(0, 3)) recipients.add(em);
         } catch (e) {
           console.error("[send-email] staff lookup failed", e);
         }
         for (const e of EXTRA_ADMIN_EMAILS) recipients.add(e);
       }
     }
+
 
     const results: { to: string; ok: boolean; error?: string }[] = [];
     for (const to of recipients) {
