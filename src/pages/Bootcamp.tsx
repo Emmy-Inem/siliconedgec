@@ -9,6 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertTriangle, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
+import { formatNaira } from "@/lib/format-currency";
 import { Footer } from "@/components/Footer";
 
 const db = supabase as any;
@@ -86,6 +88,7 @@ export default function Bootcamp() {
 }
 
 function EnrollmentCard({ enrollment: e }: { enrollment: Enrollment }) {
+  const { format: formatPrice, isNgn } = useLocalizedPrice();
   const progress = (e.installments_paid / e.total_installments) * 100;
   const cohortName = e.bootcamp_cohorts?.name ?? "Bootcamp";
 
@@ -142,16 +145,17 @@ function EnrollmentCard({ enrollment: e }: { enrollment: Enrollment }) {
           <Button asChild className="w-full">
             <a href={e.payment_link} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" />
-              Pay next installment (₦{Number(e.installment_amount).toLocaleString()})
+              Pay next installment ({formatPrice(Number(e.installment_amount))})
             </a>
           </Button>
         )}
 
         <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-          <div>Total: ₦{Number(e.total_amount).toLocaleString()}</div>
-          <div>Installment: ₦{Number(e.installment_amount).toLocaleString()}</div>
+          <div>Total: {formatPrice(Number(e.total_amount))}</div>
+          <div>Installment: {formatPrice(Number(e.installment_amount))}</div>
           <div>Schedule: {e.installment_due_dates?.length ?? 0} payments</div>
           {e.last_payment_date && <div>Last paid: {new Date(e.last_payment_date).toLocaleDateString()}</div>}
+          {!isNgn && <div className="col-span-2 text-[11px]">Charged in {formatNaira(Number(e.total_amount))} (NGN) at checkout.</div>}
         </div>
 
         {e.access_granted && e.bootcamp_cohorts?.course_id && (
