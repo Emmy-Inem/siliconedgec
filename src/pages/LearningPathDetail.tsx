@@ -45,7 +45,7 @@ export default function LearningPathDetail() {
     return (
       <>
         <Header />
-        <main className="container mx-auto px-4 py-20 text-center text-muted-foreground">Loading path…</main>
+        <main className="container mx-auto px-4 pt-32 pb-20 text-center text-muted-foreground">Loading path…</main>
         <Footer />
       </>
     );
@@ -59,7 +59,7 @@ export default function LearningPathDetail() {
     <>
       <SEO title={`${path.title} · Learning path`} description={path.description ?? undefined} />
       <Header />
-      <main className="container mx-auto px-4 py-10 max-w-4xl">
+      <main className="container mx-auto px-4 sm:px-6 pt-28 md:pt-32 pb-16 max-w-4xl">
         <Link to="/paths" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"><ArrowLeft className="h-4 w-4 mr-1" />All paths</Link>
         <p className="text-[11px] uppercase tracking-[0.18em] text-primary font-semibold mb-2">Learning path</p>
         <h1 className="font-heading text-3xl md:text-5xl font-bold mb-3">{path.title}</h1>
