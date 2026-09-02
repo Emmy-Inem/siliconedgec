@@ -180,12 +180,13 @@ export default function AdminBusinessLeads() {
                   <span>{selectedLead.phone}</span>
                 </div>
               )}
+              {selectedLead.job_title && <div><strong>Job Title:</strong> {selectedLead.job_title}</div>}
               {selectedLead.company_size && <div><strong>Team Size:</strong> {selectedLead.company_size}</div>}
               {selectedLead.industry && <div><strong>Industry:</strong> {selectedLead.industry}</div>}
               {selectedLead.training_needs && (
                 <div>
                   <strong>Training Needs:</strong>
-                  <p className="mt-1 text-muted-foreground">{selectedLead.training_needs}</p>
+                  <p className="mt-1 text-muted-foreground whitespace-pre-line">{selectedLead.training_needs}</p>
                 </div>
               )}
               <div>
