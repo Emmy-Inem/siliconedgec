@@ -14,7 +14,9 @@ interface Payload {
   lead_id: string;
   company_name: string;
   contact_name: string;
+  job_title?: string;
   email: string;
+  phone?: string;
   company_size?: string;
   training_needs?: string;
 }
@@ -60,7 +62,8 @@ Deno.serve(async (req) => {
       <div style="font-family:system-ui,sans-serif;max-width:560px;padding:24px">
         <h2>New B2B Inquiry</h2>
         <p><strong>Company:</strong> ${esc(payload.company_name)}</p>
-        <p><strong>Contact:</strong> ${esc(payload.contact_name)} &lt;${esc(payload.email)}&gt;</p>
+        <p><strong>Contact:</strong> ${esc(payload.contact_name)}${payload.job_title ? ` — ${esc(payload.job_title)}` : ""} &lt;${esc(payload.email)}&gt;</p>
+        ${payload.phone ? `<p><strong>Phone:</strong> ${esc(payload.phone)}</p>` : ""}
         <p><strong>Company size:</strong> ${esc(payload.company_size ?? "—")}</p>
         <p><strong>Training needs:</strong><br/>${esc(payload.training_needs ?? "—").replace(/\n/g, "<br/>")}</p>
         <hr/>

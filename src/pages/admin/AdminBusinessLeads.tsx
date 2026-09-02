@@ -137,7 +137,7 @@ export default function AdminBusinessLeads() {
                         <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 mt-0.5 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm truncate">{lead.company_name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{lead.contact_name}{lead.job_title ? `, ${lead.job_title}` : ""}</p>
                           <p className="text-xs text-muted-foreground/70 truncate mt-0.5">{lead.email}</p>
                           {lead.company_size && (
                             <Badge variant="outline" className="text-[10px] mt-2">{lead.company_size}</Badge>
@@ -180,12 +180,13 @@ export default function AdminBusinessLeads() {
                   <span>{selectedLead.phone}</span>
                 </div>
               )}
+              {selectedLead.job_title && <div><strong>Job Title:</strong> {selectedLead.job_title}</div>}
               {selectedLead.company_size && <div><strong>Team Size:</strong> {selectedLead.company_size}</div>}
               {selectedLead.industry && <div><strong>Industry:</strong> {selectedLead.industry}</div>}
               {selectedLead.training_needs && (
                 <div>
                   <strong>Training Needs:</strong>
-                  <p className="mt-1 text-muted-foreground">{selectedLead.training_needs}</p>
+                  <p className="mt-1 text-muted-foreground whitespace-pre-line">{selectedLead.training_needs}</p>
                 </div>
               )}
               <div>

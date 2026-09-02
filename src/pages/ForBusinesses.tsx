@@ -94,8 +94,11 @@ export default function ForBusinesses() {
   const [formData, setFormData] = useState({
     company_name: "",
     contact_name: "",
+    job_title: "",
     email: "",
+    phone: "",
     company_size: "",
+    training_focus: "",
     training_needs: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -107,20 +110,31 @@ export default function ForBusinesses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.company_name || !formData.contact_name || !formData.email) {
+    const required = [
+      "company_name",
+      "contact_name",
+      "job_title",
+      "email",
+      "phone",
+      "training_focus",
+    ] as const;
+    const missing = required.filter((k) => !formData[k].trim());
+    if (missing.length) {
       toast({ title: "Please fill in all required fields", variant: "destructive" });
       return;
     }
     setSubmitting(true);
-    const { data: inserted, error } = await supabase
-      .from("business_leads")
-      .insert({
-        company_name: formData.company_name,
-        contact_name: formData.contact_name,
-        email: formData.email,
-        company_size: formData.company_size,
-        training_needs: formData.training_needs,
-      })
+    const payload = {
+      company_name: formData.company_name.trim(),
+      contact_name: formData.contact_name.trim(),
+      job_title: formData.job_title.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      company_size: formData.company_size.trim() || null,
+      training_needs: [formData.training_focus.trim(), formData.training_needs.trim()].filter(Boolean).join("\n\n"),
+    };
+    const { data: inserted, error } = await (supabase.from("business_leads") as any)
+      .insert(payload)
       .select("id")
       .single();
     // Fan out: notify admins in-app and forward a copy to info@siliconedgec.com
@@ -131,11 +145,7 @@ export default function ForBusinesses() {
         await supabase.functions.invoke("notify-business-lead", {
           body: {
             lead_id: inserted.id,
-            company_name: formData.company_name,
-            contact_name: formData.contact_name,
-            email: formData.email,
-            company_size: formData.company_size,
-            training_needs: formData.training_needs,
+            ...payload,
           },
         });
       } catch (e) {
@@ -445,13 +455,13 @@ export default function ForBusinesses() {
         <div className="container mx-auto px-4 text-center">
           <motion.div {...fadeUp}>
             <p className="font-medium text-xs tracking-[0.25em] uppercase mb-4" style={{ color: "hsl(var(--gold))" }}>
-              Get Your Team Trained Today
+              Build a Future-Ready Team
             </p>
             <h2 className="font-heading text-2xl md:text-4xl font-bold text-hero mb-3">
-              Ready to Empower Your Workforce?
+              Request Corporate Technology Training
             </h2>
             <p className="text-hero-muted mb-10 max-w-lg mx-auto">
-              Let's discuss how tailored IT training can transform your business.
+              Tell us about your organisation's training needs and we'll recommend the right programme, delivery model and next steps.
             </p>
           </motion.div>
 
@@ -469,48 +479,82 @@ export default function ForBusinesses() {
             <motion.form
               {...fadeUp}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="max-w-lg mx-auto space-y-4 text-left"
+              className="max-w-2xl mx-auto space-y-4 text-left"
               onSubmit={handleSubmit}
             >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  name="company_name"
+                  placeholder="Company Name *"
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+                <input
+                  name="contact_name"
+                  placeholder="Your Full Name *"
+                  value={formData.contact_name}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  name="job_title"
+                  placeholder="Job Title *"
+                  value={formData.job_title}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Work Email *"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder="Phone Number *"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+                <input
+                  name="company_size"
+                  placeholder="Team Size"
+                  value={formData.company_size}
+                  onChange={handleChange}
+                  className={inputClass}
+                  style={{ borderColor: "hsl(var(--navy-light))" }}
+                />
+              </div>
               <input
-                name="company_name"
-                placeholder="Company Name *"
-                value={formData.company_name}
+                name="training_focus"
+                placeholder="What would you like your team to be trained in? *"
+                value={formData.training_focus}
                 onChange={handleChange}
                 required
-                className={inputClass}
-                style={{ borderColor: "hsl(var(--navy-light))" }}
-              />
-              <input
-                name="contact_name"
-                placeholder="Your Full Name *"
-                value={formData.contact_name}
-                onChange={handleChange}
-                required
-                className={inputClass}
-                style={{ borderColor: "hsl(var(--navy-light))" }}
-              />
-              <input
-                name="email"
-                type="email"
-                placeholder="Work Email *"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className={inputClass}
-                style={{ borderColor: "hsl(var(--navy-light))" }}
-              />
-              <input
-                name="company_size"
-                placeholder="Team Size"
-                value={formData.company_size}
-                onChange={handleChange}
                 className={inputClass}
                 style={{ borderColor: "hsl(var(--navy-light))" }}
               />
               <textarea
                 name="training_needs"
-                placeholder="Tell us about your training needs..."
+                placeholder="Tell us about your training needs"
                 rows={4}
                 value={formData.training_needs}
                 onChange={handleChange}
@@ -519,7 +563,7 @@ export default function ForBusinesses() {
               />
               <Button size="lg" className="w-full hover-scale" disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Get Your Team Trained Today <ArrowRight className="ml-2 h-4 w-4" />
+                Request Corporate Training Consultation <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </motion.form>
           )}
