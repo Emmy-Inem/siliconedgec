@@ -94,8 +94,11 @@ export default function ForBusinesses() {
   const [formData, setFormData] = useState({
     company_name: "",
     contact_name: "",
+    job_title: "",
     email: "",
+    phone: "",
     company_size: "",
+    training_focus: "",
     training_needs: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -107,20 +110,31 @@ export default function ForBusinesses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.company_name || !formData.contact_name || !formData.email) {
+    const required = [
+      "company_name",
+      "contact_name",
+      "job_title",
+      "email",
+      "phone",
+      "training_focus",
+    ] as const;
+    const missing = required.filter((k) => !formData[k].trim());
+    if (missing.length) {
       toast({ title: "Please fill in all required fields", variant: "destructive" });
       return;
     }
     setSubmitting(true);
-    const { data: inserted, error } = await supabase
-      .from("business_leads")
-      .insert({
-        company_name: formData.company_name,
-        contact_name: formData.contact_name,
-        email: formData.email,
-        company_size: formData.company_size,
-        training_needs: formData.training_needs,
-      })
+    const payload = {
+      company_name: formData.company_name.trim(),
+      contact_name: formData.contact_name.trim(),
+      job_title: formData.job_title.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      company_size: formData.company_size.trim() || null,
+      training_needs: [formData.training_focus.trim(), formData.training_needs.trim()].filter(Boolean).join("\n\n"),
+    };
+    const { data: inserted, error } = await (supabase.from("business_leads") as any)
+      .insert(payload)
       .select("id")
       .single();
     // Fan out: notify admins in-app and forward a copy to info@siliconedgec.com
@@ -131,11 +145,7 @@ export default function ForBusinesses() {
         await supabase.functions.invoke("notify-business-lead", {
           body: {
             lead_id: inserted.id,
-            company_name: formData.company_name,
-            contact_name: formData.contact_name,
-            email: formData.email,
-            company_size: formData.company_size,
-            training_needs: formData.training_needs,
+            ...payload,
           },
         });
       } catch (e) {
