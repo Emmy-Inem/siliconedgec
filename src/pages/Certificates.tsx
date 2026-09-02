@@ -260,6 +260,38 @@ export default function Certificates() {
   );
 }
 
+/**
+ * Fits the fixed 900×637 certificate surface into any container width by
+ * measuring the wrapper and applying a uniform CSS scale. The inner canvas
+ * stays at full size, so everything inside renders crisp at every zoom level.
+ */
+function ScaledCertificate({ children }: { children: React.ReactNode }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const update = () => setScale(Math.min(1, el.clientWidth / 900));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={wrapRef}
+      className="w-full overflow-hidden"
+      style={{ height: scale > 0 ? Math.round(637 * scale) : 200, visibility: scale > 0 ? "visible" : "hidden" }}
+    >
+      <div style={{ width: 900, height: 637, transform: `scale(${scale})`, transformOrigin: "top left" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function CertificateCardWithDownload({
   courseName, studentName, date, certId, instructorName, verifyUrl, autoDownload, onAutoDownloaded,
 }: {
