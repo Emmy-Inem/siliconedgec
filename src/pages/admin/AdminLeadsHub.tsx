@@ -208,7 +208,7 @@ export default function AdminLeadsHub() {
       phone: x.phone,
       course_title: x.company_name,
       status: x.status,
-      meta: x.industry ?? "—",
+      meta: x.job_title ? `${x.job_title}${x.industry ? ` · ${x.industry}` : ""}` : (x.industry ?? "—"),
       created_at: x.created_at,
       channel: resolveChannel(x.email, null),
     }));
