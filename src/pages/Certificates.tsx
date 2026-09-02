@@ -229,9 +229,10 @@ export default function Certificates() {
                 <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
               )}
             </p>
-            {/* Mobile: horizontally scrollable so the full landscape cert stays readable. */}
-            <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-thin">
-              <div className="min-w-[900px]">
+            {/* Scaled to fit the viewport width on every device — the PDF
+                download still renders at full 900×637 resolution. */}
+            <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-xl border border-border/60">
+              <ScaledCertificate>
                 <BrandedCertificate
                   studentName={userName}
                   courseName="Cloud Engineering Crash Course"
@@ -239,9 +240,8 @@ export default function Certificates() {
                   certId="SE-2026-A1B2C3"
                   instructorName="Fauziyah Zakariyah"
                 />
-              </div>
+              </ScaledCertificate>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-2 sm:hidden">← Swipe to see the full certificate →</p>
           </motion.div>
 
           <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
