@@ -962,6 +962,7 @@ export type Database = {
           id: string
           industry: string | null
           internal_notes: string | null
+          job_title: string | null
           message: string | null
           phone: string | null
           status: string
@@ -978,6 +979,7 @@ export type Database = {
           id?: string
           industry?: string | null
           internal_notes?: string | null
+          job_title?: string | null
           message?: string | null
           phone?: string | null
           status?: string
@@ -994,6 +996,7 @@ export type Database = {
           id?: string
           industry?: string | null
           internal_notes?: string | null
+          job_title?: string | null
           message?: string | null
           phone?: string | null
           status?: string

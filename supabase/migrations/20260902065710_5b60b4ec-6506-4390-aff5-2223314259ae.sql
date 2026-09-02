@@ -1,0 +1,1 @@
+ALTER TABLE public.business_leads ADD COLUMN IF NOT EXISTS job_title TEXT;
