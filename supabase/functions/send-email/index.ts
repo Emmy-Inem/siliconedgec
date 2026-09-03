@@ -164,6 +164,21 @@ Deno.serve(async (req) => {
       payload.attachments = (body as any).attachments;
     }
 
+    // The email API rejects sends with a missing/blank subject (400
+    // missing_parameter). Guarantee a non-empty subject before enqueueing.
+    if (!payload.subject || !String(payload.subject).trim()) {
+      payload.subject = "Silicon Edge Consulting";
+    }
+    payload.subject = String(payload.subject).trim();
+
+    if (!payload.to || !String(payload.to).trim()) {
+      return new Response(JSON.stringify({ error: "Missing recipient" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     const category = (body as any).category ?? (template_key ? "transactional" : "transactional");
     const logBase = {
       recipient_email: payload.to,
