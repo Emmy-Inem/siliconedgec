@@ -268,15 +268,23 @@ Deno.serve(async (req) => {
       }
 
       try {
+        // Guard against legacy/blank subjects already sitting in the queue —
+        // the provider rejects those with 400 missing_parameter.
+        const subject =
+          typeof payload.subject === 'string' && payload.subject.trim()
+            ? payload.subject.trim()
+            : 'Silicon Edge Consulting'
+
         await sendLovableEmail(
           {
             run_id: payload.run_id,
             to: payload.to,
             from: payload.from,
             sender_domain: payload.sender_domain,
-            subject: payload.subject,
+            subject,
             html: payload.html,
-            text: payload.text || htmlToText(payload.html) || payload.subject,
+            text: payload.text || htmlToText(payload.html) || subject,
+
             purpose: payload.purpose,
             label: payload.label,
             idempotency_key: payload.idempotency_key,
