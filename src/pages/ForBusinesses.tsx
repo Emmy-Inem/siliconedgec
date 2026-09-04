@@ -108,6 +108,17 @@ export default function ForBusinesses() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const trackLinkedInConversion = () => {
+    try {
+      const w = window as any;
+      if (w.lintrk) {
+        w.lintrk("track", { conversion_id: 30673009 });
+      }
+    } catch (e) {
+      console.warn("LinkedIn conversion tracking failed", e);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const required = [
@@ -157,6 +168,7 @@ export default function ForBusinesses() {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
     } else {
       setSubmitted(true);
+      trackLinkedInConversion();
       toast({ title: "Request submitted!", description: "We'll be in touch shortly." });
     }
   };
