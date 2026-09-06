@@ -98,7 +98,14 @@ export default function Dashboard() {
   const [lessonStats, setLessonStats] = useState<Record<string, { done: number; total: number }>>({});
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Public Access Mode renders this page for signed-out visitors (see
+      // the !user && !publicAccess redirect below) — there's no per-user
+      // data to fetch, but `fetching` must still resolve or the page is
+      // stuck on "Loading your courses…" forever.
+      setFetching(false);
+      return;
+    }
 
     const fetchData = async () => {
       const [enrollRes, profileRes, bookmarkRes, appsRes, webinarRegRes] = await Promise.all([

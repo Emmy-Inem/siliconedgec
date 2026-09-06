@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
@@ -39,8 +40,11 @@ interface ProfileRow {
 }
 
 export default function AdminUserActivity() {
+  // Deep-linked from Cart Abandonment / Wishlist Insights as
+  // ?tab=user-activity&user=<id> — jump straight to that user's timeline.
+  const [params] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(() => params.get("user"));
   // Drilldown filters
   const [actionFilter, setActionFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all"); // all | 24h | 7d | 30d

@@ -86,55 +86,9 @@ import { HelmetProvider } from "react-helmet-async";
 // Code-split admin pages — they only load when an admin route is visited
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
-const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
 const AdminCourseCreate = lazy(() => import("./pages/admin/AdminCourseCreate"));
 const AdminCourseModules = lazy(() => import("./pages/admin/AdminCourseModules"));
-const AdminInstructors = lazy(() => import("./pages/admin/AdminInstructors"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminEnrollments = lazy(() => import("./pages/admin/AdminEnrollments"));
-const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
-const AdminPricing = lazy(() => import("./pages/admin/AdminPricing"));
-const AdminSiteContent = lazy(() => import("./pages/admin/AdminSiteContent"));
-const AdminInfluencerMarketing = lazy(() => import("./pages/admin/AdminInfluencerMarketing"));
-const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
-const AdminMarketingAnalytics = lazy(() => import("./pages/admin/AdminMarketingAnalytics"));
-const AdminEmail = lazy(() => import("./pages/admin/AdminEmail"));
-const AdminActivityLog = lazy(() => import("./pages/admin/AdminActivityLog"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
-const AdminTags = lazy(() => import("./pages/admin/AdminTags"));
-const AdminLearningPaths = lazy(() => import("./pages/admin/AdminLearningPaths"));
-const AdminStudents = lazy(() => import("./pages/admin/AdminStudents"));
 const AdminLearnerDetail = lazy(() => import("./pages/admin/AdminLearnerDetail"));
-const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
-const AdminQuizAttempts = lazy(() => import("./pages/admin/AdminQuizAttempts"));
-const AdminQnA = lazy(() => import("./pages/admin/AdminQnA"));
-const AdminCourseAnnouncements = lazy(() => import("./pages/admin/AdminCourseAnnouncements"));
-const AdminBusinessLeads = lazy(() => import("./pages/admin/AdminBusinessLeads"));
-const AdminJobs = lazy(() => import("./pages/admin/AdminJobs"));
-const AdminJobApplications = lazy(() => import("./pages/admin/AdminJobApplications"));
-const AdminChat = lazy(() => import("./pages/admin/AdminChat"));
-const AdminCustomScripts = lazy(() => import("./pages/admin/AdminCustomScripts"));
-const AdminLiveClasses = lazy(() => import("./pages/admin/AdminLiveClasses"));
-const AdminRegistrations = lazy(() => import("./pages/admin/AdminRegistrations"));
-const AdminSEO = lazy(() => import("./pages/admin/AdminSEO"));
-const AdminUserActivity = lazy(() => import("./pages/admin/AdminUserActivity"));
-const AdminBrands = lazy(() => import("./pages/admin/AdminBrands"));
-const AdminBlog = lazy(() => import("./pages/admin/AdminBlog"));
-const AdminMedia = lazy(() => import("./pages/admin/AdminMedia"));
-const AdminPages = lazy(() => import("./pages/admin/AdminPages"));
-const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
-const AdminLeadsHub = lazy(() => import("./pages/admin/AdminLeadsHub"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
-const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
-const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
-const AdminCartAbandonment = lazy(() => import("./pages/admin/AdminCartAbandonment"));
-const AdminLoginSecurity = lazy(() => import("./pages/admin/AdminLoginSecurity"));
-const AdminWishlistInsights = lazy(() => import("./pages/admin/AdminWishlistInsights"));
-const AdminCourseHealth = lazy(() => import("./pages/admin/AdminCourseHealth"));
-const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
-const AdminHomeContent = lazy(() => import("./pages/admin/AdminHomeContent"));
-const AdminSessions = lazy(() => import("./pages/admin/AdminSessions"));
 const AdminHelp = lazy(() => import("./pages/admin/AdminHelp"));
 
 // Hub pages (consolidated tabbed views)
@@ -151,7 +105,6 @@ const AdminContentHub = lazy(() => import("./pages/admin/hubs/AdminContentHub"))
 const AdminSystemHub = lazy(() => import("./pages/admin/hubs/AdminSystemHub"));
 const AdminFinanceHub = lazy(() => import("./pages/admin/hubs/AdminFinanceHub"));
 const AdminCohorts = lazy(() => import("./pages/admin/AdminCohorts"));
-const AdminBootcamps = lazy(() => import("./pages/admin/AdminBootcamps"));
 const Bootcamp = lazy(() => import("./pages/Bootcamp"));
 
 const AdminFallback = () => (
@@ -290,7 +243,7 @@ const App = () => (
                 <Route path="system" element={<AdminSystemHub />} />
                 <Route path="finance" element={<AdminFinanceHub />} />
                 <Route path="cohorts" element={<AdminCohorts />} />
-                <Route path="bootcamps" element={<AdminBootcamps />} />
+                <Route path="bootcamps" element={<Navigate to="/admin/commerce?tab=bootcamps" replace />} />
                 <Route path="learners/:userId" element={<AdminLearnerDetail />} />
                 <Route path="finance/refunds" element={<Navigate to="/admin/finance?tab=refunds" replace />} />
                 <Route path="finance/payouts" element={<Navigate to="/admin/finance?tab=payouts" replace />} />

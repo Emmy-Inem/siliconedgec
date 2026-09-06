@@ -7,11 +7,14 @@ import { toast } from "@/hooks/use-toast";
 import { Download, UserX, FileJson } from "lucide-react";
 
 // Every public table with a user_id column, per a scan of supabase/migrations
-// (see the "grep -c CREATE TABLE ... user_id" audit). This was previously a
-// hand-picked 13-table list that missed most of the app's tables — meaning
-// "Erase Data" silently left personal data behind in ~30 tables. If a new
-// table with a user_id column is added, add it here too.
-const EXPORT_TABLES = [
+// (see the "grep -c CREATE TABLE ... user_id" audit), plus tables that link to
+// a person under a different column name (e.g. support_ticket_messages.sender_id
+// — a message the user authored, whether as a customer or as staff replying).
+// This was previously a hand-picked 13-table list keyed only on "user_id" that
+// missed most of the app's tables — meaning "Erase Data" silently left personal
+// data behind in ~30 tables. If a new table with a person-owning column is
+// added, add it here too.
+const EXPORT_TABLES: { table: string; column: string }[] = [
   "profiles", "enrollments", "orders", "certificates", "bookmarks",
   "lesson_progress", "lesson_notes", "lesson_comments", "reviews",
   "course_registrations", "notifications", "user_xp_events", "quiz_attempts",
@@ -23,7 +26,9 @@ const EXPORT_TABLES = [
   "influencer_referrals", "installment_plans", "job_applications", "lead_sources",
   "live_class_calendar_events", "mock_interview_sessions", "newsletter_subscribers",
   "study_plans", "support_tickets", "user_activity_log", "user_favorites", "user_roles",
-];
+].map((table) => ({ table, column: "user_id" })).concat([
+  { table: "support_ticket_messages", column: "sender_id" },
+]);
 
 export default function AdminGdprTools() {
   const [email, setEmail] = useState("");
@@ -36,10 +41,10 @@ export default function AdminGdprTools() {
       const userId = email.trim();
       const payload: Record<string, any> = { user_id: userId, exported_at: new Date().toISOString() };
       const failedTables: string[] = [];
-      for (const t of EXPORT_TABLES) {
-        const { data, error } = await supabase.from(t as any).select("*").eq("user_id", userId);
-        if (error) failedTables.push(t);
-        payload[t] = data ?? [];
+      for (const { table, column } of EXPORT_TABLES) {
+        const { data, error } = await supabase.from(table as any).select("*").eq(column, userId);
+        if (error) failedTables.push(table);
+        payload[table] = data ?? [];
       }
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -67,9 +72,9 @@ export default function AdminGdprTools() {
     try {
       const userId = email.trim();
       const failedTables: string[] = [];
-      for (const t of EXPORT_TABLES) {
-        const { error } = await supabase.from(t as any).delete().eq("user_id", userId);
-        if (error) failedTables.push(`${t} (${error.message})`);
+      for (const { table, column } of EXPORT_TABLES) {
+        const { error } = await supabase.from(table as any).delete().eq(column, userId);
+        if (error) failedTables.push(`${table} (${error.message})`);
       }
       if (failedTables.length) {
         toast({

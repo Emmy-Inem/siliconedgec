@@ -82,13 +82,26 @@ export function ProfileSettings() {
       return;
     }
     // Soft-delete: anonymise profile + sign out. Hard auth deletion needs an edge function with service role.
-    await supabase.from("profiles").update({
+    const { error: profileErr } = await supabase.from("profiles").update({
       full_name: "Deleted user",
       bio: null,
       avatar_url: null,
     }).eq("user_id", user.id);
-    await supabase.from("bookmarks").delete().eq("user_id", user.id);
-    await supabase.from("cart_items").delete().eq("user_id", user.id);
+    const { error: bookmarksErr } = await supabase.from("bookmarks").delete().eq("user_id", user.id);
+    const { error: cartErr } = await supabase.from("cart_items").delete().eq("user_id", user.id);
+    const failures = [
+      profileErr && "profile",
+      bookmarksErr && "bookmarks",
+      cartErr && "cart",
+    ].filter(Boolean);
+    if (failures.length) {
+      toast({
+        title: "Couldn't fully remove account data",
+        description: `Failed: ${failures.join(", ")}. Please try again or contact support.`,
+        variant: "destructive",
+      });
+      return;
+    }
     await signOut();
     toast({ title: "Account data removed", description: "You've been signed out." });
     navigate("/");

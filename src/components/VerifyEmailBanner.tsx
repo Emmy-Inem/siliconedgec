@@ -25,7 +25,7 @@ export function VerifyEmailBanner() {
       <MailWarning className="h-5 w-5 shrink-0" />
       <div className="flex-1 text-sm">
         <p className="font-medium">Verify your email address</p>
-        <p className="text-xs opacity-90">Confirm {user.email} to unlock certificates, payments, and account recovery.</p>
+        <p className="text-xs opacity-90">Confirm {user.email} so we can reach you about your courses and reset your password if you ever get locked out.</p>
       </div>
       <Button size="sm" variant="outline" onClick={resend} disabled={sending}>
         {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Resend"}

@@ -159,7 +159,7 @@ export default function AdminWishlistInsights() {
                   <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy ID
                 </Button>
                 <Button size="sm" asChild>
-                  <Link to={`/admin/user-activity?user=${openUserId}`}>
+                  <Link to={`/admin/analytics?tab=user-activity&user=${openUserId}`}>
                     <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> View activity
                   </Link>
                 </Button>
