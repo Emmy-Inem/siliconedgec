@@ -16,6 +16,7 @@ const EDITABLE_ROLES: Exclude<StaffRole, "admin">[] = [
 const ROUTE_GROUPS: { label: string; routes: { path: string; label: string }[] }[] = [
   { label: "Workspace", routes: [
     { path: "/admin", label: "Overview" },
+    { path: "/admin/dashboards", label: "All dashboards" },
     { path: "/admin/analytics", label: "Analytics hub" },
     { path: "/admin/marketing", label: "Marketing analytics" },
   ]},
@@ -23,6 +24,7 @@ const ROUTE_GROUPS: { label: string; routes: { path: string; label: string }[] }
     { path: "/admin/courses", label: "Courses hub" },
     { path: "/admin/assessments", label: "Assessments hub" },
     { path: "/admin/people", label: "People hub" },
+    { path: "/admin/cohorts", label: "Cohorts" },
     { path: "/admin/students", label: "Students" },
     { path: "/admin/enrollments", label: "Enrollments" },
     { path: "/admin/instructors", label: "Instructors" },
@@ -72,12 +74,14 @@ const ROUTE_GROUPS: { label: string; routes: { path: string; label: string }[] }
   ]},
 ];
 
+// Kept in sync with FALLBACK_ALLOWED in src/lib/admin-permissions.ts — this is
+// what "Reset to defaults" writes back to the role_permissions table.
 const DEFAULT_MATRIX: Record<Exclude<StaffRole, "admin">, string[]> = {
-  moderator: ["/admin","/admin/analytics","/admin/courses","/admin/categories","/admin/tags","/admin/paths","/admin/students","/admin/enrollments","/admin/quizzes","/admin/quiz-attempts","/admin/qna","/admin/announcements","/admin/testimonials","/admin/instructors","/admin/live-classes","/admin/assessments","/admin/people","/admin/communication","/admin/content-hub"],
-  instructor: ["/admin","/admin/courses","/admin/assessments","/admin/quizzes","/admin/quiz-attempts","/admin/qna","/admin/students","/admin/live-classes","/admin/announcements","/admin/people"],
-  support: ["/admin","/admin/chat","/admin/leads-hub","/admin/business-leads","/admin/registrations","/admin/qna","/admin/communication","/admin/notifications"],
-  finance: ["/admin","/admin/analytics","/admin/commerce","/admin/orders","/admin/pricing","/admin/influencers-marketing","/admin/finance","/admin/marketing"],
-  content_editor: ["/admin","/admin/content-hub","/admin/seo","/admin/media","/admin/testimonials","/admin/home-content","/admin/content","/admin/blog","/admin/pages"],
+  moderator: ["/admin","/admin/dashboards","/admin/analytics","/admin/courses","/admin/categories","/admin/tags","/admin/paths","/admin/students","/admin/enrollments","/admin/quizzes","/admin/quiz-attempts","/admin/qna","/admin/announcements","/admin/testimonials","/admin/instructors","/admin/live-classes","/admin/assessments","/admin/people","/admin/communication","/admin/commerce","/admin/jobs-hub","/admin/content-hub","/admin/cohorts"],
+  instructor: ["/admin","/admin/dashboards","/admin/analytics","/admin/courses","/admin/assessments","/admin/quizzes","/admin/quiz-attempts","/admin/qna","/admin/students","/admin/live-classes","/admin/announcements","/admin/people","/admin/communication","/admin/commerce","/admin/jobs-hub","/admin/cohorts"],
+  support: ["/admin","/admin/dashboards","/admin/analytics","/admin/chat","/admin/leads-hub","/admin/business-leads","/admin/registrations","/admin/qna","/admin/communication","/admin/commerce","/admin/jobs-hub","/admin/notifications"],
+  finance: ["/admin","/admin/dashboards","/admin/analytics","/admin/commerce","/admin/orders","/admin/pricing","/admin/influencers-marketing","/admin/finance","/admin/communication","/admin/jobs-hub","/admin/marketing"],
+  content_editor: ["/admin","/admin/dashboards","/admin/analytics","/admin/content-hub","/admin/seo","/admin/media","/admin/testimonials","/admin/home-content","/admin/content","/admin/blog","/admin/pages"],
 };
 
 export default function AdminPermissions() {

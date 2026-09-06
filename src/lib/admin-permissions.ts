@@ -39,36 +39,42 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 
 // Hardcoded fallback used until the DB matrix loads, and merged with the DB
 // matrix so a corrupted/empty matrix never locks staff out of baseline routes.
+//
+// Every entry here must cover the hub routes rendered by AdminSidebar's
+// getAccessibleSections() for that role — otherwise the sidebar shows a link
+// the role can't actually open, and canAccessRoute() bounces them back to
+// /admin. Keep the two in sync when either changes.
 const FALLBACK_ALLOWED: Record<Exclude<StaffRole, "admin">, string[]> = {
   moderator: [
-    "/admin", "/admin/analytics", "/admin/courses", "/admin/courses/new",
+    "/admin", "/admin/dashboards", "/admin/analytics", "/admin/courses", "/admin/courses/new",
     "/admin/categories", "/admin/tags", "/admin/paths", "/admin/students",
     "/admin/enrollments", "/admin/quizzes", "/admin/quiz-attempts",
     "/admin/qna", "/admin/announcements", "/admin/testimonials",
     "/admin/instructors", "/admin/live-classes", "/admin/assessments",
-    "/admin/people", "/admin/communication", "/admin/content-hub",
-    "/admin/cohorts",
+    "/admin/people", "/admin/communication", "/admin/commerce",
+    "/admin/jobs-hub", "/admin/content-hub", "/admin/cohorts",
   ],
   instructor: [
-    "/admin", "/admin/courses", "/admin/courses/new", "/admin/modules",
+    "/admin", "/admin/dashboards", "/admin/analytics", "/admin/courses", "/admin/courses/new", "/admin/modules",
     "/admin/categories", "/admin/tags", "/admin/paths",
     "/admin/assessments", "/admin/quizzes", "/admin/quiz-attempts",
     "/admin/assignments", "/admin/qna", "/admin/students",
     "/admin/live-classes", "/admin/announcements", "/admin/people",
+    "/admin/communication", "/admin/commerce", "/admin/jobs-hub",
     "/admin/cohorts", "/admin/lesson-approvals", "/admin/content-hub",
   ],
   support: [
-    "/admin", "/admin/chat", "/admin/leads-hub", "/admin/business-leads",
+    "/admin", "/admin/dashboards", "/admin/analytics", "/admin/chat", "/admin/leads-hub", "/admin/business-leads",
     "/admin/registrations", "/admin/qna", "/admin/communication",
-    "/admin/notifications",
+    "/admin/commerce", "/admin/jobs-hub", "/admin/notifications",
   ],
   finance: [
-    "/admin", "/admin/analytics", "/admin/commerce", "/admin/orders",
+    "/admin", "/admin/dashboards", "/admin/analytics", "/admin/commerce", "/admin/orders",
     "/admin/pricing", "/admin/influencers-marketing", "/admin/finance",
-    "/admin/marketing",
+    "/admin/communication", "/admin/jobs-hub", "/admin/marketing",
   ],
   content_editor: [
-    "/admin", "/admin/content-hub", "/admin/seo", "/admin/media",
+    "/admin", "/admin/dashboards", "/admin/analytics", "/admin/content-hub", "/admin/seo", "/admin/media",
     "/admin/testimonials", "/admin/home-content", "/admin/content",
   ],
 };
@@ -118,7 +124,7 @@ const ROLE_SECTIONS: Record<Exclude<StaffRole, "admin">, string[]> = {
   instructor: ["Workspace", "LMS", "Engagement"],
   support: ["Workspace", "Engagement"],
   finance: ["Workspace", "Engagement", "Finance"],
-  content_editor: ["Workspace", "Platform"],
+  content_editor: ["Workspace", "Content"],
 };
 
 export function getAccessibleSections(role: AdminRole) {

@@ -101,8 +101,22 @@ export default function AffiliateDashboard() {
   );
 
   const earned = referrals.reduce((s, r) => s + Number(r.commission ?? 0), 0);
-  const paid = payouts.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount ?? 0), 0);
-  const pending = Math.max(earned - paid, 0);
+  // "Available to request" must mirror request_affiliate_payout()'s own math
+  // exactly: only commission on referrals that have cleared the 14-day
+  // refund window (approved/confirmed/paid) counts, minus whatever's already
+  // reserved by an in-flight or completed payout. Using the looser `earned`
+  // total here (all referrals, including still-pending ones) would let the
+  // "Request payout" button enable and quote an amount the RPC then rejects
+  // or silently undercuts.
+  const CONFIRMED_REFERRAL_STATUSES = ["approved", "confirmed", "paid"];
+  const RESERVED_PAYOUT_STATUSES = ["pending", "processing", "approved", "paid"];
+  const confirmedEarned = referrals
+    .filter((r) => CONFIRMED_REFERRAL_STATUSES.includes(r.status))
+    .reduce((s, r) => s + Number(r.commission ?? 0), 0);
+  const reserved = payouts
+    .filter((p) => RESERVED_PAYOUT_STATUSES.includes(p.status))
+    .reduce((s, p) => s + Number(p.amount ?? 0), 0);
+  const pending = Math.max(confirmedEarned - reserved, 0);
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
   const earnedThisMonth = referrals
     .filter((r) => new Date(r.created_at).getTime() >= monthStart)

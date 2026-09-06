@@ -10,20 +10,42 @@ const DRIVE_GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/
 const DRIVE_UPLOAD = "https://connector-gateway.lovable.dev/google_drive/upload/drive/v3/files?uploadType=multipart";
 const FOLDER_NAME = "Silicon Edge Backups";
 
-// Tables to back up. Excludes auth.* (managed) and high-volume log tables.
+// Tables to back up. Excludes auth.* (managed), high-volume log/queue tables
+// (user_activity_log, login_attempts, email_send_log, email_send_state,
+// webhook_events, automation_events), and google_calendar_tokens — OAuth
+// refresh tokens shouldn't be duplicated into a plaintext Drive file.
+//
+// Corrected against the actual schema (src/integrations/supabase/types.ts) —
+// this list previously referenced pre-rename table names that no longer
+// exist (course_categories, course_modules, course_lessons, pages,
+// site_settings, home_content, registrations, qna_questions/qna_answers,
+// wishlist_insights, live_class_registrations, email_templates), so every
+// backup silently skipped those tables — including the actual course
+// curriculum (modules/lessons) — while still reporting "success". It was
+// also missing every table added by features shipped after this list was
+// written (cohorts, support tickets, the AI tutor, affiliates, bootcamps).
 const BACKUP_TABLES = [
-  "profiles", "user_roles", "courses", "course_categories", "course_tags",
-  "course_modules", "course_lessons", "lesson_resources", "instructors",
+  "profiles", "user_roles", "role_permissions", "courses", "categories", "tags",
+  "course_tags", "modules", "lessons", "lesson_resources", "instructors",
   "enrollments", "lesson_progress", "certificates", "reviews", "bookmarks",
-  "quizzes", "quiz_questions", "quiz_attempts", "assignments",
-  "blog_posts", "pages", "site_content", "site_settings", "home_content",
+  "user_favorites", "quizzes", "quiz_questions", "quiz_attempts", "assignments",
+  "assignment_submissions", "blog_posts", "cms_pages", "site_content",
+  "media_library", "page_seo", "pricing_plans",
   "promo_codes", "influencer_referrals", "lead_sources",
-  "orders", "cart_items", "registrations", "business_leads",
-  "jobs", "job_applications", "live_classes", "live_class_registrations",
+  "orders", "cart_items", "course_registrations", "registration_notes", "business_leads",
+  "jobs", "job_applications", "live_classes", "live_class_calendar_events",
   "testimonials", "brands", "notifications", "course_announcements",
-  "chat_conversations", "chat_messages", "qna_questions", "qna_answers",
-  "learning_paths", "learning_path_courses", "wishlist_insights",
-  "email_templates", "blocked_ips",
+  "chat_conversations", "chat_messages", "course_qna",
+  "learning_paths", "learning_path_courses",
+  "cohorts", "cohort_members", "cohort_sessions", "cohort_session_rsvps",
+  "cohort_materials", "cohort_posts", "cohort_post_reactions",
+  "support_tickets", "support_ticket_messages",
+  "ai_conversations", "ai_messages", "mock_interview_sessions", "study_plans",
+  "affiliates", "affiliate_referrals", "affiliate_payouts", "affiliate_course_selections",
+  "installment_plans", "installment_payments", "finance_refunds", "finance_payouts",
+  "bootcamp_cohorts", "bootcamp_enrollments", "bootcamp_payment_events",
+  "newsletter_subscribers", "newsletter_campaigns", "kb_articles", "kb_categories",
+  "blocked_ips",
 ];
 
 async function driveFetch(path: string, init: RequestInit = {}) {

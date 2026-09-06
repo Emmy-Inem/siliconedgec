@@ -149,7 +149,7 @@ const sections: NavSection[] = [
     ],
   },
   {
-    label: "Platform",
+    label: "Content",
     items: [
       {
         label: "Content",
@@ -165,6 +165,11 @@ const sections: NavSection[] = [
           { label: "Media Library", tab: "media" },
         ],
       },
+    ],
+  },
+  {
+    label: "Platform",
+    items: [
       {
         label: "System",
         href: "/admin/system",

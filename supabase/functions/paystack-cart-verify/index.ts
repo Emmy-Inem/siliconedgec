@@ -57,10 +57,12 @@ Deno.serve(async (req) => {
     const userId = orders[0].user_id;
     const courseIds: string[] = [];
     for (const o of orders) {
-      await supabase.from("orders").update({
-        status: "completed",
-        paystack_reference: psData.data.reference,
-      }).eq("id", o.id);
+      if (o.status !== "completed") {
+        await supabase.from("orders").update({
+          status: "completed",
+          paystack_reference: psData.data.reference,
+        }).eq("id", o.id);
+      }
       await supabase.from("enrollments").upsert(
         { user_id: o.user_id, course_id: o.course_id, payment_status: "paid" },
         { onConflict: "user_id,course_id" },
@@ -70,6 +72,22 @@ Deno.serve(async (req) => {
 
     // Clear the user's cart for these courses
     await supabase.from("cart_items").delete().eq("user_id", userId).in("course_id", courseIds);
+
+    // Idempotent: the client re-invokes this on refresh/back-nav or when the
+    // auth listener hands us a fresh `user` object mid-flight (see Cart.tsx's
+    // `[user]` effect dep), before the same ?reference= is cleared from the
+    // URL. Skip the one-time accounting (promo/referral, audit log, email)
+    // once every line order is already marked completed.
+    const alreadyCompleted = orders.every((o: any) => o.status === "completed");
+    if (alreadyCompleted) {
+      return new Response(JSON.stringify({
+        verified: true,
+        course_ids: courseIds,
+        total: orders.reduce((s, o: any) => s + Number(o.amount), 0),
+        currency: orders[0].currency,
+        reference,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Influencer attribution per line item — based on order metadata UTM or explicit promo
     for (const o of orders) {

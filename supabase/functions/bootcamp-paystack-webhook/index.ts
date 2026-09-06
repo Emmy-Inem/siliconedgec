@@ -117,33 +117,45 @@ Deno.serve(async (req) => {
   });
 
   // On completion: unlock the linked course (if any) via existing enrollments table.
-  if (isComplete) {
-    const { data: cohort } = await supabase
-      .from("bootcamp_cohorts").select("course_id").eq("id", enrollment.cohort_id).maybeSingle();
-    if (cohort?.course_id && enrollment.user_id) {
-      await supabase.from("enrollments").upsert({
-        user_id: enrollment.user_id,
-        course_id: cohort.course_id,
-        payment_status: "paid",
-      }, { onConflict: "user_id,course_id" });
-    }
-    if (enrollment.user_id) {
+  // The payment/installment record above is already durably saved and this
+  // event is already marked processed, so wrap the rest in try/catch — a bug
+  // here (as previously happened with an undefined template variable) must
+  // not surface as a 500, since a Paystack retry would just hit the
+  // idempotency check and silently re-skip this notification forever.
+  try {
+    if (isComplete) {
+      const { data: cohort } = await supabase
+        .from("bootcamp_cohorts").select("course_id").eq("id", enrollment.cohort_id).maybeSingle();
+      if (cohort?.course_id && enrollment.user_id) {
+        await supabase.from("enrollments").upsert({
+          user_id: enrollment.user_id,
+          course_id: cohort.course_id,
+          payment_status: "paid",
+        }, { onConflict: "user_id,course_id" });
+      }
+      if (enrollment.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: enrollment.user_id,
+          title: "Bootcamp fully paid",
+          message: "Thank you! Your bootcamp payment is complete.",
+          type: "success",
+          link: "/bootcamp",
+        });
+      }
+    } else if (enrollment.user_id) {
+      const message = enrollment.flexible_payment
+        ? `Payment confirmed. ${newAmountPaid} of ${totalAmount} paid so far.`
+        : `Installment ${paid} of ${enrollment.total_installments} confirmed.`;
       await supabase.from("notifications").insert({
         user_id: enrollment.user_id,
-        title: "Bootcamp fully paid",
-        message: "Thank you! Your bootcamp payment is complete.",
+        title: "Payment received",
+        message,
         type: "success",
         link: "/bootcamp",
       });
     }
-  } else if (enrollment.user_id) {
-    await supabase.from("notifications").insert({
-      user_id: enrollment.user_id,
-      title: "Payment received",
-      message: `Installment ${paid} of ${total} confirmed.`,
-      type: "success",
-      link: "/bootcamp",
-    });
+  } catch (e) {
+    console.error("bootcamp-paystack-webhook: post-payment unlock/notify failed", e);
   }
 
   return new Response("ok", { status: 200, headers: corsHeaders });

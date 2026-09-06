@@ -27,7 +27,7 @@ export default function InstructorAssignments() {
         .select("id, title, lesson_id, due_at, max_points")
         .in("lesson_id", lessonIds);
       const aIds = (assignments ?? []).map((a: any) => a.id);
-      let subCounts: Record<string, { total: number; ungraded: number }> = {};
+      const subCounts: Record<string, { total: number; ungraded: number }> = {};
       if (aIds.length) {
         const { data: subs } = await db
           .from("assignment_submissions")

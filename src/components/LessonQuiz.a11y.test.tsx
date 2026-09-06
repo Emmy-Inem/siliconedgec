@@ -10,15 +10,22 @@ vi.mock("@/integrations/supabase/client", () => {
   const questions = [
     { id: "q1", question_text: "What is 2 + 2?", options: ["3", "4", "5"], order_index: 0, correct_answer: "4", explanation: "Basic math." },
   ];
+  // Chainable query builder mock: supports any number of .eq() calls (the
+  // real component filters on both lesson_id and is_visible) followed by
+  // either .maybeSingle() (quizzes) or .order().limit() (quiz_attempts).
+  function makeBuilder(terminalData: unknown) {
+    const builder: any = {
+      eq: () => builder,
+      order: () => builder,
+      maybeSingle: async () => ({ data: terminalData, error: null }),
+      limit: async () => ({ data: terminalData, error: null }),
+    };
+    return builder;
+  }
   return {
     supabase: {
       from: (table: string) => ({
-        select: () => ({
-          eq: () => ({
-            maybeSingle: async () => ({ data: table === "quizzes" ? quizRow : null, error: null }),
-            eq: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
-          }),
-        }),
+        select: () => makeBuilder(table === "quizzes" ? quizRow : []),
       }),
       rpc: async (_fn: string) => ({ data: questions, error: null }),
     },

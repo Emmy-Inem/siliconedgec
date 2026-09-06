@@ -56,20 +56,34 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Idempotent: the client re-invokes this on refresh/back-navigation before
+    // it clears the ?verify=1 URL param, and Paystack's own webhook may also
+    // have already completed this order. Only run the one-time side effects
+    // (email, audit log, promo/referral accounting) on the first success.
+    const alreadyCompleted = order.status === "completed";
+
     // Update order
-    await supabase
-      .from("orders")
-      .update({
-        status: "completed",
-        paystack_reference: psData.data.reference,
-      })
-      .eq("reference", reference);
+    if (!alreadyCompleted) {
+      await supabase
+        .from("orders")
+        .update({
+          status: "completed",
+          paystack_reference: psData.data.reference,
+        })
+        .eq("reference", reference);
+    }
 
     // Create enrollment
     await supabase.from("enrollments").upsert(
       { user_id: order.user_id, course_id: order.course_id, payment_status: "paid" },
       { onConflict: "user_id,course_id" },
     );
+
+    if (alreadyCompleted) {
+      return new Response(JSON.stringify({ verified: true, course_id: order.course_id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Audit trail entry — system-attributed verification
     try {

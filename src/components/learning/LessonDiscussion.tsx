@@ -34,7 +34,13 @@ export function LessonDiscussion({
   lessonId: string;
   courseLessons?: { id: string; title: string }[];
 }) {
-  const { user, isAdmin } = useAuth();
+  const { user, adminRole } = useAuth();
+  // lesson_comments RLS only grants delete/moderate rights to admin and
+  // moderator (see the "Delete own lesson comment or admin" policy) — not
+  // every staff role that useAuth().isAdmin covers. Match that boundary here
+  // so instructor/support/finance/content_editor staff don't see a delete
+  // button that RLS silently no-ops.
+  const isModerationStaff = adminRole === "admin" || adminRole === "moderator";
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
@@ -151,14 +157,13 @@ export function LessonDiscussion({
   };
 
   const remove = async (id: string, soft = false) => {
-    if (soft) {
-      await (supabase as any)
-        .from("lesson_comments")
-        .update({ is_deleted: true, body: "[deleted]" })
-        .eq("id", id);
-    } else {
-      await (supabase as any).from("lesson_comments").delete().eq("id", id);
-    }
+    const { error } = soft
+      ? await (supabase as any)
+          .from("lesson_comments")
+          .update({ is_deleted: true, body: "[deleted]" })
+          .eq("id", id)
+      : await (supabase as any).from("lesson_comments").delete().eq("id", id);
+    if (error) toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
   };
 
   const renderItem = (c: CommentRow & { replies?: CommentRow[] }) => {
@@ -188,7 +193,7 @@ export function LessonDiscussion({
                 <span className="truncate">{lessonLabel}</span>
               </span>
             )}
-            {(isOwn || isAdmin) && !c.is_deleted && !isEditing && (
+            {(isOwn || isModerationStaff) && !c.is_deleted && !isEditing && (
               <div className="flex gap-1">
                 {isOwn && (
                   <button
@@ -205,7 +210,7 @@ export function LessonDiscussion({
                 <button
                   className="p-1 text-muted-foreground hover:text-destructive rounded"
                   aria-label="Delete comment"
-                  onClick={() => remove(c.id, isAdmin && !isOwn)}
+                  onClick={() => remove(c.id, isModerationStaff && !isOwn)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

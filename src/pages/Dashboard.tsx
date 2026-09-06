@@ -83,7 +83,7 @@ interface LiveClassRow {
 }
 
 export default function Dashboard() {
-  const { user, loading, isAdmin, adminRole } = useAuth();
+  const { user, loading, adminRole } = useAuth();
   const { data: siteSettings } = useSiteSettings();
   const { data: publicAccess } = usePublicAccessMode();
   const { data: hasJobs } = useHasPublishedJobs();
@@ -502,11 +502,9 @@ export default function Dashboard() {
               </TabsContent>
 
               <TabsContent value="calendar">
-                {isAdmin && (
-                  <div className="mb-6">
-                    <GoogleCalendarConnect />
-                  </div>
-                )}
+                <div className="mb-6">
+                  <GoogleCalendarConnect />
+                </div>
                 {liveClasses.length === 0 ? (
                   <div className="text-center py-20">
                     <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
@@ -628,11 +626,15 @@ export default function Dashboard() {
                 ) : (
                   <div className="space-y-3">
                     {applications.map((app, i) => {
+                      // Keep in sync with the STATUSES list in AdminJobApplications.tsx
+                      // — that's the source of truth for what an application's
+                      // status can actually be set to.
                       const statusColor: Record<string, string> = {
                         submitted: "bg-blue-500/10 text-blue-600",
                         reviewing: "bg-amber-500/10 text-amber-600",
-                        interview: "bg-primary/10 text-primary",
-                        accepted: "bg-green-500/10 text-green-600",
+                        interviewing: "bg-primary/10 text-primary",
+                        offered: "bg-teal-500/10 text-teal-600",
+                        hired: "bg-green-500/10 text-green-600",
                         rejected: "bg-red-500/10 text-red-600",
                       };
                       return (
