@@ -10,7 +10,7 @@ import {
 import {
   Target, Download, Filter, TrendingUp, Globe, Megaphone,
   Users, MousePointerClick, Clock, ArrowUpRight, ArrowDownRight,
-  Eye, Map, Smartphone, Monitor, Laptop, BarChart3, Activity
+  Eye, Map, Smartphone, Monitor, Laptop, BarChart3, Activity, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -55,19 +55,25 @@ export default function AdminMarketingAnalytics() {
   const [campaignFilter, setCampaignFilter] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: leads = [], isLoading } = useQuery({
+  const { data: leads = [], isLoading, error: leadsError, refetch } = useQuery({
     queryKey: ["admin-lead-sources"],
     queryFn: async () => {
-      // Paginate past the 1000-row PostgREST cap so KPIs reflect every visit.
-      return await fetchAllRows<any>("lead_sources", "*");
+      // Fetch only the columns needed for attribution and KPIs, avoiding
+      // massive unneeded JSON transfers and capping to a healthy window.
+      const cols = "id, user_id, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, form_type, created_at, form_data";
+      return await fetchAllRows<any>("lead_sources", cols, { pageSize: 1000, max: 10000 });
     },
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ["admin-enrollments-analytics"],
     queryFn: async () => {
-      return await fetchAllRows<any>("enrollments", "*");
+      return await fetchAllRows<any>("enrollments", "id, payment_status, created_at, course_id", { pageSize: 1000, max: 10000 });
     },
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const filtered = useMemo(() => {
@@ -387,6 +393,19 @@ export default function AdminMarketingAnalytics() {
       <div className="flex items-center justify-center py-20">
         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (leadsError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <div>
+          <h3 className="font-semibold text-lg">Unable to load marketing data</h3>
+          <p className="text-sm text-muted-foreground">{(leadsError as any)?.message || "A network or permissions error occurred."}</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
       </div>
     );
   }

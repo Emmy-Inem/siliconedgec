@@ -14,7 +14,7 @@ export async function fetchAllRows<T = any>(
   const orderColumn = opts.orderColumn ?? "created_at";
   const ascending = opts.ascending ?? false;
   const pageSize = Math.min(opts.pageSize ?? 1000, 1000);
-  const max = opts.max ?? 50000;
+  const max = opts.max ?? 10000;
 
   const out: T[] = [];
   let from = 0;

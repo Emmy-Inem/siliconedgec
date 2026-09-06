@@ -105,7 +105,7 @@ export function HubShell({ title, description, tabs, defaultTab }: Props) {
             tabIndex={0}
             className="mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md"
           >
-            {t.content}
+            {active === t.value && t.content}
           </TabsContent>
         ))}
       </Tabs>

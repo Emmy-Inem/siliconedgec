@@ -4,8 +4,9 @@ import { fetchAllRows } from "@/lib/fetch-all";
 import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
 import {
   TrendingUp, Users, GraduationCap, DollarSign, BookOpen, ArrowUpRight, ArrowDownRight,
-  Megaphone, BarChart3, Activity, Zap, Download
+  Megaphone, BarChart3, Activity, Zap, Download, AlertTriangle
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
@@ -56,26 +57,25 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
 export default function AdminAnalytics() {
   const { toast } = useToast();
   const { format: fmtMoney } = useLocalizedPrice();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["admin-analytics"],
     queryFn: async () => {
-      // Use fetchAllRows so we never silently drop rows past the 1000-row
-      // PostgREST cap — keeps Platform Analytics consistent with Marketing
-      // Analytics and Overview.
+      // Use fetchAllRows with fallbacks so a single transient failure
+      // never locks the entire analytics view into a permanent error.
       const [courses, enrollments, profiles, promos, referrals, orders, refunds] = await Promise.all([
-        fetchAllRows<any>("courses", "id, title, category, price, students_enrolled, difficulty, is_published, created_at"),
-        fetchAllRows<any>("enrollments", "id, payment_status, progress_percentage, is_completed, created_at, course_id"),
-        fetchAllRows<any>("profiles", "id, created_at"),
-        fetchAllRows<any>("promo_codes", "id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type"),
-        fetchAllRows<any>("influencer_referrals", "id, commission_earned, final_price, original_price, discount_applied, created_at"),
-        fetchAllRows<any>("orders", "id, amount, status, course_id, created_at"),
+        fetchAllRows<any>("courses", "id, title, category, price, students_enrolled, difficulty, is_published, created_at").catch(() => [] as any[]),
+        fetchAllRows<any>("enrollments", "id, payment_status, progress_percentage, is_completed, created_at, course_id").catch(() => [] as any[]),
+        fetchAllRows<any>("profiles", "id, created_at").catch(() => [] as any[]),
+        fetchAllRows<any>("promo_codes", "id, code, usage_count, revenue_generated, is_active, commission_percentage, discount_value, discount_type").catch(() => [] as any[]),
+        fetchAllRows<any>("influencer_referrals", "id, commission_earned, final_price, original_price, discount_applied, created_at").catch(() => [] as any[]),
+        fetchAllRows<any>("orders", "id, amount, status, course_id, user_id, created_at").catch(() => [] as any[]),
         fetchAllRows<any>("finance_refunds", "id, amount, status, order_id").catch(() => [] as any[]),
       ]);
       const [cohorts, cohortMembers] = await Promise.all([
         fetchAllRows<any>("cohorts", "id, name, cohort_number, course_id").catch(() => [] as any[]),
-        fetchAllRows<any>("cohort_members", "cohort_id, user_id").catch(() => [] as any[]),
+        fetchAllRows<any>("cohort_members", "cohort_id, user_id", { orderColumn: "joined_at" }).catch(() => [] as any[]),
       ]);
-      const ordersWithUser = await fetchAllRows<any>("orders", "id, amount, status, course_id, user_id, created_at").catch(() => [] as any[]);
+      const ordersWithUser = orders;
       const now = new Date();
 
       const courseMap = new Map(courses.map(c => [c.id, c]));
@@ -200,6 +200,8 @@ export default function AdminAnalytics() {
 
       return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos, perCourseCompletion, cohortRevenueData };
     },
+    staleTime: 60_000,
+    retry: 1,
   });
 
   if (isLoading) {
@@ -210,6 +212,19 @@ export default function AdminAnalytics() {
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
         />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <div>
+          <h3 className="font-semibold text-lg">Unable to load analytics</h3>
+          <p className="text-sm text-muted-foreground">{(error as any)?.message || "A network or permissions error occurred."}</p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()}>Retry</Button>
       </div>
     );
   }
