@@ -43,7 +43,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => settings?.[key as keyof typeof settings])
-    .map(([key, Icon]) => ({ url: settings?.[key as keyof typeof settings] as string, Icon }));
+    .map(([key, Icon]) => ({ url: settings?.[key as keyof typeof settings] as string, Icon, label: key.replace(/_url$|social_/g, "").replace(/_/g, " ") }));
 
   return (
     <footer ref={ref} className="bg-navy text-hero-muted">
@@ -58,9 +58,9 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             </p>
             {socials.length > 0 && (
               <div className="flex gap-3 pt-2">
-                {socials.map(({ url, Icon }) => (
-                  <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-navy-light flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
-                    <Icon className="h-4 w-4" />
+                {socials.map(({ url, Icon, label }) => (
+                  <a key={url} href={url} aria-label={`Silicon Edge Consulting on ${label}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-navy-light flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </a>
                 ))}
               </div>
@@ -156,7 +156,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                 required
                 className="flex-1 px-3 py-2 rounded-lg bg-navy-light border border-navy-light text-sm text-hero placeholder:text-hero-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <button type="submit" disabled={subBusy} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity hover-scale disabled:opacity-50">
+              <button type="submit" aria-label="Subscribe to the Silicon Edge newsletter" disabled={subBusy} className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity hover-scale disabled:opacity-50">
                 {subBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               </button>
             </form>
