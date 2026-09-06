@@ -68,6 +68,8 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
       {override?.keywords && <meta name="keywords" content={override.keywords} />}
       {override?.no_index && <meta name="robots" content="noindex, nofollow" />}
       {url && <link rel="canonical" href={url} />}
+      {url && <link rel="alternate" hrefLang="en" href={url} />}
+      {url && <link rel="alternate" hrefLang="x-default" href={url} />}
 
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content="Silicon Edge Consulting" />

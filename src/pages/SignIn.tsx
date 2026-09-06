@@ -1,3 +1,4 @@
+import { SEO } from "@/components/SEO";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,7 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Sign In" description="Sign in to continue your live tech training, view certificates and manage your enrollments." />
       <Header />
 
       <section className="pt-28 pb-20">

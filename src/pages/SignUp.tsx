@@ -1,3 +1,4 @@
+import { SEO } from "@/components/SEO";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,7 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Create Your Free Account" description="Create a free Silicon Edge account to join live, instructor-led AI, Cloud and DevOps training." />
       <Header />
 
       <section className="pt-28 pb-20">
