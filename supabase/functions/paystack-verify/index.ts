@@ -57,13 +57,23 @@ Deno.serve(async (req) => {
     }
 
     // Idempotent: the client re-invokes this on refresh/back-navigation before
-    // it clears the ?verify=1 URL param, and Paystack's own webhook may also
-    // have already completed this order. Only run the one-time side effects
-    // (email, audit log, promo/referral accounting) on the first success.
-    const alreadyCompleted = order.status === "completed";
+    // it clears the ?verify=1 URL param. Paystack's own webhook may also have
+    // already flipped the order to "completed" — but the webhook does NOT send
+    // the confirmation email or record promo/referral accounting, so order
+    // status is the wrong idempotency key. Key off our own "verify" audit row
+    // instead, so those one-time side effects still run exactly once.
+    const { data: priorVerify } = await supabase
+      .from("admin_activity_log")
+      .select("id")
+      .eq("entity_type", "order")
+      .eq("entity_id", order.id)
+      .eq("action", "verify")
+      .limit(1)
+      .maybeSingle();
+    const alreadyCompleted = !!priorVerify;
 
     // Update order
-    if (!alreadyCompleted) {
+    if (order.status !== "completed") {
       await supabase
         .from("orders")
         .update({
@@ -72,6 +82,7 @@ Deno.serve(async (req) => {
         })
         .eq("reference", reference);
     }
+
 
     // Create enrollment
     await supabase.from("enrollments").upsert(

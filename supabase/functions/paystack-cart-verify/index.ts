@@ -76,9 +76,18 @@ Deno.serve(async (req) => {
     // Idempotent: the client re-invokes this on refresh/back-nav or when the
     // auth listener hands us a fresh `user` object mid-flight (see Cart.tsx's
     // `[user]` effect dep), before the same ?reference= is cleared from the
-    // URL. Skip the one-time accounting (promo/referral, audit log, email)
-    // once every line order is already marked completed.
-    const alreadyCompleted = orders.every((o: any) => o.status === "completed");
+    // URL. Paystack's webhook can also flip these orders to "completed" first
+    // without sending email or recording referrals, so key the one-time
+    // accounting off our own "verify" audit rows rather than order status.
+    const { data: priorVerify } = await supabase
+      .from("admin_activity_log")
+      .select("id")
+      .eq("entity_type", "order")
+      .eq("action", "verify")
+      .in("entity_id", orders.map((o: any) => o.id))
+      .limit(1);
+    const alreadyCompleted = (priorVerify?.length ?? 0) > 0;
+
     if (alreadyCompleted) {
       return new Response(JSON.stringify({
         verified: true,
