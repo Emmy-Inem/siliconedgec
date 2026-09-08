@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, ArrowRight, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { SEO } from "@/components/SEO";
 
 const db = supabase as any;
 
@@ -44,6 +45,10 @@ export default function Cohorts() {
   if (!user) return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>Cohorts | Silicon Edge</title></Helmet>
+      <SEO
+        title="Learning Cohorts"
+        description="Join private Silicon Edge learning cohorts — live sessions, peer discussions, leaderboards and shared materials with instructors."
+      />
       <Header />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-16 text-center">
         <h1 className="font-heading text-2xl font-bold mb-3">Sign in to view your cohorts</h1>
@@ -56,6 +61,10 @@ export default function Cohorts() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>My Cohorts | Silicon Edge</title></Helmet>
+      <SEO
+        title="My Cohorts"
+        description="Your private Silicon Edge learning cohorts — discussions, live sessions, leaderboards and shared materials with your peers and instructors."
+      />
       <Header />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-10">
         <h1 className="font-heading text-3xl font-bold mb-2">My Cohorts</h1>

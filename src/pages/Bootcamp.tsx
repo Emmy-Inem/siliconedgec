@@ -12,6 +12,7 @@ import { Header } from "@/components/Header";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { formatNaira } from "@/lib/format-currency";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const db = supabase as any;
 
@@ -58,6 +59,10 @@ export default function Bootcamp() {
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>Bootcamp Payments · Silicon Edge</title></Helmet>
+      <SEO
+        title="My Bootcamp Payments"
+        description="Track your Silicon Edge bootcamp installment payments, due dates and access to your programme content."
+      />
       <Header />
       <main className="flex-1 container max-w-3xl py-10 space-y-6">
         <header>
