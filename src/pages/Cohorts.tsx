@@ -45,6 +45,10 @@ export default function Cohorts() {
   if (!user) return (
     <div className="min-h-screen flex flex-col">
       <Helmet><title>Cohorts | Silicon Edge</title></Helmet>
+      <SEO
+        title="Learning Cohorts"
+        description="Join private Silicon Edge learning cohorts — live sessions, peer discussions, leaderboards and shared materials with instructors."
+      />
       <Header />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-16 text-center">
         <h1 className="font-heading text-2xl font-bold mb-3">Sign in to view your cohorts</h1>
