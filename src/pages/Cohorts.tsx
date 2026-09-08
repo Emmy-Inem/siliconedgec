@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, ArrowRight, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { SEO } from "@/components/SEO";
 
 const db = supabase as any;
 

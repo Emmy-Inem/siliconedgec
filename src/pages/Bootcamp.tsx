@@ -12,6 +12,7 @@ import { Header } from "@/components/Header";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { formatNaira } from "@/lib/format-currency";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const db = supabase as any;
 
