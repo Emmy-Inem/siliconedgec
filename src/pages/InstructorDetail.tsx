@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, Users, BookOpen, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { CourseCard } from "@/components/CourseCard";
 
 export default function InstructorDetail() {
@@ -72,6 +73,32 @@ export default function InstructorDetail() {
         title={`${instructor.name} — Instructor at Silicon Edge`}
         description={(instructor.bio ?? `Learn from ${instructor.name}, ${instructor.role ?? "expert instructor"} at Silicon Edge.`).slice(0, 155)}
         image={instructor.avatar_url ?? undefined}
+        canonical={siteUrl(`/instructors/${instructor.id}`)}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
+                { "@type": "ListItem", position: 2, name: "Instructors", item: siteUrl("/instructors") },
+                { "@type": "ListItem", position: 3, name: instructor.name, item: siteUrl(`/instructors/${instructor.id}`) },
+              ],
+            },
+            {
+              "@type": "Person",
+              name: instructor.name,
+              jobTitle: instructor.role ?? "Technical Instructor",
+              description: instructor.bio ?? undefined,
+              image: instructor.avatar_url ?? undefined,
+              worksFor: {
+                "@type": "Organization",
+                name: "Silicon Edge Consulting",
+                url: siteUrl("/"),
+              },
+            },
+          ],
+        }}
       />
       <Header />
 

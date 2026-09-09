@@ -126,7 +126,7 @@ export default function Contact() {
 
           <div className="space-y-4">
             <Card className="p-6 border-border/60">
-              <h3 className="font-heading font-semibold mb-4">Reach us directly</h3>
+              <h2 className="font-heading font-semibold mb-4">Reach us directly</h2>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-3"><MapPin className="h-4 w-4 text-primary mt-0.5" /><span>{address}</span></li>
                 <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /><a href={`mailto:${email}`} className="hover:text-primary break-all">{email}</a></li>
@@ -134,7 +134,7 @@ export default function Contact() {
               </ul>
             </Card>
             <Card className="p-6 border-border/60 bg-primary/5">
-              <h3 className="font-heading font-semibold mb-2">For businesses</h3>
+              <h2 className="font-heading font-semibold mb-2">For businesses</h2>
               <p className="text-sm text-muted-foreground mb-3">Looking for cohort or enterprise training?</p>
               <Button asChild variant="outline" size="sm" className="w-full"><a href="/for-businesses">Visit business page</a></Button>
             </Card>

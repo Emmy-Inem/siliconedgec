@@ -174,7 +174,7 @@ export default function Legal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${meta.title} | ${brand}`} description={meta.description} canonical={`https://www.siliconedgec.com${pathname}`} />
+      <SEO title={`${meta.title} | ${brand}`} description={meta.description} canonical={pathname} />
       <Header />
       <main className="container mx-auto px-5 sm:px-6 py-12 sm:py-16 max-w-3xl">
         <header className="mb-8">

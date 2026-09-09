@@ -56,10 +56,10 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
   const finalDescription = override?.description || description;
   const finalImage = override?.og_image_url || image;
   const fullTitle = finalTitle.includes("Silicon Edge") ? finalTitle : `${finalTitle} | Silicon Edge Consulting`;
-  const url =
-    override?.canonical_url ||
-    canonical ||
-    buildCanonical(location.pathname, location.search);
+  const rawCanonical = override?.canonical_url || canonical;
+  const url = rawCanonical
+    ? (rawCanonical.startsWith("http") ? rawCanonical : `${PRODUCTION_ORIGIN}${rawCanonical.startsWith("/") ? "" : "/"}${rawCanonical}`)
+    : buildCanonical(location.pathname, location.search);
 
   return (
     <Helmet>

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { CheckCircle2, Circle, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -57,7 +58,20 @@ export default function LearningPathDetail() {
 
   return (
     <>
-      <SEO title={`${path.title} · Learning path`} description={path.description ?? undefined} />
+      <SEO
+        title={`${path.title} · Learning path`}
+        description={path.description ?? undefined}
+        canonical={siteUrl(`/paths/${path.id}`)}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
+            { "@type": "ListItem", position: 2, name: "Learning Paths", item: siteUrl("/paths") },
+            { "@type": "ListItem", position: 3, name: path.title, item: siteUrl(`/paths/${path.id}`) },
+          ],
+        }}
+      />
       <Header />
       <main className="container mx-auto px-4 sm:px-6 pt-28 md:pt-32 pb-16 max-w-4xl">
         <Link to="/paths" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"><ArrowLeft className="h-4 w-4 mr-1" />All paths</Link>

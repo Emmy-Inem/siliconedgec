@@ -81,10 +81,6 @@ const NotFound = () => {
         <title>{`${code} — ${title} | Silicon Edge Consulting`}</title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
-        {/* Best-effort SPA signal — real status is set by hosting */}
-        <meta httpEquiv="Status" content={isGone ? "410 Gone" : "404 Not Found"} />
-        {/* Canonical fallback so crawlers don't index this surface */}
-        <link rel="canonical" href={canonical} />
         <meta property="og:title" content={`${code} — ${title}`} />
         <meta property="og:description" content={message} />
         <meta name="description" content={message} />

@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
-import { useCourse } from "@/hooks/useCourses";
+import { useCourse, useCourses } from "@/hooks/useCourses";
+import { CourseCard } from "@/components/CourseCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useBookmarks } from "@/hooks/useBookmarks";
@@ -64,6 +65,29 @@ export default function CourseDetail() {
   // to id) for any user-facing URL.
   const courseId = course?.id;
   const courseSlug = (course as any)?.slug ?? course?.id;
+
+  const { data: allCourses = [] } = useCourses();
+  const relatedCourses = useMemo(() => {
+    if (!course || !allCourses.length) return [];
+    const configuredIds = new Set([
+      ...((course as any).upsell_course_ids ?? []),
+      ...((course as any).cross_sell_course_ids ?? []),
+    ]);
+    const matchedConfigured = allCourses.filter((c) => configuredIds.has(c.id));
+    if (matchedConfigured.length >= 3) return matchedConfigured.slice(0, 3);
+
+    const sameCat = allCourses.filter(
+      (c) => c.id !== course.id && c.category === course.category
+    );
+    const pool = [...matchedConfigured, ...sameCat];
+    const unique = Array.from(new Map(pool.map((item) => [item.id, item])).values());
+    if (unique.length >= 3) return unique.slice(0, 3);
+
+    const others = allCourses.filter(
+      (c) => c.id !== course.id && !unique.some((u) => u.id === c.id)
+    );
+    return [...unique, ...others].slice(0, 3);
+  }, [course, allCourses]);
 
   const { data: publicCurriculum = [] } = useQuery({
     queryKey: ["course-public-curriculum", courseId],
@@ -487,7 +511,7 @@ export default function CourseDetail() {
         title={`${course.title} — Silicon Edge`}
         description={(course.description ?? `Master ${course.title} with live, instructor-led training.`).slice(0, 155)}
         image={course.thumbnail_url ?? undefined}
-        type="article"
+        type="website"
         canonical={siteUrl(`/courses/${courseSlug}`)}
         jsonLd={{
           "@context": "https://schema.org",
@@ -668,7 +692,7 @@ export default function CourseDetail() {
                       <p>{course.description}</p>
                       {course.learning_outcomes && course.learning_outcomes.length > 0 && (
                         <>
-                          <h3 className="font-heading font-semibold text-foreground text-base mt-6">What You'll Learn</h3>
+                          <h2 className="font-heading font-semibold text-foreground text-base mt-6">What You'll Learn</h2>
                           <ul className="space-y-2">
                             {course.learning_outcomes.map((outcome, i) => (
                               <li key={i} className="flex items-start gap-2">
@@ -871,7 +895,7 @@ export default function CourseDetail() {
 
                 {/* What's Included */}
                 <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                  <h3 className="font-heading font-semibold text-base">What's included</h3>
+                  <h2 className="font-heading font-semibold text-base">What's included</h2>
                   {((course as any).whats_included?.length ?? 0) > 0 ? (
                     <ul className="space-y-3 text-sm text-muted-foreground">
                       {((course as any).whats_included as string[]).map((item, i) => (
@@ -957,6 +981,32 @@ export default function CourseDetail() {
           </div>
         </div>
       </section>
+
+      {/* Related Courses Section for Internal Linking & Topical Clustering */}
+      {relatedCourses.length > 0 && (
+        <section className="py-16 bg-muted/20 border-t border-border/60">
+          <div className="container mx-auto px-5 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                  Related Courses
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Explore other programs to advance your career in cloud, DevOps, and AI.
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="self-start sm:self-auto">
+                <Link to="/courses">View All Courses</Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedCourses.map((c, i) => (
+                <CourseCard key={c.id} course={c} index={i} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {course && (
         <PaymentModal

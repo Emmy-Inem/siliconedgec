@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { Loader2, ArrowRight } from "lucide-react";
 
 interface Post {
@@ -20,6 +21,8 @@ interface Post {
 export default function Blog() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeCategory = searchParams.get("category");
 
   useEffect(() => {
     let active = true;
@@ -36,15 +39,20 @@ export default function Blog() {
     return () => { active = false; };
   }, []);
 
+  const categories = Array.from(new Set(posts.map((p) => p.category).filter(Boolean))) as string[];
+  const filteredPosts = activeCategory
+    ? posts.filter((p) => p.category?.toLowerCase() === activeCategory.toLowerCase())
+    : posts;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Blog",
     name: "Silicon Edge Blog",
-    url: "https://siliconedgec.com/blog",
+    url: siteUrl("/blog"),
     blogPost: posts.slice(0, 20).map((p) => ({
       "@type": "BlogPosting",
       headline: p.title,
-      url: `https://siliconedgec.com/blog/${p.slug}`,
+      url: siteUrl(`/blog/${p.slug}`),
       datePublished: p.published_at,
       author: p.author_name ? { "@type": "Person", name: p.author_name } : undefined,
     })),
@@ -53,8 +61,9 @@ export default function Blog() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Blog — Tech Career Insights & Tutorials"
+        title={activeCategory ? `${activeCategory} Articles — Blog` : "Blog — Tech Career Insights & Tutorials"}
         description="Articles on AI, cloud, DevOps, careers and live training from Silicon Edge Consulting."
+        canonical={siteUrl(activeCategory ? `/blog?category=${encodeURIComponent(activeCategory)}` : "/blog")}
         jsonLd={jsonLd}
       />
       <Header />
@@ -64,18 +73,56 @@ export default function Blog() {
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             The Silicon Edge Blog
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mb-6">
             Practical guides, career stories, and updates from our instructors on AI, cloud, DevOps, and more.
           </p>
+          {categories.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setSearchParams({})}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  !activeCategory
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                All
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSearchParams({ category: cat })}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    activeCategory?.toLowerCase() === cat.toLowerCase()
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-        ) : posts.length === 0 ? (
-          <p className="text-center text-muted-foreground py-20">No posts yet — check back soon.</p>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground mb-4">No articles found in this category.</p>
+            <button
+              type="button"
+              onClick={() => setSearchParams({})}
+              className="text-primary hover:underline text-sm font-medium"
+            >
+              Clear filter
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((p) => (
+            {filteredPosts.map((p) => (
               <Link
                 key={p.id}
                 to={`/blog/${p.slug}`}

@@ -256,7 +256,7 @@ function FloatingTechLogos() {
           <img
             src={logo.src}
             alt={logo.name}
-            loading="lazy"
+            loading="eager"
             className="max-w-full max-h-full object-contain"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -692,13 +692,6 @@ export default function Index() {
         title="Job-Ready AI, Cloud & DevOps Training | Silicon Edge Consulting"
         description="Instructor-led live training and hands-on projects in Cloud, DevOps, AI, and Cybersecurity. Built for tech career transitions."
         canonical="https://siliconedgec.com/"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "EducationalOrganization",
-          name: "Silicon Edge Consulting",
-          url: "https://siliconedgec.com",
-          sameAs: ["https://siliconedgec.com"],
-        }}
       />
       <Header />
 
@@ -806,8 +799,9 @@ export default function Index() {
                     src={a || fallbackInstructorImages[i % fallbackInstructorImages.length]}
                     alt=""
                     aria-hidden
-
-                    loading="lazy"
+                    width={28}
+                    height={28}
+                    loading="eager"
                     onError={(e) => {
                       const img = e.currentTarget as HTMLImageElement;
                       const fb = fallbackInstructorImages[i % fallbackInstructorImages.length];

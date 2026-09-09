@@ -18,6 +18,7 @@ const baseNavLinks = [
   { label: "Pricing", href: "/pricing" },
   { label: "Certificates", href: "/certificates" },
   { label: "For Businesses", href: "/for-businesses" },
+  { label: "Blog", href: "/blog" },
   { label: "Career", href: "/career" },
 ];
 
@@ -93,6 +94,8 @@ export function Header() {
             src={showLight ? logoLight : logoDark}
             alt="Silicon Edge Consulting"
             className="h-9 w-auto max-w-none object-contain"
+            width={160}
+            height={36}
           />
         </Link>
 

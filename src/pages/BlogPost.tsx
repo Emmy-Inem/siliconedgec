@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { Loader2, ArrowLeft, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -71,19 +72,31 @@ export default function BlogPost() {
 
   const jsonLd = post && {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.excerpt ?? undefined,
-    image: post.featured_image_url ?? undefined,
-    datePublished: post.published_at,
-    dateModified: post.updated_at ?? post.published_at,
-    author: { "@type": "Person", name: post.author_name || "Silicon Edge Consulting" },
-    publisher: {
-      "@type": "Organization",
-      name: "Silicon Edge Consulting",
-      logo: { "@type": "ImageObject", url: "https://siliconedgec.com/favicon.ico" },
-    },
-    mainEntityOfPage: `https://siliconedgec.com/blog/${post.slug}`,
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt ?? undefined,
+        image: post.featured_image_url ?? undefined,
+        datePublished: post.published_at,
+        dateModified: post.updated_at ?? post.published_at,
+        author: { "@type": "Person", name: post.author_name || "Silicon Edge Consulting" },
+        publisher: {
+          "@type": "Organization",
+          name: "Silicon Edge Consulting",
+          logo: { "@type": "ImageObject", url: "https://siliconedgec.com/favicon.ico" },
+        },
+        mainEntityOfPage: siteUrl(`/blog/${post.slug}`),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl("/") },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": siteUrl("/blog") },
+          { "@type": "ListItem", "position": 3, "name": post.title, "item": siteUrl(`/blog/${post.slug}`) },
+        ],
+      },
+    ],
   };
 
   return (
@@ -113,7 +126,12 @@ export default function BlogPost() {
               <Link to="/blog" className="hover:text-primary">Blog</Link>
             </nav>
             {post.category && (
-              <span className="text-[10px] tracking-widest uppercase text-primary font-semibold">{post.category}</span>
+              <Link
+                to={`/blog?category=${encodeURIComponent(post.category)}`}
+                className="text-[10px] tracking-widest uppercase text-primary font-semibold hover:underline inline-block"
+              >
+                {post.category}
+              </Link>
             )}
             <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-5 leading-tight">
               {post.title}
@@ -129,6 +147,17 @@ export default function BlogPost() {
             </div>
             <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary prose-table:w-full prose-th:bg-muted prose-th:text-left prose-th:p-2 prose-td:p-2 prose-td:border prose-th:border prose-table:border-collapse">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content ?? ""}</ReactMarkdown>
+            </div>
+
+            {/* Contextual Course CTA for SEO cross-linking and student discovery */}
+            <div className="mt-12 p-6 rounded-2xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="font-heading font-semibold text-lg text-foreground">Ready to master these skills?</h3>
+                <p className="text-sm text-muted-foreground mt-1">Explore live, instructor-led courses with hands-on projects, certification, and career mentorship.</p>
+              </div>
+              <Button asChild className="shrink-0">
+                <Link to="/courses">Explore Courses</Link>
+              </Button>
             </div>
 
             {post.tags && post.tags.length > 0 && (

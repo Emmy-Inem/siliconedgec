@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
+import { siteUrl } from "@/lib/site-url";
 import { Loader2 } from "lucide-react";
 import { CourseCard } from "@/components/CourseCard";
 import type { DbCourse } from "@/hooks/useCourses";
@@ -23,7 +24,7 @@ export default function CategoryCourses() {
       setLoading(true);
       const { data } = await supabase
         .from("courses")
-        .select("id, slug, title, description, thumbnail_url, category, difficulty_level, price_naira, duration_hours, students_enrolled, rating, instructor_id, instructors(id, name, avatar_url)")
+        .select("id, slug, title, description, thumbnail_url, category, difficulty, price, duration_hours, students_enrolled, rating, instructor_id, instructors(id, name, avatar_url)")
         .ilike("category", name)
         .eq("is_published", true);
       const mapped = (data ?? []).map((c: any) => ({
@@ -33,8 +34,8 @@ export default function CategoryCourses() {
         description: c.description ?? "",
         thumbnail_url: c.thumbnail_url,
         category: c.category ?? "",
-        difficulty: c.difficulty_level ?? "Beginner",
-        price: c.price_naira ?? 0,
+        difficulty: c.difficulty ?? "Beginner",
+        price: c.price ?? 0,
         duration_hours: c.duration_hours ?? 0,
         students_enrolled: c.students_enrolled ?? 0,
         rating: c.rating ?? 0,
@@ -47,12 +48,37 @@ export default function CategoryCourses() {
     })();
   }, [name]);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl("/") },
+          { "@type": "ListItem", "position": 2, "name": "Courses", "item": siteUrl("/courses") },
+          { "@type": "ListItem", "position": 3, "name": `${name} Courses`, "item": siteUrl(`/category/${slug}`) },
+        ],
+      },
+      ...(courses.length > 0 ? [{
+        "@type": "ItemList",
+        "name": `${name} Courses`,
+        "itemListElement": courses.slice(0, 10).map((c, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "name": c.title,
+          "url": siteUrl(`/courses/${c.slug || c.id}`),
+        })),
+      }] : []),
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
         title={`${name} Courses | Silicon Edge`}
         description={`Browse expert-led ${name} courses. Job-ready training in AI, Cloud, DevOps and more.`}
-        canonical={`/category/${slug}`}
+        canonical={siteUrl(`/category/${slug}`)}
+        jsonLd={jsonLd}
       />
       <Header />
       <main className="container mx-auto px-4 py-12">

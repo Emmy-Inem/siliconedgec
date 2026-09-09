@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { useEffect, useState } from "react";
 import { MarkdownView } from "@/components/ai/MarkdownView";
 import { useToast } from "@/hooks/use-toast";
@@ -49,7 +50,20 @@ export default function HelpArticle() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SEO title={article ? `${article.title} · Help Center` : "Help Center"} description={article?.summary ?? "Silicon Edge help articles."} />
+      <SEO
+        title={article ? `${article.title} · Help Center` : "Help Center"}
+        description={article?.summary ?? "Silicon Edge help articles."}
+        canonical={article ? siteUrl(`/help/${article.slug}`) : siteUrl("/help")}
+        jsonLd={article ? {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
+            { "@type": "ListItem", position: 2, name: "Help Center", item: siteUrl("/help") },
+            { "@type": "ListItem", position: 3, name: article.title, item: siteUrl(`/help/${article.slug}`) },
+          ],
+        } : undefined}
+      />
       <Header />
       <main className="flex-1 container mx-auto px-5 sm:px-6 py-10 max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-4">

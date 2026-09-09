@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { siteUrl } from "@/lib/site-url";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useJob } from "@/hooks/useJobs";
 import { Briefcase, MapPin, Clock, Wifi, ArrowLeft, Send } from "lucide-react";
@@ -95,38 +96,51 @@ export default function JobDetail() {
       <SEO
         title={`${job.title} at ${job.company} | Jobs`}
         description={job.description.slice(0, 155)}
+        canonical={siteUrl(`/jobs/${job.id}`)}
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "JobPosting",
-          title: job.title,
-          description: job.description,
-          datePosted: (job as any).created_at ?? new Date().toISOString(),
-          employmentType: job.job_type,
-          hiringOrganization: {
-            "@type": "Organization",
-            name: job.company,
-            sameAs: "https://siliconedgec.com",
-          },
-          jobLocationType: job.is_remote ? "TELECOMMUTE" : undefined,
-          jobLocation: job.location
-            ? {
-                "@type": "Place",
-                address: { "@type": "PostalAddress", addressLocality: job.location },
-              }
-            : undefined,
-          baseSalary:
-            job.salary_min || job.salary_max
-              ? {
-                  "@type": "MonetaryAmount",
-                  currency: "NGN",
-                  value: {
-                    "@type": "QuantitativeValue",
-                    minValue: job.salary_min ? Number(job.salary_min) : undefined,
-                    maxValue: job.salary_max ? Number(job.salary_max) : undefined,
-                    unitText: "YEAR",
-                  },
-                }
-              : undefined,
+          "@graph": [
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
+                { "@type": "ListItem", position: 2, name: "Jobs", item: siteUrl("/jobs") },
+                { "@type": "ListItem", position: 3, name: job.title, item: siteUrl(`/jobs/${job.id}`) },
+              ],
+            },
+            {
+              "@type": "JobPosting",
+              title: job.title,
+              description: job.description,
+              datePosted: (job as any).created_at ?? new Date().toISOString(),
+              employmentType: job.job_type,
+              hiringOrganization: {
+                "@type": "Organization",
+                name: job.company,
+                sameAs: siteUrl("/"),
+              },
+              jobLocationType: job.is_remote ? "TELECOMMUTE" : undefined,
+              jobLocation: job.location
+                ? {
+                    "@type": "Place",
+                    address: { "@type": "PostalAddress", addressLocality: job.location },
+                  }
+                : undefined,
+              baseSalary:
+                job.salary_min || job.salary_max
+                  ? {
+                      "@type": "MonetaryAmount",
+                      currency: "NGN",
+                      value: {
+                        "@type": "QuantitativeValue",
+                        minValue: job.salary_min ? Number(job.salary_min) : undefined,
+                        maxValue: job.salary_max ? Number(job.salary_max) : undefined,
+                        unitText: "YEAR",
+                      },
+                    }
+                  : undefined,
+            },
+          ],
         }}
       />
       <Header />

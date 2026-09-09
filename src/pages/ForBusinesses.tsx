@@ -300,7 +300,7 @@ export default function ForBusinesses() {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20 flex items-center justify-center mb-4 mx-auto md:mx-0">
                   <item.icon className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h3 className="font-heading font-semibold text-base mb-2">{item.title}</h3>
+                <h2 className="font-heading font-semibold text-base mb-2">{item.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}

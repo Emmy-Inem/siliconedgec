@@ -195,7 +195,7 @@ const App = () => (
               <Route path="/newsletter/confirm" element={<NewsletterAction mode="confirm" />} />
               <Route path="/newsletter/unsubscribe" element={<NewsletterAction mode="unsubscribe" />} />
               <Route path="/bookmarks" element={<Bookmarks />} />
-              <Route path="/wishlist" element={<Bookmarks />} />
+              <Route path="/wishlist" element={<Navigate to="/bookmarks" replace />} />
               <Route path="/account" element={<Account />} />
               <Route path="/support" element={<Support />} />
               <Route path="/support/:id" element={<SupportTicket />} />
