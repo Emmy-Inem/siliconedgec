@@ -28,6 +28,8 @@ import testimonial6 from "@/assets/stock/testimonial-6.jpg";
 import videoTestimonialDoreez from "@/assets/testimonials/video-testimonial-doreez.jpg";
 import videoTestimonialSimeon from "@/assets/testimonials/video-testimonial-simeon.jpg";
 import videoTestimonialMichael from "@/assets/testimonials/video-testimonial-michael.jpg";
+import { CareerPathDiagnostic } from "@/components/home/CareerPathDiagnostic";
+import { GraduateOutcomes } from "@/components/home/GraduateOutcomes";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
@@ -1222,6 +1224,27 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* ───────────────── CAREER PATH DIAGNOSTIC ───────────────── */}
+      <section className="py-16 md:py-24 bg-muted/15 relative">
+        <div className="container mx-auto px-5 sm:px-6">
+          <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-2">Find Your Direction</p>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">
+              Not Sure Where to Begin?
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+              Take our 30-second skills diagnostic to discover the exact cloud or DevOps roadmap matching your background.
+            </p>
+          </motion.div>
+          <motion.div {...sectionReveal}>
+            <CareerPathDiagnostic />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ───────────────── GRADUATE OUTCOMES & COMPETENCIES ───────────────── */}
+      <GraduateOutcomes />
 
       {/* ───────────────── INSTRUCTORS RAIL ───────────────── */}
       {instructors.length > 0 && (

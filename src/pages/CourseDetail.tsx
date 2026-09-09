@@ -13,6 +13,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentModal } from "@/components/PaymentModal";
 import { RegistrationFormModal } from "@/components/RegistrationFormModal";
+import { SyllabusDownloadModal } from "@/components/SyllabusDownloadModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -75,6 +76,7 @@ export default function CourseDetail() {
   const qc = useQueryClient();
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [syllabusOpen, setSyllabusOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
@@ -938,6 +940,17 @@ export default function CourseDetail() {
                       </Button>
                     </div>
                   )}
+
+                  {!isEnrolled && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full gap-2 text-xs text-muted-foreground hover:text-foreground mt-2"
+                      onClick={() => setSyllabusOpen(true)}
+                    >
+                      <FileText className="h-3.5 w-3.5 text-primary" /> Download Course Syllabus (PDF)
+                    </Button>
+                  )}
                 </div>
 
                 {/* What's Included */}
@@ -1075,6 +1088,16 @@ export default function CourseDetail() {
             qc.invalidateQueries({ queryKey: ["enrollment", course.id] });
             qc.invalidateQueries({ queryKey: ["webinar-registration", course.id] });
           }}
+        />
+      )}
+      {course && (
+        <SyllabusDownloadModal
+          isOpen={syllabusOpen}
+          onClose={() => setSyllabusOpen(false)}
+          courseTitle={course.title}
+          courseId={course.id}
+          modulesCount={curriculumModules.length || 6}
+          duration={course.duration || "8–12 Weeks"}
         />
       )}
 
