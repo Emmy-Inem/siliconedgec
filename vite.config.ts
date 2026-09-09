@@ -19,4 +19,15 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-pdf": ["jspdf", "html2canvas"],
+          "vendor-charts": ["recharts"],
+        },
+      },
+    },
+  },
 }));

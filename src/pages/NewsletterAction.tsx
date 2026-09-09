@@ -31,6 +31,7 @@ export default function NewsletterAction({ mode }: { mode: "confirm" | "unsubscr
         title={isConfirm ? "Confirm your subscription" : "Unsubscribe"}
         description="Manage your Silicon Edge Consulting newsletter preferences."
         canonical={isConfirm ? "/newsletter/confirm" : "/newsletter/unsubscribe"}
+        noIndex={true}
       />
       <Header />
       <main className="container mx-auto px-5 sm:px-6 py-24 flex justify-center">

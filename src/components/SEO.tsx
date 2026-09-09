@@ -10,6 +10,7 @@ interface SEOProps {
   type?: "website" | "article";
   canonical?: string;
   jsonLd?: Record<string, unknown>;
+  noIndex?: boolean;
 }
 
 const DEFAULT_DESCRIPTION = "Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.";
@@ -28,7 +29,7 @@ function buildCanonical(pathname: string, search: string): string {
   return `${PRODUCTION_ORIGIN}${pathname}${qs ? `?${qs}` : ""}`;
 }
 
-export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_IMAGE, type = "website", canonical, jsonLd }: SEOProps) {
+export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_IMAGE, type = "website", canonical, jsonLd, noIndex }: SEOProps) {
   const location = useLocation();
   const [override, setOverride] = useState<{
     title?: string | null;
@@ -66,7 +67,7 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
       <title>{fullTitle}</title>
       <meta name="description" content={finalDescription} />
       {override?.keywords && <meta name="keywords" content={override.keywords} />}
-      {override?.no_index && <meta name="robots" content="noindex, nofollow" />}
+      {(override?.no_index || noIndex) && <meta name="robots" content="noindex, nofollow" />}
       {url && <link rel="canonical" href={url} />}
       {url && <link rel="alternate" hrefLang="en" href={url} />}
       {url && <link rel="alternate" hrefLang="x-default" href={url} />}

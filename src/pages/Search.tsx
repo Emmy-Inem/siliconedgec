@@ -49,7 +49,7 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={q ? `Search: ${q}` : "Search"} description="Search across courses and blog posts." canonical="/search" />
+      <SEO title={q ? `Search: ${q}` : "Search"} description="Search across courses and blog posts." canonical="/search" noIndex={true} />
       <Header />
       <main className="container mx-auto px-5 sm:px-6 pt-20 pb-12 max-w-3xl">
         <h1 className="font-heading text-3xl font-bold mb-6">Search</h1>

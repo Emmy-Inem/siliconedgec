@@ -184,20 +184,34 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
 export default function Courses() {
   const { data: courses = [], isLoading } = useCourses();
-  const [searchParams] = useSearchParams();
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") ?? "All");
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [aiSearching, setAiSearching] = useState(false);
   const [aiMaxPrice, setAiMaxPrice] = useState<number | null>(null);
 
-  // Allow deep-links like /courses?q=aws (used by the 404 cover-page search
-  // fallback) to pre-fill the search input on arrival.
+  // Allow deep-links like /courses?q=aws or /courses?category=AWS
   useEffect(() => {
     const q = searchParams.get("q");
     if (q !== null) setSearch(q);
+    const cat = searchParams.get("category");
+    if (cat !== null) {
+      setActiveCategory(cat);
+    }
   }, [searchParams]);
+
+  const handleSelectCategory = (cat: string) => {
+    setActiveCategory(cat);
+    const newParams = new URLSearchParams(searchParams);
+    if (cat === "All") {
+      newParams.delete("category");
+    } else {
+      newParams.set("category", cat);
+    }
+    setSearchParams(newParams, { replace: true });
+  };
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(courses.map((c) => c.category)));
@@ -263,6 +277,9 @@ export default function Courses() {
     setActiveDifficulty("All Levels");
     setSearch("");
     setAiMaxPrice(null);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("category");
+    setSearchParams(newParams, { replace: true });
   };
 
   const runAiSearch = async () => {
@@ -290,9 +307,9 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Tech Courses & Bootcamps | Silicon Edge Consulting"
-        description="Explore live, instructor-led courses in Cloud Engineering, AWS, Azure, DevOps, Kubernetes, and Data."
-        canonical="https://siliconedgec.com/courses"
+        title={activeCategory !== "All" ? `${activeCategory} Courses & Bootcamps | Silicon Edge Consulting` : "Tech Courses & Bootcamps | Silicon Edge Consulting"}
+        description={activeCategory !== "All" ? `Explore live, mentor-led ${activeCategory} courses and bootcamps with practical real-world labs and career coaching.` : "Explore live, instructor-led courses in Cloud Engineering, AWS, Azure, DevOps, Kubernetes, and Data."}
+        canonical={siteUrl(activeCategory !== "All" ? `/courses?category=${encodeURIComponent(activeCategory)}` : "/courses")}
         jsonLd={{
           "@context": "https://schema.org",
           "@graph": [
@@ -377,7 +394,7 @@ export default function Courses() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleSelectCategory(cat)}
                   className={`relative px-1 py-3 text-sm font-medium transition-colors ${
                     activeCategory === cat
                       ? "text-primary"
@@ -433,7 +450,7 @@ export default function Courses() {
                       {categories.map((cat) => (
                         <button
                           key={cat}
-                          onClick={() => setActiveCategory(cat)}
+                          onClick={() => handleSelectCategory(cat)}
                           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                             activeCategory === cat
                               ? "bg-primary text-primary-foreground"

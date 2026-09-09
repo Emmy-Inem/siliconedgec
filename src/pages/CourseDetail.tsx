@@ -44,6 +44,29 @@ const difficultyIcon: Record<string, string> = {
   Expert: "▎▎▎",
 };
 
+const COURSE_DETAIL_FAQS = [
+  {
+    q: "Is this course live or pre-recorded?",
+    a: "All Silicon Edge bootcamps and accelerator courses feature live, interactive instructor-led classes with real-time Q&A, hands-on lab sessions, and recorded replays for lifetime review.",
+  },
+  {
+    q: "Will I receive a verifiable certificate upon completion?",
+    a: "Yes. Every learner who completes the hands-on projects and curriculum requirements receives a cryptographically verifiable digital certificate recognized by hiring managers and shareable on LinkedIn.",
+  },
+  {
+    q: "What are the prerequisites for this course?",
+    a: "Prerequisites vary by level. Beginner courses require no prior technical experience beyond basic computer literacy. Intermediate and expert programs recommend familiarity with command-line tools or basic cloud concepts.",
+  },
+  {
+    q: "Are installment payment plans available?",
+    a: "Yes. We offer flexible split-payment and installment plans at checkout so you can begin learning immediately while managing tuition comfortably.",
+  },
+  {
+    q: "What career support is provided after graduation?",
+    a: "Learners get access to resume reviews, portfolio project optimization, mock technical interview sessions, and our alumni hire network.",
+  },
+];
+
 export default function CourseDetail() {
   const { id } = useParams();
   const { user, isAdmin } = useAuth();
@@ -545,6 +568,13 @@ export default function CourseDetail() {
             ratingValue: course.rating,
             ratingCount: reviewCount,
           } : undefined,
+          }, {
+            "@type": "FAQPage",
+            mainEntity: COURSE_DETAIL_FAQS.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
           }],
         }}
       />
@@ -789,6 +819,23 @@ export default function CourseDetail() {
                 ) : (
                   <p className="text-sm text-muted-foreground py-4">No reviews yet. Be the first to review this course!</p>
                 )}
+
+                {/* Course FAQ Section for User Confidence & Search Rich Snippets */}
+                <div className="pt-8 border-t border-border mt-8">
+                  <h2 className="font-heading font-bold text-xl mb-4">Frequently Asked Questions</h2>
+                  <Accordion type="single" collapsible className="w-full">
+                    {COURSE_DETAIL_FAQS.map((faq, idx) => (
+                      <AccordionItem key={idx} value={`course-faq-${idx}`}>
+                        <AccordionTrigger className="text-left text-sm font-medium hover:no-underline">
+                          {faq.q}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                          {faq.a}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
               </div>
             </div>
 
