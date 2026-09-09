@@ -116,6 +116,12 @@ export default function AdminIntakes() {
     if (!data) return null;
     const runs = buildRuns(data.cohorts);
     const courseById = new Map(data.courses.map((c: any) => [c.id, c]));
+    // A course counts as a webinar when it has webinar-type registrations.
+    const webinarCourseIds = new Set<string>(
+      data.registrations
+        .filter((r: any) => r.registration_type === "webinar" && r.course_id)
+        .map((r: any) => r.course_id as string),
+    );
 
     type Bucket = {
       key: string;
