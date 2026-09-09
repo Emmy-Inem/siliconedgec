@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
-import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Clock4, Rocket, Trophy, Lock, PlayCircle, Users, Globe2, MessagesSquare, Quote, Target, Handshake, PartyPopper } from "lucide-react";
+import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Clock4, Rocket, Trophy, Lock, PlayCircle, Play, ArrowUpRight, Users, Globe2, MessagesSquare, Quote, Target, Handshake, PartyPopper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -25,6 +25,9 @@ import testimonial3 from "@/assets/stock/testimonial-3.jpg";
 import testimonial4 from "@/assets/stock/testimonial-4.jpg";
 import testimonial5 from "@/assets/stock/testimonial-5.jpg";
 import testimonial6 from "@/assets/stock/testimonial-6.jpg";
+import videoTestimonialDoreez from "@/assets/testimonials/video-testimonial-doreez.jpg";
+import videoTestimonialSimeon from "@/assets/testimonials/video-testimonial-simeon.jpg";
+import videoTestimonialMichael from "@/assets/testimonials/video-testimonial-michael.jpg";
 import { SEO } from "@/components/SEO";
 
 /* ----------------------------- helpers ----------------------------- */
@@ -533,6 +536,129 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
         ))}
       </div>
     </div>
+  );
+}
+
+/* ----------------------------- video testimonials ----------------------------- */
+
+interface VideoTestimonial {
+  id: string;
+  name: string;
+  role: string;
+  title: string;
+  quote: string;
+  thumbnail: string;
+  videoUrl: string;
+  tag: string;
+}
+
+const videoTestimonials: VideoTestimonial[] = [
+  {
+    id: "video-doreez",
+    name: "Doreez",
+    role: "@techtokwithdee · Cloud Engineering Learner",
+    title: "From Confused to Hired: My Cloud Roadmap",
+    quote: "Sometime ago, I was stuck watching tutorials with zero direction. What I needed was a clear roadmap. That's how I found Cloud Engineering—a high income skill that made everything click.",
+    thumbnail: videoTestimonialDoreez,
+    videoUrl: "https://www.instagram.com/reel/DX1DD1qM9fd/?stkn=MXQ4djBiMnBlaG1xNQ==",
+    tag: "Student Story",
+  },
+  {
+    id: "video-simeon",
+    name: "Simeon Onu",
+    role: "Cloud Engineering Alum",
+    title: "Transformational Bootcamp for Cloud Engineering",
+    quote: "This bootcamp is highly transformational. It has given me a solid foundation for my cloud engineering career.",
+    thumbnail: videoTestimonialSimeon,
+    videoUrl: "https://www.instagram.com/reel/Dauih0ds_Zw/?stkn=MTU5ejFod2Q3ajFnNw==",
+    tag: "Bootcamp Review",
+  },
+  {
+    id: "video-michael",
+    name: "Michael Olagoke",
+    role: "Cloud Engineering Bootcamp Graduate",
+    title: "From Zero to Cloud Confidence in 4 Weeks",
+    quote: "Joined with zero knowledge and gained hands-on practical experience with Microsoft Azure, from tenant subscriptions and resource groups to real-world cloud fundamentals.",
+    thumbnail: videoTestimonialMichael,
+    videoUrl: "https://www.instagram.com/reel/Db-luPzsA-g/?stkn=MTNuZ3dmeW80cWdmNg==",
+    tag: "Alumni Journey",
+  },
+];
+
+function VideoTestimonialCard({ item }: { item: VideoTestimonial }) {
+  return (
+    <a
+      href={item.videoUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col h-full rounded-2xl overflow-hidden glass-card border border-border/60 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+      aria-label={`Watch ${item.name}'s video testimonial on Instagram`}
+    >
+      {/* Video Thumbnail with Play Overlay */}
+      <div className="relative aspect-[16/11] sm:aspect-[4/3] w-full overflow-hidden bg-muted">
+        <img
+          src={item.thumbnail}
+          alt={item.name}
+          loading="lazy"
+          className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/25 to-black/30" />
+
+        {/* Top Tag */}
+        <div className="absolute top-3 left-3">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-background/85 backdrop-blur-md border border-border/60 text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {item.tag}
+          </span>
+        </div>
+
+        {/* Instagram Reel Badge */}
+        <div className="absolute top-3 right-3">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gradient-to-r from-pink-500/90 via-purple-600/90 to-indigo-600/90 text-white backdrop-blur-md shadow-sm">
+            <Play className="h-3 w-3 fill-current" />
+            Reel
+          </span>
+        </div>
+
+        {/* Centered Play Button */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:shadow-primary/40 group-hover:shadow-xl">
+            <Play className="h-6 w-6 fill-current ml-0.5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Card Content */}
+      <div className="p-5 flex flex-col flex-grow justify-between">
+        <div>
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <div>
+              <h3 className="font-heading font-bold text-base text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                {item.name}
+              </h3>
+              <p className="text-xs text-primary font-medium">{item.role}</p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+          </div>
+
+          <h4 className="font-heading text-sm font-semibold text-foreground/90 mt-2 line-clamp-2">
+            "{item.title}"
+          </h4>
+
+          <p className="text-xs text-muted-foreground mt-2 leading-relaxed line-clamp-3">
+            {item.quote}
+          </p>
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between text-xs">
+          <span className="text-primary font-semibold flex items-center gap-1 group-hover:underline">
+            Watch story
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+          </span>
+          <span className="text-[11px] text-muted-foreground font-mono">Instagram</span>
+        </div>
+      </div>
+    </a>
   );
 }
 
@@ -1272,18 +1398,16 @@ export default function Index() {
       {/* ───────────────── TRUST + TESTIMONIALS (masonry) ───────────────── */}
       <section className="py-20 md:py-24">
         <div className="container mx-auto px-5 sm:px-6">
-          {testimonials.length > 0 && (
-            <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
-              <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Student feedback"}</p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
-                {home?.testimonials_title ? (
-                  <span className="text-gradient">{home.testimonials_title}</span>
-                ) : (
-                  <>What our <span className="text-gradient">students say</span><span className="text-gold">.</span></>
-                )}
-              </h2>
-            </motion.div>
-          )}
+          <motion.div {...sectionReveal} className="text-center mb-10 max-w-2xl mx-auto">
+            <p className="text-primary font-medium text-sm tracking-widest uppercase mb-3">{home?.testimonials_eyebrow ?? "Loved by ambitious learners"}</p>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-balance">
+              {home?.testimonials_title ? (
+                <span className="text-gradient">{home.testimonials_title}</span>
+              ) : (
+                <>What our <span className="text-gradient">students say</span><span className="text-gold">.</span></>
+              )}
+            </h2>
+          </motion.div>
 
           {/* trust chips */}
           <motion.div
@@ -1304,9 +1428,29 @@ export default function Index() {
             ))}
           </motion.div>
 
+          {/* Video Testimonials */}
+          <motion.div {...sectionReveal} className="mt-12">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-primary">Video Stories</span>
+                <h3 className="font-heading text-xl md:text-2xl font-bold mt-1">Real Journeys. Real Results.</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">Click any video to watch their full story on Instagram</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {videoTestimonials.map((item) => (
+                <VideoTestimonialCard key={item.id} item={item} />
+              ))}
+            </div>
+          </motion.div>
+
           {/* vertical scrolling columns */}
           {testimonials.length > 0 && (
-            <div className="mt-12">
+            <div className="mt-14 pt-10 border-t border-border/40">
+              <div className="text-center mb-6">
+                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">More Student Reviews</span>
+              </div>
               <VerticalTestimonialMarquee testimonials={testimonials} speed={home?.testimonial_speed} />
             </div>
           )}
