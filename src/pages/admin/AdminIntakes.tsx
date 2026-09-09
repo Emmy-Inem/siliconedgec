@@ -98,7 +98,7 @@ export default function AdminIntakes() {
       const [cohorts, courses, enrollments, registrations, orders, bootcampCohorts, bootcampEnrollments] =
         await Promise.all([
           fetchAllRows<any>("cohorts", "id, course_id, name, cohort_number, start_date, end_date, status"),
-          fetchAllRows<any>("courses", "id, title, is_webinar, price"),
+          fetchAllRows<any>("courses", "id, title, price"),
           fetchAllRows<any>("enrollments", "user_id, course_id, payment_status, created_at"),
           fetchAllRows<any>("course_registrations", "id, course_id, user_id, registration_type, status, created_at"),
           fetchAllRows<any>("orders", "id, course_id, amount, status, created_at"),
@@ -141,7 +141,7 @@ export default function AdminIntakes() {
           key,
           courseId,
           courseTitle: course?.title ?? "Unknown course",
-          isWebinar: !!course?.is_webinar,
+          isWebinar: webinarCourseIds.has(courseId),
           run,
           paid: 0,
           free: 0,
