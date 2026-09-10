@@ -31,7 +31,7 @@ export default function Search() {
       const mapped = ((c.data as any[]) ?? []).map((r: any) => ({
         id: r.id, slug: r.slug, title: r.title, description: r.description ?? "",
         thumbnail_url: r.thumbnail_url, category: r.category ?? "",
-        difficulty: r.difficulty_level ?? "Beginner", price: r.price_naira ?? 0,
+        difficulty: r.difficulty ?? "Beginner", price: r.price ?? 0,
         duration_hours: r.duration_hours ?? 0, students_enrolled: r.students_enrolled ?? 0,
         rating: r.rating ?? 0,
         instructor: r.instructors ? { id: r.instructors.id, name: r.instructors.name, avatar_url: r.instructors.avatar_url } : null,
