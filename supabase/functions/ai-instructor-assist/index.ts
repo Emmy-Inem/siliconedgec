@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -57,7 +58,6 @@ Deno.serve(async (req) => {
     try { parsed = JSON.parse(raw); } catch { parsed = { output: raw }; }
     return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to assist instructor. Please try again.");
   }
 });

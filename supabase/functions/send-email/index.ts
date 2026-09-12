@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
 import { logEmail } from "../_shared/email-log.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 const SENDER_DOMAIN = "notify.siliconedgec.com";
 const DEFAULT_FROM = `Silicon Edge Consulting <info@${SENDER_DOMAIN}>`;
@@ -340,10 +341,6 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    console.error("[send-email] error", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(err, 500, corsHeaders, "Failed to send email");
   }
 });

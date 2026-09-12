@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 const SYSTEM_PROMPT = `You are the Silicon Edge Learning Companion — a friendly, expert tutor for students taking AI, Cloud, DevOps and Data Engineering courses on the Silicon Edge platform.
 
@@ -181,7 +182,6 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-Conversation-Id": convId ?? "" },
     });
   } catch (e) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "AI Tutor is temporarily unavailable. Please try again.");
   }
 });

@@ -138,47 +138,49 @@ export function PromotedCoursesBanner() {
       className="relative z-40 bg-slate-900 text-slate-100 border-b border-slate-800/90 text-xs py-2 px-4 select-none transition-all duration-300"
     >
       <div className="container mx-auto flex items-center justify-between gap-3">
-        {/* Left / Center content */}
-        <div className="flex-1 flex items-center justify-center gap-2.5 sm:gap-3 flex-wrap text-center sm:text-left min-w-0">
-          {/* Badge: clean executive styling, no sparkles or colorful pills */}
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
-            <span>{config.badgeText || "Bootcamp Track"}</span>
-          </span>
+        {/* Left / Center content: strict single row (flex-nowrap) with smooth horizontal scrolling if text overflows */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 flex-nowrap overflow-x-auto scrollbar-none py-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* Badge: clean executive styling, no sparkles or colorful pills */}
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
+              <span>{config.badgeText || "Bootcamp Track"}</span>
+            </span>
 
-          {/* Headline / Course Link */}
-          <div className="flex items-center gap-1.5 text-slate-200 text-xs truncate">
-            {config.customHeadline && (
-              <span className="hidden md:inline text-slate-400 font-normal">
-                {config.customHeadline.replace(/—/g, "-")} -
-              </span>
-            )}
-            <Link 
+            {/* Headline / Course Link */}
+            <div className="flex items-center gap-1.5 text-slate-200 text-xs shrink-0">
+              {config.customHeadline && (
+                <span className="text-slate-400 font-normal shrink-0">
+                  {config.customHeadline.replace(/—/g, "-")} -
+                </span>
+              )}
+              <Link 
+                to={courseUrl}
+                className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 shrink-0"
+              >
+                <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>{currentCourse.title.replace(/—/g, "-")}</span>
+              </Link>
+
+              {currentCourse.duration_hours ? (
+                <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
+                  {currentCourse.duration_hours}h intensive
+                </span>
+              ) : (
+                <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
+                  4 Weeks Live
+                </span>
+              )}
+            </div>
+
+            {/* CTA Link */}
+            <Link
               to={courseUrl}
-              className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 truncate"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-sm"
             >
-              <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate">{currentCourse.title.replace(/—/g, "-")}</span>
+              <span>{config.ctaText || "View Bootcamp"}</span>
+              <ArrowRight className="h-3 w-3" />
             </Link>
-
-            {currentCourse.duration_hours ? (
-              <span className="hidden lg:inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60">
-                {currentCourse.duration_hours}h intensive
-              </span>
-            ) : (
-              <span className="hidden lg:inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60">
-                4 Weeks Live
-              </span>
-            )}
           </div>
-
-          {/* CTA Link */}
-          <Link
-            to={courseUrl}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-sm"
-          >
-            <span>{config.ctaText || "View Bootcamp"}</span>
-            <ArrowRight className="h-3 w-3" />
-          </Link>
         </div>
 
         {/* Right Controls: Carousel arrows (if > 1) & Dismiss Button */}

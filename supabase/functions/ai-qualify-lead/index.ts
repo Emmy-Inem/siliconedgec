@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 // Scores a business lead 1-100 with a short rationale + recommended next step.
 // Admin/moderator only. Appends the result to internal_notes on the lead row.
@@ -92,7 +93,6 @@ Return ONLY JSON: {"score": number 1-100, "tier": "hot"|"warm"|"cold", "rational
 
     return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to qualify lead. Please try again.");
   }
 });

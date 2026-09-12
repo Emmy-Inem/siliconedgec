@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { ErrorPage } from "./ErrorPage";
+import { captureException } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -24,14 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an unhandled error:", error, errorInfo);
 
-    try {
-      const sentry = (window as any).Sentry;
-      if (sentry && typeof sentry.captureException === "function") {
-        sentry.captureException(error, { extra: errorInfo });
-      }
-    } catch {
-      // ignore
-    }
+    captureException(error, { componentStack: errorInfo.componentStack });
   }
 
   private handleReset = () => {

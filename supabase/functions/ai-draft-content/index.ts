@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 // Drafts copy for admin communications: course announcements or email blasts.
 // Admin-only. Returns { subject, body } when kind === "email", else { title, content }.
@@ -71,7 +72,6 @@ Return ONLY JSON: {"title": string (max 70 chars), "content": string (markdown, 
     try { parsed = JSON.parse(raw); } catch { parsed = {}; }
     return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to draft content. Please try again.");
   }
 });

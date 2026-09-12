@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { shouldShowStagedFeature } from "@/lib/localhost-preview";
 import { formatNaira } from "@/lib/format-currency";
+import { cn } from "@/lib/utils";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -234,8 +235,8 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
           </motion.div>
 
-          {/* Right - Highlighted Course Card or Generic Tracks (Stacked Carousel) */}
-          <div className="lg:col-span-6 relative mt-8 lg:mt-0">
+          {/* Right - Highlighted Course Card (hidden on mobile view, visible on desktop) or Generic Tracks */}
+          <div className={cn("lg:col-span-6 relative mt-8 lg:mt-0", showHighlightedCard && "hidden md:block")}>
             {showHighlightedCard ? (
               <div 
                 className="relative select-none"

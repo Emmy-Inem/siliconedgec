@@ -2,11 +2,8 @@
 // and sends the branded newsletter with a one-click unsubscribe link.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { maskEmail, safeErrorResponse } from "../_shared/errors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -65,7 +62,11 @@ async function resolveAudience(audience: string, opts: { group?: string; courseI
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
     // Auth: must be a signed-in admin
     const token = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
@@ -132,7 +133,7 @@ Deno.serve(async (req) => {
         if (!res.ok) throw new Error(await res.text());
         sent++;
       } catch (e) {
-        console.error("[newsletter-send] failed", r.email, e);
+        console.error("[newsletter-send] failed", maskEmail(r.email), e);
         failed++;
       }
     }
@@ -155,10 +156,6 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("[newsletter-send]", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to send newsletter campaign");
   }
 });

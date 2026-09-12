@@ -15,6 +15,7 @@ if (SENTRY_DSN) {
       replaysOnErrorSampleRate: 0.1,
       environment: (import.meta as any).env?.MODE ?? "production",
     });
+    (window as any).Sentry = Sentry;
   }).catch(() => {});
 }
 

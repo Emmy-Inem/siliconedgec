@@ -1,0 +1,13 @@
+# Canonical 301 Redirects
+/affiliates /career 301!
+/affiliate /career/dashboard 301!
+/p/about /about 301!
+/p/privacy /privacy 301!
+/p/terms /terms 301!
+/p/refund /refund-policy 301!
+
+# Dynamic Sitemap Proxy (Supabase Edge Function)
+/sitemap.xml https://sdddxnjlgjjaoayyraxn.supabase.co/functions/v1/generate-sitemap 200!
+
+# SPA Fallback (HTTP 200 for client routing)
+/* /index.html 200

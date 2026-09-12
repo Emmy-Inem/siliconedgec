@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { safeErrorResponse } from "../_shared/errors.ts";
 
 // Parses a natural-language search like "beginner aws under 50k" into a
 // structured filter object the client can apply over the already-fetched
@@ -84,7 +85,6 @@ Treat "k" as thousand and "under X" as max price in Naira. Keep keywords short.`
       keywords: Array.isArray(parsed.keywords) ? parsed.keywords.slice(0, 6) : [],
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to search courses. Please try again.");
   }
 });

@@ -1,11 +1,8 @@
 // Support ticket notifications: emails admins on new tickets / escalations
 // and emails the learner when staff reply or resolve a ticket.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { maskEmail, safeErrorResponse } from "../_shared/errors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -22,7 +19,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       body: JSON.stringify({ to, subject, html }),
     });
   } catch (e) {
-    console.error("[support-notify] send-email failed", to, e);
+    console.error("[support-notify] send-email failed", maskEmail(to), e);
   }
 }
 
@@ -101,7 +98,11 @@ async function notifyUser(ticketId: string, kind: "created" | "reply" | "resolve
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace("Bearer ", "");
@@ -134,7 +135,6 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error("[support-notify]", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return safeErrorResponse(e, 500, corsHeaders, "Failed to send support notification");
   }
 });
