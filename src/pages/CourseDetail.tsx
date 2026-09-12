@@ -38,35 +38,9 @@ import { StudyPlanDialog } from "@/components/ai/StudyPlanDialog";
 import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
-
-const difficultyIcon: Record<string, string> = {
-  Beginner: "▎",
-  Intermediate: "▎▎",
-  Expert: "▎▎▎",
-};
-
-const COURSE_DETAIL_FAQS = [
-  {
-    q: "Is this course live or pre-recorded?",
-    a: "All Silicon Edge bootcamps and accelerator courses feature live, interactive instructor-led classes with real-time Q&A, hands-on lab sessions, and recorded replays for lifetime review.",
-  },
-  {
-    q: "Will I receive a verifiable certificate upon completion?",
-    a: "Yes. Every learner who completes the hands-on projects and curriculum requirements receives a cryptographically verifiable digital certificate recognized by hiring managers and shareable on LinkedIn.",
-  },
-  {
-    q: "What are the prerequisites for this course?",
-    a: "Prerequisites vary by level. Beginner courses require no prior technical experience beyond basic computer literacy. Intermediate and expert programs recommend familiarity with command-line tools or basic cloud concepts.",
-  },
-  {
-    q: "Are installment payment plans available?",
-    a: "Yes. We offer flexible split-payment and installment plans at checkout so you can begin learning immediately while managing tuition comfortably.",
-  },
-  {
-    q: "What career support is provided after graduation?",
-    a: "Learners get access to resume reviews, portfolio project optimization, mock technical interview sessions, and our alumni hire network.",
-  },
-];
+import { CourseDetailHero } from "@/components/courses/CourseDetailHero";
+import { CourseReviewsSection } from "@/components/courses/CourseReviewsSection";
+import { COURSE_DETAIL_FAQS } from "@/components/courses/courseFaqs";
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -362,10 +336,6 @@ export default function CourseDetail() {
     }
   }, [searchParams, id, qc, setSearchParams, toast]);
 
-  // Review form state
-  const [reviewRating, setReviewRating] = useState(userReview?.rating ?? 5);
-  const [reviewComment, setReviewComment] = useState(userReview?.comment ?? "");
-  const [hoverRating, setHoverRating] = useState(0);
 
   const { data: enrollment } = useQuery({
     queryKey: ["enrollment", courseId, user?.id],
@@ -490,9 +460,9 @@ export default function CourseDetail() {
 
   const handlePaymentSuccess = () => { enroll.mutate(); };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = (rating: number, comment: string) => {
     if (!user) { requestSignup("review"); return; }
-    submitReview.mutate({ rating: reviewRating, comment: reviewComment });
+    submitReview.mutate({ rating, comment });
   };
 
   if (isLoading) {
@@ -583,53 +553,13 @@ export default function CourseDetail() {
       <Header />
 
       {/* Hero Banner */}
-      <section className="relative overflow-hidden bg-white pt-28 pb-14 border-b border-border/40">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
-        <div
-          className="absolute inset-0 opacity-[0.18]"
-          style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-            maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-            WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
-          }}
-        />
-        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
-        <div className="container mx-auto px-4 relative">
-          <Link to="/courses" className="inline-flex items-center text-muted-foreground hover:text-primary text-sm mb-6 transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Courses
-          </Link>
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 60, damping: 18 }}>
-            <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 max-w-3xl leading-[1.1] tracking-tight">
-              {course.title}
-            </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mb-6">{course.description}</p>
-            <div className="flex flex-wrap items-center gap-4 md:gap-6 text-muted-foreground text-sm">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                {hours > 0 && `${hours} hours`} {minutes > 0 && `${minutes} minutes`}
-              </span>
-              {(course.students_enrolled ?? 0) >= 5 && (
-                <span className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  {(course.students_enrolled ?? 0)} Enrolled
-                </span>
-              )}
-              {(avgRating > 0 || (course.rating ?? 0) > 0) && (
-                <span className="flex items-center gap-1.5">
-                  <StarRating value={avgRating || course.rating || 0} size="md" />
-                  <span>{(avgRating || course.rating || 0).toFixed(1)}{reviewCount ? ` (${reviewCount})` : ""}</span>
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <span className="text-xs font-mono">{difficultyIcon[course.difficulty] ?? "▎"}</span>
-                {course.difficulty}
-              </span>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <CourseDetailHero
+        course={course}
+        hours={hours}
+        minutes={minutes}
+        avgRating={avgRating}
+        reviewCount={reviewCount}
+      />
 
       {/* Main Content */}
       <section className="py-8 md:py-12">
@@ -741,104 +671,14 @@ export default function CourseDetail() {
               </Tabs>
 
               {/* Reviews Section */}
-              <div className="space-y-6">
-                <h2 className="font-heading text-xl font-bold">Reviews ({reviewCount})</h2>
-
-                {/* Write/Edit Review (only for enrolled users) */}
-                {isEnrolled && (
-                  <div className="bg-card rounded-xl border border-border p-5 space-y-4">
-                    <h3 className="font-heading font-semibold text-sm">
-                      {userReview ? "Update Your Review" : "Write a Review"}
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onMouseEnter={() => setHoverRating(star)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => setReviewRating(star)}
-                          className="transition-transform hover:scale-110"
-                        >
-                          <Star
-                            className={`h-6 w-6 ${
-                              star <= (hoverRating || reviewRating)
-                                ? "fill-accent text-accent"
-                                : "text-muted-foreground/30"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="text-sm text-muted-foreground ml-2">{reviewRating}/5</span>
-                    </div>
-                    <Textarea
-                      placeholder="Share your experience with this course..."
-                      value={reviewComment}
-                      onChange={(e) => setReviewComment(e.target.value)}
-                      rows={3}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleSubmitReview}
-                      disabled={submitReview.isPending}
-                    >
-                      {submitReview.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-                      {userReview ? "Update Review" : "Submit Review"}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Review List */}
-                {reviews.length > 0 ? (
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="bg-card rounded-xl border border-border p-4 space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                            {review.profile?.avatar_url ? (
-                              <img src={review.profile.avatar_url} alt={`${review.profile?.full_name ?? "Student"} profile photo`} loading="lazy" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-xs font-bold text-primary">
-                                {(review.profile?.full_name ?? "U").charAt(0).toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{review.profile?.full_name ?? "Student"}</p>
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-accent text-accent" : "text-muted-foreground/20"}`} />
-                              ))}
-                              <span className="text-xs text-muted-foreground ml-2">
-                                {new Date(review.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground py-4">No reviews yet. Be the first to review this course!</p>
-                )}
-
-                {/* Course FAQ Section for User Confidence & Search Rich Snippets */}
-                <div className="pt-8 border-t border-border mt-8">
-                  <h2 className="font-heading font-bold text-xl mb-4">Frequently Asked Questions</h2>
-                  <Accordion type="single" collapsible className="w-full">
-                    {COURSE_DETAIL_FAQS.map((faq, idx) => (
-                      <AccordionItem key={idx} value={`course-faq-${idx}`}>
-                        <AccordionTrigger className="text-left text-sm font-medium hover:no-underline">
-                          {faq.q}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                          {faq.a}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              </div>
+              <CourseReviewsSection
+                isEnrolled={isEnrolled}
+                reviews={reviews}
+                reviewCount={reviewCount}
+                userReview={userReview}
+                isSubmittingReview={submitReview.isPending}
+                onSubmitReview={handleSubmitReview}
+              />
             </div>
 
             {/* Right Column / Sidebar */}

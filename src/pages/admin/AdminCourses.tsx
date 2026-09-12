@@ -15,7 +15,7 @@ const columns: Column<Course>[] = [
   {
     key: "thumbnail_url", label: "Image", render: (c) => (
       c.thumbnail_url ? (
-        <img src={c.thumbnail_url} alt="" className="w-12 h-8 object-cover rounded" />
+        <img src={c.thumbnail_url} alt={c.title} className="w-12 h-8 object-cover rounded" />
       ) : (
         <div className="w-12 h-8 rounded bg-muted flex items-center justify-center">
           <Image className="h-3 w-3 text-muted-foreground" />

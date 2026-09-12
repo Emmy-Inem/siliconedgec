@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Shield, Lock, Tag, CheckCircle2, X } from "lucide-react";
+import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format-currency";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
@@ -30,7 +32,11 @@ interface PaymentModalProps {
 }
 
 export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price, onPaymentSuccess }: PaymentModalProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
+  const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
+  const [checkingEnrollment, setCheckingEnrollment] = useState(false);
   const { toast } = useToast();
 
   const [promoInput, setPromoInput] = useState("");
@@ -38,19 +44,47 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const [appliedPromo, setAppliedPromo] = useState<PromoResult | null>(null);
   const [promoError, setPromoError] = useState("");
 
+  // Check enrollment status when modal opens
+  useEffect(() => {
+    if (!open || !user || !courseId) {
+      setAlreadyEnrolled(false);
+      return;
+    }
+
+    let isMounted = true;
+    setCheckingEnrollment(true);
+    supabase
+      .from("enrollments")
+      .select("id, payment_status")
+      .eq("user_id", user.id)
+      .eq("course_id", courseId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (isMounted) {
+          setAlreadyEnrolled(data?.payment_status === "paid");
+          setCheckingEnrollment(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setCheckingEnrollment(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open, user, courseId]);
+
   // Auto-apply pending promo from short influencer link (sessionStorage.pending_promo)
   useEffect(() => {
     if (!open) return;
     const pending = sessionStorage.getItem("pending_promo");
     if (pending && !appliedPromo && !promoInput) {
       setPromoInput(pending.toUpperCase());
-      // Defer apply so state is updated
       setTimeout(() => {
         applyPromoCodeWith(pending.toUpperCase());
         sessionStorage.removeItem("pending_promo");
       }, 50);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const applyPromoCodeWith = async (code: string) => {
@@ -102,6 +136,26 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   };
 
   const handlePay = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to your account before completing enrollment.",
+      });
+      onOpenChange(false);
+      navigate(`/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    if (alreadyEnrolled) {
+      toast({
+        title: "Already enrolled",
+        description: "You already have active access to this course.",
+      });
+      onOpenChange(false);
+      navigate(`/courses/${courseId}/learn`);
+      return;
+    }
+
     setProcessing(true);
     try {
       const utm = getStoredUtmParams();
@@ -213,18 +267,60 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           <Separator />
 
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
-            <div className="bg-muted/40 rounded-lg p-4 space-y-2 text-sm">
-              <div className="flex items-center gap-2 font-medium">
-                <Shield className="h-4 w-4 text-primary" /> Secure checkout via Paystack
+            {alreadyEnrolled ? (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 text-primary font-medium">
+                  <CheckCircle2 className="h-5 w-5 text-primary" /> You are already enrolled
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your enrollment for this course is active. You can jump right into your lessons.
+                </p>
+                <Button
+                  className="w-full gap-2"
+                  size="lg"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate(`/courses/${courseId}/learn`);
+                  }}
+                >
+                  <BookOpen className="h-4 w-4" /> Go to Course Lessons
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                You'll be redirected to Paystack's PCI-compliant checkout. Pay with card, bank transfer, or USSD.
-              </p>
-            </div>
-            <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing}>
-              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-              {processing ? "Redirecting..." : finalPrice === 0 ? "Enroll for Free" : `Pay ${formatNaira(finalPrice)}`}
-            </Button>
+            ) : !user ? (
+              <div className="bg-muted/40 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 font-medium text-foreground">
+                  <LogIn className="h-4 w-4 text-primary" /> Sign in required
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Create an account or sign in before enrolling to ensure your progress and certificates are saved.
+                </p>
+                <Button
+                  className="w-full gap-2"
+                  size="lg"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate(`/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
+                  }}
+                >
+                  <LogIn className="h-4 w-4" /> Sign In to Enroll
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="bg-muted/40 rounded-lg p-4 space-y-2 text-sm">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Shield className="h-4 w-4 text-primary" /> Secure checkout via Paystack
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    You'll be redirected to Paystack's PCI-compliant checkout. Pay with card, bank transfer, or USSD.
+                  </p>
+                </div>
+                <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing || checkingEnrollment}>
+                  {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                  {processing ? "Redirecting..." : finalPrice === 0 ? "Enroll for Free" : `Pay ${formatNaira(finalPrice)}`}
+                </Button>
+              </>
+            )}
           </motion.div>
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">

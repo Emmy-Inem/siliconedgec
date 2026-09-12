@@ -1,14 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
 
 // Scores a business lead 1-100 with a short rationale + recommended next step.
 // Admin/moderator only. Appends the result to internal_notes on the lead row.
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
     const auth = req.headers.get("Authorization") ?? "";
     const supa = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -18,6 +19,13 @@ Deno.serve(async (req) => {
     if (!userRes?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+    const rl = checkRateLimit({
+      key: `ai-qualify:${userRes.user.id}`,
+      limit: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, corsHeaders);
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: roles } = await admin

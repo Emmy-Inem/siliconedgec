@@ -110,7 +110,7 @@ export default function AdminInstructors() {
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0 border border-border">
                   {form.avatar_url ? (
-                    <img src={form.avatar_url} alt="" className="w-full h-full object-cover" />
+                    <img src={form.avatar_url} alt="Instructor avatar preview" className="w-full h-full object-cover" />
                   ) : (
                     <User className="h-8 w-8 text-primary/60" />
                   )}

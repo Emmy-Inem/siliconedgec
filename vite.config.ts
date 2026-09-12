@@ -27,8 +27,11 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
+          "vendor-framer": ["framer-motion"],
           "vendor-pdf": ["jspdf", "html2canvas"],
           "vendor-charts": ["recharts"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-query": ["@tanstack/react-query"],
         },
       },
     },

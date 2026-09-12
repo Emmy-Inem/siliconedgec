@@ -98,7 +98,7 @@ export default function InstructorStudents() {
                     <Link to={`/instructor/students/${r.user_id}`} className="flex items-center gap-3 hover:text-primary">
                       <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                         {r.avatar_url ? (
-                          <img src={r.avatar_url} alt="" className="h-full w-full object-cover" />
+                          <img src={r.avatar_url} alt={r.full_name || "Student avatar"} className="h-full w-full object-cover" />
                         ) : (
                           <UserIcon className="h-4 w-4 text-muted-foreground" />
                         )}

@@ -475,7 +475,7 @@ export default function AdminCourseCreate() {
                 <div className="flex items-center gap-4">
                   {form.thumbnail_url ? (
                     <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-border">
-                      <img src={form.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      <img src={form.thumbnail_url} alt="Course thumbnail preview" className="w-full h-full object-cover" />
                       <button type="button" onClick={() => setForm(prev => ({ ...prev, thumbnail_url: null }))}
                         className="absolute top-1 right-1 bg-background/80 rounded-full w-5 h-5 flex items-center justify-center text-xs hover:text-destructive">×</button>
                     </div>

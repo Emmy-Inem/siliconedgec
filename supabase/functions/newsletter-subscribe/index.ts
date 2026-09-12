@@ -2,19 +2,32 @@
 // Creates (or revives) a pending subscriber and emails a branded confirmation link.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { brandEmail, textToHtml, BRAND } from "../_shared/brand-email.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rate-limit.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
+    // Rate limit: max 5 newsletter subscription requests per minute per IP
+    const clientIp = getClientIp(req);
+    const rl = checkRateLimit({
+      key: `newsletter:${clientIp}`,
+      limit: 5,
+      windowMs: 60 * 1000,
+    });
+
+    if (!rl.allowed) {
+      return rateLimitResponse(rl.retryAfter, corsHeaders);
+    }
+
     const body = await req.json().catch(() => ({}));
     const email = String(body?.email ?? "").trim().toLowerCase();
     const fullName = body?.full_name ? String(body.full_name).slice(0, 120) : null;

@@ -1,12 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
     const auth = req.headers.get("Authorization") ?? "";
     const supa = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -15,6 +16,14 @@ Deno.serve(async (req) => {
     const { data: userRes } = await supa.auth.getUser(auth.replace("Bearer ", ""));
     if (!userRes?.user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const userId = userRes.user.id;
+
+    // Rate limit: max 20 career coach queries per minute per user
+    const rl = checkRateLimit({
+      key: `ai-career-coach:${userId}`,
+      limit: 20,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, corsHeaders);
 
     const body = await req.json().catch(() => ({} as any));
     const jobId: string | undefined = body?.jobId;

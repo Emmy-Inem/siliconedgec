@@ -18,6 +18,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { classifyChannel, DIRECT_EXPLANATION } from "@/lib/channel-attribution";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { isWebinarFormType, isCourseConversionFormType, isPageViewFormType } from "@/lib/analytics-helpers";
+import { AnalyticsConversionsTab } from "@/components/admin/analytics/AnalyticsConversionsTab";
+import { AnalyticsSiteTrafficTab } from "@/components/admin/analytics/AnalyticsSiteTrafficTab";
+import { AnalyticsRealtimeTab } from "@/components/admin/analytics/AnalyticsRealtimeTab";
 
 const COLORS = [
   "hsl(276, 100%, 62%)", "hsl(197, 100%, 47%)", "hsl(142, 71%, 45%)",
@@ -807,291 +810,28 @@ export default function AdminMarketingAnalytics() {
         </TabsContent>
 
         {/* CONVERSIONS */}
-        <TabsContent value="conversions" className="space-y-6 mt-4">
-          {/* Conversion funnel */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5">
-            <h3 className="font-heading font-semibold text-sm mb-6">Conversion Funnel</h3>
-            <div className="flex flex-col items-center gap-2">
-              {[
-                { label: "Page Visits", value: totalVisits, color: "bg-blue-500" },
-                { label: "Leads Generated", value: totalConversions, color: "bg-primary" },
-                { label: "Enrollments", value: enrollments.length, color: "bg-green-500" },
-              ].map((step, i) => {
-                const maxVal = Math.max(totalVisits, 1);
-                const width = Math.max(20, (step.value / maxVal) * 100);
-                return (
-                  <div key={step.label} className="w-full max-w-lg">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium">{step.label}</span>
-                      <span className="text-muted-foreground">{step.value}</span>
-                    </div>
-                    <div className={`h-10 ${step.color} rounded-lg flex items-center justify-center transition-all`} style={{ width: `${width}%` }}>
-                      <span className="text-white text-xs font-bold">{step.value}</span>
-                    </div>
-                    {i < 2 && (
-                      <div className="flex justify-center py-1">
-                        <span className="text-[10px] text-muted-foreground">
-                          {i === 0 ? `${conversionRate}% conversion` : `${totalConversions > 0 ? ((enrollments.length / totalConversions) * 100).toFixed(1) : 0}% to enrollment`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-
-          {/* Campaign conversion table */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="bg-card rounded-2xl border border-border p-5">
-            <h3 className="font-heading font-semibold text-sm mb-4">Campaign Conversion Rates</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-muted-foreground">
-                    <th className="pb-2 pr-4 font-medium">Campaign</th>
-                    <th className="pb-2 pr-4 font-medium text-right">Visits</th>
-                    <th className="pb-2 pr-4 font-medium text-right">Conversions</th>
-                    <th className="pb-2 font-medium text-right">Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {campaignData.length > 0 ? campaignData.map((row, i) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
-                      <td className="py-2.5 pr-4 font-medium">{row.name}</td>
-                      <td className="py-2.5 pr-4 text-right">{row.visits}</td>
-                      <td className="py-2.5 pr-4 text-right">{row.conversions}</td>
-                      <td className="py-2.5 text-right">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${row.rate > 10 ? "bg-green-500/10 text-green-600" : row.rate > 0 ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>
-                          {row.rate}%
-                        </span>
-                      </td>
-                    </tr>
-                  )) : (
-                    <tr><td colSpan={4} className="py-8 text-center text-muted-foreground">No campaign data</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
+        <TabsContent value="conversions">
+          <AnalyticsConversionsTab
+            totalVisits={totalVisits}
+            totalConversions={totalConversions}
+            enrollmentsCount={enrollments.length}
+            conversionRate={conversionRate}
+            campaignData={campaignData}
+          />
         </TabsContent>
 
         {/* SITE TRAFFIC — powered by platform analytics */}
-        <TabsContent value="site-traffic" className="space-y-6 mt-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 text-primary" />
-              <h3 className="font-heading font-semibold text-sm">Platform Site Analytics</h3>
-              <span className="ml-auto text-[10px] text-muted-foreground">
-                Period: {dateFilter === "all" ? "All time" : dateFilter}
-              </span>
-            </div>
-            <p className="text-[10px] text-muted-foreground mb-4">
-              Live data computed from <code>lead_sources</code>. Anonymous visitors are best-effort
-              (one row = one anonymous visit). For deep insights, connect GA4 in Settings.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {[
-                { label: "Visitors", value: trafficStats.uniqueVisitors.toLocaleString(), icon: Users },
-                { label: "Pageviews", value: trafficStats.totalViews.toLocaleString(), icon: Eye },
-                { label: "Pages/Visit", value: trafficStats.pagesPerVisit, icon: BarChart3 },
-                { label: "Conversion Rate", value: `${conversionRate}%`, icon: ArrowUpRight },
-              ].map((m) => (
-                <div key={m.label} className="bg-muted/30 rounded-xl p-4 text-center">
-                  <m.icon className="h-4 w-4 mx-auto mb-2 text-primary" />
-                  <p className="font-heading text-xl font-bold">{m.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{m.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Top Pages */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="bg-card rounded-2xl border border-border p-5">
-            <h3 className="font-heading font-semibold text-sm mb-4">Top Pages</h3>
-            <div className="space-y-2">
-              {trafficStats.topPages.length === 0 && (
-                <p className="text-xs text-muted-foreground py-4 text-center">No pageviews recorded yet for this period.</p>
-              )}
-              {trafficStats.topPages.map((p, i) => (
-                <div key={p.page} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-5 text-right">{i + 1}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-0.5">
-                      <span className="text-xs font-mono font-medium truncate max-w-[60%]" title={p.page}>{p.page}</span>
-                      <span className="text-xs text-muted-foreground">{p.views} views</span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(p.views / trafficStats.maxPageViews) * 100}%` }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Traffic Sources */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <h3 className="font-heading font-semibold text-sm mb-4">Traffic Sources</h3>
-              <div className="space-y-3">
-                {trafficStats.sources.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No referrer data yet.</p>
-                )}
-                {trafficStats.sources.map((s) => (
-                  <div key={s.name} className="flex justify-between items-center text-sm">
-                    <span className="text-xs truncate max-w-[70%]" title={s.name}>{s.name}</span>
-                    <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">{s.value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Device Breakdown */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <h3 className="font-heading font-semibold text-sm mb-4">Devices</h3>
-              <div className="space-y-3">
-                {trafficStats.devices.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No device data yet.</p>
-                )}
-                {trafficStats.devices.map((d) => {
-                  const Icon = d.name === "Mobile" ? Smartphone : d.name === "Tablet" ? Laptop : d.name === "Desktop" ? Monitor : Globe;
-                  return (
-                    <div key={d.name} className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-xs"><Icon className="h-3.5 w-3.5 text-muted-foreground" />{d.name}</span>
-                      <span className="text-xs font-medium">{d.value} ({Math.round((d.value / trafficStats.deviceTotal) * 100)}%)</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Languages — only renders if we have data; honest about geo */}
-          {trafficStats.languages.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Globe className="h-4 w-4 text-primary" />
-                <h3 className="font-heading font-semibold text-sm">Visitor Languages</h3>
-                <span className="ml-auto text-[10px] text-muted-foreground">Browser locale (not geo)</span>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {trafficStats.languages.map((l) => (
-                  <div key={l.name} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
-                    <span className="font-mono">{l.name}</span>
-                    <span className="font-medium">{l.value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Real visitor countries — only renders when we actually have geo data
-              attached to lead rows (Cloudflare/ipapi lookup at first pageview). */}
-          {trafficStats.countries.length > 0 ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Globe className="h-4 w-4 text-primary" />
-                <h3 className="font-heading font-semibold text-sm">Visitor Countries</h3>
-                <span className="ml-auto text-[10px] text-muted-foreground">
-                  Edge-resolved (Cloudflare) · {trafficStats.countryTotal} attributed visits
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {trafficStats.countries.map((c) => (
-                  <div key={c.code} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
-                    <span className="font-mono">{c.code}</span>
-                    <span className="font-medium">{c.value} ({Math.round((c.value / trafficStats.countryTotal) * 100)}%)</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-3">
-                For demographic detail (age, interests, full city) see GA4 → Reports → Demographics.
-              </p>
-            </motion.div>
-          ) : (
-            <div className="bg-muted/20 border border-border rounded-2xl p-4 text-[11px] text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Visitor countries — collecting…</strong> Geo is now resolved on
-              every pageview via Cloudflare's edge. Country data will appear here as new visits come in. For
-              richer geo (region/city + acquisition by country) open <em>GA4 → Reports → Demographics</em>.
-            </div>
-          )}
-
-          {/* Visitor cities — populated when geo resolves via ipapi (preferred). */}
-          {trafficStats.cities.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-2xl border border-border p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Globe className="h-4 w-4 text-primary" />
-                <h3 className="font-heading font-semibold text-sm">Visitor Cities</h3>
-                <span className="ml-auto text-[10px] text-muted-foreground">
-                  {trafficStats.cityTotal} attributed visits
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {trafficStats.cities.map((c) => (
-                  <div key={`${c.name}-${c.country}`} className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg">
-                    <span className="truncate">
-                      {c.name}
-                      {c.country && <span className="ml-1 text-[10px] text-muted-foreground font-mono">{c.country}</span>}
-                    </span>
-                    <span className="font-medium ml-2">{c.value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events — no estimates.</p>
-          </div>
+        <TabsContent value="site-traffic">
+          <AnalyticsSiteTrafficTab
+            trafficStats={trafficStats}
+            dateFilter={dateFilter}
+            conversionRate={conversionRate}
+          />
         </TabsContent>
 
-        <TabsContent value="realtime" className="space-y-6 mt-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-              <h3 className="font-heading font-semibold text-sm">Recent Activity Feed</h3>
-              <span className="text-[10px] text-muted-foreground">Last 15 leads</span>
-            </div>
-            <div className="space-y-2">
-              {recentLeads.length > 0 ? recentLeads.map((lead, i) => (
-                <motion.div key={lead.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
-                    isPageViewFormType(lead.form_type) ? "bg-blue-500" : isCourseConversionFormType(lead.form_type) ? "bg-green-500" : "bg-primary"
-                  }`}>
-                    {isPageViewFormType(lead.form_type) ? <Eye className="h-3.5 w-3.5" /> : <MousePointerClick className="h-3.5 w-3.5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium capitalize">{lead.form_type || "visit"}</span>
-                      {lead.utm_source && (
-                        <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">{lead.utm_source}</span>
-                      )}
-                      {lead.utm_campaign && (
-                        <span className="text-[10px] bg-accent/10 text-accent-foreground px-1.5 py-0.5 rounded truncate max-w-[120px]">{lead.utm_campaign}</span>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-muted-foreground truncate">{lead.landing_page || "/"} {lead.referrer ? `← ${lead.referrer}` : ""}</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground shrink-0">
-                    {new Date(lead.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </motion.div>
-              )) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
-              )}
-            </div>
-          </motion.div>
+        {/* REALTIME */}
+        <TabsContent value="realtime">
+          <AnalyticsRealtimeTab recentLeads={recentLeads} />
         </TabsContent>
       </Tabs>
     </div>

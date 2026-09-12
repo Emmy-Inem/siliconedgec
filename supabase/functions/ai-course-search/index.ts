@@ -1,15 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
 
 // Parses a natural-language search like "beginner aws under 50k" into a
 // structured filter object the client can apply over the already-fetched
 // course list. Returns: { category?, difficulty?, maxPriceNgn?, keywords[] }
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
+
   try {
     const auth = req.headers.get("Authorization") ?? "";
     const supa = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -22,6 +23,14 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Rate limit: max 25 searches per minute per user
+    const rl = checkRateLimit({
+      key: `ai-course-search:${userRes.user.id}`,
+      limit: 25,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfter, corsHeaders);
 
     const { query, categories = [], difficulties = [] } = await req.json();
     if (!query || typeof query !== "string") {

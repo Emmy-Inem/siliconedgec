@@ -249,7 +249,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                     className="absolute inset-0 translate-y-6 scale-[0.91] rounded-2xl md:rounded-3xl border border-slate-800/60 bg-slate-950 shadow-md opacity-35 z-0 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
                   >
                     {thirdCourse?.thumbnail && (
-                      <img src={thirdCourse.thumbnail} alt="" className="w-full h-full object-cover opacity-20 blur-[1px]" />
+                      <img src={thirdCourse.thumbnail} alt={thirdCourse.title || "Course thumbnail"} className="w-full h-full object-cover opacity-20 blur-[1px]" />
                     )}
                     <div className="absolute inset-0 bg-slate-950/80" />
                   </div>
@@ -262,7 +262,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                     className="absolute inset-0 translate-y-3 scale-[0.95] rounded-2xl md:rounded-3xl border border-slate-800/80 bg-slate-950 shadow-xl opacity-60 z-10 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
                   >
                     {nextCourse?.thumbnail && (
-                      <img src={nextCourse.thumbnail} alt="" className="w-full h-full object-cover opacity-25 blur-[0.5px]" />
+                      <img src={nextCourse.thumbnail} alt={nextCourse.title || "Course thumbnail"} className="w-full h-full object-cover opacity-25 blur-[0.5px]" />
                     )}
                     <div className="absolute inset-0 bg-slate-950/75" />
                   </div>

@@ -94,7 +94,7 @@ export default function CohortSpace() {
       <main className="flex-1 pt-14">
         {/* Hero banner */}
         <section className="relative w-full overflow-hidden border-b">
-          <img src={cover} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40" />
+          <img src={cover} alt={`${cohort.name} banner cover`} className="absolute inset-0 w-full h-full object-cover opacity-40" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/70 to-background" />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-transparent" />
           <div className="relative container mx-auto px-4 pt-6 pb-8 sm:pt-10 sm:pb-12">

@@ -1,16 +1,11 @@
 // Per-user Google OAuth flow for Google Calendar.
 // Two endpoints in one function:
 //   GET  ?action=start    -> returns the Google OAuth consent URL (requires JWT)
-//   GET  /callback        -> Google redirects here with ?code=...&state=<user_id|return_url>
-//                             We exchange the code, store the refresh token, then redirect
-//                             the browser back into the app.
+//   GET  /callback        -> Google redirects here with ?code=...&state=<signed_state>
+//                             We verify signature, exchange code, store refresh token,
+//                             then redirect the browser back into the app safely.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -24,9 +19,61 @@ const SCOPES = [
   "openid",
 ].join(" ");
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+async function signState(payload: string, secret: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+  const hex = Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${btoa(payload)}.${hex}`;
+}
 
+async function verifyState(
+  signedState: string,
+  secret: string
+): Promise<{ valid: boolean; userId?: string; returnTo?: string }> {
+  try {
+    const [b64, signature] = signedState.split(".");
+    if (!b64 || !signature) return { valid: false };
+    const payload = atob(b64);
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const expectedSig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+    const expectedHex = Array.from(new Uint8Array(expectedSig))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    if (signature !== expectedHex) return { valid: false };
+
+    const [userId, returnTo, timestamp] = payload.split("|");
+    const ageMs = Date.now() - Number(timestamp);
+    // Expire state after 15 minutes
+    if (isNaN(ageMs) || ageMs < 0 || ageMs > 15 * 60 * 1000) {
+      return { valid: false };
+    }
+    return { valid: true, userId, returnTo };
+  } catch {
+    return { valid: false };
+  }
+}
+
+Deno.serve(async (req) => {
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
   const url = new URL(req.url);
   const isCallback = url.pathname.endsWith("/callback");
   const APP_ORIGIN = Deno.env.get("APP_PUBLIC_URL") ?? "https://siliconedgec.com";
@@ -37,11 +84,15 @@ Deno.serve(async (req) => {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state") ?? "";
       const err = url.searchParams.get("error");
-      const [userId, ...rest] = state.split("|");
-      const returnTo = rest.join("|") || "/dashboard";
 
-      if (err || !code || !userId) {
-        return Response.redirect(absUrl(returnTo, APP_ORIGIN, "error"), 302);
+      // Verify HMAC signed state to prevent token-linking mischief
+      const stateResult = await verifyState(state, CLIENT_SECRET);
+      const userId = stateResult.userId;
+      const returnTo = stateResult.returnTo || "/dashboard";
+
+      if (!stateResult.valid || err || !code || !userId) {
+        console.error("Invalid Google OAuth callback state or params", { valid: stateResult.valid, err, code: !!code, userId });
+        return Response.redirect(absUrl(returnTo, APP_ORIGIN, "invalid_state"), 302);
       }
 
       const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -61,7 +112,7 @@ Deno.serve(async (req) => {
         return Response.redirect(absUrl(returnTo, APP_ORIGIN, "no_refresh"), 302);
       }
 
-      // Fetch the user's email from the id_token (basic decode, no signature check needed — it's our own flow).
+      // Fetch the user's email from the id_token
       let googleEmail: string | null = null;
       try {
         if (tokens.id_token) {
@@ -83,7 +134,7 @@ Deno.serve(async (req) => {
         timezone: "Africa/Lagos",
       }, { onConflict: "user_id" });
 
-      // Kick off a background sync of any upcoming live classes the user can attend.
+      // Kick off a background sync of any upcoming live classes
       fetch(`${SUPABASE_URL}/functions/v1/google-calendar-sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SERVICE_ROLE}` },
@@ -110,7 +161,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Accept return_to from query string OR JSON body (POST from supabase-js invoke).
     let returnTo = url.searchParams.get("return_to") ?? `${APP_ORIGIN}/dashboard`;
     if (req.method === "POST") {
       try {
@@ -118,6 +168,11 @@ Deno.serve(async (req) => {
         if (body?.return_to) returnTo = body.return_to as string;
       } catch (_) { /* ignore */ }
     }
+
+    // Cryptographically sign state: userId|returnTo|timestamp
+    const payload = `${user.id}|${returnTo}|${Date.now()}`;
+    const signedState = await signState(payload, CLIENT_SECRET);
+
     const consent = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     consent.searchParams.set("client_id", CLIENT_ID);
     consent.searchParams.set("redirect_uri", REDIRECT_URI);
@@ -126,7 +181,7 @@ Deno.serve(async (req) => {
     consent.searchParams.set("access_type", "offline");
     consent.searchParams.set("prompt", "consent");
     consent.searchParams.set("include_granted_scopes", "true");
-    consent.searchParams.set("state", `${user.id}|${returnTo}`);
+    consent.searchParams.set("state", signedState);
 
     return new Response(JSON.stringify({ url: consent.toString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

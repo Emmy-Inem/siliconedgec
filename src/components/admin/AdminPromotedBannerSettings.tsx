@@ -438,7 +438,7 @@ export function AdminPromotedBannerSettings() {
                   {course.thumbnail_url ? (
                     <img 
                       src={course.thumbnail_url} 
-                      alt="" 
+                      alt={course.title} 
                       className="w-10 h-7 object-cover rounded border border-border/60 shrink-0" 
                     />
                   ) : (
@@ -529,7 +529,7 @@ export function AdminPromotedBannerSettings() {
                     {c.thumbnail_url ? (
                       <img 
                         src={c.thumbnail_url} 
-                        alt="" 
+                        alt={c.title} 
                         className="w-8 h-8 rounded object-cover shrink-0" 
                       />
                     ) : (

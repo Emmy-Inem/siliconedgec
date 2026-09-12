@@ -1,14 +1,26 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rate-limit.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const corsHeaders = getCorsHeaders(req);
 
   try {
+    const ip = getClientIp(req);
+
+    // Global in-memory rate limit: max 30 login attempt checks per minute per IP
+    const rl = checkRateLimit({
+      key: `login-attempt:${ip}`,
+      limit: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.allowed) {
+      return rateLimitResponse(rl.retryAfter, corsHeaders);
+    }
+
     const { email, success, dry_run } = await req.json();
     if (typeof email !== "string" || typeof success !== "boolean") {
       return new Response(JSON.stringify({ error: "invalid input" }), {
@@ -18,7 +30,6 @@ Deno.serve(async (req) => {
     }
 
     const cleanEmail = email.toLowerCase().trim().slice(0, 255);
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("cf-connecting-ip") || "unknown";
     const ua = (req.headers.get("user-agent") || "").slice(0, 500);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

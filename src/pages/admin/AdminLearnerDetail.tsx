@@ -97,7 +97,7 @@ export default function AdminLearnerDetail() {
       <Card className="p-5">
         <div className="flex items-start gap-4 flex-wrap">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground text-lg font-bold shrink-0">
-            {p?.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full rounded-full object-cover" /> : displayName[0]?.toUpperCase()}
+            {p?.avatar_url ? <img src={p.avatar_url} alt={displayName} className="w-full h-full rounded-full object-cover" /> : displayName[0]?.toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
