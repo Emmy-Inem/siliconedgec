@@ -419,7 +419,7 @@ export function AdminPromotedBannerSettings() {
             Courses Currently Pushed ({selectedCourses.length})
           </h3>
           <p className="text-xs text-muted-foreground">
-            Select one or more courses to feature in the announcement banner. If multiple courses are selected, the banner will automatically cycle between them.
+            Select one or more courses to push. If multiple courses are selected, they will automatically cycle as an interactive stacked card carousel on the Courses hero and top announcement banner.
           </p>
         </div>
 

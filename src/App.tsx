@@ -266,6 +266,7 @@ const App = () => (
                 <Route path="reviews" element={<Navigate to="/admin/courses?tab=reviews" replace />} />
                 <Route path="certificates" element={<Navigate to="/admin/courses?tab=certificates" replace />} />
                 <Route path="instructors" element={<Navigate to="/admin/courses?tab=instructors" replace />} />
+                <Route path="promoted-banner" element={<Navigate to="/admin/courses?tab=promoted-banner" replace />} />
 
                 <Route path="leads-hub" element={<Navigate to="/admin/people?tab=leads-hub" replace />} />
                 <Route path="students" element={<Navigate to="/admin/people?tab=students" replace />} />

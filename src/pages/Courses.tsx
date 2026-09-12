@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
-import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, ArrowRight, PlayCircle, Terminal, Clock, ShieldCheck } from "lucide-react";
+import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, ArrowRight, PlayCircle, Terminal, Clock, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -70,39 +70,108 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
   const isStaged = config?.showOnLocalhostOnly ?? true;
   const showHighlightedCard = shouldShowStagedFeature(isStaged);
 
-  const targetCourseId = (config?.courseIds && config.courseIds.length > 0)
-    ? config.courseIds[0]
-    : AZURE_BOOTCAMP_ID;
+  const courseIds = (config?.courseIds && config.courseIds.length > 0)
+    ? config.courseIds
+    : [AZURE_BOOTCAMP_ID];
 
-  // Query target course details
-  const { data: promotedCourse } = useQuery({
-    queryKey: ["courses-hero-promoted-course", targetCourseId],
+  // Query all promoted courses
+  const { data: fetchedCourses = [] } = useQuery({
+    queryKey: ["courses-hero-promoted-courses-list", courseIds],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
         .select("id, title, slug, description, category, difficulty, price, discount_price, duration_hours, thumbnail_url")
-        .eq("id", targetCourseId)
-        .maybeSingle();
+        .in("id", courseIds)
+        .eq("is_published", true);
 
-      if (error || !data) return null;
-      return data;
+      if (error || !data) return [];
+      const map = new Map(data.map((c) => [c.id, c]));
+      return courseIds.map((id) => map.get(id)).filter(Boolean) as typeof data;
     },
     staleTime: 60 * 1000,
   });
 
-  const rawTitle = promotedCourse?.title || "One-Month Cloud Engineering Bootcamp - Microsoft Azure";
-  const courseTitle = rawTitle.replace(/—/g, "-");
-  const courseDescription = (
-    promotedCourse?.description
-      ? promotedCourse.description.split(".")[0] + ". " + (promotedCourse.description.split(".")[1] ? promotedCourse.description.split(".")[1] + "." : "")
-      : "Practical 4-week accelerator with live Azure labs, real architectures, and AZ-900/AZ-104 career preparation."
-  ).replace(/—/g, "-").trim();
-  const courseThumbnail = promotedCourse?.thumbnail_url || "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png";
-  const courseSlug = promotedCourse?.slug || "cloud-engineering-accelerator-4-week-hands-on-bootcamp";
-  const courseUrl = `/courses/${courseSlug}`;
-  const coursePrice = promotedCourse?.discount_price ?? promotedCourse?.price ?? 500000;
-  const courseHours = promotedCourse?.duration_hours ?? 32;
+  const displayCourses = useMemo(() => {
+    const source = fetchedCourses.length > 0 ? fetchedCourses : [
+      {
+        id: AZURE_BOOTCAMP_ID,
+        title: "One-Month Cloud Engineering Bootcamp - Microsoft Azure",
+        slug: "cloud-engineering-accelerator-4-week-hands-on-bootcamp",
+        description: "Practical 4-week accelerator with live Azure labs, real architectures, and AZ-900/AZ-104 career preparation.",
+        category: "Cloud Engineering",
+        difficulty: "Beginner",
+        price: 500000,
+        discount_price: null,
+        duration_hours: 32,
+        thumbnail_url: "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
+      }
+    ];
+
+    return source.map((c) => {
+      const rawDesc = c.description || "Practical live accelerator with hands-on labs, real architectures, and career preparation.";
+      const shortDesc = (
+        rawDesc.split(".")[0] + ". " + (rawDesc.split(".")[1] ? rawDesc.split(".")[1] + "." : "")
+      ).replace(/—/g, "-").trim();
+
+      const rawTitle = c.title || "Featured Programme";
+      const cleanTitle = rawTitle.replace(/—/g, "-");
+
+      return {
+        id: c.id,
+        title: cleanTitle,
+        description: shortDesc,
+        category: c.category,
+        slug: c.slug || c.id,
+        url: `/courses/${c.slug || c.id}`,
+        price: c.discount_price ?? c.price ?? 500000,
+        hours: c.duration_hours ?? 32,
+        thumbnail: c.thumbnail_url || "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
+      };
+    });
+  }, [fetchedCourses]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Auto-rotate stacked carousel if multiple courses exist
+  useEffect(() => {
+    if (displayCourses.length <= 1 || isHovered) return;
+    const intervalTime = Math.max((config?.rotationSeconds ?? 7) * 1000, 3000);
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % displayCourses.length);
+    }, intervalTime);
+    return () => clearInterval(timer);
+  }, [displayCourses.length, isHovered, config?.rotationSeconds]);
+
+  // Keep index within bounds
+  useEffect(() => {
+    if (currentIndex >= displayCourses.length && displayCourses.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [displayCourses.length, currentIndex]);
+
+  const activeCourse = displayCourses[currentIndex % displayCourses.length] || displayCourses[0];
+  const nextCourse = displayCourses[(currentIndex + 1) % displayCourses.length];
+  const thirdCourse = displayCourses[(currentIndex + 2) % displayCourses.length];
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + displayCourses.length) % displayCourses.length);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % displayCourses.length);
+  };
+
   const badgeLabel = (config?.badgeText || "Featured Bootcamp").replace(/—/g, "-");
+
+  const isAzureBootcamp = activeCourse.id === AZURE_BOOTCAMP_ID || activeCourse.title.toLowerCase().includes("azure");
+  const pillar1 = isAzureBootcamp ? "Live Azure Labs" : (activeCourse.category ? `Hands-on ${activeCourse.category}` : "Live Cloud Labs");
+  const pillar2 = isAzureBootcamp ? `4 Weeks (${activeCourse.hours} Hrs)` : `${Math.max(1, Math.round(activeCourse.hours / 8))} Weeks (${activeCourse.hours} Hrs)`;
+  const pillar3 = isAzureBootcamp ? "AZ-900 / AZ-104" : "Verified Certificate";
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
@@ -165,85 +234,146 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
           </motion.div>
 
-          {/* Right - Highlighted Course Card or Generic Tracks */}
+          {/* Right - Highlighted Course Card or Generic Tracks (Stacked Carousel) */}
           <div className="lg:col-span-6 relative mt-8 lg:mt-0">
             {showHighlightedCard ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.55, ease: "easeOut" }}
-                className="group relative rounded-2xl md:rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl text-left flex flex-col justify-between min-h-[440px]"
+              <div 
+                className="relative select-none"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
               >
-                {/* Background course thumbnail image with subtle zoom */}
-                <img
-                  src={courseThumbnail}
-                  alt={courseTitle}
-                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out pointer-events-none"
-                />
-
-                {/* Layered dark scrim & subtle blur for crystal-clear readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/50 pointer-events-none" />
-                <div className="absolute inset-0 bg-slate-950/25 backdrop-blur-[1.5px] pointer-events-none" />
-
-                {/* Foreground content with razor-sharp contrast */}
-                <div className="relative z-10 p-6 md:p-8 flex flex-col justify-between h-full space-y-6">
-                  {/* Top meta */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-white/10">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm backdrop-blur-sm">
-                        {badgeLabel}
-                      </span>
-                      <span className="text-xs text-slate-300 font-medium">
-                        Enrolling Now
-                      </span>
-                    </div>
-                    <span className="text-xs font-semibold text-sky-400">
-                      100% Practical
-                    </span>
+                {/* Stacked Card 3 (deeper deck layer, shown if 3+ courses) */}
+                {displayCourses.length > 2 && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 translate-y-6 scale-[0.91] rounded-2xl md:rounded-3xl border border-slate-800/60 bg-slate-950 shadow-md opacity-35 z-0 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
+                  >
+                    {thirdCourse?.thumbnail && (
+                      <img src={thirdCourse.thumbnail} alt="" className="w-full h-full object-cover opacity-20 blur-[1px]" />
+                    )}
+                    <div className="absolute inset-0 bg-slate-950/80" />
                   </div>
+                )}
 
-                  {/* Title & Concise Description ("a bit text") for optimal visual balance */}
-                  <div className="space-y-2.5">
-                    <h2 className="font-heading text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight drop-shadow-sm">
-                      {courseTitle}
-                    </h2>
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-lg font-normal drop-shadow-sm">
-                      {courseDescription}
-                    </p>
+                {/* Stacked Card 2 (middle deck layer, shown if 2+ courses) */}
+                {displayCourses.length > 1 && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 translate-y-3 scale-[0.95] rounded-2xl md:rounded-3xl border border-slate-800/80 bg-slate-950 shadow-xl opacity-60 z-10 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
+                  >
+                    {nextCourse?.thumbnail && (
+                      <img src={nextCourse.thumbnail} alt="" className="w-full h-full object-cover opacity-25 blur-[0.5px]" />
+                    )}
+                    <div className="absolute inset-0 bg-slate-950/75" />
                   </div>
+                )}
 
-                  {/* Core Pillars: Sleek glass chips */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                      <Terminal className="h-4 w-4 text-sky-400 shrink-0" />
-                      <span className="font-medium text-[11px]">Live Azure Labs</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                      <Clock className="h-4 w-4 text-sky-400 shrink-0" />
-                      <span className="font-medium text-[11px]">4 Weeks ({courseHours} Hrs)</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                      <ShieldCheck className="h-4 w-4 text-sky-400 shrink-0" />
-                      <span className="font-medium text-[11px]">AZ-900 / AZ-104</span>
-                    </div>
-                  </div>
+                {/* Active Front Card */}
+                <div className="relative z-20">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeCourse.id}
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                      transition={{ duration: 0.42, ease: "easeOut" }}
+                      className="group relative rounded-2xl md:rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl text-left flex flex-col justify-between min-h-[440px]"
+                    >
+                      {/* Background course thumbnail image with subtle zoom */}
+                      <img
+                        src={activeCourse.thumbnail}
+                        alt={activeCourse.title}
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out pointer-events-none"
+                      />
 
-                  {/* Pricing & CTA */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
-                      <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatNaira(Number(coursePrice))}</span>
-                    </div>
+                      {/* Layered dark scrim & subtle blur for crystal-clear readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/50 pointer-events-none" />
+                      <div className="absolute inset-0 bg-slate-950/25 backdrop-blur-[1.5px] pointer-events-none" />
 
-                    <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">
-                      <Link to={courseUrl}>
-                        <span>View Bootcamp Details</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
+                      {/* Foreground content with razor-sharp contrast */}
+                      <div className="relative z-10 p-6 md:p-8 flex flex-col justify-between h-full space-y-6">
+                        {/* Top meta: Badge + Enrolling Now; Carousel Navigation if multiple courses */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-white/10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm backdrop-blur-sm">
+                              {badgeLabel}
+                            </span>
+                            <span className="text-xs text-slate-300 font-medium">
+                              Enrolling Now
+                            </span>
+                          </div>
+
+                          {/* Stacked Carousel Controls (No 100% Practical text) */}
+                          {displayCourses.length > 1 && (
+                            <div className="flex items-center gap-1 bg-slate-900/85 border border-white/15 rounded-full px-2 py-0.5 backdrop-blur-md shadow-sm">
+                              <button
+                                type="button"
+                                onClick={handlePrev}
+                                aria-label="Previous course"
+                                className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronLeft className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="text-[10px] tabular-nums font-semibold text-slate-300 px-1">
+                                {currentIndex + 1} / {displayCourses.length}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={handleNext}
+                                aria-label="Next course"
+                                className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Title & Concise Description */}
+                        <div className="space-y-2.5">
+                          <h2 className="font-heading text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight drop-shadow-sm">
+                            {activeCourse.title}
+                          </h2>
+                          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-lg font-normal drop-shadow-sm">
+                            {activeCourse.description}
+                          </p>
+                        </div>
+
+                        {/* Core Pillars: Sleek glass chips */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                            <Terminal className="h-4 w-4 text-sky-400 shrink-0" />
+                            <span className="font-medium text-[11px] truncate">{pillar1}</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                            <Clock className="h-4 w-4 text-sky-400 shrink-0" />
+                            <span className="font-medium text-[11px] truncate">{pillar2}</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                            <ShieldCheck className="h-4 w-4 text-sky-400 shrink-0" />
+                            <span className="font-medium text-[11px] truncate">{pillar3}</span>
+                          </div>
+                        </div>
+
+                        {/* Pricing & CTA */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+                          <div>
+                            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
+                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatNaira(Number(activeCourse.price))}</span>
+                          </div>
+
+                          <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">
+                            <Link to={activeCourse.url}>
+                              <span>View Bootcamp Details</span>
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-              </motion.div>
+              </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {HERO_TRACKS.map((t) => {

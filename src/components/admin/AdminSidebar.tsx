@@ -53,6 +53,7 @@ const sections: NavSection[] = [
         icon: BookOpen,
         children: [
           { label: "Courses", tab: "courses" },
+          { label: "Promoted Banner", tab: "promoted-banner" },
           { label: "Categories", tab: "categories" },
           { label: "Tags", tab: "tags" },
           { label: "Brands", tab: "brands" },
