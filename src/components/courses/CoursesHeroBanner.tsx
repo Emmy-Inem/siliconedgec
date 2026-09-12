@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { shouldShowStagedFeature } from "@/lib/localhost-preview";
 import { 
-  Sparkles, 
   ArrowRight, 
   CheckCircle2, 
   Calendar, 
@@ -15,7 +14,7 @@ import {
 import { formatNaira } from "@/lib/format-currency";
 import { Button } from "@/components/ui/button";
 
-const BOOTCAMP_4_WEEKS_ID = "099d5b38-4319-4849-acb2-380ea2eea9a5";
+const BOOTCAMP_4_WEEKS_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
 
 interface PromotedCourse {
   id: string;
@@ -90,8 +89,7 @@ export function CoursesHeroBanner() {
         {/* Left Info Column */}
         <div className="lg:col-span-7 space-y-4 text-left">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400">
-              <Sparkles className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wider bg-muted text-foreground border border-border">
               <span>{badgeLabel}</span>
             </span>
             <span className="text-xs font-semibold text-primary uppercase tracking-wider">

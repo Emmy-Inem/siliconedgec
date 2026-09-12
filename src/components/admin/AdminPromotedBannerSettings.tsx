@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { 
   Megaphone, 
-  Sparkles, 
   Save, 
   Loader2, 
   Search, 
@@ -240,11 +239,11 @@ export function AdminPromotedBannerSettings() {
           <p className="font-semibold text-foreground flex items-center gap-2">
             <span>Staging Mode &amp; Localhost Protection</span>
             {config.showOnLocalhostOnly ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/30">
+              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-foreground border border-border">
                 Localhost Only Active
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-foreground border border-border">
                 Public Live in Production
               </span>
             )}
@@ -392,16 +391,15 @@ export function AdminPromotedBannerSettings() {
           {selectedCourses.length > 0 ? (
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase bg-amber-400/15 border border-amber-400/30 text-amber-300">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  {config.badgeText || "Featured Track"}
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-800 text-slate-200 border border-slate-700">
+                  {config.badgeText || "Bootcamp Track"}
                 </span>
                 <span className="text-slate-300 truncate">
                   {config.customHeadline ? `${config.customHeadline} — ` : ""}
                   <strong className="text-white">{selectedCourses[0]?.title}</strong>
                 </span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-foreground bg-primary px-2 py-0.5 rounded">
-                  {config.ctaText || "View Curriculum"} <ArrowRight className="h-2.5 w-2.5" />
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-foreground bg-primary px-2.5 py-1 rounded">
+                  {config.ctaText || "View Bootcamp"} <ArrowRight className="h-2.5 w-2.5" />
                 </span>
               </div>
               <span className="text-[10px] text-slate-400">Preview</span>

@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { shouldShowStagedFeature } from "@/lib/localhost-preview";
 import { 
-  Sparkles, 
   ArrowRight, 
   X, 
   ChevronLeft, 
@@ -23,14 +22,14 @@ export interface PromotedBannerConfig {
   rotationSeconds?: number;
 }
 
-export const BOOTCAMP_4_WEEKS_ID = "099d5b38-4319-4849-acb2-380ea2eea9a5";
+export const BOOTCAMP_4_WEEKS_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
 
 export const DEFAULT_PROMOTED_BANNER_CONFIG: PromotedBannerConfig = {
   enabled: true,
-  badgeText: "4-Week Bootcamp",
-  customHeadline: "Next live cloud cohort enrolling now",
+  badgeText: "Bootcamp Track",
+  customHeadline: "One-Month Cloud Engineering Bootcamp — Microsoft Azure",
   courseIds: [BOOTCAMP_4_WEEKS_ID],
-  ctaText: "Join Bootcamp",
+  ctaText: "View Bootcamp",
   showOnLocalhostOnly: true,
   rotationSeconds: 7,
 };
@@ -141,10 +140,9 @@ export function PromotedCoursesBanner() {
       <div className="container mx-auto flex items-center justify-between gap-3">
         {/* Left / Center content */}
         <div className="flex-1 flex items-center justify-center gap-2.5 sm:gap-3 flex-wrap text-center sm:text-left min-w-0">
-          {/* Badge */}
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase bg-amber-400/15 border border-amber-400/30 text-amber-300 shrink-0">
-            <Sparkles className="h-3 w-3 text-amber-300" />
-            <span>{config.badgeText || "Enrolling Now"}</span>
+          {/* Badge: clean executive styling, no sparkles or colorful pills */}
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
+            <span>{config.badgeText || "Bootcamp Track"}</span>
           </span>
 
           {/* Headline / Course Link */}
@@ -156,7 +154,7 @@ export function PromotedCoursesBanner() {
             )}
             <Link 
               to={courseUrl}
-              className="font-semibold text-white hover:text-amber-300 underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 truncate"
+              className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 truncate"
             >
               <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
               <span className="truncate">{currentCourse.title}</span>
@@ -178,7 +176,7 @@ export function PromotedCoursesBanner() {
             to={courseUrl}
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-sm"
           >
-            <span>{config.ctaText || "Explore Curriculum"}</span>
+            <span>{config.ctaText || "View Bootcamp"}</span>
             <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
