@@ -9,6 +9,7 @@ import {
   Settings, Globe, Phone, Mail, MapPin, MessageCircle,
   Facebook, Twitter, Instagram, Linkedin, Youtube, Save, Loader2
 } from "lucide-react";
+import { AdminPromotedBannerSettings } from "@/components/admin/AdminPromotedBannerSettings";
 
 const SETTINGS_KEYS = [
   { key: "site_name", label: "Site Name", icon: Globe, placeholder: "Silicon Edge Consulting", group: "general" },
@@ -150,6 +151,10 @@ export default function AdminSettings() {
           </div>
         </motion.div>
       ))}
+
+      <div className="pt-10 border-t border-border/80">
+        <AdminPromotedBannerSettings />
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoDark from "@/assets/logo-dark.png";
 import logoLight from "@/assets/logo-light.png";
+import { PromotedCoursesBanner } from "@/components/home/PromotedCoursesBanner";
 
 const baseNavLinks = [
   { label: "Home", href: "/" },
@@ -88,6 +89,7 @@ export function Header() {
           : "bg-white/70 backdrop-blur-md border-b border-white/60 shadow-[0_1px_8px_-4px_rgba(0,0,0,0.08)]"
       )}
     >
+      <PromotedCoursesBanner />
       <div className="container mx-auto flex items-center justify-between gap-4 h-14 px-4">
         <Link to="/" className="flex items-center shrink-0 mr-2">
           <img

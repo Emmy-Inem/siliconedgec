@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
+import { BusinessLeadModal } from "@/components/business/BusinessLeadModal";
+import { shouldShowStagedFeature } from "@/lib/localhost-preview";
 import { Button } from "@/components/ui/button";
 import {
   Zap, Layers, Award, Briefcase, CheckCircle2, ArrowRight,
@@ -103,6 +105,41 @@ export default function ForBusinesses() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
+
+  // 10-second timed pop-up (gated to localhost as requested)
+  useEffect(() => {
+    // Only show on localhost links during testing mode
+    if (!shouldShowStagedFeature(true)) return;
+
+    // Do not trigger if already submitted on the page or previously dismissed in this session
+    if (submitted) return;
+    try {
+      if (sessionStorage.getItem("for_business_popup_dismissed") === "true") {
+        return;
+      }
+    } catch {}
+
+    const timer = setTimeout(() => {
+      try {
+        const isDismissed = sessionStorage.getItem("for_business_popup_dismissed") === "true";
+        if (!isDismissed) {
+          setPopupOpen(true);
+        }
+      } catch {
+        setPopupOpen(true);
+      }
+    }, 10000); // exactly 10 seconds
+
+    return () => clearTimeout(timer);
+  }, [submitted]);
+
+  const handleClosePopup = () => {
+    setPopupOpen(false);
+    try {
+      sessionStorage.setItem("for_business_popup_dismissed", "true");
+    } catch {}
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -581,6 +618,12 @@ export default function ForBusinesses() {
           )}
         </div>
       </section>
+
+      <BusinessLeadModal 
+        isOpen={popupOpen} 
+        onClose={handleClosePopup} 
+        onSuccess={() => setSubmitted(true)} 
+      />
 
       <Footer />
       <WhatsAppFAB />
