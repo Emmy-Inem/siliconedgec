@@ -117,10 +117,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             </p>
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-navy-light/80 border border-white/10 text-xs text-hero-muted">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-amber-400" aria-hidden="true" />
               <span className="font-medium text-white/90">Global Cohorts Enrolling</span>
             </div>
 
@@ -151,7 +148,6 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             <ul className="space-y-2.5 text-sm">
               <li><Link to="/courses" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Courses</Link></li>
               <li><Link to="/paths" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Learning Paths</Link></li>
-              <li><Link to="/bootcamp" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Bootcamps</Link></li>
               <li><Link to="/pricing" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Pricing</Link></li>
               <li><Link to="/certificates" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Certificates</Link></li>
               <li><Link to="/for-businesses" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">For Businesses</Link></li>

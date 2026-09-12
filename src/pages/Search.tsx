@@ -25,13 +25,13 @@ export default function Search() {
     setLoading(true);
     const term = `%${q}%`;
     Promise.all([
-      supabase.from("courses").select("id,title,slug,category,thumbnail_url,description,difficulty_level,price_naira,duration_hours,students_enrolled,rating,instructor_id,instructors(id,name,avatar_url)").or(`title.ilike.${term},description.ilike.${term}`).eq("is_published", true).limit(20),
+      supabase.from("courses").select("id,title,slug,category,thumbnail_url,description,difficulty,price,duration_hours,students_enrolled,rating,instructor_id,instructors(id,name,avatar_url)").or(`title.ilike.${term},description.ilike.${term}`).eq("is_published", true).limit(20),
       (supabase.from("blog_posts" as any).select("id,title,slug,excerpt").eq("status", "published").or(`title.ilike.${term},excerpt.ilike.${term}`).limit(20)),
     ]).then(([c, p]) => {
       const mapped = ((c.data as any[]) ?? []).map((r: any) => ({
         id: r.id, slug: r.slug, title: r.title, description: r.description ?? "",
         thumbnail_url: r.thumbnail_url, category: r.category ?? "",
-        difficulty: r.difficulty_level ?? "Beginner", price: r.price_naira ?? 0,
+        difficulty: r.difficulty ?? "Beginner", price: r.price ?? 0,
         duration_hours: r.duration_hours ?? 0, students_enrolled: r.students_enrolled ?? 0,
         rating: r.rating ?? 0,
         instructor: r.instructors ? { id: r.instructors.id, name: r.instructors.name, avatar_url: r.instructors.avatar_url } : null,

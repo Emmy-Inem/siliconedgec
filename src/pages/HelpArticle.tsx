@@ -52,14 +52,14 @@ export default function HelpArticle() {
       <SEO
         title={article ? `${article.title} · Help Center` : "Help Center"}
         description={article?.summary ?? "Silicon Edge help articles."}
-        canonical={article ? siteUrl(`/help/${article.slug}`) : siteUrl("/help")}
+        canonical={article ? siteUrl(`/help/${(article as any).slug}`) : siteUrl("/help")}
         jsonLd={article ? {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
             { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
             { "@type": "ListItem", position: 2, name: "Help Center", item: siteUrl("/help") },
-            { "@type": "ListItem", position: 3, name: article.title, item: siteUrl(`/help/${article.slug}`) },
+            { "@type": "ListItem", position: 3, name: article.title, item: siteUrl(`/help/${(article as any).slug}`) },
           ],
         } : undefined}
       />

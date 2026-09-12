@@ -1097,7 +1097,7 @@ export default function CourseDetail() {
           courseTitle={course.title}
           courseId={course.id}
           modulesCount={curriculumModules.length || 6}
-          duration={course.duration || "8–12 Weeks"}
+          duration={(course as any).duration || "8–12 Weeks"}
         />
       )}
 
