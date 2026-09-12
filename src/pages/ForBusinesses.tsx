@@ -622,7 +622,11 @@ export default function ForBusinesses() {
       <BusinessLeadModal 
         isOpen={popupOpen} 
         onClose={handleClosePopup} 
-        onSuccess={() => setSubmitted(true)} 
+        formData={formData}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        submitting={submitting}
+        submitted={submitted}
       />
 
       <Footer />

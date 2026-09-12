@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
+import { CoursesHeroBanner } from "@/components/courses/CoursesHeroBanner";
 import { useCourses } from "@/hooks/useCourses";
 import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, ArrowRight, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -339,6 +340,9 @@ export default function Courses() {
 
       <section className="py-8 md:py-10">
         <div className="container mx-auto px-4">
+          {/* Featured Bootcamp Hero Banner */}
+          <CoursesHeroBanner />
+
           {/* Search + Filter Toggle */}
           <div className="flex gap-2 mb-6">
             <div className="relative flex-1">

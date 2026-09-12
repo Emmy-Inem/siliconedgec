@@ -23,12 +23,14 @@ export interface PromotedBannerConfig {
   rotationSeconds?: number;
 }
 
+export const BOOTCAMP_4_WEEKS_ID = "099d5b38-4319-4849-acb2-380ea2eea9a5";
+
 export const DEFAULT_PROMOTED_BANNER_CONFIG: PromotedBannerConfig = {
   enabled: true,
-  badgeText: "Featured Track",
-  customHeadline: "Enroll in our next industry-led cloud cohort",
-  courseIds: [],
-  ctaText: "View Curriculum",
+  badgeText: "4-Week Bootcamp",
+  customHeadline: "Next live cloud cohort enrolling now",
+  courseIds: [BOOTCAMP_4_WEEKS_ID],
+  ctaText: "Join Bootcamp",
   showOnLocalhostOnly: true,
   rotationSeconds: 7,
 };
@@ -41,7 +43,7 @@ interface PromotedCourseItem {
   difficulty: string | null;
   price: number | null;
   discount_price: number | null;
-  duration: string | null;
+  duration_hours: number | null;
 }
 
 export function PromotedCoursesBanner() {
@@ -74,15 +76,18 @@ export function PromotedCoursesBanner() {
     staleTime: 60 * 1000,
   });
 
-  // Fetch courses that match the selected courseIds
-  const courseIds = config.courseIds ?? [];
+  // Fetch courses that match the selected courseIds (fallback to 4-Week Bootcamp if empty)
+  const courseIds = (config.courseIds && config.courseIds.length > 0)
+    ? config.courseIds
+    : [BOOTCAMP_4_WEEKS_ID];
+
   const { data: courses = [] } = useQuery<PromotedCourseItem[]>({
     queryKey: ["promoted-courses-list", courseIds],
     enabled: courseIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, title, slug, category, difficulty, price, discount_price, duration")
+        .select("id, title, slug, category, difficulty, price, discount_price, duration_hours")
         .in("id", courseIds)
         .eq("is_published", true);
 
@@ -157,9 +162,13 @@ export function PromotedCoursesBanner() {
               <span className="truncate">{currentCourse.title}</span>
             </Link>
 
-            {currentCourse.duration && (
+            {currentCourse.duration_hours ? (
               <span className="hidden lg:inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60">
-                {currentCourse.duration}
+                {currentCourse.duration_hours}h intensive
+              </span>
+            ) : (
+              <span className="hidden lg:inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60">
+                4 Weeks Live
               </span>
             )}
           </div>

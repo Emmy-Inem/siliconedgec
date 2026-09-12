@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -7,120 +6,41 @@ import {
   DialogDescription 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
-  Building2, 
   CheckCircle2, 
   Loader2, 
-  ArrowRight, 
-  ShieldCheck, 
-  Users, 
-  Sparkles,
+  ArrowRight,
   ArrowDown
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 interface BusinessLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  formData: {
+    company_name: string;
+    contact_name: string;
+    job_title: string;
+    email: string;
+    phone: string;
+    company_size: string;
+    training_focus: string;
+    training_needs: string;
+  };
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  submitting: boolean;
+  submitted: boolean;
 }
 
-export function BusinessLeadModal({ isOpen, onClose, onSuccess }: BusinessLeadModalProps) {
-  const [formData, setFormData] = useState({
-    company_name: "",
-    contact_name: "",
-    job_title: "",
-    email: "",
-    phone: "",
-    company_size: "",
-    training_focus: "",
-    training_needs: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const trackLinkedInConversion = () => {
-    try {
-      const w = window as any;
-      if (w.lintrk) {
-        w.lintrk("track", { conversion_id: 30673009 });
-      }
-    } catch (e) {
-      console.warn("LinkedIn conversion tracking failed", e);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const required = [
-      "company_name",
-      "contact_name",
-      "job_title",
-      "email",
-      "phone",
-      "training_focus",
-    ] as const;
-
-    const missing = required.filter((k) => !formData[k].trim());
-    if (missing.length) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
-      return;
-    }
-
-    setSubmitting(true);
-    const payload = {
-      company_name: formData.company_name.trim(),
-      contact_name: formData.contact_name.trim(),
-      job_title: formData.job_title.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      company_size: formData.company_size.trim() || null,
-      training_needs: [formData.training_focus.trim(), formData.training_needs.trim()].filter(Boolean).join("\n\n"),
-    };
-
-    const { data: inserted, error } = await (supabase.from("business_leads") as any)
-      .insert(payload)
-      .select("id")
-      .single();
-
-    if (!error && inserted?.id) {
-      try {
-        await supabase.functions.invoke("notify-business-lead", {
-          body: {
-            lead_id: inserted.id,
-            ...payload,
-          },
-        });
-      } catch (e) {
-        console.warn("notify-business-lead failed", e);
-      }
-    }
-
-    setSubmitting(false);
-
-    if (error) {
-      toast({
-        title: "Something went wrong",
-        description: "Please try again later or email info@siliconedgec.com directly.",
-        variant: "destructive",
-      });
-    } else {
-      setSubmitted(true);
-      trackLinkedInConversion();
-      onSuccess?.();
-      toast({
-        title: "Consultation Request Received",
-        description: "Our corporate team will review your requirements and reach out within 24 hours.",
-      });
-    }
-  };
-
+export function BusinessLeadModal({ 
+  isOpen, 
+  onClose, 
+  formData,
+  onChange,
+  onSubmit,
+  submitting,
+  submitted
+}: BusinessLeadModalProps) {
   const handleScrollToForm = () => {
     onClose();
     setTimeout(() => {
@@ -133,6 +53,9 @@ export function BusinessLeadModal({ isOpen, onClose, onSuccess }: BusinessLeadMo
     }, 150);
   };
 
+  const inputClass =
+    "w-full px-4 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-muted/40 text-foreground placeholder:text-muted-foreground/70 border-border/80";
+
   return (
     <Dialog 
       open={isOpen} 
@@ -142,182 +65,114 @@ export function BusinessLeadModal({ isOpen, onClose, onSuccess }: BusinessLeadMo
         }
       }}
     >
-      <DialogContent className="sm:max-w-lg bg-card border-border/80 p-6 md:p-7 max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-1.5 text-left">
-          <div className="flex items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Corporate Training Consultation</span>
-            </div>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
-              Silicon Edge B2B
-            </span>
-          </div>
-
-          <DialogTitle className="font-heading text-xl md:text-2xl font-bold text-foreground pt-1">
-            Accelerate Your Engineering Team's Capability
+      <DialogContent className="sm:max-w-xl bg-card border-border/80 p-6 md:p-8 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <DialogHeader className="space-y-1.5 text-center sm:text-left">
+          <p className="font-medium text-xs tracking-[0.25em] uppercase" style={{ color: "hsl(var(--gold))" }}>
+            Build a Future-Ready Team
+          </p>
+          <DialogTitle className="font-heading text-xl md:text-2xl font-bold text-foreground">
+            Request Corporate Technology Training
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            Upskill your team in Cloud Engineering (Azure/AWS), DevOps, or AI. Complete this quick request to receive a tailored corporate syllabus and enterprise quote.
+            Tell us about your organisation's training needs and we'll recommend the right programme, delivery model and next steps.
           </DialogDescription>
         </DialogHeader>
 
         {submitted ? (
-          <div className="py-8 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-heading text-lg font-bold text-foreground">
-                Request Successfully Submitted!
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                Thank you, <strong>{formData.contact_name}</strong>. Our enterprise team is preparing a customized training proposal for <strong>{formData.company_name}</strong>.
-              </p>
-            </div>
-            <div className="pt-2">
+          <div className="py-8 text-center space-y-3">
+            <CheckCircle2 className="h-16 w-16 mx-auto mb-3" style={{ color: "hsl(var(--gold))" }} />
+            <h3 className="font-heading text-xl font-bold text-foreground">Thank You!</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              Your request has been submitted. Our team will reach out within 24 hours.
+            </p>
+            <div className="pt-3">
               <Button onClick={onClose} variant="outline" size="sm" className="text-xs">
                 Close Window
               </Button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3.5 pt-2">
-            {/* Value chips */}
-            <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
-              <div className="flex items-center gap-1 text-foreground font-medium">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="truncate">Live Cloud Labs</span>
-              </div>
-              <div className="flex items-center gap-1 text-foreground font-medium">
-                <Users className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="truncate">Custom Cohorts</span>
-              </div>
-              <div className="flex items-center gap-1 text-foreground font-medium">
-                <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="truncate">Fast Proposal</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Company Name *</label>
-                <Input
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  placeholder="e.g. Acme Corp"
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Contact Full Name *</label>
-                <Input
-                  name="contact_name"
-                  value={formData.contact_name}
-                  onChange={handleChange}
-                  placeholder="e.g. Sarah Jenkins"
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Job Title *</label>
-                <Input
-                  name="job_title"
-                  value={formData.job_title}
-                  onChange={handleChange}
-                  placeholder="e.g. VP of Engineering, HR Lead"
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Work Email *</label>
-                <Input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="name@company.com"
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Phone Number *</label>
-                <Input
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+44 7... or +234..."
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Team Size</label>
-                <select
-                  name="company_size"
-                  value={formData.company_size}
-                  onChange={handleChange}
-                  className="w-full h-9 px-3 rounded-md border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Select team size...</option>
-                  <option value="5-15">5–15 learners (Team Sprint)</option>
-                  <option value="15-60">15–60 learners (Department Rollout)</option>
-                  <option value="60+">60+ learners (Enterprise Academy)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
-                Target Training Focus *
-              </label>
-              <Input
-                name="training_focus"
-                value={formData.training_focus}
-                onChange={handleChange}
-                placeholder="e.g. Microsoft Azure Architecture, DevOps & Kubernetes, AI"
+          <form onSubmit={onSubmit} className="space-y-3.5 pt-2 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <input
+                name="company_name"
+                placeholder="Company Name *"
+                value={formData.company_name}
+                onChange={onChange}
                 required
-                className="h-9 text-xs"
+                className={inputClass}
+              />
+              <input
+                name="contact_name"
+                placeholder="Your Full Name *"
+                value={formData.contact_name}
+                onChange={onChange}
+                required
+                className={inputClass}
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
-                Additional Notes / Objectives (Optional)
-              </label>
-              <textarea
-                name="training_needs"
-                value={formData.training_needs}
-                onChange={handleChange}
-                rows={2}
-                placeholder="Specific timelines, tech stack, or cohort objectives..."
-                className="w-full px-3 py-2 rounded-md border border-input bg-background text-xs text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <input
+                name="job_title"
+                placeholder="Job Title *"
+                value={formData.job_title}
+                onChange={onChange}
+                required
+                className={inputClass}
+              />
+              <input
+                name="email"
+                type="email"
+                placeholder="Work Email *"
+                value={formData.email}
+                onChange={onChange}
+                required
+                className={inputClass}
               />
             </div>
 
-            <div className="pt-2 space-y-2">
-              <Button type="submit" disabled={submitting} className="w-full h-10 text-xs font-medium gap-1.5">
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting Request...
-                  </>
-                ) : (
-                  <>
-                    Request Corporate Training Quote <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                  </>
-                )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <input
+                name="phone"
+                type="tel"
+                placeholder="Phone Number *"
+                value={formData.phone}
+                onChange={onChange}
+                required
+                className={inputClass}
+              />
+              <input
+                name="company_size"
+                placeholder="Team Size"
+                value={formData.company_size}
+                onChange={onChange}
+                className={inputClass}
+              />
+            </div>
+
+            <input
+              name="training_focus"
+              placeholder="What would you like your team to be trained in? *"
+              value={formData.training_focus}
+              onChange={onChange}
+              required
+              className={inputClass}
+            />
+
+            <textarea
+              name="training_needs"
+              placeholder="Tell us about your training needs"
+              rows={3}
+              value={formData.training_needs}
+              onChange={onChange}
+              className={`${inputClass} resize-none`}
+            />
+
+            <div className="pt-2 space-y-2.5">
+              <Button size="lg" className="w-full text-xs font-semibold hover-scale" disabled={submitting}>
+                {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Request Corporate Training Consultation <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 
               <div className="flex items-center justify-between pt-1">
