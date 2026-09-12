@@ -395,8 +395,8 @@ export function AdminPromotedBannerSettings() {
                   {config.badgeText || "Bootcamp Track"}
                 </span>
                 <span className="text-slate-300 truncate">
-                  {config.customHeadline ? `${config.customHeadline} — ` : ""}
-                  <strong className="text-white">{selectedCourses[0]?.title}</strong>
+                  {config.customHeadline ? `${config.customHeadline.replace(/—/g, "-")} - ` : ""}
+                  <strong className="text-white">{selectedCourses[0]?.title.replace(/—/g, "-")}</strong>
                 </span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-foreground bg-primary px-2.5 py-1 rounded">
                   {config.ctaText || "View Bootcamp"} <ArrowRight className="h-2.5 w-2.5" />

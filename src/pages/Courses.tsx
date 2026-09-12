@@ -80,7 +80,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, title, slug, description, category, difficulty, price, discount_price, duration_hours")
+        .select("id, title, slug, description, category, difficulty, price, discount_price, duration_hours, thumbnail_url")
         .eq("id", targetCourseId)
         .maybeSingle();
 
@@ -90,17 +90,23 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
     staleTime: 60 * 1000,
   });
 
-  const courseTitle = promotedCourse?.title || "One-Month Cloud Engineering Bootcamp — Microsoft Azure";
-  const courseDescription = promotedCourse?.description || "A practical, beginner-friendly 4-week bootcamp using Microsoft Azure. Live online classes, guided labs, recorded lessons, AI-assisted assessments, tutor feedback, and AZ-900/AZ-104 career preparation.";
+  const rawTitle = promotedCourse?.title || "One-Month Cloud Engineering Bootcamp - Microsoft Azure";
+  const courseTitle = rawTitle.replace(/—/g, "-");
+  const courseDescription = (
+    promotedCourse?.description
+      ? promotedCourse.description.split(".")[0] + ". " + (promotedCourse.description.split(".")[1] ? promotedCourse.description.split(".")[1] + "." : "")
+      : "Practical 4-week accelerator with live Azure labs, real architectures, and AZ-900/AZ-104 career preparation."
+  ).replace(/—/g, "-").trim();
+  const courseThumbnail = promotedCourse?.thumbnail_url || "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png";
   const courseSlug = promotedCourse?.slug || "cloud-engineering-accelerator-4-week-hands-on-bootcamp";
   const courseUrl = `/courses/${courseSlug}`;
   const coursePrice = promotedCourse?.discount_price ?? promotedCourse?.price ?? 500000;
   const courseHours = promotedCourse?.duration_hours ?? 32;
-  const badgeLabel = config?.badgeText || "Featured Bootcamp";
+  const badgeLabel = (config?.badgeText || "Featured Bootcamp").replace(/—/g, "-");
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
-      {/* Subtle, premium backdrop — soft top-left primary wash + tiny dot grid */}
+      {/* Subtle, premium backdrop - soft top-left primary wash + tiny dot grid */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.06),transparent_60%)]" />
       <div
         className="absolute inset-0 opacity-[0.12]"
@@ -114,7 +120,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
       <div className="container mx-auto px-4 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          {/* Left — copy */}
+          {/* Left - copy */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,69 +165,83 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
           </motion.div>
 
-          {/* Right — Highlighted Course Card or Generic Tracks */}
+          {/* Right - Highlighted Course Card or Generic Tracks */}
           <div className="lg:col-span-6 relative mt-8 lg:mt-0">
             {showHighlightedCard ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.55, ease: "easeOut" }}
-                className="relative rounded-2xl border border-border/80 bg-card p-6 md:p-7 shadow-lg text-left"
+                className="group relative rounded-2xl md:rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl text-left flex flex-col justify-between min-h-[440px]"
               >
-                {/* Header meta: clean neutral border, no sparkles or colorful pills */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-border/60">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-muted/70 text-foreground border border-border/80">
-                      {badgeLabel}
+                {/* Background course thumbnail image with subtle zoom */}
+                <img
+                  src={courseThumbnail}
+                  alt={courseTitle}
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out pointer-events-none"
+                />
+
+                {/* Layered dark scrim & subtle blur for crystal-clear readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/50 pointer-events-none" />
+                <div className="absolute inset-0 bg-slate-950/25 backdrop-blur-[1.5px] pointer-events-none" />
+
+                {/* Foreground content with razor-sharp contrast */}
+                <div className="relative z-10 p-6 md:p-8 flex flex-col justify-between h-full space-y-6">
+                  {/* Top meta */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm backdrop-blur-sm">
+                        {badgeLabel}
+                      </span>
+                      <span className="text-xs text-slate-300 font-medium">
+                        Enrolling Now
+                      </span>
+                    </div>
+                    <span className="text-xs font-semibold text-sky-400">
+                      100% Practical
                     </span>
-                    <span className="text-xs text-muted-foreground font-medium">
-                      Enrolling Now
-                    </span>
-                  </div>
-                  <span className="text-xs font-semibold text-primary">
-                    100% Practical
-                  </span>
-                </div>
-
-                {/* Title & Description */}
-                <div className="space-y-2 mb-5">
-                  <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground leading-snug">
-                    {courseTitle}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {courseDescription}
-                  </p>
-                </div>
-
-                {/* Core Pillars */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-6 text-xs text-muted-foreground">
-                  <div className="p-2.5 rounded-lg border border-border/70 bg-muted/20 flex items-center gap-2">
-                    <Terminal className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium text-foreground text-[11px]">Live Azure Labs</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-border/70 bg-muted/20 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium text-foreground text-[11px]">4 Weeks ({courseHours} Hrs)</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg border border-border/70 bg-muted/20 flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                    <span className="font-medium text-foreground text-[11px]">AZ-900 / AZ-104</span>
-                  </div>
-                </div>
-
-                {/* Pricing & CTA */}
-                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border/60">
-                  <div>
-                    <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground block">Tuition</span>
-                    <span className="text-2xl font-bold font-heading text-foreground">{formatNaira(Number(coursePrice))}</span>
                   </div>
 
-                  <Button size="lg" asChild className="gap-2 font-medium hover-scale">
-                    <Link to={courseUrl}>
-                      <span>View Bootcamp Details</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  {/* Title & Concise Description ("a bit text") for optimal visual balance */}
+                  <div className="space-y-2.5">
+                    <h2 className="font-heading text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight drop-shadow-sm">
+                      {courseTitle}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-lg font-normal drop-shadow-sm">
+                      {courseDescription}
+                    </p>
+                  </div>
+
+                  {/* Core Pillars: Sleek glass chips */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                      <Terminal className="h-4 w-4 text-sky-400 shrink-0" />
+                      <span className="font-medium text-[11px]">Live Azure Labs</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                      <Clock className="h-4 w-4 text-sky-400 shrink-0" />
+                      <span className="font-medium text-[11px]">4 Weeks ({courseHours} Hrs)</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
+                      <ShieldCheck className="h-4 w-4 text-sky-400 shrink-0" />
+                      <span className="font-medium text-[11px]">AZ-900 / AZ-104</span>
+                    </div>
+                  </div>
+
+                  {/* Pricing & CTA */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+                    <div>
+                      <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
+                      <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatNaira(Number(coursePrice))}</span>
+                    </div>
+
+                    <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">
+                      <Link to={courseUrl}>
+                        <span>View Bootcamp Details</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             ) : (
@@ -433,7 +453,7 @@ export default function Courses() {
               className="flex-shrink-0 hidden sm:inline-flex"
               onClick={runAiSearch}
               disabled={aiSearching || !search.trim()}
-              title="Smart search — e.g. 'beginner AWS under 50k'"
+              title="Smart search - e.g. 'beginner AWS under 50k'"
             >
               {aiSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               <span className="ml-1 hidden md:inline">Ask AI</span>
@@ -455,7 +475,7 @@ export default function Courses() {
             </Button>
           </div>
 
-          {/* Desktop Filters — always visible */}
+          {/* Desktop Filters - always visible */}
           <div className="hidden md:block space-y-4 mb-8">
             <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-border">
               {categories.map((cat) => (
@@ -500,7 +520,7 @@ export default function Courses() {
             </div>
           </div>
 
-          {/* Mobile Filters — slide-down panel */}
+          {/* Mobile Filters - slide-down panel */}
           <AnimatePresence>
             {filtersOpen && (
               <motion.div

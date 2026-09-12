@@ -27,7 +27,7 @@ export const BOOTCAMP_4_WEEKS_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
 export const DEFAULT_PROMOTED_BANNER_CONFIG: PromotedBannerConfig = {
   enabled: true,
   badgeText: "Bootcamp Track",
-  customHeadline: "One-Month Cloud Engineering Bootcamp — Microsoft Azure",
+  customHeadline: "One-Month Cloud Engineering Bootcamp - Microsoft Azure",
   courseIds: [BOOTCAMP_4_WEEKS_ID],
   ctaText: "View Bootcamp",
   showOnLocalhostOnly: true,
@@ -149,7 +149,7 @@ export function PromotedCoursesBanner() {
           <div className="flex items-center gap-1.5 text-slate-200 text-xs truncate">
             {config.customHeadline && (
               <span className="hidden md:inline text-slate-400 font-normal">
-                {config.customHeadline} —
+                {config.customHeadline.replace(/—/g, "-")} -
               </span>
             )}
             <Link 
@@ -157,7 +157,7 @@ export function PromotedCoursesBanner() {
               className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 truncate"
             >
               <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate">{currentCourse.title}</span>
+              <span className="truncate">{currentCourse.title.replace(/—/g, "-")}</span>
             </Link>
 
             {currentCourse.duration_hours ? (
