@@ -20,7 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Textarea } from "@/components/ui/textarea";
 import {
   Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart,
-  Lock, Award, FileText, MonitorPlay, Infinity, Bookmark, BookmarkCheck,
+  Lock, Award, FileText, MonitorPlay, Bookmark, BookmarkCheck,
   CheckCircle2,
 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";

@@ -30,7 +30,7 @@ export const DEFAULT_PROMOTED_BANNER_CONFIG: PromotedBannerConfig = {
   customHeadline: "One-Month Cloud Engineering Bootcamp - Microsoft Azure",
   courseIds: [BOOTCAMP_4_WEEKS_ID],
   ctaText: "View Bootcamp",
-  showOnLocalhostOnly: true,
+  showOnLocalhostOnly: false,
   rotationSeconds: 7,
 };
 

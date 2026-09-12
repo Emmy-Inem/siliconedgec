@@ -67,7 +67,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
     staleTime: 60 * 1000,
   });
 
-  const isStaged = config?.showOnLocalhostOnly ?? true;
+  const isStaged = config?.showOnLocalhostOnly ?? false;
   const showHighlightedCard = shouldShowStagedFeature(isStaged);
 
   const courseIds = (config?.courseIds && config.courseIds.length > 0)

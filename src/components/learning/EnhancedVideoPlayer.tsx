@@ -64,7 +64,11 @@ export const EnhancedVideoPlayer = forwardRef<EnhancedVideoPlayerHandle, Props>(
           case " ":
           case "k":
             e.preventDefault();
-            v.paused ? v.play() : v.pause();
+            if (v.paused) {
+              v.play();
+            } else {
+              v.pause();
+            }
             break;
           case "ArrowLeft":
             e.preventDefault();

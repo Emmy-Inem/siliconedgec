@@ -107,14 +107,21 @@ END$$;
 SELECT cron.schedule(
   'live-class-reminder-15min',
   '*/15 * * * *',
-  $cron$
-  SELECT net.http_post(
-    url := 'https://sdddxnjlgjjaoayyraxn.supabase.co/functions/v1/live-class-reminder',
-    headers := jsonb_build_object(
-      'Content-Type','application/json',
-      'Authorization','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZGR4bmpsZ2pqYW9heXlyYXhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzY3MjMsImV4cCI6MjA4ODU1MjcyM30.sR14_CsbMhO3uX-7GYl12FZd2fDcj80smnoK4tE4IVI'
-    ),
-    body := '{}'::jsonb
-  );
-  $cron$
+  format(
+    $cron$
+    SELECT net.http_post(
+      url := 'https://sdddxnjlgjjaoayyraxn.supabase.co/functions/v1/live-class-reminder',
+      headers := jsonb_build_object(
+        'Content-Type','application/json',
+        'Authorization','Bearer %s'
+      ),
+      body := '{}'::jsonb
+    );
+    $cron$,
+    COALESCE(
+      (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key' LIMIT 1),
+      (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'anon_key' LIMIT 1),
+      ''
+    )
+  )
 );

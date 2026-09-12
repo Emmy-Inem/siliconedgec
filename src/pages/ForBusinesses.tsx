@@ -109,8 +109,8 @@ export default function ForBusinesses() {
 
   // 10-second timed pop-up (gated to localhost as requested)
   useEffect(() => {
-    // Only show on localhost links during testing mode
-    if (!shouldShowStagedFeature(true)) return;
+    // Active in production as approved
+    if (!shouldShowStagedFeature(false)) return;
 
     // Do not trigger if already submitted on the page or previously dismissed in this session
     if (submitted) return;

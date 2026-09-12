@@ -164,7 +164,25 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action as string;
 
+    const hasAdminOrInstructorPrivilege = async () => {
+      if (isServiceCall) return true;
+      if (!callerId) return false;
+      const { data: roleRow } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", callerId)
+        .in("role", ["admin", "instructor"])
+        .maybeSingle();
+      return Boolean(roleRow);
+    };
+
     if (action === "upsert_class") {
+      if (!(await hasAdminOrInstructorPrivilege())) {
+        return new Response(JSON.stringify({ error: "Forbidden: admin or instructor role required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const cls = await fetchLiveClass(body.live_class_id);
       if (!cls || cls.status === "cancelled") {
         return new Response(JSON.stringify({ ok: true, skipped: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -177,6 +195,12 @@ Deno.serve(async (req) => {
     }
 
     if (action === "delete_class") {
+      if (!(await hasAdminOrInstructorPrivilege())) {
+        return new Response(JSON.stringify({ error: "Forbidden: admin or instructor role required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const { data: rows } = await admin.from("live_class_calendar_events")
         .select("user_id").eq("live_class_id", body.live_class_id);
       const results = [];

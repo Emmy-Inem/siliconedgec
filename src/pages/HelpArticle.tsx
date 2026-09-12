@@ -32,7 +32,6 @@ export default function HelpArticle() {
 
   useEffect(() => {
     if (article?.id) {
-      supabase.rpc as any;
       supabase.from("kb_articles").update({ views: ((article as any).views ?? 0) + 1 }).eq("id", article.id).then(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

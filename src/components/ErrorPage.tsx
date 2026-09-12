@@ -37,12 +37,7 @@ export function ErrorPage({
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  let navigate: ReturnType<typeof useNavigate> | null = null;
-  try {
-    navigate = useNavigate();
-  } catch {
-    navigate = null;
-  }
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

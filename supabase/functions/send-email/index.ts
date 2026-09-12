@@ -115,11 +115,71 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const body = await req.json();
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const configuredSecret = Deno.env.get("INTERNAL_EMAIL_SECRET") ?? "";
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const internalSecret = req.headers.get("x-internal-secret") ?? "";
+
+    const isServiceCall = Boolean(
+      (serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`) ||
+      (configuredSecret && internalSecret === configuredSecret)
     );
+
+    let callerUser: { id: string; email?: string } | null = null;
+    let isAdmin = false;
+
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+
+    if (!isServiceCall) {
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized: missing authorization header" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const token = authHeader.replace("Bearer ", "").trim();
+      const userClient = createClient(supabaseUrl, anonKey || serviceRoleKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
+      const { data: userData, error: userError } = await userClient.auth.getUser(token);
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized: invalid credentials" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerUser = userData.user;
+
+      const { data: roleRow } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", callerUser.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      isAdmin = Boolean(roleRow);
+    }
+
+    const body = await req.json();
+
+    if (!isServiceCall && !isAdmin) {
+      const recipient = String(body?.to ?? "").toLowerCase().trim();
+      const userEmail = String(callerUser?.email ?? "").toLowerCase().trim();
+      const requestedTemplate = body?.template_key;
+      const isAllowedTemplate = ["tpl_welcome", "tpl_cart_recovery"].includes(requestedTemplate);
+
+      if (!recipient || recipient !== userEmail || !isAllowedTemplate || body?.html) {
+        return new Response(JSON.stringify({ error: "Forbidden: non-admin users cannot send arbitrary emails" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const {
       template_key,
       variables,

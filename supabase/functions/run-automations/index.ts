@@ -138,6 +138,50 @@ function html(b: Built) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const cronSecret = req.headers.get("x-cron-secret") ?? "";
+    const configuredCronSecret = Deno.env.get("CRON_SECRET") ?? "";
+
+    const isServiceCall = Boolean(
+      (SERVICE_KEY && authHeader === `Bearer ${SERVICE_KEY}`) ||
+      (configuredCronSecret && cronSecret === configuredCronSecret)
+    );
+
+    let isAdmin = false;
+    if (!isServiceCall) {
+      if (!authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized: missing authorization header" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const token = authHeader.replace("Bearer ", "").trim();
+      const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY") || SERVICE_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
+      const { data: userData, error: userError } = await userClient.auth.getUser(token);
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized: invalid credentials" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: roleRow } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      isAdmin = Boolean(roleRow);
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // ---- admin test send: { test_key, to } ----
     let body: any = null;
     try { body = await req.json(); } catch { /* cron posts no body */ }

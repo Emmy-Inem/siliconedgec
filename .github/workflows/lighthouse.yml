@@ -29,5 +29,4 @@ jobs:
             --assert.assertions.categories:performance=warn \
             --assert.assertions.categories:accessibility="['error', {minScore: 0.9}]" \
             --assert.assertions.categories:best-practices=warn \
-            --assert.assertions.categories:seo=warn \
-          || echo "Lighthouse audit completed with warnings"
+            --assert.assertions.categories:seo=warn

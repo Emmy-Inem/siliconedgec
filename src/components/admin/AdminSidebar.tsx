@@ -277,21 +277,33 @@ function SidebarContent({
   const toggleGroup = (label: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      next.has(label) ? next.delete(label) : next.add(label);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
       writeSet(LS_GROUPS, next); return next;
     });
   };
   const toggleItem = (key: string) => {
     setExpandedItems((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
       writeSet(LS_ITEMS, next); return next;
     });
   };
   const togglePin = (key: string) => {
     setPinned((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
       writeSet(LS_PINS, next); return next;
     });
   };
