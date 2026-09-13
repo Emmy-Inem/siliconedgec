@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const envPath = path.resolve(__dirname, '../.env');
-let supabaseUrl = 'https://sdddxnjlgjjaoayyraxn.supabase.co';
-let supabaseKey = '';
+let supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://sdddxnjlgjjaoayyraxn.supabase.co';
+let supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
@@ -14,14 +14,29 @@ if (fs.existsSync(envPath)) {
   if (keyMatch) supabaseKey = keyMatch[1].trim().replace(/["']/g, '');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 async function generate() {
-  const [{ data: courses }, { data: blogPosts }, { data: categories }] = await Promise.all([
-    supabase.from('courses').select('id, slug, updated_at').eq('is_published', true),
-    supabase.from('blog_posts').select('slug, updated_at').eq('status', 'published'),
-    supabase.from('categories').select('slug, created_at'),
-  ]);
+  let courses = [];
+  let blogPosts = [];
+  let categories = [];
+
+  if (supabase) {
+    try {
+      const results = await Promise.all([
+        supabase.from('courses').select('id, slug, updated_at').eq('is_published', true),
+        supabase.from('blog_posts').select('slug, updated_at').eq('status', 'published'),
+        supabase.from('categories').select('slug, created_at'),
+      ]);
+      courses = results[0].data || [];
+      blogPosts = results[1].data || [];
+      categories = results[2].data || [];
+    } catch (e) {
+      console.warn('Sitemap: dynamic routes skipped —', e.message);
+    }
+  } else {
+    console.warn('Sitemap: no Supabase key available, generating static routes only.');
+  }
 
   const baseUrl = 'https://siliconedgec.com';
   const today = new Date().toISOString().split('T')[0];
