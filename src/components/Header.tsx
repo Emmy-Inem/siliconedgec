@@ -28,6 +28,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
   const location = useLocation();
   const darkHeroPages = ["/", "/for-businesses", "/certificates", "/pricing"];
   const isHeroPage = darkHeroPages.includes(location.pathname);
@@ -50,6 +51,19 @@ export function Header() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Publish the real header height so pages can offset their content by it,
+  // no matter whether the promo stripe is showing.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const apply = () =>
+      document.documentElement.style.setProperty("--header-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   // Close the mobile menu on any route change (path or query string) so
