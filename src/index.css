@@ -354,3 +354,9 @@
 :where(svg.lucide.w-3\.5) {
   stroke-width: 2.75;
 }
+
+/* Offset page content below the fixed header, whose height varies with the
+   promo stripe. --header-h is set at runtime by the Header component. */
+.pt-header {
+  padding-top: calc(var(--header-h, 56px) + 1.5rem);
+}
