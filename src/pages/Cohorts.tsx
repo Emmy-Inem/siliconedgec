@@ -50,7 +50,7 @@ export default function Cohorts() {
         description="Join private Silicon Edge learning cohorts — live sessions, peer discussions, leaderboards and shared materials with instructors."
       />
       <Header />
-      <main className="flex-1 container mx-auto px-4 pt-20 pb-16 text-center">
+      <main className="flex-1 container mx-auto px-4 pt-header pb-16 text-center">
         <h1 className="font-heading text-2xl font-bold mb-3">Sign in to view your cohorts</h1>
         <Link to="/sign-in" className="text-primary underline">Sign in</Link>
       </main>
@@ -66,7 +66,7 @@ export default function Cohorts() {
         description="Your private Silicon Edge learning cohorts — discussions, live sessions, leaderboards and shared materials with your peers and instructors."
       />
       <Header />
-      <main className="flex-1 container mx-auto px-4 pt-20 pb-10">
+      <main className="flex-1 container mx-auto px-4 pt-header pb-10">
         <h1 className="font-heading text-3xl font-bold mb-2">My Cohorts</h1>
         <p className="text-muted-foreground mb-8">Private learning groups with your peers, instructors, and live sessions.</p>
         {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : cohorts.length === 0 ? (
