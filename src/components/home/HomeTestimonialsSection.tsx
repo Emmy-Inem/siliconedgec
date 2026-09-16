@@ -140,7 +140,7 @@ function VideoTestimonialCard({ item }: { item: VideoTestimonial }) {
         </div>
 
         <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gradient-to-r from-pink-500/90 via-purple-600/90 to-indigo-600/90 text-white backdrop-blur-md shadow-sm">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary text-primary-foreground backdrop-blur-md shadow-sm">
             <Play className="h-3 w-3 fill-current" />
             Reel
           </span>

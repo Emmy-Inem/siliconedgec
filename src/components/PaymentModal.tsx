@@ -53,21 +53,22 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
 
     let isMounted = true;
     setCheckingEnrollment(true);
-    supabase
-      .from("enrollments")
-      .select("id, payment_status")
-      .eq("user_id", user.id)
-      .eq("course_id", courseId)
-      .maybeSingle()
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("enrollments")
+          .select("id, payment_status")
+          .eq("user_id", user.id)
+          .eq("course_id", courseId)
+          .maybeSingle();
         if (isMounted) {
           setAlreadyEnrolled(data?.payment_status === "paid");
           setCheckingEnrollment(false);
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) setCheckingEnrollment(false);
-      });
+      }
+    })();
 
     return () => {
       isMounted = false;

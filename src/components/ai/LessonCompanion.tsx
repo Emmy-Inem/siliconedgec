@@ -69,7 +69,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-600 text-white shadow-2xl shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-2xl shadow-primary/20 flex items-center justify-center hover:scale-105 transition-transform"
         aria-label="Open AI tutor"
       >
         <Star className="h-6 w-6" />
@@ -83,10 +83,10 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
       "inset-x-0 bottom-0 h-[85vh] rounded-t-2xl",
       "md:inset-auto md:right-4 md:bottom-4 md:top-20 md:w-[420px] md:rounded-2xl md:h-auto"
     )}>
-      <div className="flex items-center justify-between p-3 border-b border-border bg-gradient-to-r from-primary/10 via-purple-500/10 to-transparent">
+      <div className="flex items-center justify-between p-3 border-b border-border bg-muted/60">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
-            <Star className="h-4 w-4 text-white" />
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+            <Star className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
             <p className="font-heading font-semibold text-sm leading-tight">Learning Companion</p>

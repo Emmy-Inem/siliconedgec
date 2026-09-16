@@ -466,7 +466,7 @@ export default function AdminMarketingAnalytics() {
         {[
           { label: "Page Visits", value: totalVisits, icon: Eye, accent: "text-blue-500", change: percentChange, hint: "Anonymous pageview events" },
           { label: "Leads", value: totalConversions, icon: TrendingUp, accent: "text-primary", hint: "Visitors who submitted a form / converted" },
-          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-purple-500", hint: "Subset of Leads" },
+          { label: "Webinar Regs", value: webinarRegs, icon: Megaphone, accent: "text-foreground", hint: "Subset of Leads" },
           { label: "Course Enrols", value: courseRegs, icon: MousePointerClick, accent: "text-green-500", hint: "Subset of Leads" },
           { label: "Conv. Rate", value: `${conversionRate}%`, icon: Target, accent: "text-primary", hint: "Leads ÷ Visits" },
           { label: "Sources", value: sourceData.length, icon: Globe, accent: "text-orange-500", hint: "Distinct channels" },
@@ -705,7 +705,7 @@ export default function AdminMarketingAnalytics() {
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.medium}</td>
                       <td className="py-2.5 pr-4 text-muted-foreground">{row.campaign}</td>
                       <td className="py-2.5 pr-4 text-right">{row.leads}</td>
-                      <td className="py-2.5 pr-4 text-right text-purple-600">{row.webinars}</td>
+                      <td className="py-2.5 pr-4 text-right text-foreground">{row.webinars}</td>
                       <td className="py-2.5 pr-4 text-right text-green-600">{row.courses}</td>
                       <td className="py-2.5 text-right">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${row.rate > 10 ? "bg-green-500/10 text-green-600" : row.rate > 0 ? "bg-yellow-500/10 text-yellow-600" : "bg-muted text-muted-foreground"}`}>
