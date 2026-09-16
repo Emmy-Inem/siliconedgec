@@ -83,7 +83,7 @@ export const CHANNEL_BADGE: Record<Channel, string> = {
   WhatsApp:      "bg-green-500/15 text-green-600 border-green-500/30",
   "X (Twitter)": "bg-foreground/10 text-foreground border-foreground/20",
   Email:         "bg-amber-500/15 text-amber-700 border-amber-500/30",
-  Referral:      "bg-purple-500/15 text-purple-600 border-purple-500/30",
+  Referral:      "bg-muted text-foreground border-border",
   Direct:        "bg-muted text-muted-foreground border-border",
 };
 

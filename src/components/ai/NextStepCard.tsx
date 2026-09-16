@@ -22,10 +22,10 @@ export function NextStepCard({ userId }: { userId: string }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-      className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-purple-500/5 to-transparent p-5 md:p-6">
+      className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted via-background to-transparent p-5 md:p-6">
       <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
       <div className="flex items-start gap-4 relative">
-        <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary to-purple-600 text-white flex items-center justify-center shrink-0">
+        <div className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
           <Star className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">

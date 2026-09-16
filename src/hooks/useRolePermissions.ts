@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { setRolePermissionsMatrix, StaffRole } from "@/lib/admin-permissions";
+import { setRolePermissionsMatrix, StaffRole, ALL_STAFF_ROLES } from "@/lib/admin-permissions";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
@@ -10,9 +10,9 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 export function useRolePermissions() {
   const { user, adminRole } = useAuth();
-  const isStaff = Boolean(
-    user && (adminRole === "admin" || adminRole === "moderator" || adminRole === "instructor")
-  );
+  // Every staff role (including support, finance and content_editor) needs the
+  // matrix — route access for those roles lives only in role_permissions.
+  const isStaff = Boolean(user && adminRole && ALL_STAFF_ROLES.includes(adminRole));
 
   return useQuery({
     queryKey: ["role-permissions", user?.id],

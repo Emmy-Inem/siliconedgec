@@ -131,93 +131,100 @@ export function PromotedCoursesBanner() {
 
   const currentCourse = courses[currentIndex] || courses[0];
   const courseUrl = currentCourse.slug ? `/courses/${currentCourse.slug}` : `/courses/${currentCourse.id}`;
+  const headlineText = config.customHeadline
+    ? `${config.customHeadline.replace(/—/g, "-")} - `
+    : "";
+
+  const marqueeContent = (
+    <div className="flex items-center gap-2 sm:gap-3 shrink-0 px-4 sm:px-6">
+      {/* Badge: clean executive styling */}
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
+        <span>{config.badgeText || "Bootcamp Track"}</span>
+      </span>
+
+      {/* Headline / Course Link */}
+      <div className="flex items-center gap-1.5 text-slate-200 text-xs shrink-0">
+        {config.customHeadline && (
+          <span className="text-slate-400 font-normal shrink-0">{headlineText}</span>
+        )}
+        <Link
+          to={courseUrl}
+          className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 shrink-0"
+        >
+          <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span>{currentCourse.title.replace(/—/g, "-")}</span>
+        </Link>
+
+        {currentCourse.duration_hours ? (
+          <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
+            {currentCourse.duration_hours}h intensive
+          </span>
+        ) : (
+          <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
+            4 Weeks Live
+          </span>
+        )}
+      </div>
+
+      {/* CTA Link */}
+      <Link
+        to={courseUrl}
+        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-sm"
+      >
+        <span>{config.ctaText || "View Bootcamp"}</span>
+        <ArrowRight className="h-3 w-3" />
+      </Link>
+    </div>
+  );
 
   return (
-    <aside 
+    <aside
       aria-label="Promoted Course Announcement"
-      className="relative z-40 bg-slate-900 text-slate-100 border-b border-slate-800/90 text-xs py-2 px-4 select-none transition-all duration-300"
+      className="relative z-40 bg-slate-900 text-slate-100 border-b border-slate-800/90 text-xs py-2 select-none transition-all duration-300"
     >
-      <div className="container mx-auto flex items-center justify-between gap-3">
-        {/* Left / Center content: strict single row (flex-nowrap) with smooth horizontal scrolling if text overflows */}
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <div className="flex items-center gap-2 sm:gap-3 flex-nowrap overflow-x-auto scrollbar-none py-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {/* Badge: clean executive styling, no sparkles or colorful pills */}
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
-              <span>{config.badgeText || "Bootcamp Track"}</span>
-            </span>
+      {/* Edge-to-edge scrolling ticker so the full promo text is always visible */}
+      <div className="relative overflow-hidden">
+        <div className="flex w-max animate-marquee motion-reduce:[animation-play-state:paused] hover:[animation-play-state:paused]">
+          {marqueeContent}
+          {marqueeContent}
+        </div>
+      </div>
 
-            {/* Headline / Course Link */}
-            <div className="flex items-center gap-1.5 text-slate-200 text-xs shrink-0">
-              {config.customHeadline && (
-                <span className="text-slate-400 font-normal shrink-0">
-                  {config.customHeadline.replace(/—/g, "-")} -
-                </span>
-              )}
-              <Link 
-                to={courseUrl}
-                className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 shrink-0"
-              >
-                <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span>{currentCourse.title.replace(/—/g, "-")}</span>
-              </Link>
-
-              {currentCourse.duration_hours ? (
-                <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
-                  {currentCourse.duration_hours}h intensive
-                </span>
-              ) : (
-                <span className="inline-flex text-[11px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded ml-1 border border-slate-700/60 shrink-0">
-                  4 Weeks Live
-                </span>
-              )}
-            </div>
-
-            {/* CTA Link */}
-            <Link
-              to={courseUrl}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-sm"
+      {/* Right-side control cluster with gradient fade for readability */}
+      <div className="absolute right-0 top-0 bottom-0 w-28 sm:w-36 bg-gradient-to-l from-slate-900 via-slate-900/95 to-transparent pointer-events-none" />
+      <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-auto">
+        {courses.length > 1 && (
+          <div className="flex items-center gap-0.5 mr-1 text-slate-400">
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)}
+              aria-label="Previous promoted course"
+              className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
             >
-              <span>{config.ctaText || "View Bootcamp"}</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-[10px] tabular-nums text-slate-400 px-0.5">
+              {currentIndex + 1}/{courses.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((prev) => (prev + 1) % courses.length)}
+              aria-label="Next promoted course"
+              className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
-        </div>
+        )}
 
-        {/* Right Controls: Carousel arrows (if > 1) & Dismiss Button */}
-        <div className="flex items-center gap-1 shrink-0">
-          {courses.length > 1 && (
-            <div className="flex items-center gap-0.5 mr-1 text-slate-400">
-              <button
-                type="button"
-                onClick={() => setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)}
-                aria-label="Previous promoted course"
-                className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <span className="text-[10px] tabular-nums text-slate-400 px-0.5">
-                {currentIndex + 1}/{courses.length}
-              </span>
-              <button
-                type="button"
-                onClick={() => setCurrentIndex((prev) => (prev + 1) % courses.length)}
-                aria-label="Next promoted course"
-                className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleDismiss}
-            aria-label="Dismiss announcement banner"
-            className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          aria-label="Dismiss announcement banner"
+          className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
       </div>
     </aside>
   );
