@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, PlayCircle, Loader2, Paperclip, FileQuestion, ClipboardList, Star, FileText, Video, Sparkles, GripVertical } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
 import {

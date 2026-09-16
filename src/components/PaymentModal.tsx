@@ -59,15 +59,17 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       .eq("user_id", user.id)
       .eq("course_id", courseId)
       .maybeSingle()
-      .then(({ data }) => {
-        if (isMounted) {
-          setAlreadyEnrolled(data?.payment_status === "paid");
-          setCheckingEnrollment(false);
+      .then(
+        ({ data }) => {
+          if (isMounted) {
+            setAlreadyEnrolled(data?.payment_status === "paid");
+            setCheckingEnrollment(false);
+          }
+        },
+        () => {
+          if (isMounted) setCheckingEnrollment(false);
         }
-      })
-      .catch(() => {
-        if (isMounted) setCheckingEnrollment(false);
-      });
+      );
 
     return () => {
       isMounted = false;

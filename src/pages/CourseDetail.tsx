@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart,
   Lock, Award, FileText, MonitorPlay, Bookmark, BookmarkCheck,
-  CheckCircle2,
+  CheckCircle2, Infinity as InfinityIcon,
 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
 import { motion } from "framer-motion";
@@ -824,7 +824,7 @@ export default function CourseDetail() {
                       Watch Offline
                     </li>
                     <li className="flex items-center gap-3">
-                      <Infinity className="h-4 w-4 text-primary flex-shrink-0" />
+                      <InfinityIcon className="h-4 w-4 text-primary flex-shrink-0" />
                       Lifetime access
                     </li>
                   </ul>
