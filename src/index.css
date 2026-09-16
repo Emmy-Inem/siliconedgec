@@ -28,24 +28,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 262 83% 58%;
+    --primary: 222 47% 16%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 262 40% 96%;
-    --secondary-foreground: 262 60% 22%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 30% 18%;
 
     --muted: 220 15% 95%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 258 90% 66%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 43 96% 48%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 90%;
     --input: 220 15% 90%;
-    --ring: 262 83% 58%;
+    --ring: 222 47% 24%;
 
     --radius: 0.75rem;
 
@@ -56,18 +56,18 @@
     --hero-foreground: 0 0% 98%;
     --hero-muted: 250 15% 65%;
 
-    --purple-glow: 262 83% 65%;
+    --purple-glow: 220 18% 42%;
     --navy: 250 40% 8%;
     --navy-light: 250 30% 14%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary: 222 47% 16%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 262 40% 96%;
-    --sidebar-accent-foreground: 262 60% 22%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 222 30% 18%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-ring: 222 47% 24%;
   }
 
   .dark {
@@ -77,29 +77,29 @@
     --card-foreground: 0 0% 98%;
     --popover: 250 35% 9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 262 83% 62%;
+    --primary: 210 20% 92%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 262 25% 14%;
+    --secondary: 220 18% 14%;
     --secondary-foreground: 0 0% 98%;
     --muted: 250 20% 13%;
     --muted-foreground: 250 12% 55%;
-    --accent: 258 90% 68%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 43 96% 52%;
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
     --border: 250 20% 16%;
     --input: 250 20% 16%;
-    --ring: 262 83% 62%;
+    --ring: 210 20% 80%;
     --gold: 45 100% 51%;
     --gold-foreground: 0 0% 10%;
     --sidebar-background: 250 40% 5%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 262 83% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 250 20% 13%;
+    --sidebar-primary: 210 20% 92%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 220 18% 14%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 250 20% 16%;
-    --sidebar-ring: 262 83% 62%;
+    --sidebar-ring: 210 20% 80%;
   }
 }
 
@@ -121,7 +121,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+    color: hsl(var(--foreground));
   }
   .text-gold {
     color: hsl(var(--gold));
@@ -145,7 +145,7 @@
     background-color: hsl(var(--navy-light));
   }
   .glow-purple {
-    box-shadow: 0 0 40px -8px hsl(var(--purple-glow) / 0.35);
+    box-shadow: 0 16px 40px -24px hsl(var(--foreground) / 0.22);
   }
   .assignment-dot-pending {
     background-color: hsl(var(--primary));
@@ -161,22 +161,12 @@
     -webkit-backdrop-filter: blur(16px);
   }
   .shimmer-btn {
-    background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
-    background-image: linear-gradient(
-      110deg,
-      hsl(var(--primary)) 0%,
-      hsl(var(--primary)) 40%,
-      hsl(var(--accent)) 50%,
-      hsl(var(--primary)) 60%,
-      hsl(var(--primary)) 100%
-    );
+    background-color: hsl(var(--primary));
   }
   .gradient-mesh {
     background-image:
-      radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 80%, hsl(var(--gold) / 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, hsl(var(--foreground) / 0.035) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(var(--gold) / 0.035) 0%, transparent 50%);
   }
   @keyframes icon-pulse-ring {
     0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
@@ -316,7 +306,7 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: conic-gradient(from var(--angle, 0deg), hsl(var(--primary) / 0.6), hsl(var(--accent) / 0.4), hsl(var(--gold) / 0.4), hsl(var(--primary) / 0.6));
+    background: conic-gradient(from var(--angle, 0deg), hsl(var(--foreground) / 0.32), hsl(var(--gold) / 0.4), hsl(var(--border)), hsl(var(--foreground) / 0.32));
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
