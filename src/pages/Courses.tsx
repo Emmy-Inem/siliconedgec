@@ -38,11 +38,11 @@ const COURSE_FAQS = [
 
 const HERO_TRACKS = [
   { icon: Cloud,        label: "Cloud Engineering",  tint: "from-sky-500/20 to-blue-500/10" },
-  { icon: Cpu,          label: "AI & Machine Learning", tint: "from-violet-500/20 to-fuchsia-500/10" },
+  { icon: Cpu,          label: "AI & Machine Learning", tint: "from-muted to-muted/40" },
   { icon: Code2,        label: "Web Development",    tint: "from-emerald-500/20 to-teal-500/10" },
   { icon: Shield,       label: "Cybersecurity",      tint: "from-rose-500/20 to-orange-500/10" },
   { icon: Rocket,       label: "DevOps",             tint: "from-amber-500/20 to-yellow-500/10" },
-  { icon: GraduationCap,label: "Data Science",       tint: "from-indigo-500/20 to-purple-500/10" },
+  { icon: GraduationCap,label: "Data Science",       tint: "from-muted to-muted/40" },
 ];
 
 const AZURE_BOOTCAMP_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
