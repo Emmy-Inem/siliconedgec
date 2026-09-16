@@ -21,7 +21,7 @@ const ROLE_BADGE: Record<string, { icon: typeof Shield; class: string; label: st
   instructor: { icon: GraduationCap, label: "Instructor", class: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
   support: { icon: Headset, label: "Support", class: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400" },
   finance: { icon: Wallet, label: "Finance", class: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
-  content_editor: { icon: PencilLine, label: "Content Editor", class: "bg-muted text-foreground" },
+  content_editor: { icon: PencilLine, label: "Content Editor", class: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
   user: { icon: User, label: "User", class: "bg-muted text-muted-foreground" },
 };
 

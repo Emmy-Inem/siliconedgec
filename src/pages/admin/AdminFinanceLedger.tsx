@@ -68,7 +68,7 @@ export default function AdminFinanceLedger() {
     { label: "Net revenue", value: data.netRevenue, icon: TrendingUp, color: "text-primary" },
     { label: "Refunds processed", value: data.refundedAmount, icon: ArrowDownRight, color: "text-red-400" },
     { label: "VAT (est. 7.5%)", value: data.vatEstimate, icon: Receipt, color: "text-amber-500" },
-    { label: "Influencer commission", value: data.commission, icon: BadgePercent, color: "text-foreground" },
+    { label: "Influencer commission", value: data.commission, icon: BadgePercent, color: "text-purple-600 dark:text-purple-400" },
     { label: "Payouts paid", value: data.payoutsPaid, icon: Wallet, color: "text-blue-500" },
   ];
 

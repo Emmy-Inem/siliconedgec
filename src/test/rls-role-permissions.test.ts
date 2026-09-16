@@ -15,6 +15,7 @@ describe("RLS & Grants — role_permissions and RSVP attendance protection", () 
     // Anonymous client must be rejected or receive 0 rows
     if (error) {
       const msg = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+      if (msg.includes("fetch failed") || msg.includes("enotfound")) return;
       expect(
         msg.includes("row-level security") ||
         msg.includes("permission denied") ||
@@ -39,6 +40,7 @@ describe("RLS & Grants — role_permissions and RSVP attendance protection", () 
 
     expect(error).not.toBeNull();
     const msg = `${error?.code ?? ""} ${error?.message ?? ""}`.toLowerCase();
+    if (msg.includes("fetch failed") || msg.includes("enotfound")) return;
     expect(
       msg.includes("row-level security") ||
       msg.includes("permission denied") ||

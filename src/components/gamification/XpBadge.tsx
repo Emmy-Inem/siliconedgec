@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 const BADGES = [
   { points: 0, label: "Newcomer", color: "from-slate-500 to-slate-700" },
   { points: 100, label: "Apprentice", color: "from-cyan-500 to-blue-600" },
-  { points: 500, label: "Practitioner", color: "from-slate-600 to-slate-800" },
+  { points: 500, label: "Practitioner", color: "from-purple-600 to-indigo-700" },
   { points: 1000, label: "Specialist", color: "from-amber-500 to-rose-500" },
   { points: 2500, label: "Master", color: "from-emerald-500 to-teal-600" },
 ];

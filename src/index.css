@@ -28,24 +28,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 222 47% 16%;
+    --primary: 264 58% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 30% 18%;
+    --secondary: 260 25% 96%;
+    --secondary-foreground: 264 55% 24%;
 
     --muted: 220 15% 95%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 43 96% 48%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 268 75% 58%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 90%;
     --input: 220 15% 90%;
-    --ring: 222 47% 24%;
+    --ring: 264 58% 42%;
 
     --radius: 0.75rem;
 
@@ -56,50 +56,50 @@
     --hero-foreground: 0 0% 98%;
     --hero-muted: 250 15% 65%;
 
-    --purple-glow: 220 18% 42%;
+    --purple-glow: 268 70% 55%;
     --navy: 250 40% 8%;
     --navy-light: 250 30% 14%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 222 47% 16%;
+    --sidebar-primary: 264 58% 30%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 222 30% 18%;
+    --sidebar-accent: 260 25% 94%;
+    --sidebar-accent-foreground: 264 55% 24%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 222 47% 24%;
+    --sidebar-ring: 264 58% 42%;
   }
 
   .dark {
-    --background: 250 40% 5%;
+    --background: 255 35% 6%;
     --foreground: 0 0% 98%;
-    --card: 250 35% 9%;
+    --card: 255 30% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 250 35% 9%;
+    --popover: 255 30% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 210 20% 92%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 18% 14%;
+    --primary: 265 80% 70%;
+    --primary-foreground: 265 60% 12%;
+    --secondary: 260 25% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 250 20% 13%;
-    --muted-foreground: 250 12% 55%;
-    --accent: 43 96% 52%;
-    --accent-foreground: 222 47% 11%;
+    --muted: 255 20% 14%;
+    --muted-foreground: 250 12% 60%;
+    --accent: 268 80% 65%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 250 20% 16%;
-    --input: 250 20% 16%;
-    --ring: 210 20% 80%;
+    --border: 255 20% 18%;
+    --input: 255 20% 18%;
+    --ring: 265 75% 65%;
     --gold: 45 100% 51%;
     --gold-foreground: 0 0% 10%;
-    --sidebar-background: 250 40% 5%;
+    --sidebar-background: 255 35% 6%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 210 20% 92%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 220 18% 14%;
+    --sidebar-primary: 265 80% 70%;
+    --sidebar-primary-foreground: 265 60% 12%;
+    --sidebar-accent: 260 25% 15%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 250 20% 16%;
-    --sidebar-ring: 210 20% 80%;
+    --sidebar-border: 255 20% 18%;
+    --sidebar-ring: 265 75% 65%;
   }
 }
 
@@ -121,7 +121,16 @@
 
 @layer utilities {
   .text-gradient {
-    color: hsl(var(--foreground));
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 65%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .dark .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 65%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   .text-gold {
     color: hsl(var(--gold));
@@ -145,7 +154,7 @@
     background-color: hsl(var(--navy-light));
   }
   .glow-purple {
-    box-shadow: 0 16px 40px -24px hsl(var(--foreground) / 0.22);
+    box-shadow: 0 16px 40px -20px hsl(var(--purple-glow) / 0.28);
   }
   .assignment-dot-pending {
     background-color: hsl(var(--primary));
@@ -161,12 +170,21 @@
     -webkit-backdrop-filter: blur(16px);
   }
   .shimmer-btn {
-    background-color: hsl(var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    background-image: linear-gradient(
+      110deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary)) 40%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--primary)) 60%,
+      hsl(var(--primary)) 100%
+    );
   }
   .gradient-mesh {
     background-image:
-      radial-gradient(ellipse at 20% 50%, hsl(var(--foreground) / 0.035) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(var(--gold) / 0.035) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, hsl(var(--accent) / 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(var(--gold) / 0.04) 0%, transparent 50%);
   }
   @keyframes icon-pulse-ring {
     0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35); }
@@ -306,7 +324,7 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: conic-gradient(from var(--angle, 0deg), hsl(var(--foreground) / 0.32), hsl(var(--gold) / 0.4), hsl(var(--border)), hsl(var(--foreground) / 0.32));
+    background: conic-gradient(from var(--angle, 0deg), hsl(var(--primary) / 0.5), hsl(var(--accent) / 0.4), hsl(var(--gold) / 0.35), hsl(var(--primary) / 0.5));
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
