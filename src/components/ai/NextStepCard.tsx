@@ -25,9 +25,7 @@ export function NextStepCard({ userId }: { userId: string }) {
       className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted via-background to-transparent p-5 md:p-6">
       <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
       <div className="flex items-start gap-4 relative">
-        <div className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-          <Star className="h-5 w-5" />
-        </div>
+        <Star className="h-5 w-5 shrink-0 text-foreground" />
         <div className="flex-1 min-w-0">
           <p className="text-[11px] uppercase tracking-[0.18em] text-primary mb-1 font-semibold">AI Coach · Your next step</p>
           {loading ? (

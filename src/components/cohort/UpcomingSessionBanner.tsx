@@ -62,9 +62,7 @@ export default function UpcomingSessionBanner({ cohortId, userId }: { cohortId: 
 
   return (
     <Card className="p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3 bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
-      <div className="h-10 w-10 rounded-lg bg-primary/15 text-primary grid place-items-center shrink-0">
-        <Calendar className="h-5 w-5" />
-      </div>
+      <Calendar className="h-5 w-5 shrink-0 text-foreground" />
       <div className="min-w-0 flex-1">
         <div className="text-[11px] uppercase tracking-wider text-primary font-medium">
           {isLive ? "Live session" : "Next live session"} · {countdown(session.scheduled_at)}

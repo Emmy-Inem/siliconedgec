@@ -176,7 +176,7 @@ export function LessonDiscussion({
         <div className="rounded-xl border border-border/60 bg-card p-3">
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-full bg-primary/10 text-primary text-[11px] font-semibold flex items-center justify-center">
+              <div className="h-7 w-7 rounded-full bg-muted text-foreground text-[11px] font-semibold flex items-center justify-center">
                 {(c.author_name ?? "S").slice(0, 1).toUpperCase()}
               </div>
               <div>

@@ -220,7 +220,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
 
             <ul className="space-y-2.5 pt-2 text-xs">
               <li className="flex items-start gap-2.5">
-                <MapPin className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                <MapPin className="h-3.5 w-3.5 text-hero-muted mt-0.5 shrink-0" />
                 <span className="leading-snug text-hero-muted/85">
                   {settings?.contact_address && settings.contact_address !== "UPDATE IN ADMIN SETTINGS"
                     ? settings.contact_address
@@ -228,7 +228,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+                <Mail className="h-3.5 w-3.5 text-hero-muted shrink-0" />
                 <a
                   href={`mailto:${settings?.contact_email || "info@siliconedgec.com"}`}
                   className="text-hero-muted/85 hover:text-white transition-colors"
@@ -237,7 +237,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                <Phone className="h-3.5 w-3.5 text-hero-muted shrink-0" />
                 <a
                   href={`tel:${settings?.contact_phone && settings.contact_phone !== "UPDATE IN ADMIN SETTINGS" ? settings.contact_phone : "+447741247592"}`}
                   className="text-hero-muted/85 hover:text-white transition-colors"

@@ -409,7 +409,7 @@ export default function CohortDiscussion({
                           <button
                             key={g.emoji}
                             onClick={() => react(p.id, g.emoji)}
-                            className={`text-[11px] rounded-full border px-1.5 py-0.5 transition-colors ${g.mine ? "border-primary bg-primary/10" : "border-border bg-muted/50 hover:bg-muted"}`}
+                            className={`text-[11px] rounded-full border px-1.5 py-0.5 transition-colors ${g.mine ? "border-foreground/30 bg-muted font-medium" : "border-border bg-background hover:bg-muted"}`}
                           >
                             {g.emoji} {g.count}
                           </button>

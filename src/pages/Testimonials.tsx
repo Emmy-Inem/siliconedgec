@@ -94,7 +94,7 @@ export default function Testimonials() {
                   {t.avatar_url ? (
                     <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-10 h-10 rounded-full object-cover" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-medium text-primary">{t.name.charAt(0)}</div>
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-medium text-foreground">{t.name.charAt(0)}</div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{t.name}</p>

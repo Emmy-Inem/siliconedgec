@@ -241,9 +241,7 @@ export default function Affiliates() {
           {BENEFITS.map(({ icon: Icon, title, body }) => (
             <Card key={title} className="border-border/60">
               <CardHeader className="space-y-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-5 w-5 text-primary" />
-                </div>
+                <Icon className="h-6 w-6 text-foreground mb-1" />
                 <CardTitle className="text-lg font-heading">{title}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">{body}</CardContent>
@@ -266,7 +264,7 @@ export default function Affiliates() {
                       <span className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                         {i + 1}
                       </span>
-                      <Icon className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-foreground" />
                     </div>
                     <CardTitle className="text-base font-heading">{title}</CardTitle>
                   </CardHeader>
@@ -326,9 +324,9 @@ export default function Affiliates() {
                 </table>
               </div>
               <ul className="text-sm text-muted-foreground space-y-2">
-                <li className="flex gap-2"><Link2 className="h-4 w-4 text-primary shrink-0 mt-0.5" /> 30-day attribution window on every referral link.</li>
-                <li className="flex gap-2"><Wallet className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Payouts run monthly, once your confirmed balance passes the minimum threshold.</li>
-                <li className="flex gap-2"><LineChart className="h-4 w-4 text-primary shrink-0 mt-0.5" /> Commission confirms as soon as the learner's payment clears.</li>
+                <li className="flex gap-2"><Link2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" /> 30-day attribution window on every referral link.</li>
+                <li className="flex gap-2"><Wallet className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" /> Payouts run monthly, once your confirmed balance passes the minimum threshold.</li>
+                <li className="flex gap-2"><LineChart className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" /> Commission confirms as soon as the learner's payment clears.</li>
               </ul>
             </div>
 
@@ -394,7 +392,7 @@ export default function Affiliates() {
             <CardContent>
               {done ? (
                 <div className="text-center py-10 space-y-3">
-                  <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
+                  <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
                   <h3 className="font-heading text-xl font-semibold">Application received</h3>
                   <p className="text-sm text-muted-foreground">
                     Once approved you'll get a referral link for each course you chose, plus access to your

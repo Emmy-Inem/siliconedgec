@@ -290,7 +290,7 @@ function Tile({
         }`}
       >
         <div className="flex items-center justify-between mb-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+          <div className="text-foreground">
             {icon}
           </div>
           <div className="text-2xl font-heading font-bold">{value}{suffix}</div>

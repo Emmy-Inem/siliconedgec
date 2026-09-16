@@ -54,7 +54,7 @@ export default function Instructors() {
                   {i.avatar_url ? (
                     <img src={i.avatar_url} alt={i.name} loading="lazy" className="w-16 h-16 rounded-full object-cover" />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center font-heading text-xl text-primary">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center font-heading text-xl text-foreground">
                       {i.name.charAt(0)}
                     </div>
                   )}

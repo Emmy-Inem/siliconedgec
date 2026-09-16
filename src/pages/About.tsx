@@ -99,9 +99,7 @@ export default function About() {
                 transition={{ delay: i * 0.06 }}
                 className="text-center"
               >
-                <div className="mx-auto mb-2 h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                </div>
+                <Icon className="mx-auto mb-2 h-6 w-6 text-foreground" aria-hidden="true" />
                 <p className="font-heading text-2xl sm:text-3xl font-bold">{value}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">{label}</p>
               </motion.div>
@@ -134,7 +132,7 @@ export default function About() {
                   "Career services from resume to offer letter",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -177,9 +175,7 @@ export default function About() {
                   transition={{ delay: Math.min(i, 4) * 0.06 }}
                   className="rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/60 hover:shadow-lg transition-all"
                 >
-                  <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-purple-600 text-primary-foreground flex items-center justify-center mb-4">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
+                  <Icon className="h-6 w-6 text-foreground mb-3" aria-hidden="true" />
                   <h3 className="font-heading text-lg font-bold mb-2">{title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
                 </motion.div>
@@ -206,7 +202,7 @@ export default function About() {
                 transition={{ delay: Math.min(i, 4) * 0.06 }}
                 className="flex gap-4"
               >
-                <div className="shrink-0 h-9 w-9 rounded-full bg-primary/10 border border-primary/20 text-primary font-heading font-bold flex items-center justify-center text-sm">
+                <div className="shrink-0 h-9 w-9 rounded-full bg-muted border border-border text-foreground font-heading font-bold flex items-center justify-center text-sm">
                   {i + 1}
                 </div>
                 <div>

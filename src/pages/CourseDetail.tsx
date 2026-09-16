@@ -658,7 +658,7 @@ export default function CourseDetail() {
                           <ul className="space-y-2">
                             {course.learning_outcomes.map((outcome, i) => (
                               <li key={i} className="flex items-start gap-2">
-                                <span className="text-primary mt-0.5">✓</span>
+                                <span className="text-emerald-500 mt-0.5">✓</span>
                                 <span>{outcome}</span>
                               </li>
                             ))}
@@ -808,23 +808,23 @@ export default function CourseDetail() {
                   ) : (
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                      <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       {hours > 0 ? `${hours} hours` : ""}{minutes > 0 ? ` ${minutes} minutes` : ""} video
                     </li>
                     <li className="flex items-center gap-3">
-                      <Award className="h-4 w-4 text-primary flex-shrink-0" />
+                      <Award className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       Certificate
                     </li>
                     <li className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       {course.modules.length > 0 ? course.modules.length : 12} Article{course.modules.length !== 1 ? "s" : ""}
                     </li>
                     <li className="flex items-center gap-3">
-                      <MonitorPlay className="h-4 w-4 text-primary flex-shrink-0" />
+                      <MonitorPlay className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       Watch Offline
                     </li>
                     <li className="flex items-center gap-3">
-                      <InfinityIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                      <InfinityIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       Lifetime access
                     </li>
                   </ul>

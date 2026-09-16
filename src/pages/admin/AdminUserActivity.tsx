@@ -194,9 +194,7 @@ export default function AdminUserActivity() {
                     transition={{ delay: Math.min(i * 0.01, 0.3) }}
                     className="flex items-start gap-4 px-5 py-3 hover:bg-muted/30"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
+                    <Icon className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline" className="text-[10px] capitalize">{a.action.replace(/_/g, " ")}</Badge>

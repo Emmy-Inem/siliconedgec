@@ -334,9 +334,7 @@ export default function ForBusinesses() {
                 transition={{ duration: 0.4, delay: i * 0.08 }}
                 className="text-center md:text-left rounded-2xl border border-border/60 bg-card/40 p-5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20 flex items-center justify-center mb-4 mx-auto md:mx-0">
-                  <item.icon className="h-6 w-6 text-primary-foreground" />
-                </div>
+                <item.icon className="h-7 w-7 text-foreground mb-4 mx-auto md:mx-0" />
                 <h2 className="font-heading font-semibold text-base mb-2">{item.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
@@ -409,9 +407,7 @@ export default function ForBusinesses() {
                 className="rounded-xl border p-6 text-center hover:border-primary/40 transition-colors"
                 style={{ borderColor: "hsl(var(--navy-light))", background: "hsl(var(--navy-light))" }}
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center mx-auto mb-3">
-                  <cat.icon className="h-5 w-5 text-primary" />
-                </div>
+                <cat.icon className="h-6 w-6 text-hero mx-auto mb-3" />
                 <h3 className="font-heading font-semibold text-sm text-hero mb-1">{cat.title}</h3>
                 <p className="text-hero-muted text-xs">{cat.desc}</p>
               </motion.div>
@@ -452,9 +448,7 @@ export default function ForBusinesses() {
                     Most popular
                   </span>
                 )}
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-                  <p.icon className="h-5 w-5 text-primary-foreground" />
-                </div>
+                <p.icon className="h-6 w-6 text-foreground mb-4" />
                 <h3 className="font-heading font-bold text-lg mb-1">{p.name}</h3>
                 <p className="text-xs text-primary font-medium mb-3">{p.size}</p>
                 <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{p.desc}</p>

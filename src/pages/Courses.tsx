@@ -384,9 +384,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                       key={t.label}
                       className="group relative rounded-xl border border-border/70 bg-card/60 p-4 transition-all duration-200 hover:border-primary/40 hover:bg-card hover:shadow-sm"
                     >
-                      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${t.tint} flex items-center justify-center mb-3 text-primary`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
+                      <Icon className="h-6 w-6 text-foreground mb-3" />
                       <p className="text-xs font-semibold text-foreground leading-snug">{t.label}</p>
                     </div>
                   );

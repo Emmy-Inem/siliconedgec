@@ -169,10 +169,7 @@ export default function Certificates() {
                 className="relative bg-card rounded-2xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all group overflow-hidden"
               >
                 <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary/5 blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors" />
-                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/30 flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-transform">
-                  <item.icon className="h-7 w-7 text-primary-foreground" />
-                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-gold ring-2 ring-background" />
-                </div>
+                <item.icon className="h-8 w-8 text-foreground mx-auto mb-4" />
                 <h3 className="font-heading font-semibold text-lg mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
@@ -368,22 +365,20 @@ function CertificateCardWithDownload({
         className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 hover:border-primary/30 hover:shadow-lg transition-all"
       >
         <div className="flex items-start gap-3 sm:gap-4 w-full sm:w-auto sm:flex-1 min-w-0">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Award className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-          </div>
+          <Award className="h-8 w-8 text-foreground shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <h3 className="font-heading font-semibold text-sm leading-snug break-words">{courseName}</h3>
             <p className="text-muted-foreground text-xs mt-1">Issued {date}</p>
             <p className="text-muted-foreground text-xs font-mono truncate">{certId}</p>
             {verifyUrl && (
               <Link to={`/verify/${certId}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
-                <Shield className="h-3 w-3" /> Verify
+                <Shield className="h-3 w-3 text-muted-foreground" /> Verify
               </Link>
             )}
           </div>
         </div>
         <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
-          <div className="flex items-center gap-1 text-xs text-primary font-medium">
+          <div className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
             <CheckCircle2 className="h-4 w-4" />
             Verified
           </div>

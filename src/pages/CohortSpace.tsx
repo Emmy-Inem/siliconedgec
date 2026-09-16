@@ -578,9 +578,7 @@ function Materials({ cohortId, userId, isStaff }: { cohortId: string; userId: st
         <div className="grid gap-2">
           {items.map((m) => (
             <Card key={m.id} className="p-3 flex items-start gap-3">
-              <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                {m.kind === "file" ? <FileText className="h-4 w-4" /> : m.kind === "link" ? <LinkIcon className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
-              </div>
+              {m.kind === "file" ? <FileText className="h-5 w-5 text-foreground shrink-0 mt-0.5" /> : m.kind === "link" ? <LinkIcon className="h-5 w-5 text-foreground shrink-0 mt-0.5" /> : <MessageSquare className="h-5 w-5 text-foreground shrink-0 mt-0.5" />}
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-sm truncate">{m.title}</div>
                 {m.description && <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">{m.description}</p>}

@@ -115,11 +115,9 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
       return (
         <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card p-4">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-              <Users className="h-5 w-5" />
-            </div>
+            <Users className="h-5 w-5 shrink-0 text-foreground" />
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-primary font-semibold">Your cohorts</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Your cohorts</div>
               <div className="font-heading font-semibold text-sm mt-0.5 truncate">{first.name}</div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 You're a member of {otherCohorts.length} other cohort{otherCohorts.length > 1 ? "s" : ""}.
@@ -163,9 +161,7 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
       <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card p-4 hover:border-primary/60 hover:shadow-md transition-all">
         <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
         <div className="relative flex items-start gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-            <Users className="h-5 w-5" />
-          </div>
+          <Users className="h-5 w-5 shrink-0 text-foreground" />
           <div className="min-w-0 flex-1">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
               Cohort access
@@ -219,7 +215,7 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Role: {c.role}</div>
                   </div>
                   {active ? (
-                    <Check className="h-4 w-4 text-primary shrink-0" />
+                    <Check className="h-4 w-4 text-emerald-500 shrink-0" />
                   ) : <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                 </Link>
               );

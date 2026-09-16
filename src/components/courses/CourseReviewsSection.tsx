@@ -101,7 +101,7 @@ export function CourseReviewsSection({
           {reviews.map((review) => (
             <div key={review.id} className="bg-card rounded-xl border border-border p-4 space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
                   {review.profile?.avatar_url ? (
                     <img
                       src={review.profile.avatar_url}
@@ -110,7 +110,7 @@ export function CourseReviewsSection({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-xs font-bold text-primary">
+                    <span className="text-xs font-bold text-foreground">
                       {(review.profile?.full_name ?? "U").charAt(0).toUpperCase()}
                     </span>
                   )}

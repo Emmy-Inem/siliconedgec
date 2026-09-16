@@ -881,13 +881,11 @@ export default function Index() {
                 animate={reduce ? {} : { y: [0, 6, 0] }}
                 className="absolute bottom-6 -left-4 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[200px]"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center">
-                  <BriefcaseBusiness className="h-4 w-4 text-primary" />
-                </div>
+                <BriefcaseBusiness className="h-6 w-6 text-foreground shrink-0" />
                 <div>
                   <p className="text-[10px] text-muted-foreground">Just now</p>
                   <p className="text-xs font-semibold flex items-center gap-1">
-                    Job offer received <PartyPopper className="h-3 w-3 text-primary" />
+                    Job offer received <PartyPopper className="h-3.5 w-3.5 text-amber-500" />
                   </p>
                 </div>
               </motion.div>

@@ -75,8 +75,8 @@ function TestimonialCard({ t }: { t: TestimonialItem }) {
         {t.avatar_url ? (
           <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-9 h-9 rounded-full object-cover" />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="font-heading font-bold text-primary text-xs">
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+            <span className="font-heading font-bold text-foreground text-xs">
               {t.name.split(" ").map((n) => n[0]).join("")}
             </span>
           </div>

@@ -84,9 +84,7 @@ export function GraduateOutcomes() {
                 className="rounded-2xl border border-border/70 bg-card/60 p-6 flex flex-col justify-between hover:border-primary/40 transition-colors"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mb-4">
-                    <Icon className="h-5 w-5" />
-                  </div>
+                  <Icon className="h-5 w-5 text-foreground mb-4" />
                   <h3 className="font-heading font-bold text-base text-foreground mb-2">
                     {pillar.title}
                   </h3>

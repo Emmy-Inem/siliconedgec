@@ -43,9 +43,7 @@ export default function Refer() {
       <Header />
       <main className="container mx-auto px-5 sm:px-6 pt-header pb-12 max-w-2xl">
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Gift className="h-7 w-7 text-primary" />
-          </div>
+          <Gift className="h-10 w-10 text-foreground mx-auto mb-4" />
           <h1 className="font-heading text-3xl font-bold mb-2">Refer & Earn</h1>
           <p className="text-muted-foreground mb-6">Share your unique link. We track every enrollment that comes from you.</p>
           <div className="flex items-center gap-2 bg-muted rounded-lg p-2 mb-4">

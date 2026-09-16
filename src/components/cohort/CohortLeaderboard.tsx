@@ -42,7 +42,7 @@ export default function CohortLeaderboard({ cohortId, userId }: { cohortId: stri
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-primary" />
+          <Trophy className="h-4 w-4 text-amber-500" />
           <h2 className="font-heading font-semibold text-sm">Cohort leaderboard</h2>
         </div>
         <div className="ml-auto flex gap-1">
@@ -59,8 +59,8 @@ export default function CohortLeaderboard({ cohortId, userId }: { cohortId: stri
       </div>
 
       {me >= 0 && (
-        <Card className="p-3 flex items-center gap-3 bg-primary/5 border-primary/20">
-          <Flame className="h-4 w-4 text-primary" />
+        <Card className="p-3 flex items-center gap-3 bg-muted/40 border-border">
+          <Flame className="h-4 w-4 text-orange-500" />
           <p className="text-sm">
             You're <span className="font-semibold">#{me + 1}</span> of {sorted.length} this {mode === "weekly" ? "week" : "cohort"} —
             {" "}{mode === "weekly" ? sorted[me].weekly_xp : sorted[me].xp} XP.

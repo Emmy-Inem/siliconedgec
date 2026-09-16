@@ -29,9 +29,7 @@ export function CourseAccessGate({ course, children }: Props) {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-10 text-center space-y-4 max-w-xl mx-auto">
-      <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
-        <Lock className="h-5 w-5 text-primary" />
-      </div>
+      <Lock className="h-8 w-8 text-foreground mx-auto" />
       <div className="space-y-2">
         <h2 className="font-heading text-xl font-bold">
           {cohortOnly ? "Cohort access required" : "Enroll to unlock"}

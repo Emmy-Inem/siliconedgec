@@ -81,9 +81,7 @@ export default function CourseQuizzes() {
           <Link to={courseHref(course)}><ChevronLeft className="h-4 w-4 mr-1" /> Back to course</Link>
         </Button>
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <ClipboardCheck className="h-5 w-5 text-primary" />
-          </div>
+          <ClipboardCheck className="h-7 w-7 text-foreground shrink-0" />
           <div>
             <h1 className="font-heading text-2xl font-bold">Quizzes</h1>
             <p className="text-sm text-muted-foreground">{course?.title ?? "Loading course…"}</p>

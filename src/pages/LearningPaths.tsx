@@ -119,9 +119,7 @@ export default function LearningPaths() {
                     to={`/paths/${p.id}`}
                     className="flex flex-col h-full group rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/60 hover:shadow-lg transition-all"
                   >
-                    <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-purple-600 text-primary-foreground flex items-center justify-center mb-4">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
-                    </div>
+                    <Icon className="h-6 w-6 text-foreground mb-3" aria-hidden="true" />
                     <h2 className="font-heading text-lg font-bold mb-2">{p.title}</h2>
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{p.description}</p>
 

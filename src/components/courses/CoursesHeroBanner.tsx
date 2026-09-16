@@ -108,15 +108,15 @@ export function CoursesHeroBanner() {
           {/* Highlights */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
             <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>Live Cloud Consoles</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-              <Calendar className="h-4 w-4 text-primary shrink-0" />
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>4 Weeks Live Cohort</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+              <ShieldCheck className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>Verified Certificate</span>
             </div>
           </div>
@@ -154,7 +154,7 @@ export function CoursesHeroBanner() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
+                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
                   <GraduationCap className="h-12 w-12" />
                 </div>
               )}
@@ -165,11 +165,11 @@ export function CoursesHeroBanner() {
 
             <div className="p-3 pt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 mt-2">
               <span className="flex items-center gap-1.5 font-medium text-foreground">
-                <Clock className="h-3.5 w-3.5 text-primary" />
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>4-Week Intensive Track</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-primary" />
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>Beginner to Pro</span>
               </span>
             </div>

@@ -113,11 +113,11 @@ export default function InstructorDetail() {
             transition={{ duration: 0.5 }}
             className="flex flex-col md:flex-row gap-6 items-start"
           >
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0 border-4 border-background shadow-xl">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-muted flex items-center justify-center overflow-hidden flex-shrink-0 border-4 border-background shadow-xl">
               {instructor.avatar_url ? (
                 <img src={instructor.avatar_url} alt={instructor.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="font-heading font-bold text-primary text-4xl">
+                <span className="font-heading font-bold text-foreground text-4xl">
                   {instructor.name.split(" ").map((n: string) => n[0]).join("")}
                 </span>
               )}

@@ -22,9 +22,7 @@ const Section = ({
 }) => (
   <Card className="p-6 sm:p-8 border-border/60">
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-        <Icon className="h-5 w-5" />
-      </div>
+      <Icon className="h-5 w-5 text-foreground" />
       <h2 className="font-heading text-xl sm:text-2xl font-semibold text-foreground">{title}</h2>
     </div>
     <div className="text-sm sm:text-base text-muted-foreground leading-relaxed space-y-3">

@@ -85,9 +85,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
     )}>
       <div className="flex items-center justify-between p-3 border-b border-border bg-muted/60">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Star className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <Star className="h-4 w-4 shrink-0 text-foreground" />
           <div>
             <p className="font-heading font-semibold text-sm leading-tight">Learning Companion</p>
             {lessonTitle && <p className="text-[10px] text-muted-foreground truncate max-w-[220px]">{lessonTitle}</p>}

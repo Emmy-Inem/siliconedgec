@@ -89,9 +89,7 @@ export function InfluencerSignupPrompt() {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Star className="h-6 w-6 text-primary" />
-          </div>
+          <Star className="h-6 w-6 text-foreground mx-auto mb-2" />
           <DialogTitle className="text-center">
             Welcome — invited by {name}
           </DialogTitle>

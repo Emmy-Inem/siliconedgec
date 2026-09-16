@@ -131,9 +131,7 @@ function ValidCard({ isCart, orders, courseTitles, total, created }: any) {
     <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-accent/5">
       <CardContent className="p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
-            <CheckCircle2 className="h-7 w-7 text-primary" />
-          </div>
+          <CheckCircle2 className="h-7 w-7 text-emerald-500 shrink-0" />
           <div>
             <h2 className="font-heading text-2xl font-bold">Receipt Verified</h2>
             <p className="text-sm text-muted-foreground">This is an authentic Silicon Edge Consulting payment.</p>

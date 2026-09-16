@@ -264,9 +264,7 @@ export default function Dashboard() {
                   <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Learning snapshot</p>
                   <p className="font-heading text-2xl text-hero">{avgProgress}% average progress</p>
                 </div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                </div>
+                <TrendingUp className="h-8 w-8 text-hero shrink-0" />
               </div>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
@@ -648,9 +646,7 @@ export default function Dashboard() {
                         <motion.div key={app.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                           <Card>
                             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Briefcase className="h-5 w-5 text-primary" />
-                              </div>
+                              <Briefcase className="h-6 w-6 text-foreground flex-shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <p className="font-heading font-semibold truncate">{app.job?.title ?? "Job removed"}</p>
                                 <p className="text-sm text-muted-foreground truncate">

@@ -80,7 +80,7 @@ export default function AdminStudents() {
                 className="block bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground font-bold text-sm">
                     {(s.full_name || "U")[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

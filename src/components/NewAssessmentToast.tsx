@@ -82,9 +82,7 @@ export function NewAssessmentToast() {
     <Dialog open onOpenChange={(v) => { if (!v) dismiss(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <Icon className="h-6 w-6 text-primary" />
-          </div>
+          <Icon className="mx-auto h-8 w-8 text-foreground mb-2" />
           <DialogTitle className="text-center">{current.title}</DialogTitle>
           {current.message && (
             <DialogDescription className="text-center">
