@@ -9,12 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredAffiliateCode } from "@/components/AffiliateTracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X } from "lucide-react";
+import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X, CreditCard, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
+import { getVisitorGeo } from "@/lib/geo";
+import { resolvePaymentGateway, PaymentGateway } from "@/lib/geo-routing";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
@@ -28,6 +30,20 @@ export default function Cart() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
+  const [gateway, setGateway] = useState<PaymentGateway>("paystack");
+
+  // Automatically determine gateway from user location
+  useEffect(() => {
+    let isMounted = true;
+    void getVisitorGeo().then((geo) => {
+      if (isMounted) {
+        setGateway(resolvePaymentGateway(geo?.country));
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Promo code state
   const [promoInput, setPromoInput] = useState("");
@@ -83,15 +99,21 @@ export default function Cart() {
     setPromoError("");
   };
 
-  // After Paystack redirect: ?reference=... -> verify and issue receipt
+  // After Paystack or Stripe redirect: ?reference=... or ?session_id=... -> verify and issue receipt
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reference = params.get("reference") || params.get("trxref");
-    if (!reference || !user) return;
+    const sessionId = params.get("session_id");
+    const isStripe = params.get("stripe") === "1" || !!sessionId;
+
+    if ((!reference && !sessionId) || !user) return;
+
     (async () => {
       setProcessing(true);
       try {
-        const { data, error } = await supabase.functions.invoke("paystack-cart-verify", { body: { reference } });
+        const verifyFunction = isStripe ? "stripe-cart-verify" : "paystack-cart-verify";
+        const payload = isStripe ? { session_id: sessionId, reference } : { reference };
+        const { data, error } = await supabase.functions.invoke(verifyFunction, { body: payload });
         if (error) throw error;
         if (!data?.verified) {
           toast({ title: "Payment not completed", description: data?.message ?? "Please try again.", variant: "destructive" });
@@ -104,13 +126,18 @@ export default function Cart() {
           title: c.title,
           amount: Number(c.discount_price ?? c.price),
         }));
+        const resolvedCurrency = data.currency || (isStripe ? "USD" : "NGN");
+        const receiptTotal = Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0));
+
         downloadReceiptPdf({
-          reference,
+          reference: reference || data.reference || sessionId || "RECEIPT",
           customerName: user.user_metadata?.full_name ?? "",
           customerEmail: user.email ?? "",
           lines,
-          total: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
+          total: receiptTotal,
+          currency: resolvedCurrency,
         });
+
         // TikTok conversion: paid checkout completed.
         tikTokEvent("CompletePayment", {
           content_type: "product_group",
@@ -120,12 +147,12 @@ export default function Cart() {
             quantity: 1,
             price: l.amount,
           })),
-          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
-          currency: "NGN",
-          description: reference,
+          value: receiptTotal,
+          currency: resolvedCurrency,
+          description: reference || sessionId,
         });
-        // Meta Pixel: paid checkout maps to the canonical `Purchase` event,
-        // which is what Meta Ads optimisation uses for conversion bidding.
+
+        // Meta Pixel: paid checkout
         metaEvent("Purchase", {
           content_ids: courseIds,
           content_type: "product",
@@ -134,35 +161,34 @@ export default function Cart() {
             quantity: 1,
             item_price: l.amount,
           })),
-          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
-          currency: "NGN",
-          order_id: reference,
+          value: receiptTotal,
+          currency: resolvedCurrency,
+          order_id: reference || sessionId,
         });
-        // Google Ads: paid checkout is the primary conversion. We pass
-        // `transaction_id: reference` so Paystack's reference doubles as
-        // the dedup key against any future server-side conversion import.
+
+        // Google Ads conversion
         void setGoogleAdsUserData({
           email: user.email,
           phone: (user.user_metadata as any)?.phone ?? null,
         });
         googleAdsConversion("Purchase", {
-          value: Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0)),
-          currency: "NGN",
-          transaction_id: reference,
+          value: receiptTotal,
+          currency: resolvedCurrency,
+          transaction_id: reference || sessionId,
           items: lines.map((l, i) => ({ id: courseIds[i], name: l.title, price: l.amount })),
         });
-        // Internal attribution: log a paid_enrollment lead per course so
-        // Marketing Analytics can attribute paid conversions to UTM source.
+
+        // Internal attribution
         for (const cid of courseIds) {
           await trackLead({
             formType: "paid_enrollment",
-            formData: { course_id: cid, order_ref: reference, amount: data.total },
+            formData: { course_id: cid, order_ref: reference || sessionId, amount: data.total },
           }).catch(() => {});
         }
         await refresh();
         toast({
           title: "Payment confirmed",
-          description: `Receipt downloading. Verify at /verify-receipt/${reference}`,
+          description: `Receipt downloading. Thank you for your purchase!`,
         });
         navigate("/dashboard", { replace: true });
       } catch (e: any) {
@@ -190,30 +216,34 @@ export default function Cart() {
     try {
       const { getStoredUtmParams } = await import("@/hooks/useUtmTracking");
       const utm = getStoredUtmParams();
-      // Fire BEFORE the redirect so iOS in-app browsers (which kill in-flight
-      // requests on navigation) still get the InitiateCheckout signal.
+      const isStripe = gateway === "stripe";
+      const functionName = isStripe ? "stripe-cart-initialize" : "paystack-cart-initialize";
+      const checkoutCurrency = isStripe ? "USD" : "NGN";
+
       tikTokEvent("InitiateCheckout", {
         content_type: "product_group",
         contents: items.map((i) => ({ content_id: i.course_id, quantity: 1 })),
         value: total,
-        currency: "NGN",
+        currency: checkoutCurrency,
       });
       metaEvent("InitiateCheckout", {
         content_ids: items.map((i) => i.course_id),
         content_type: "product",
         num_items: items.length,
         value: total,
-        currency: "NGN",
+        currency: checkoutCurrency,
       });
       googleAdsConversion("InitiateCheckout", {
         value: total,
-        currency: "NGN",
+        currency: checkoutCurrency,
         items: items.map((i) => ({ id: i.course_id, quantity: 1 })),
       });
-      const { data, error } = await supabase.functions.invoke("paystack-cart-initialize", {
+
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           course_ids: items.map((i) => i.course_id),
-          callback_url: `${window.location.origin}/cart`,
+          callback_url: `${window.location.origin}/cart?stripe=1`,
+          cancel_url: `${window.location.origin}/cart`,
           utm,
           promo_code_id: appliedPromo?.id ?? null,
           affiliate_code: getStoredAffiliateCode(),
@@ -234,7 +264,7 @@ export default function Cart() {
       throw new Error("Unexpected response from payment provider");
     } catch (e: any) {
       const msg = e?.message ?? "Try again.";
-      const notConfigured = /paystack/i.test(msg) && /not configured|secret/i.test(msg);
+      const notConfigured = /(paystack|stripe)/i.test(msg) && /not configured|secret/i.test(msg);
       toast({
         title: notConfigured ? "Checkout temporarily unavailable" : "Checkout failed",
         description: notConfigured
@@ -446,9 +476,35 @@ export default function Cart() {
                     <span>Total</span>
                     <span className="text-primary">{formatPrice(finalTotal)}</span>
                   </div>
-                  {!isNgn && finalTotal > 0 && (
-                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(finalTotal)} (NGN) at checkout.</p>
+                  {/* Gateway selector / badge */}
+                  <div className="flex items-center justify-between bg-muted/40 border border-border/60 rounded-lg p-2.5 text-xs">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary shrink-0" />
+                      <div>
+                        <span className="font-medium text-foreground">
+                          {gateway === "stripe" ? "Stripe (International Cards)" : "Paystack (African Cards / Transfer)"}
+                        </span>
+                        <span className="text-muted-foreground block text-[10px]">
+                          {gateway === "stripe" ? "Charged in USD" : "Charged in NGN"}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setGateway(gateway === "stripe" ? "paystack" : "stripe")}
+                      className="text-primary hover:underline text-xs font-medium shrink-0 ml-2"
+                    >
+                      Use {gateway === "stripe" ? "Paystack" : "Stripe"}
+                    </button>
+                  </div>
+
+                  {!isNgn && finalTotal > 0 && gateway === "paystack" && (
+                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(finalTotal)} (NGN) via Paystack.</p>
                   )}
+                  {!isNgn && finalTotal > 0 && gateway === "stripe" && (
+                    <p className="text-[11px] text-muted-foreground -mt-2">Estimated original price: {formatNaira(finalTotal)} (NGN).</p>
+                  )}
+
                   <Button
                     size="lg"
                     className="w-full gap-2"
@@ -456,7 +512,13 @@ export default function Cart() {
                     disabled={processing}
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                    {processing ? "Processing..." : finalTotal === 0 ? "Enroll for Free" : "Checkout"}
+                    {processing
+                      ? "Processing..."
+                      : finalTotal === 0
+                      ? "Enroll for Free"
+                      : gateway === "stripe"
+                      ? `Checkout with Stripe (${formatPrice(finalTotal)})`
+                      : `Checkout with Paystack (${formatNaira(finalTotal)})`}
                   </Button>
                 </div>
               </div>

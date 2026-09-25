@@ -18,6 +18,21 @@ verify_jwt = false
 [functions.paystack-webhook]
 verify_jwt = false
 
+[functions.stripe-initialize]
+verify_jwt = true
+
+[functions.stripe-verify]
+verify_jwt = false
+
+[functions.stripe-cart-initialize]
+verify_jwt = true
+
+[functions.stripe-cart-verify]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
 [functions.live-class-reminder]
 verify_jwt = false
 

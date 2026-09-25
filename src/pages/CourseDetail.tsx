@@ -314,11 +314,17 @@ export default function CourseDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, course?.id]);
 
-  // Verify Paystack payment after redirect callback
+  // Verify Paystack or Stripe payment after redirect callback
   useEffect(() => {
     const reference = searchParams.get("reference") ?? searchParams.get("trxref");
-    if (reference && searchParams.get("verify") === "1") {
-      supabase.functions.invoke("paystack-verify", { body: { reference } }).then(({ data }) => {
+    const sessionId = searchParams.get("session_id");
+    const isStripe = searchParams.get("stripe") === "1" || !!sessionId;
+
+    if ((reference || sessionId) && searchParams.get("verify") === "1") {
+      const verifyFunction = isStripe ? "stripe-verify" : "paystack-verify";
+      const payload = isStripe ? { session_id: sessionId, reference } : { reference };
+
+      supabase.functions.invoke(verifyFunction, { body: payload }).then(({ data }) => {
         if (data?.verified) {
           toast({ title: "Payment confirmed", description: "You're now enrolled. Welcome aboard!" });
           qc.invalidateQueries({ queryKey: ["enrollment", courseId] });
@@ -326,7 +332,7 @@ export default function CourseDetail() {
           // originating UTM source for this paid conversion.
           void trackLead({
             formType: "paid_enrollment",
-            formData: { course_id: courseId, order_ref: reference },
+            formData: { course_id: courseId, order_ref: reference || sessionId },
           }).catch(() => {});
         } else {
           toast({ title: "Payment not confirmed", description: data?.message ?? "Please contact support.", variant: "destructive" });
@@ -334,7 +340,7 @@ export default function CourseDetail() {
         setSearchParams({});
       });
     }
-  }, [searchParams, id, qc, setSearchParams, toast]);
+  }, [searchParams, id, courseId, qc, setSearchParams, toast]);
 
 
   const { data: enrollment } = useQuery({

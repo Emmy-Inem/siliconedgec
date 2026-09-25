@@ -60,12 +60,26 @@ export function generateReceiptPdf(input: ReceiptInput): jsPDF {
   doc.text("Amount", pageWidth - margin - 12, y + 17, { align: "right" });
   y += 32;
 
+  const formatPrice = (amt: number) => {
+    const curr = (input.currency || "NGN").toUpperCase();
+    if (curr === "USD") {
+      return `$${amt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    if (curr === "EUR") {
+      return `€${amt.toLocaleString("en-EU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    if (curr === "GBP") {
+      return `£${amt.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return formatNaira(amt);
+  };
+
   doc.setFont("helvetica", "normal");
   for (const line of input.lines) {
     if (y > 720) { doc.addPage(); y = margin; }
     const wrapped = doc.splitTextToSize(line.title, pageWidth - margin * 2 - 130);
     doc.text(wrapped, margin + 12, y);
-    doc.text(formatNaira(line.amount), pageWidth - margin - 12, y, { align: "right" });
+    doc.text(formatPrice(line.amount), pageWidth - margin - 12, y, { align: "right" });
     y += Math.max(18, wrapped.length * 14);
     doc.setDrawColor(230);
     doc.line(margin, y, pageWidth - margin, y);
@@ -76,7 +90,7 @@ export function generateReceiptPdf(input: ReceiptInput): jsPDF {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.text("Total Paid", margin + 12, y);
-  doc.text(formatNaira(input.total), pageWidth - margin - 12, y, { align: "right" });
+  doc.text(formatPrice(input.total), pageWidth - margin - 12, y, { align: "right" });
 
   y += 50;
   doc.setFont("helvetica", "normal");
