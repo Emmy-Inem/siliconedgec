@@ -1,0 +1,1 @@
+DELETE FROM public.blog_posts WHERE title ILIKE '%nigeria%' OR content ILIKE '%nigeria%' OR excerpt ILIKE '%nigeria%' OR slug ILIKE '%nigeria%' OR coalesce(meta_description,'') ILIKE '%nigeria%';
