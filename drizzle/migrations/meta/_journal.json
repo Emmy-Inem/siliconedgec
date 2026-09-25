@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790331106278,
+      "tag": "0000_remove_nigeria_blog_posts",
+      "breakpoints": true
+    }
+  ]
+}
