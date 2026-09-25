@@ -28,6 +28,7 @@ async function generate() {
         supabase.from('blog_posts').select('slug, updated_at').eq('status', 'published'),
         supabase.from('categories').select('slug, created_at'),
       ]);
+      if (results.some((r) => r.error)) throw new Error(results.find((r) => r.error).error.message);
       courses = results[0].data || [];
       blogPosts = results[1].data || [];
       categories = results[2].data || [];
@@ -36,6 +37,20 @@ async function generate() {
     }
   } else {
     console.warn('Sitemap: no Supabase key available, generating static routes only.');
+  }
+
+  // Safety net: if the database was unreachable, keep the dynamic URLs from the
+  // existing sitemap rather than silently dropping every course/blog/category page.
+  const sitemapPath = path.resolve(__dirname, '../public/sitemap.xml');
+  let preservedDynamic = [];
+  if (!courses.length && !blogPosts.length && !categories.length && fs.existsSync(sitemapPath)) {
+    const existing = fs.readFileSync(sitemapPath, 'utf8');
+    preservedDynamic = (existing.match(/^\s*<url>.*<\/url>\s*$/gm) || [])
+      .map((l) => l.trim())
+      .filter((l) => /<loc>https:\/\/siliconedgec\.com\/(courses|blog|category)\/[^<]+<\/loc>/.test(l));
+    if (preservedDynamic.length) {
+      console.warn(`Sitemap: preserved ${preservedDynamic.length} dynamic URLs from the existing sitemap.`);
+    }
   }
 
   const baseUrl = 'https://siliconedgec.com';
@@ -84,11 +99,10 @@ async function generate() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${all.join('\n')}
+${[...all, ...preservedDynamic].join('\n')}
 </urlset>
 `;
 
-  const sitemapPath = path.resolve(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(sitemapPath, xml, 'utf8');
   console.log(`Generated sitemap with ${all.length} URLs at ${sitemapPath}`);
 }
