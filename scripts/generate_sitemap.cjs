@@ -99,11 +99,10 @@ async function generate() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${all.join('\n')}
+${[...all, ...preservedDynamic].join('\n')}
 </urlset>
 `;
 
-  const sitemapPath = path.resolve(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(sitemapPath, xml, 'utf8');
   console.log(`Generated sitemap with ${all.length} URLs at ${sitemapPath}`);
 }
