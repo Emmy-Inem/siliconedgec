@@ -66,11 +66,11 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.enqueue_email(TEXT, JSONB) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.enqueue_email(TEXT, JSONB) TO service_role;
 
--- 3. Reschedule 'process-email-queue' as a 5-minute fallback heartbeat with IF EXISTS check
+-- 3. Reschedule 'process-email-queue' as a 15-minute fallback heartbeat with IF EXISTS check
 -- Only calls net.http_post if there are pending messages in either queue
 SELECT cron.schedule(
   'process-email-queue',
-  '*/5 * * * *',
+  '*/15 * * * *',
   format(
     $cron$
     DO $body$
