@@ -3506,10 +3506,12 @@ export type Database = {
           discount_amount: number | null
           id: string
           metadata: Json | null
+          payment_gateway: string | null
           paystack_reference: string | null
           promo_code_id: string | null
           reference: string
           status: string
+          stripe_session_id: string | null
           updated_at: string
           user_id: string
         }
@@ -3521,10 +3523,12 @@ export type Database = {
           discount_amount?: number | null
           id?: string
           metadata?: Json | null
+          payment_gateway?: string | null
           paystack_reference?: string | null
           promo_code_id?: string | null
           reference: string
           status?: string
+          stripe_session_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -3536,10 +3540,12 @@ export type Database = {
           discount_amount?: number | null
           id?: string
           metadata?: Json | null
+          payment_gateway?: string | null
           paystack_reference?: string | null
           promo_code_id?: string | null
           reference?: string
           status?: string
+          stripe_session_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -4542,6 +4548,7 @@ export type Database = {
           quiz_id: string
         }[]
       }
+      get_secret: { Args: { secret_name: string }; Returns: string }
       get_user_xp: {
         Args: { p_user_id: string }
         Returns: {
