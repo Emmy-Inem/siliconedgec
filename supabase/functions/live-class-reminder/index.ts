@@ -43,9 +43,9 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // Window: classes scheduled to start between 50 and 80 minutes from now (covers 15-min cron jitter)
+    // Window: classes starting 45–80 minutes from now (cron runs every 30 min; reminder_sent_at prevents repeats)
     const now = new Date();
-    const start = new Date(now.getTime() + 50 * 60 * 1000).toISOString();
+    const start = new Date(now.getTime() + 45 * 60 * 1000).toISOString();
     const end = new Date(now.getTime() + 80 * 60 * 1000).toISOString();
 
     const { data: classes, error } = await supabase
