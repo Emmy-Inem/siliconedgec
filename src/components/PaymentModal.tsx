@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen } from "lucide-react";
+import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
