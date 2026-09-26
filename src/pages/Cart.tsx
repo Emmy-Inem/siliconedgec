@@ -1,3 +1,4 @@
+import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -114,7 +115,7 @@ export default function Cart() {
         const verifyFunction = isStripe ? "stripe-cart-verify" : "paystack-cart-verify";
         const payload = isStripe ? { session_id: sessionId, reference } : { reference };
         const { data, error } = await supabase.functions.invoke(verifyFunction, { body: payload });
-        if (error) throw error;
+        if (error) throw await readFunctionError(error);
         if (!data?.verified) {
           toast({ title: "Payment not completed", description: data?.message ?? "Please try again.", variant: "destructive" });
           return;
@@ -249,7 +250,7 @@ export default function Cart() {
           affiliate_code: getStoredAffiliateCode(),
         },
       });
-      if (error) throw error;
+      if (error) throw await readFunctionError(error);
       if (data?.error) throw new Error(data.error);
       if (data?.free) {
         await clearCart();

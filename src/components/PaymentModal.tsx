@@ -1,10 +1,11 @@
+import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen } from "lucide-react";
+import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -191,7 +192,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           affiliate_code: getStoredAffiliateCode(),
         },
       });
-      if (error) throw error;
+      if (error) throw await readFunctionError(error);
       if (data?.error) throw new Error(data.error);
 
       // Free path (100% promo)
