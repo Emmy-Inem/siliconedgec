@@ -289,10 +289,12 @@ Deno.serve(async (req) => {
     }
 
 
-    await admin.from("site_content").upsert(
-      { key: "automation_last_run", value: new Date().toISOString() },
-      { onConflict: "key" },
-    );
+    if ((events ?? []).length > 0) {
+      await admin.from("site_content").upsert(
+        { key: "automation_last_run", value: new Date().toISOString() },
+        { onConflict: "key" },
+      );
+    }
 
     return new Response(JSON.stringify({ processed: (events ?? []).length, sent, skipped }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
