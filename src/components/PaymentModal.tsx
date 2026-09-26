@@ -1,3 +1,4 @@
+import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -191,7 +192,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
           affiliate_code: getStoredAffiliateCode(),
         },
       });
-      if (error) throw error;
+      if (error) throw await readFunctionError(error);
       if (data?.error) throw new Error(data.error);
 
       // Free path (100% promo)
