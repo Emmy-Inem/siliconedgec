@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
-      vt: 30,
+      vt: 60,
     })
 
     if (readError) {
