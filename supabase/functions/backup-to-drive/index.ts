@@ -113,7 +113,19 @@ Deno.serve(async (req) => {
   // Validate caller: either service-role bearer (cron) or an authenticated admin user.
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "").trim();
-  const isServiceRole = token === serviceKey;
+  let isServiceRole = !!token && token === serviceKey;
+  const cronSecret = req.headers.get("x-cron-secret");
+  if (!isServiceRole && cronSecret) {
+    const { data: expected } = await admin
+      .schema("vault" as any).from("decrypted_secrets").select("decrypted_secret")
+      .eq("name", "backup_cron_secret").maybeSingle();
+    let stored = (expected as any)?.decrypted_secret as string | undefined;
+    if (!stored) {
+      const { data: s } = await admin.rpc("get_secret", { secret_name: "backup_cron_secret" });
+      stored = s as string | undefined;
+    }
+    isServiceRole = !!stored && stored === cronSecret;
+  }
   if (!isServiceRole) {
     if (!token) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
