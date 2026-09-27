@@ -15,6 +15,13 @@
       "when": 1790521095415,
       "tag": "0001_tighten_public_read_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790521168785,
+      "tag": "0002_grant_has_any_role_anon",
+      "breakpoints": true
     }
   ]
 }
