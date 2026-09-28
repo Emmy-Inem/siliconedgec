@@ -123,9 +123,12 @@ export default function Cart() {
         // Build receipt
         const courseIds: string[] = data.course_ids ?? [];
         const { data: courses } = await supabase.from("courses").select("id, title, price, discount_price").in("id", courseIds);
+        const lineAmounts: Record<string, number> = data.line_amounts ?? {};
         const lines = (courses ?? []).map((c: any) => ({
           title: c.title,
-          amount: Number(c.discount_price ?? c.price),
+          amount: lineAmounts[c.id] !== undefined
+            ? Number(lineAmounts[c.id])
+            : Number(c.discount_price ?? c.price),
         }));
         const resolvedCurrency = data.currency || (isStripe ? "USD" : "NGN");
         const receiptTotal = Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0));
@@ -243,7 +246,7 @@ export default function Cart() {
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           course_ids: items.map((i) => i.course_id),
-          callback_url: `${window.location.origin}/cart?stripe=1`,
+          callback_url: isStripe ? `${window.location.origin}/cart?stripe=1` : `${window.location.origin}/cart`,
           cancel_url: `${window.location.origin}/cart`,
           utm,
           promo_code_id: appliedPromo?.id ?? null,
