@@ -101,6 +101,8 @@ Deno.serve(async (req) => {
 
     const alreadyCompleted = (priorVerify?.length ?? 0) > 0;
     const totalAmount = orders.reduce((s: number, o: any) => s + Number(o.amount || 0), 0);
+    const lineAmounts: Record<string, number> = {};
+    for (const o of orders) lineAmounts[o.course_id] = Number(o.amount || 0);
     const cartRef = reference || (orders[0].metadata as any)?.cart_reference || orders[0].reference;
 
     if (alreadyCompleted) {
@@ -111,6 +113,7 @@ Deno.serve(async (req) => {
           total: totalAmount,
           currency: "USD",
           reference: cartRef,
+          line_amounts: lineAmounts,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -212,6 +215,7 @@ Deno.serve(async (req) => {
         total: totalAmount,
         currency: "USD",
         reference: cartRef,
+        line_amounts: lineAmounts,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
