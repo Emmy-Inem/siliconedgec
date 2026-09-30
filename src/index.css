@@ -363,6 +363,17 @@
   stroke-width: 2.75;
 }
 
+/* Keep iconography direct and editorial. Decorative div/span frames around a
+   lone Lucide icon inherit no coloured tile, ring, border, shadow, or pill.
+   Interactive buttons, avatars, status dots, image frames, and logos are not
+   targeted by this rule. */
+:where(div, span):has(> svg.lucide:only-child)[class*="items-center"][class*="justify-center"][class*="rounded-"] {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 /* Offset page content below the fixed header, whose height varies with the
    promo stripe. --header-h is set at runtime by the Header component. */
 .pt-header {
