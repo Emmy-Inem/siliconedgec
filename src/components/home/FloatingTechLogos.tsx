@@ -74,7 +74,7 @@ export function FloatingTechLogos() {
             height: pos.size,
             willChange: "transform",
           }}
-          className="absolute rounded-2xl bg-white border border-primary/10 shadow-[0_10px_30px_-14px_hsl(var(--primary)/0.4)] p-2.5 hidden md:flex items-center justify-center"
+          className="absolute p-1 hidden md:flex items-center justify-center drop-shadow-sm"
           title={logo.name}
         >
           <img
