@@ -1,3 +1,4 @@
+import { useUserEmails } from "@/components/admin/CustomDateRange";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
@@ -13,6 +14,7 @@ type Profile = Tables<"profiles">;
 
 interface ProfileWithRole extends Profile {
   role?: string;
+  email?: string;
 }
 
 const ROLE_BADGE: Record<string, { icon: typeof Shield; class: string; label: string }> = {
@@ -27,6 +29,7 @@ const ROLE_BADGE: Record<string, { icon: typeof Shield; class: string; label: st
 
 const columns: Column<ProfileWithRole>[] = [
   { key: "full_name", label: "Name", render: (p) => p.full_name || "—" },
+  { key: "email", label: "Email", render: (p) => <span className="text-xs">{p.email || "—"}</span> },
   { key: "user_id", label: "User ID", render: (p) => <span className="font-mono text-xs">{p.user_id.slice(0, 8)}...</span> },
   {
     key: "role", label: "Role", render: (p) => {
@@ -50,6 +53,7 @@ export default function AdminUsers() {
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const emails = useUserEmails();
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
@@ -132,7 +136,7 @@ export default function AdminUsers() {
 
   return (
     <>
-      <AdminCrudTable title="Users" data={data} columns={columns} isLoading={isLoading}
+      <AdminCrudTable title="Users" data={data.map((p) => ({ ...p, email: emails.get(p.user_id) ?? "" }))} columns={columns} isLoading={isLoading}
         addLabel={exporting ? "Exporting..." : "Export Emails CSV"}
         onAdd={() => { if (!exporting) exportEmails(); }}
         onEdit={(p) => { setEditing(p); setForm({ full_name: p.full_name ?? "", bio: p.bio ?? "", role: p.role ?? "user" }); setDialogOpen(true); }}

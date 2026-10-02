@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,7 +68,9 @@ export default function AdminLoginSecurity() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "failed" | "success">("failed");
-  const [range, setRange] = useState<Range>("7d");
+  const [range, setRange] = useState<Range | "custom">("7d");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
   const [blockOpen, setBlockOpen] = useState(false);
   const [blockForm, setBlockForm] = useState({ ip_address: "", reason: "", expires_in_hours: "" });
 
@@ -84,9 +87,10 @@ export default function AdminLoginSecurity() {
 
   // Filter window
   const windowed = useMemo(() => {
+    if (range === "custom") return attempts.filter((a: any) => inCustomRange(a.created_at, cFrom, cTo));
     const cutoff = Date.now() - RANGE_DAYS[range] * 86_400_000;
     return attempts.filter((a: any) => +new Date(a.created_at) >= cutoff);
-  }, [attempts, range]);
+  }, [attempts, range, cFrom, cTo]);
 
   const filtered = useMemo(() => {
     return windowed.filter((a: any) => {
@@ -243,14 +247,16 @@ export default function AdminLoginSecurity() {
             <p className="text-sm text-muted-foreground">Failed sign-ins, locked accounts, IP intelligence — auto-refreshes every 30s</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Select value={range} onValueChange={(v) => setRange(v as Range)}>
+        <div className="flex gap-2 flex-wrap">
+          {range === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
+          <Select value={range} onValueChange={(v) => setRange(v as Range | "custom")}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="1d">Last 24 hours</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export</Button>

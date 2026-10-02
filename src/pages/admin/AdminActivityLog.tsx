@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,9 @@ export default function AdminActivityLog() {
   const [entityFilter, setEntityFilter] = useState("all");
   const [adminFilter, setAdminFilter] = useState("all");
   const [dateRange, setDateRange] = useState("30d");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
+  const emails = useUserEmails();
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["admin-activity-log"],
@@ -77,15 +81,16 @@ export default function AdminActivityLog() {
       if (actionFilter !== "all" && l.action !== actionFilter) return false;
       if (entityFilter !== "all" && l.entity_type !== entityFilter) return false;
       if (adminFilter !== "all" && l.admin_name !== adminFilter) return false;
-      if (dateRange !== "all" && now - +new Date(l.created_at) > (ranges[dateRange] ?? 0) * 86400000) return false;
+      if (dateRange === "custom") { if (!inCustomRange(l.created_at, cFrom, cTo)) return false; }
+      else if (dateRange !== "all" && now - +new Date(l.created_at) > (ranges[dateRange] ?? 0) * 86400000) return false;
       if (search) {
         const q = search.toLowerCase();
         const inDetails = JSON.stringify(l.details ?? {}).toLowerCase().includes(q);
-        if (!(l.admin_name?.toLowerCase().includes(q) || l.action.includes(q) || l.entity_type.includes(q) || (l.entity_id ?? "").includes(q) || inDetails)) return false;
+        if (!(l.admin_name?.toLowerCase().includes(q) || (emails.get(l.admin_user_id) ?? "").toLowerCase().includes(q) || l.action.includes(q) || l.entity_type.includes(q) || (l.entity_id ?? "").includes(q) || inDetails)) return false;
       }
       return true;
     });
-  }, [logs, actionFilter, entityFilter, adminFilter, dateRange, search]);
+  }, [logs, actionFilter, entityFilter, adminFilter, dateRange, search, cFrom, cTo, emails]);
 
   const exportCsv = () => {
     const header = ["Admin", "Action", "Entity", "Entity ID", "Details", "When"];
@@ -123,7 +128,7 @@ export default function AdminActivityLog() {
       <div className="grid gap-2 md:grid-cols-[1fr_140px_140px_160px_140px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search admin, entity, ID, details..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder="Search admin name or email, entity, ID, details..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -144,9 +149,11 @@ export default function AdminActivityLog() {
             <SelectItem value="7d">7 days</SelectItem>
             <SelectItem value="30d">30 days</SelectItem>
             <SelectItem value="90d">90 days</SelectItem>
+            <SelectItem value="custom">Custom range</SelectItem>
           </SelectContent>
         </Select>
       </div>
+      {dateRange === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
 
       {filtered.length === 0 ? (
         <div className="bg-card rounded-2xl border border-border p-12 text-center">

@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,7 @@ const RANGES = [
   { label: "7 days", days: 7 },
   { label: "30 days", days: 30 },
   { label: "All time", days: 0 },
+  { label: "Custom", days: -1 },
 ];
 
 const STATUS_STYLES: Record<string, string> = {
@@ -43,19 +45,24 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function AdminEmailDelivery() {
   const [days, setDays] = useState(7);
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
 
   const { data = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["admin-email-delivery", days],
+    queryKey: ["admin-email-delivery", days, cFrom, cTo],
     queryFn: async () => {
       let q = supabase
         .from("email_delivery_log")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(1000);
-      if (days > 0) {
+      if (days === -1) {
+        if (cFrom) q = q.gte("created_at", new Date(`${cFrom}T00:00:00`).toISOString());
+        if (cTo) q = q.lte("created_at", new Date(`${cTo}T23:59:59.999`).toISOString());
+      } else if (days > 0) {
         q = q.gte("created_at", new Date(Date.now() - days * 86400000).toISOString());
       }
       const { data, error } = await q;
@@ -136,6 +143,7 @@ export default function AdminEmailDelivery() {
             {r.label}
           </Button>
         ))}
+        {days === -1 && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}

@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,9 @@ export default function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [checkoutFilter, setCheckoutFilter] = useState("all");
   const [dateRange, setDateRange] = useState("30d");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
+  const emails = useUserEmails();
   const [refundTarget, setRefundTarget] = useState<any | null>(null);
   const [refunding, setRefunding] = useState(false);
 
@@ -118,7 +122,9 @@ export default function AdminOrders() {
     return orders.filter((o: any) => {
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
       if (checkoutFilter !== "all" && checkoutKindFor(o.reference) !== checkoutFilter) return false;
-      if (dateRange !== "all") {
+      if (dateRange === "custom") {
+        if (!inCustomRange(o.created_at, cFrom, cTo)) return false;
+      } else if (dateRange !== "all") {
         const d = ranges[dateRange] ?? 0;
         if (now - +new Date(o.created_at) > d * 86400000) return false;
       }
@@ -128,12 +134,13 @@ export default function AdminOrders() {
           (o.reference || "").toLowerCase().includes(q) ||
           (o.paystack_reference || "").toLowerCase().includes(q) ||
           courseTitle(o.course_id).toLowerCase().includes(q) ||
-          profileName(o.user_id).toLowerCase().includes(q)
+          profileName(o.user_id).toLowerCase().includes(q) ||
+          (emails.get(o.user_id) ?? "").toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [orders, statusFilter, checkoutFilter, dateRange, search, courses, profiles]);
+  }, [orders, statusFilter, checkoutFilter, dateRange, search, courses, profiles, cFrom, cTo, emails]);
 
   const stats = useMemo(() => {
     const paid = filtered.filter((o: any) => ["paid", "success", "completed"].includes(o.status));
@@ -246,9 +253,11 @@ export default function AdminOrders() {
                 <SelectItem value="7d">Last 7 days</SelectItem>
                 <SelectItem value="30d">Last 30 days</SelectItem>
                 <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="custom">Custom range</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          {dateRange === "custom" && <CustomDateRange className="mt-2" from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
 
           <Card>
             <CardContent className="p-0 overflow-x-auto">
