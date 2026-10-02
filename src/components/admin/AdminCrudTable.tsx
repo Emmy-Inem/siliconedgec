@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
@@ -55,6 +56,8 @@ export function AdminCrudTable<T extends { id: string }>({
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [range, setRange] = useState<string>("all");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
 
   const hasDateField =
     !hideDateFilter &&
@@ -74,6 +77,9 @@ export function AdminCrudTable<T extends { id: string }>({
   })();
 
   const filtered = data.filter((item) => {
+    if (range === "custom" && hasDateField && (cFrom || cTo)) {
+      if (!inCustomRange((item as Record<string, unknown>)[dateFilterKey] as string, cFrom, cTo)) return false;
+    }
     if (cutoffMs && hasDateField) {
       const raw = (item as Record<string, unknown>)[dateFilterKey];
       const t = raw ? new Date(raw as string).getTime() : 0;
@@ -110,7 +116,7 @@ export function AdminCrudTable<T extends { id: string }>({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search by name, email or any field..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -128,8 +134,12 @@ export function AdminCrudTable<T extends { id: string }>({
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="90d">Last 90 days</SelectItem>
               <SelectItem value="year">Last 12 months</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
             </SelectContent>
           </Select>
+        )}
+        {hasDateField && range === "custom" && (
+          <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); setPage(0); }} />
         )}
       </div>
 

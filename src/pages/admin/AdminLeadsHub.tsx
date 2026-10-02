@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +50,8 @@ export default function AdminLeadsHub() {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [channelFilter, setChannelFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("all");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
   const [extractorOpen, setExtractorOpen] = useState(false);
   const [includeName, setIncludeName] = useState(false);
   const { toast } = useToast();
@@ -221,7 +224,9 @@ export default function AdminLeadsHub() {
     return unified.filter((u) => {
       if (sourceFilter !== "all" && u.source !== sourceFilter) return false;
       if (channelFilter !== "all" && u.channel !== channelFilter) return false;
-      if (dateRange !== "all") {
+      if (dateRange === "custom") {
+        if (!inCustomRange(u.created_at, cFrom, cTo)) return false;
+      } else if (dateRange !== "all") {
         const days = ranges[dateRange] ?? 0;
         if (now - +new Date(u.created_at) > days * 86400000) return false;
       }
@@ -237,7 +242,7 @@ export default function AdminLeadsHub() {
       }
       return true;
     });
-  }, [unified, sourceFilter, channelFilter, dateRange, search]);
+  }, [unified, sourceFilter, channelFilter, dateRange, search, cFrom, cTo]);
 
   // Channel breakdown across the unfiltered set so admins always see every
   // platform that brought leads, not just whatever's currently filtered.
@@ -441,9 +446,11 @@ export default function AdminLeadsHub() {
             <SelectItem value="7d">Last 7 days</SelectItem>
             <SelectItem value="30d">Last 30 days</SelectItem>
             <SelectItem value="90d">Last 90 days</SelectItem>
+            <SelectItem value="custom">Custom range</SelectItem>
           </SelectContent>
         </Select>
       </div>
+      {dateRange === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         {isLoading ? (

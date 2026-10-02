@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -47,7 +48,10 @@ export default function AdminUserActivity() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(() => params.get("user"));
   // Drilldown filters
   const [actionFilter, setActionFilter] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<string>("all"); // all | 24h | 7d | 30d
+  const [dateRange, setDateRange] = useState<string>("all"); // all | 24h | 7d | 30d | custom
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
+  const emails = useUserEmails();
   const [innerSearch, setInnerSearch] = useState("");
 
   const { data: profiles = [], isLoading: loadingProfiles } = useQuery({
@@ -119,13 +123,14 @@ export default function AdminUserActivity() {
     return allUserActivities.filter((a) => {
       if (actionFilter !== "all" && a.action !== actionFilter) return false;
       if (cutoff && new Date(a.created_at).getTime() < cutoff) return false;
+      if (dateRange === "custom" && !inCustomRange(a.created_at, cFrom, cTo)) return false;
       if (q) {
         const blob = `${a.action} ${a.entity_type ?? ""} ${a.entity_id ?? ""} ${JSON.stringify(a.metadata ?? {})}`.toLowerCase();
         if (!blob.includes(q)) return false;
       }
       return true;
     });
-  }, [allUserActivities, actionFilter, dateRange, innerSearch]);
+  }, [allUserActivities, actionFilter, dateRange, innerSearch, cFrom, cTo]);
 
   if (selectedUserId && selectedUser) {
     return (
@@ -172,9 +177,11 @@ export default function AdminUserActivity() {
               <SelectItem value="24h">Last 24 hours</SelectItem>
               <SelectItem value="7d">Last 7 days</SelectItem>
               <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
             </SelectContent>
           </Select>
         </div>
+        {dateRange === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
 
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           {userActivities.length === 0 ? (
@@ -237,7 +244,7 @@ export default function AdminUserActivity() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Search by name or user id..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input className="pl-9" placeholder="Search by name, email or user id..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
