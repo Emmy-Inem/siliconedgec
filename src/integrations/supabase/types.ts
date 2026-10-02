@@ -4442,6 +4442,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_user_emails: {
+        Args: never
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
       approve_affiliate_course: {
         Args: { p_selection_id: string }
         Returns: string
