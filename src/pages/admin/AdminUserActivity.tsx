@@ -92,13 +92,13 @@ export default function AdminUserActivity() {
   const filteredProfiles = useMemo(() => {
     const q = search.toLowerCase();
     return profiles
-      .filter((p) => !q || (p.full_name ?? "").toLowerCase().includes(q) || p.user_id.toLowerCase().includes(q))
+      .filter((p) => !q || (p.full_name ?? "").toLowerCase().includes(q) || (emails.get(p.user_id) ?? "").toLowerCase().includes(q) || p.user_id.toLowerCase().includes(q))
       .sort((a, b) => {
         const sa = stats.get(a.user_id)?.lastSeen ?? a.created_at ?? "";
         const sb = stats.get(b.user_id)?.lastSeen ?? b.created_at ?? "";
         return sb.localeCompare(sa);
       });
-  }, [profiles, search, stats]);
+  }, [profiles, search, stats, emails]);
 
   const selectedUser = profiles.find((p) => p.user_id === selectedUserId);
   const allUserActivities = useMemo(

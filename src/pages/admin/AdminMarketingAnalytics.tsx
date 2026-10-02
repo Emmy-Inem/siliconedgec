@@ -1,3 +1,4 @@
+import { CustomDateRange, inCustomRange } from "@/components/admin/CustomDateRange";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,7 +54,9 @@ function getHour(d: string) {
 
 export default function AdminMarketingAnalytics() {
   const { toast } = useToast();
-  const [dateFilter, setDateFilter] = useState<"today" | "7d" | "30d" | "90d" | "all">("30d");
+  const [dateFilter, setDateFilter] = useState<"today" | "7d" | "30d" | "90d" | "all" | "custom">("30d");
+  const [cFrom, setCFrom] = useState("");
+  const [cTo, setCTo] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
   const [campaignFilter, setCampaignFilter] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
@@ -82,7 +85,9 @@ export default function AdminMarketingAnalytics() {
   const filtered = useMemo(() => {
     let result = leads;
     const now = Date.now();
-    if (dateFilter === "today") {
+    if (dateFilter === "custom") {
+      result = result.filter(l => inCustomRange(l.created_at, cFrom, cTo));
+    } else if (dateFilter === "today") {
       const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
       result = result.filter(l => new Date(l.created_at).getTime() > startOfDay.getTime());
     } else if (dateFilter !== "all") {
@@ -92,7 +97,7 @@ export default function AdminMarketingAnalytics() {
     if (sourceFilter) result = result.filter(l => l.utm_source === sourceFilter);
     if (campaignFilter) result = result.filter(l => l.utm_campaign === campaignFilter);
     return result;
-  }, [leads, dateFilter, sourceFilter, campaignFilter]);
+  }, [leads, dateFilter, sourceFilter, campaignFilter, cFrom, cTo]);
 
   const uniqueSources = [...new Set(leads.map(l => l.utm_source).filter(Boolean))];
   const uniqueCampaigns = [...new Set(leads.map(l => l.utm_campaign).filter(Boolean))];
@@ -100,7 +105,7 @@ export default function AdminMarketingAnalytics() {
   // Previous period for comparison
   const prevPeriodLeads = useMemo(() => {
     const now = Date.now();
-    if (dateFilter === "all" || dateFilter === "today") return [];
+    if (dateFilter === "all" || dateFilter === "today" || dateFilter === "custom") return [];
     const days = dateFilter === "7d" ? 7 : dateFilter === "30d" ? 30 : 90;
     const cutoffCurrent = now - days * 86400000;
     const cutoffPrev = cutoffCurrent - days * 86400000;
@@ -241,7 +246,9 @@ export default function AdminMarketingAnalytics() {
   const enrollmentTimeline = useMemo(() => {
     const now = Date.now();
     let filteredEnroll = enrollments;
-    if (dateFilter === "today") {
+    if (dateFilter === "custom") {
+      filteredEnroll = enrollments.filter(e => inCustomRange(e.created_at, cFrom, cTo));
+    } else if (dateFilter === "today") {
       const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
       filteredEnroll = enrollments.filter(e => new Date(e.created_at).getTime() > startOfDay.getTime());
     } else if (dateFilter !== "all") {
@@ -254,7 +261,7 @@ export default function AdminMarketingAnalytics() {
       map[d] = (map[d] ?? 0) + 1;
     });
     return Object.entries(map).map(([date, count]) => ({ date, enrollments: count }));
-  }, [enrollments, dateFilter]);
+  }, [enrollments, dateFilter, cFrom, cTo]);
 
   // Source + Campaign table — Source column now uses classified channel so
   // un-tagged Facebook / Instagram / Google traffic isn't lumped into Direct.
@@ -441,13 +448,14 @@ export default function AdminMarketingAnalytics() {
       <div className="flex flex-wrap gap-3 items-center">
         <Filter className="h-4 w-4 text-muted-foreground" />
         <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-          {(["today", "7d", "30d", "90d", "all"] as const).map(d => (
+          {(["today", "7d", "30d", "90d", "all", "custom"] as const).map(d => (
             <button key={d} onClick={() => setDateFilter(d)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${dateFilter === d ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              {d === "all" ? "All Time" : d === "today" ? "Today" : d === "7d" ? "7 Days" : d === "30d" ? "30 Days" : "90 Days"}
+              {d === "custom" ? "Custom" : d === "all" ? "All Time" : d === "today" ? "Today" : d === "7d" ? "7 Days" : d === "30d" ? "30 Days" : "90 Days"}
             </button>
           ))}
         </div>
+        {dateFilter === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
         <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)} className={inputClass}>
           <option value="">All Sources</option>
           {uniqueSources.map(s => <option key={s} value={s}>{s}</option>)}
