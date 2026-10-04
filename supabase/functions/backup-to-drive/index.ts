@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const DRIVE_GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 const DRIVE_UPLOAD = "https://connector-gateway.lovable.dev/google_drive/upload/drive/v3/files?uploadType=multipart";
-const FOLDER_NAME = "Silicon Edge Backups";
+const BACKUP_FOLDER_ID = "1UnS7V-Keds6fEHr0YO1dnzuo-5Lqok59";
 
 // Tables to back up. Excludes auth.* (managed), high-volume log/queue tables
 // (user_activity_log, login_attempts, email_send_log, email_send_state,
@@ -67,20 +67,6 @@ async function driveFetch(path: string, init: RequestInit = {}) {
     throw new Error(`Drive API ${res.status}: ${body}`);
   }
   return res;
-}
-
-async function ensureFolder(): Promise<string> {
-  const q = encodeURIComponent(`name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
-  const res = await driveFetch(`/files?q=${q}&fields=files(id,name)`);
-  const data = await res.json();
-  if (data.files && data.files.length > 0) return data.files[0].id;
-  const create = await driveFetch(`/files`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: FOLDER_NAME, mimeType: "application/vnd.google-apps.folder" }),
-  });
-  const folder = await create.json();
-  return folder.id;
 }
 
 async function uploadJson(folderId: string, filename: string, content: string) {
@@ -189,7 +175,7 @@ Deno.serve(async (req) => {
     const sizeBytes = new TextEncoder().encode(payload).length;
 
     // Upload to Drive
-    const folderId = await ensureFolder();
+    const folderId = BACKUP_FOLDER_ID;
     const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
     const filename = `siliconedge-backup-${stamp}.json`;
     const file = await uploadJson(folderId, filename, payload);
