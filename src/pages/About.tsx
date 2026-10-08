@@ -66,10 +66,10 @@ export default function About() {
       <Header />
 
       {/* Hero — site-wide page hero pattern */}
-      <section className="relative overflow-hidden bg-white pt-28 pb-14 md:pt-36 md:pb-20 border-b border-border/40">
+      <section className="relative overflow-hidden bg-background pt-28 pb-14 md:pt-36 md:pb-20 border-b border-border/40">
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.10),transparent_60%)]"
+          className="absolute inset-0 bg-background"
         />
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="max-w-3xl">
@@ -132,7 +132,7 @@ export default function About() {
                   "Career services from resume to offer letter",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm sm:text-base">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2 className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -145,7 +145,7 @@ export default function About() {
               transition={{ delay: 0.1 }}
               className="relative"
             >
-              <div aria-hidden="true" className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-primary/15 via-accent/10 to-gold/10 blur-2xl" />
+              <div aria-hidden="true" className="absolute -inset-4 rounded-3xl bg-transparent" />
               <img
                 src={mentorStock}
                 alt="A Silicon Edge mentor guiding a learner through a cloud engineering project"

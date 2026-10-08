@@ -180,7 +180,7 @@ export function PromotedCoursesBanner() {
   return (
     <aside
       aria-label="Promoted Course Announcement"
-      className="relative z-40 bg-slate-900 text-slate-100 border-b border-slate-800/90 text-xs py-2 select-none transition-all duration-300"
+      className="relative z-40 bg-navy text-hero border-b border-navy-light/90 text-xs py-2 select-none transition-all duration-300"
     >
       {/* Edge-to-edge scrolling ticker so the full promo text is always visible */}
       <div className="relative overflow-hidden">
@@ -191,26 +191,26 @@ export function PromotedCoursesBanner() {
       </div>
 
       {/* Right-side control cluster with gradient fade for readability */}
-      <div className="absolute right-0 top-0 bottom-0 w-28 sm:w-36 bg-gradient-to-l from-slate-900 via-slate-900/95 to-transparent pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-28 sm:w-36 bg-gradient-to-l from-navy via-navy/95 to-transparent pointer-events-none" />
       <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-auto">
         {courses.length > 1 && (
-          <div className="flex items-center gap-0.5 mr-1 text-slate-400">
+          <div className="flex items-center gap-0.5 mr-1 text-hero-muted">
             <button
               type="button"
               onClick={() => setCurrentIndex((prev) => (prev - 1 + courses.length) % courses.length)}
               aria-label="Previous promoted course"
-              className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
+              className="p-1 rounded hover:bg-navy-light hover:text-hero transition-colors"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
-            <span className="text-[10px] tabular-nums text-slate-400 px-0.5">
+            <span className="text-[10px] tabular-nums text-hero-muted px-0.5">
               {currentIndex + 1}/{courses.length}
             </span>
             <button
               type="button"
               onClick={() => setCurrentIndex((prev) => (prev + 1) % courses.length)}
               aria-label="Next promoted course"
-              className="p-1 rounded hover:bg-slate-800 hover:text-white transition-colors"
+              className="p-1 rounded hover:bg-navy-light hover:text-hero transition-colors"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
@@ -221,7 +221,7 @@ export function PromotedCoursesBanner() {
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss announcement banner"
-          className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          className="p-1 rounded text-hero-muted hover:text-hero hover:bg-navy-light transition-colors"
         >
           <X className="h-3.5 w-3.5" />
         </button>

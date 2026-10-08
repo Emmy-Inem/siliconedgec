@@ -232,19 +232,19 @@ export default function ForBusinesses() {
       <Header />
 
       {/* ─── Hero ─── */}
-      <section className="relative overflow-hidden bg-white pt-28 pb-20 border-b border-border/40">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
+      <section className="relative overflow-hidden bg-background pt-28 pb-20 border-b border-border/40">
+        <div className="absolute inset-0 bg-background" />
         <div
           className="absolute inset-0 opacity-[0.18]"
           style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--muted-foreground) / 0.14) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
           }}
         />
-        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-transparent pointer-events-none" />
+        <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full bg-transparent pointer-events-none" />
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: "easeOut" }}>
@@ -259,7 +259,7 @@ export default function ForBusinesses() {
               <ul className="space-y-3 mb-8">
                 {["Access several Tech Courses", "Course Progress Tracking", "Course Resources & Materials"].map((t) => (
                   <li key={t} className="flex items-center gap-3 text-muted-foreground">
-                    <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <span>{t}</span>
                   </li>
                 ))}
@@ -280,11 +280,11 @@ export default function ForBusinesses() {
               transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
               className="relative hidden lg:block"
             >
-              <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-transparent to-gold/20 rounded-3xl blur-2xl" />
+              <div className="absolute -inset-6 bg-transparent rounded-3xl" />
               <img
                 src={heroImage}
                 alt="Corporate team upskilling with Silicon Edge"
-                className="relative rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20 w-full max-w-lg ml-auto object-cover aspect-[5/4]"
+                className="relative rounded-2xl border border-border shadow-xl w-full max-w-lg ml-auto object-cover aspect-[5/4]"
                 loading="eager"
               />
               <motion.div
@@ -292,8 +292,8 @@ export default function ForBusinesses() {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -bottom-4 -left-4 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[200px]"
               >
-                <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <div className="w-9 h-9 rounded-full bg-transparent flex items-center justify-center">
+                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Cohort enrolled</p>
@@ -439,7 +439,7 @@ export default function ForBusinesses() {
                 transition={{ duration: 0.4, delay: i * 0.08 }}
                 className={`relative rounded-2xl border p-6 flex flex-col transition-all ${
                   p.featured
-                    ? "border-primary/40 bg-gradient-to-br from-primary/5 to-transparent shadow-lg shadow-primary/10"
+                    ? "border-primary/40 bg-card shadow-lg"
                     : "border-border/60 bg-card/40 hover:border-primary/30"
                 }`}
               >
@@ -455,7 +455,7 @@ export default function ForBusinesses() {
                 <ul className="space-y-2 mb-6 flex-1">
                   {p.points.map((pt) => (
                     <li key={pt} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+                      <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                       <span>{pt}</span>
                     </li>
                   ))}

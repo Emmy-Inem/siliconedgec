@@ -133,20 +133,20 @@ export default function Pricing() {
       <Header />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-white pt-24 sm:pt-28 pb-12 sm:pb-16 border-b border-border/40">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
+      <section className="relative overflow-hidden bg-background pt-24 sm:pt-28 pb-12 sm:pb-16 border-b border-border/40">
+        <div className="absolute inset-0 bg-background" />
         <div
           className="absolute inset-0 opacity-[0.18]"
           style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--muted-foreground) / 0.14) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
           }}
         />
         {/* Decorative blobs */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-transparent pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-transparent pointer-events-none" />
         {/* Floating sparkle pills removed */}
 
         <div className="container mx-auto px-4 relative">
@@ -198,27 +198,10 @@ export default function Pricing() {
             className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto"
           >
             {plans.map((plan) => {
-              const accentBar =
-                plan.accent === "gold"
-                  ? "bg-gold"
-                  : plan.accent === "teal"
-                  ? "bg-teal-500"
-                  : "bg-primary";
-              const btnText =
-                plan.accent === "gold"
-                  ? "text-gold"
-                  : plan.accent === "teal"
-                  ? "text-teal-600"
-                  : "text-primary-foreground";
-              const btnBorder =
-                plan.accent === "gold"
-                  ? "border-gold/40 hover:border-gold"
-                  : plan.accent === "teal"
-                  ? "border-teal-400/50 hover:border-teal-500"
-                  : "border-transparent";
+              const accentBar = plan.highlight ? "bg-primary" : "bg-border";
               const btnBg = plan.highlight
                 ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                : `bg-card hover:bg-accent ${btnText} ${btnBorder}`;
+                : "bg-card hover:bg-muted text-foreground border-border hover:border-primary";
               return (
                 <motion.div
                   key={plan.name}
@@ -229,12 +212,12 @@ export default function Pricing() {
                   }}
                   className={`rounded-2xl border bg-card transition-all relative group flex flex-col ${
                     plan.highlight
-                      ? "border-primary/40 shadow-2xl shadow-primary/20 md:scale-[1.03]"
+                      ? "border-primary/40 shadow-lg md:scale-[1.03]"
                       : "border-border hover:border-primary/30"
                   }`}
                 >
                   {plan.highlight && (
-                    <div className="absolute -inset-3 -z-10 bg-gradient-to-br from-primary/30 via-accent/20 to-gold/20 rounded-3xl blur-2xl opacity-70 pointer-events-none" />
+                    <div className="absolute -inset-3 -z-10 bg-transparent rounded-3xl pointer-events-none" />
                   )}
                   {/* Top accent bar */}
                   <div className={`h-2.5 w-full rounded-t-2xl overflow-hidden ${accentBar}`} />
@@ -286,8 +269,8 @@ export default function Pricing() {
                     <ul className="space-y-3 sm:space-y-3.5">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-center gap-3 text-sm">
-                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-500/10">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-transparent">
+                            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                           </span>
                           <span className="text-foreground">{f}</span>
                         </li>
