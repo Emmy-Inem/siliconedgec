@@ -96,8 +96,8 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
   return (
     <footer ref={ref} className="relative bg-navy text-hero-muted overflow-hidden border-t border-white/10">
       {/* Top subtle accent gradient beam */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-5xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-24 bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-5xl h-px bg-border/30 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-24 bg-transparent pointer-events-none" />
 
       <div className="container mx-auto px-5 sm:px-6 py-16 relative">
         {/* Main 12-column balanced grid */}
@@ -117,7 +117,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             </p>
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-navy-light/80 border border-white/10 text-xs text-hero-muted">
-              <span className="inline-flex rounded-full h-2 w-2 bg-amber-400" aria-hidden="true" />
+              <span className="inline-flex rounded-full h-2 w-2 bg-gold" aria-hidden="true" />
               <span className="font-medium text-white/90">Global Cohorts Enrolling</span>
             </div>
 
