@@ -134,7 +134,7 @@ function VideoTestimonialCard({ item }: { item: VideoTestimonial }) {
 
         <div className="absolute top-3 left-3">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-background/85 backdrop-blur-md border border-border/60 text-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
             {item.tag}
           </span>
         </div>

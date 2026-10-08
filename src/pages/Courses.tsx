@@ -175,13 +175,13 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
   const pillar3 = isAzureBootcamp ? "AZ-900 / AZ-104" : "Verified Certificate";
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-white pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
+    <section ref={ref} className="relative overflow-hidden bg-background pt-28 pb-20 md:pt-36 md:pb-28 border-b border-border/40">
       {/* Subtle, premium backdrop - soft top-left primary wash + tiny dot grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.06),transparent_60%)]" />
+      <div className="absolute inset-0 bg-background" />
       <div
         className="absolute inset-0 opacity-[0.12]"
         style={{
-          backgroundImage: "radial-gradient(hsl(var(--primary) / 0.5) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(hsl(var(--muted-foreground) / 0.5) 1px, transparent 1px)",
           backgroundSize: "26px 26px",
           maskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(ellipse at center, black 35%, transparent 80%)",
@@ -211,7 +211,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
                   aria-hidden
-                  className="absolute -bottom-1 left-0 right-2 h-[5px] origin-left rounded-full bg-gradient-to-r from-primary/40 via-accent/40 to-gold/40"
+                  className="absolute -bottom-1 left-0 right-2 h-[5px] origin-left rounded-full bg-border"
                 />
               </span>
             </h1>

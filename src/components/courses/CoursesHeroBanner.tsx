@@ -80,10 +80,10 @@ export function CoursesHeroBanner() {
   const badgeLabel = config?.badgeText || "4-Week Intensive Bootcamp";
 
   return (
-    <div className="mb-10 rounded-3xl border border-primary/25 bg-gradient-to-br from-card via-card to-primary/5 p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden">
+    <div className="mb-10 rounded-3xl border border-border bg-card p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden">
       {/* Soft background accents */}
-      <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
+      <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-transparent pointer-events-none" />
+      <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-transparent pointer-events-none" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
         {/* Left Info Column */}
@@ -108,7 +108,7 @@ export function CoursesHeroBanner() {
           {/* Highlights */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
             <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
               <span>Live Cloud Consoles</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-medium text-foreground">
@@ -158,7 +158,7 @@ export function CoursesHeroBanner() {
                   <GraduationCap className="h-12 w-12" />
                 </div>
               )}
-              <div className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-md border border-white/20">
+              <div className="absolute top-3 left-3 bg-navy/85 backdrop-blur-md text-hero text-[11px] font-semibold px-2.5 py-1 rounded-md border border-hero-foreground/20">
                 Live Cloud Labs
               </div>
             </div>

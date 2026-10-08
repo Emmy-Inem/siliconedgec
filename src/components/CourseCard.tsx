@@ -27,7 +27,7 @@ function pickFallbackAvatar(seed: string): string {
 
 /** Neutral, non-decorative pill used for all overlay badges on the thumbnail. */
 const OVERLAY_PILL =
-  "bg-black/60 backdrop-blur-sm text-white border border-white/15";
+  "bg-navy/75 backdrop-blur-sm text-hero border border-hero-foreground/15";
 
 
 export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?: number }>(
@@ -61,7 +61,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
       <Link to={courseHref(course)} className="group block h-full">
         <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/10 group-hover:border-primary/30 h-full flex flex-col">
           {/* Thumbnail */}
-          <div className="aspect-[16/10] sm:aspect-video bg-gradient-to-br from-navy to-navy-light relative overflow-hidden flex-shrink-0">
+          <div className="aspect-[16/10] sm:aspect-video bg-navy relative overflow-hidden flex-shrink-0">
             {course.thumbnail_url ? (
               <SafeImage
                 src={course.thumbnail_url}
@@ -72,7 +72,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center px-4">
-                <span className="font-heading text-lg sm:text-2xl font-bold text-primary/60 text-center leading-tight">
+                <span className="font-heading text-lg sm:text-2xl font-bold text-hero-muted text-center leading-tight">
                   {course.category}
                 </span>
               </div>
@@ -129,7 +129,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
 
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-primary/15">
+                <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-border">
                   <SafeImage
                     src={instructorAvatar}
                     fallback={pickFallbackAvatar(course.id)}
@@ -145,9 +145,9 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                   </span>
                 </div>
               </div>
-              <span className="font-heading font-bold text-primary text-sm sm:text-base flex-shrink-0">
+              <span className="font-heading font-bold text-foreground text-sm sm:text-base flex-shrink-0">
                 {isWebinar ? (
-                  <span className="text-primary">Free · Register</span>
+                  <span className="text-foreground">Free · Register</span>
                 ) : (
                   format(course.price)
                 )}

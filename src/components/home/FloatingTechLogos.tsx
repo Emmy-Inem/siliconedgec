@@ -81,7 +81,7 @@ export function FloatingTechLogos() {
             src={logo.src}
             alt={logo.name}
             loading="eager"
-            className="max-w-full max-h-full object-contain"
+            className="max-w-full max-h-full object-contain grayscale opacity-60"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}

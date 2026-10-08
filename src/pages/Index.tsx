@@ -317,19 +317,19 @@ export default function Index() {
 
       {/* page scroll progress bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-gradient-to-r from-primary via-accent to-gold"
+        className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-primary"
         style={{ scaleX: pageProgress }}
       />
 
       {/* ───────────────── HERO (light, premium) ───────────────── */}
-      <section ref={heroRef} className="relative overflow-hidden bg-white">
+      <section ref={heroRef} className="relative overflow-hidden bg-background">
         {/* soft purple hue background — top-only, very subtle */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_55%)]" />
+        <div className="absolute inset-0 bg-background" />
         {/* faint dot grid */}
         <div
           className="absolute inset-0 opacity-[0.25]"
           style={{
-            backgroundImage: "radial-gradient(hsl(var(--primary) / 0.14) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(hsl(var(--muted-foreground) / 0.14) 1px, transparent 1px)",
             backgroundSize: "22px 22px",
             maskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
@@ -360,7 +360,7 @@ export default function Index() {
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 90, damping: 14 }}
-              className="mx-auto mb-6 w-14 h-14 rounded-2xl bg-white border border-primary/15 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.4)] flex items-center justify-center"
+              className="mx-auto mb-6 w-14 h-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center"
             >
               <img src="/favicon.png" alt="Silicon Edge Consulting" className="w-9 h-9 object-contain" />
             </motion.div>
@@ -677,7 +677,7 @@ export default function Index() {
             {/* progress line */}
             <motion.div
               style={{ scaleY: lineScale, transformOrigin: "top" }}
-              className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-accent to-gold md:-translate-x-1/2"
+              className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-border md:-translate-x-1/2"
             />
 
             {[
@@ -865,8 +865,8 @@ export default function Index() {
                 animate={reduce ? {} : { y: [0, -8, 0] }}
                 className="absolute -top-3 -right-3 bg-card border border-border rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 max-w-[180px]"
               >
-                <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                  <Trophy className="h-4 w-4 text-emerald-500" />
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <Trophy className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Project graded</p>
@@ -885,7 +885,7 @@ export default function Index() {
                 <div>
                   <p className="text-[10px] text-muted-foreground">Just now</p>
                   <p className="text-xs font-semibold flex items-center gap-1">
-                    Job offer received <PartyPopper className="h-3.5 w-3.5 text-amber-500" />
+                    Job offer received <PartyPopper className="h-3.5 w-3.5 text-gold" />
                   </p>
                 </div>
               </motion.div>
@@ -897,8 +897,8 @@ export default function Index() {
                 className="absolute -bottom-2 right-4 bg-card border border-border rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-2"
               >
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-gold" />
                 </span>
                 <span className="text-[11px] font-medium">Live · 24 online</span>
               </motion.div>
