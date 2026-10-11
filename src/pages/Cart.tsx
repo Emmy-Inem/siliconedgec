@@ -350,8 +350,8 @@ export default function Cart() {
                   <p className="text-hero-muted text-xs uppercase tracking-[0.18em] mb-1">Order snapshot</p>
                   <p className="font-heading text-2xl text-hero">{formatPrice(total)}</p>
                 </div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center">
-                  <ShoppingBag className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-hero-muted" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -483,7 +483,7 @@ export default function Cart() {
                   {/* Gateway selector / badge */}
                   <div className="flex items-center justify-between bg-muted/40 border border-border/60 rounded-lg p-2.5 text-xs">
                     <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-primary shrink-0" />
+                      <CreditCard className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div>
                         <span className="font-medium text-foreground">
                           {gateway === "stripe" ? "Stripe (International Cards)" : "Paystack (African Cards / Transfer)"}

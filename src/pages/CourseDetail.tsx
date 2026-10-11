@@ -608,7 +608,7 @@ export default function CourseDetail() {
                                             {completed ? (
                                               <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-green-500" />
                                             ) : (
-                                              <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+                                              <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                                             )}
                                             {lesson.title}
                                             <AssignmentDot lessonId={lesson.id} />
@@ -794,7 +794,7 @@ export default function CourseDetail() {
                       className="w-full gap-2 text-xs text-muted-foreground hover:text-foreground mt-2"
                       onClick={() => setSyllabusOpen(true)}
                     >
-                      <FileText className="h-3.5 w-3.5 text-primary" /> Download Course Syllabus (PDF)
+                      <FileText className="h-3.5 w-3.5 text-foreground" /> Download Course Syllabus (PDF)
                     </Button>
                   )}
                 </div>

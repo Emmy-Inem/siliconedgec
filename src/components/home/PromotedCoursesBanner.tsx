@@ -151,7 +151,7 @@ export function PromotedCoursesBanner() {
           to={courseUrl}
           className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 shrink-0"
         >
-          <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+          <GraduationCap className="h-3.5 w-3.5 text-slate-300 shrink-0" />
           <span>{currentCourse.title.replace(/—/g, "-")}</span>
         </Link>
 

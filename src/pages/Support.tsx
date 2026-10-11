@@ -76,7 +76,7 @@ export default function Support() {
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <LifeBuoy className="h-10 w-10 text-primary mx-auto mb-3" />
+        <LifeBuoy className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
         <h1 className="font-heading text-2xl font-bold">Sign in to view your support tickets</h1>
         <Link to="/sign-in" className="inline-block mt-4 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Sign in</Link>
       </div>
@@ -88,7 +88,7 @@ export default function Support() {
       <SEO title="Support tickets | Silicon Edge Consulting" description="Track your support requests and chat with the Silicon Edge team." />
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-bold flex items-center gap-2"><LifeBuoy className="h-6 w-6 text-primary" /> Support</h1>
+          <h1 className="font-heading text-2xl font-bold flex items-center gap-2"><LifeBuoy className="h-6 w-6 text-foreground" /> Support</h1>
           <p className="text-sm text-muted-foreground mt-1">Your requests, replies from our team, and their status.</p>
         </div>
         <button onClick={() => setShowForm(s => !s)} className="shrink-0 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5">

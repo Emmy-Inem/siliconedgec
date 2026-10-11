@@ -68,7 +68,7 @@ export default function SupportTicket() {
 
       <div className="border border-border rounded-xl bg-card overflow-hidden flex flex-col h-[70vh]">
         <div className="px-4 py-3 border-b border-border">
-          <h1 className="font-heading font-semibold text-base flex items-center gap-2"><LifeBuoy className="h-4 w-4 text-primary" /> #{ticket.ticket_number} · {ticket.subject}</h1>
+          <h1 className="font-heading font-semibold text-base flex items-center gap-2"><LifeBuoy className="h-4 w-4 text-foreground" /> #{ticket.ticket_number} · {ticket.subject}</h1>
           <p className="text-xs text-muted-foreground mt-0.5 capitalize">{ticket.status} · {ticket.priority} priority · opened {format(new Date(ticket.created_at), "d MMM yyyy")}</p>
         </div>
 

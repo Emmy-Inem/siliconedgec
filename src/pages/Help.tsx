@@ -72,7 +72,7 @@ export default function Help() {
               return (
                 <article key={c.id} className="rounded-2xl border border-border bg-card p-5">
                   <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
+                    <BookOpen className="h-5 w-5 text-foreground" />
                     <h2 className="font-heading text-lg font-semibold">{c.title}</h2>
                   </div>
                   {c.description && <p className="text-sm text-muted-foreground mb-3">{c.description}</p>}

@@ -64,7 +64,7 @@ const videoTestimonials: VideoTestimonial[] = [
 function TestimonialCard({ t }: { t: TestimonialItem }) {
   return (
     <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative w-[300px] sm:w-[340px] shrink-0">
-      <Quote className="absolute top-3 right-3 h-5 w-5 text-primary/15" />
+      <Quote className="absolute top-3 right-3 h-5 w-5 text-foreground/10" />
       <div className="flex gap-0.5 mb-2.5">
         {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
           <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
@@ -220,7 +220,7 @@ export function HomeTestimonialsSection({ testimonials, homeContent }: HomeTesti
               key={b.label}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/60 backdrop-blur text-xs"
             >
-              <b.icon className="h-4 w-4 text-primary" />
+              <b.icon className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{b.label}</span>
             </div>
           ))}

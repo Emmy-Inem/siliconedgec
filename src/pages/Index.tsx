@@ -491,8 +491,8 @@ export default function Index() {
                 className="glass-card rounded-2xl border border-border/60 p-5 md:p-6 hover:border-primary/30 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]">
-                    <s.icon className="h-4.5 w-4.5 text-primary" />
+                  <div className="w-10 h-10 rounded-2xl bg-muted ring-1 ring-border/60 flex items-center justify-center">
+                    <s.icon className="h-4.5 w-4.5 text-foreground" />
                   </div>
                   <span className="text-xs text-muted-foreground">{s.label}</span>
                 </div>
@@ -538,7 +538,7 @@ export default function Index() {
               >
                 <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-gold/10 blur-3xl" />
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-11 h-11 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]"><MessagesSquare className="h-5 w-5 text-primary" /></div>
+                  <div className="w-11 h-11 rounded-2xl bg-muted ring-1 ring-border/60 flex items-center justify-center"><MessagesSquare className="h-5 w-5 text-foreground" /></div>
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
                 </div>
                 <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
@@ -550,7 +550,7 @@ export default function Index() {
             {/* Medium — completion */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
-                  <BadgeCheck className="h-4.5 w-4.5 text-primary" />
+                  <BadgeCheck className="h-4.5 w-4.5 text-foreground" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Completion</span>
               </div>
               <h3 className="font-heading font-semibold">Built for completion</h3>
@@ -561,7 +561,7 @@ export default function Index() {
             {/* Medium — skills */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
-                  <Target className="h-4.5 w-4.5 text-primary" />
+                  <Target className="h-4.5 w-4.5 text-foreground" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Hireable</span>
               </div>
               <h3 className="font-heading font-semibold">Skills that get you hired</h3>
@@ -571,7 +571,7 @@ export default function Index() {
             {/* Medium — community */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
-                  <Handshake className="h-4.5 w-4.5 text-primary" />
+                  <Handshake className="h-4.5 w-4.5 text-foreground" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Community</span>
               </div>
               <h3 className="font-heading font-semibold">Cohort energy, lifelong network</h3>
@@ -585,7 +585,7 @@ export default function Index() {
                 className="group block h-full glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <PlayCircle className="h-4 w-4 text-primary" />
+                  <PlayCircle className="h-4 w-4 text-foreground" />
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime</span>
                 </div>
                 <h3 className="font-heading font-semibold group-hover:text-primary transition-colors">Lifetime access to recordings</h3>
@@ -827,8 +827,8 @@ export default function Index() {
                     whileHover={{ x: 3 }}
                     className="flex gap-4"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="h-5 w-5 text-primary" />
+                     <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="h-5 w-5 text-hero-muted" />
                     </div>
                     <div>
                       <h4 className="font-heading font-semibold text-hero text-sm">{item.title}</h4>
@@ -885,7 +885,7 @@ export default function Index() {
                 <div>
                   <p className="text-[10px] text-muted-foreground">Just now</p>
                   <p className="text-xs font-semibold flex items-center gap-1">
-                    Job offer received <PartyPopper className="h-3.5 w-3.5 text-gold" />
+                    Job offer received <PartyPopper className="h-3.5 w-3.5 text-muted-foreground" />
                   </p>
                 </div>
               </motion.div>
