@@ -182,15 +182,15 @@ export default function CmsPagePublic() {
                     </h3>
                     <ul className="space-y-3 text-sm">
                       <li className="flex items-start gap-3">
-                        <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                         <span>3rd floor, 86–90 Paul Street, London, EC2A 4NE</span>
                       </li>
                       <li className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <a href="mailto:info@siliconedgec.com" className="hover:text-primary transition-colors break-all">info@siliconedgec.com</a>
                       </li>
                       <li className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                        <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <a href="tel:+447741247592" className="hover:text-primary transition-colors">+44 7741 247592</a>
                       </li>
                     </ul>
