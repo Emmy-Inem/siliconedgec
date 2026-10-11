@@ -367,3 +367,10 @@
 .pt-header {
   padding-top: calc(var(--header-h, 56px) + 1.5rem);
 }
+
+/* Dark surfaces: never render deep violet text on charcoal. Lift primary-coloured
+   text/icons to the brand yellow for legible contrast. */
+:where(.bg-hero, .bg-navy, .bg-navy-light) :is(.text-primary, .text-accent),
+:where(.bg-hero, .bg-navy, .bg-navy-light) :is(.hover\:text-primary:hover) {
+  color: hsl(var(--gold)) !important;
+}

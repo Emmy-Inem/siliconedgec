@@ -536,7 +536,7 @@ export default function Index() {
                 aria-label="Open cohort space"
                 className="group block h-full glass-card rounded-3xl border border-border/60 p-7 relative overflow-hidden hover:border-primary/30 transition-all"
               >
-                <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+                <div className="absolute -top-20 -right-16 w-64 h-64 rounded-full bg-gold/10 blur-3xl" />
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-11 h-11 rounded-2xl bg-primary/12 ring-1 ring-primary/15 flex items-center justify-center shadow-[0_10px_24px_-18px_hsl(var(--primary)/0.75)]"><MessagesSquare className="h-5 w-5 text-primary" /></div>
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
@@ -697,7 +697,7 @@ export default function Index() {
                   className={`relative grid md:grid-cols-2 gap-6 mb-12 md:mb-16 ${left ? "" : "md:[&>*:first-child]:order-2"}`}
                 >
                   {/* node */}
-                  <div className="absolute left-6 md:left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-primary ring-4 ring-background z-10" />
+                  <div className="absolute left-6 md:left-1/2 top-6 -translate-x-1/2 w-4 h-4 rounded-full bg-gold ring-4 ring-background z-10" />
 
                   <div className={`pl-16 md:pl-0 ${left ? "md:text-right md:pr-12" : "md:pl-12"}`}>
                     <span className="font-heading text-5xl md:text-6xl font-bold text-gradient leading-none">{step.n}</span>
@@ -920,7 +920,7 @@ export default function Index() {
           <div className="perspective-grid absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-t from-hero via-hero/80 to-transparent" />
         </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-gold/10 blur-3xl" />
         <div className="container mx-auto px-5 sm:px-6 text-center relative">
           <motion.div {...sectionReveal} className="max-w-2xl mx-auto">
             <p className="text-primary font-medium text-sm tracking-widest uppercase mb-4">{home?.cta_eyebrow ?? "Enrolment is open"}</p>
