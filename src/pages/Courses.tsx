@@ -343,15 +343,15 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                         {/* Core Pillars: Sleek glass chips */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                           <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <Terminal className="h-4 w-4 text-sky-400 shrink-0" />
+                            <Terminal className="h-4 w-4 text-slate-400 shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar1}</span>
                           </div>
                           <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <Clock className="h-4 w-4 text-sky-400 shrink-0" />
+                            <Clock className="h-4 w-4 text-slate-400 shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar2}</span>
                           </div>
                           <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <ShieldCheck className="h-4 w-4 text-sky-400 shrink-0" />
+                            <ShieldCheck className="h-4 w-4 text-slate-400 shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar3}</span>
                           </div>
                         </div>

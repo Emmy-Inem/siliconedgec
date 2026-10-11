@@ -86,7 +86,7 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
     <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CalIcon className="h-5 w-5 text-primary" />
+          <CalIcon className="h-5 w-5 text-foreground" />
           <h3 className="font-heading text-lg font-semibold">{monthLabel}</h3>
         </div>
         <div className="flex gap-1">

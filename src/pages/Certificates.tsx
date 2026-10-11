@@ -242,7 +242,7 @@ export default function Certificates() {
           </motion.div>
 
           <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
-            <Award className="h-10 w-10 text-primary mx-auto mb-4" />
+            <Award className="h-10 w-10 text-foreground mx-auto mb-4" />
             <h3 className="font-heading text-2xl font-bold mb-2">Ready to earn yours?</h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">Browse our catalog of cloud, AI, and DevOps courses — each one ends with a verifiable certificate.</p>
             <Button size="lg" asChild className="hover-scale">

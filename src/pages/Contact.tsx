@@ -128,9 +128,9 @@ export default function Contact() {
             <Card className="p-6 border-border/60">
               <h2 className="font-heading font-semibold mb-4">Reach us directly</h2>
               <ul className="space-y-3 text-sm">
-                <li className="flex items-start gap-3"><MapPin className="h-4 w-4 text-primary mt-0.5" /><span>{address}</span></li>
-                <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /><a href={`mailto:${email}`} className="hover:text-primary break-all">{email}</a></li>
-                <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /><a href={`tel:${phone}`} className="hover:text-primary">{phone}</a></li>
+                <li className="flex items-start gap-3"><MapPin className="h-4 w-4 text-muted-foreground mt-0.5" /><span>{address}</span></li>
+                <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-muted-foreground" /><a href={`mailto:${email}`} className="hover:text-primary break-all">{email}</a></li>
+                <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-muted-foreground" /><a href={`tel:${phone}`} className="hover:text-primary">{phone}</a></li>
               </ul>
             </Card>
             <Card className="p-6 border-border/60 bg-primary/5">

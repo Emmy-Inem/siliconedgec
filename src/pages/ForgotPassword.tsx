@@ -69,7 +69,7 @@ export default function ForgotPassword() {
 
             {sent ? (
               <div className="flex flex-col items-center gap-3 py-4">
-                <CheckCircle2 className="h-12 w-12 text-primary" />
+                <CheckCircle2 className="h-12 w-12 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground text-center">
                   Check your inbox (and spam folder) for an email from Silicon Edge.
                   The link expires in 60 minutes.
