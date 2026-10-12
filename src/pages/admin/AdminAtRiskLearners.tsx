@@ -100,7 +100,7 @@ export default function AdminAtRiskLearners() {
         <Badge variant="outline">{filtered.length} flagged</Badge>
       </div>
       <div className="grid gap-3">
-        {filtered.length === 0 && <Card className="p-8 text-center text-sm text-muted-foreground">Everyone is on track. 🎉</Card>}
+        {filtered.length === 0 && <Card className="p-8 text-center text-sm text-muted-foreground">Everyone is on track.</Card>}
         {filtered.map((r, i) => (
           <Card key={`${r.user_id}-${i}`} className="p-4 flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
@@ -118,7 +118,7 @@ export default function AdminAtRiskLearners() {
             <Button size="sm" variant="outline" onClick={() => {
               (supabase as any).from("notifications").insert({
                 user_id: r.user_id,
-                title: "We miss you 👋",
+                title: "We miss you",
                 message: `Keep going with ${r.course}. Your instructor is here if you need help.`,
                 type: "info",
                 link: "/dashboard",

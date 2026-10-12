@@ -664,7 +664,7 @@ export default function CourseDetail() {
                           <ul className="space-y-2">
                             {course.learning_outcomes.map((outcome, i) => (
                               <li key={i} className="flex items-start gap-2">
-                                <span className="text-emerald-500 mt-0.5">✓</span>
+                                <span className="text-muted-foreground mt-0.5">✓</span>
                                 <span>{outcome}</span>
                               </li>
                             ))}

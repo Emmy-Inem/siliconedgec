@@ -151,7 +151,7 @@ export function AssignmentPanel({ lessonId, onSubmitted }: { lessonId: string; o
               disabled={isGraded}
               aria-label={`Response for ${a.title}`}
             />
-            {sub?.file_url && <p className="text-[11px] text-muted-foreground">📎 File attached</p>}
+            {sub?.file_url && <p className="text-[11px] text-muted-foreground">File attached</p>}
             {sub?.feedback && <div className="text-sm bg-muted/40 rounded p-2"><span className="font-semibold">Instructor feedback:</span> {sub.feedback}</div>}
             <div className="flex gap-2">
               <Button size="sm" onClick={() => submit(a)} disabled={saving === a.id || isGraded} aria-label={sub ? `Update submission for ${a.title}` : `Submit ${a.title}`}>

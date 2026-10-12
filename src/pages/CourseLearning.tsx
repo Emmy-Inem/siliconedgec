@@ -392,7 +392,7 @@ export default function CourseLearning() {
         })
       ) {
         toast({
-          title: "Course complete! 🎓",
+          title: "Course complete!",
           description: "Generating your certificate…",
         });
         setTimeout(() => navigate("/certificates?download=latest"), 800);

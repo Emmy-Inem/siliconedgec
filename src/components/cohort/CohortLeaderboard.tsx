@@ -16,7 +16,7 @@ type Row = {
   assignments_submitted: number;
 };
 
-const MEDALS = ["🥇", "🥈", "🥉"];
+const MEDALS = ["1st", "2nd", "3rd"];
 
 /** Friendly cohort leaderboard — gives members a reason to come back weekly. */
 export default function CohortLeaderboard({ cohortId, userId }: { cohortId: string; userId: string }) {

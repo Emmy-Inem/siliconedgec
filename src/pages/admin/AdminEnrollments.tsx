@@ -40,7 +40,7 @@ const columns: Column<EnrollmentRow>[] = [
       <span className="text-xs">{e.progress_percentage ?? 0}%</span>
     </div>
   )},
-  { key: "is_completed", label: "Completed", render: (e) => e.is_completed ? "✅" : "—" },
+  { key: "is_completed", label: "Completed", render: (e) => e.is_completed ? "✓" : "—" },
   { key: "created_at", label: "Date", render: (e) => new Date(e.created_at).toLocaleDateString() },
 ];
 
