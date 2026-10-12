@@ -168,7 +168,6 @@ export default function Certificates() {
                 viewport={{ once: true }}
                 className="relative bg-card rounded-2xl border border-border p-8 text-center hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all group overflow-hidden"
               >
-                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary/5 blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors" />
                 <item.icon className="h-8 w-8 text-foreground mx-auto mb-4" />
                 <h3 className="font-heading font-semibold text-lg mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>

@@ -43,7 +43,6 @@ export function CourseDetailHero({
           WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 85%)",
         }}
       />
-      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gold/10 blur-3xl pointer-events-none" />
       <div className="container mx-auto px-4 relative">
         <Link to="/courses" className="inline-flex items-center text-muted-foreground hover:text-primary text-sm mb-6 transition-colors">

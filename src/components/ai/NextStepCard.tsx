@@ -23,7 +23,6 @@ export function NextStepCard({ userId }: { userId: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
       className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted via-background to-transparent p-5 md:p-6">
-      <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
       <div className="flex items-start gap-4 relative">
         <Star className="h-5 w-5 shrink-0 text-foreground" />
         <div className="flex-1 min-w-0">

@@ -58,8 +58,8 @@ function ChatBubbleTile() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-80" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold/60 opacity-80" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gold" />
           </span>
           <span className="text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">Live mentor feedback</span>
         </div>
@@ -592,8 +592,8 @@ export default function Index() {
                 <p className="text-sm text-muted-foreground mt-2">Replay any class, anytime. Learn the second time even faster.</p>
                 <span className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-medium">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-gold" />
                   </span>
                   {user ? "Open my recordings" : "Browse courses"}
                   <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />

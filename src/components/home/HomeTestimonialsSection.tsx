@@ -147,7 +147,7 @@ function VideoTestimonialCard({ item }: { item: VideoTestimonial }) {
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:shadow-primary/40 group-hover:shadow-xl">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-foreground/80 text-background shadow-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:shadow-primary/40 group-hover:shadow-xl">
             <Play className="h-6 w-6 fill-current ml-0.5" />
           </div>
         </div>

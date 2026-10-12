@@ -129,7 +129,7 @@ export function LiveClassCalendar({ classes, showJoin = true }: Props) {
             >
               <span className={cn("font-medium", isToday && "text-primary")}>{d.getDate()}</span>
               {items.length > 0 && (
-                <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
               )}
               {items.length > 1 && (
                 <span className="text-[9px] text-muted-foreground">{items.length}</span>

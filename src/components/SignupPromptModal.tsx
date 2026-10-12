@@ -171,7 +171,7 @@ export function SignupPromptModal() {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <GraduationCap className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center">{copy[reason].title}</DialogTitle>

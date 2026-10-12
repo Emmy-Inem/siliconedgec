@@ -84,7 +84,7 @@ export default function Contact() {
           <Card className="p-6 sm:p-8 border-border/60">
             {sent ? (
               <div className="text-center py-12">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary mb-4">
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <h2 className="font-heading text-xl font-semibold mb-2">Thanks — we got it.</h2>

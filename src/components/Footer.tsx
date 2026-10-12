@@ -130,7 +130,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                     aria-label={`Silicon Edge Consulting on ${label}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-xl bg-navy-light/90 border border-white/10 text-hero-muted hover:text-primary hover:border-primary/40 hover:bg-primary/10 transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5 shadow-sm"
+                    className="w-9 h-9 rounded-xl bg-navy-light/90 border border-white/10 text-hero-muted hover:text-primary hover:border-white/30 hover:bg-white/5 transition-all duration-200 flex items-center justify-center hover:-translate-y-0.5 shadow-sm"
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </a>
@@ -142,7 +142,6 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
           {/* Col 2: Programs (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="font-heading font-semibold text-xs text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Programs
             </h4>
             <ul className="space-y-2.5 text-sm">
@@ -157,7 +156,6 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
           {/* Col 3: Company (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="font-heading font-semibold text-xs text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Company
             </h4>
             <ul className="space-y-2.5 text-sm">
@@ -173,7 +171,6 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
           {/* Col 4: Legal & Support (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="font-heading font-semibold text-xs text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Legal &amp; Support
             </h4>
             <ul className="space-y-2.5 text-sm">
@@ -193,7 +190,6 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
           {/* Col 5: Newsletter & Contact (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
             <h4 className="font-heading font-semibold text-xs text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Stay Connected
             </h4>
             <p className="text-xs text-hero-muted/90 leading-relaxed">
@@ -212,7 +208,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
                 type="submit"
                 aria-label="Subscribe to the Silicon Edge newsletter"
                 disabled={subBusy}
-                className="absolute right-1.5 p-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all hover:scale-105 disabled:opacity-50 flex items-center justify-center shadow-md shadow-primary/20 cursor-pointer"
+                className="absolute right-1.5 p-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all hover:scale-105 disabled:opacity-50 flex items-center justify-center  cursor-pointer"
               >
                 {subBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               </button>
