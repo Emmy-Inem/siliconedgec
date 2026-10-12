@@ -374,3 +374,10 @@
 :where(.bg-hero, .bg-navy, .bg-navy-light) :is(.hover\:text-primary:hover) {
   color: hsl(var(--gold)) !important;
 }
+
+/* Neutral iconography: decorative icons render charcoal/grey, never themed.
+   Icons inside buttons/links keep their colour; stars (fill-gold) and
+   status ticks (green/red) keep meaning-carrying colours. */
+svg.lucide:is(.text-primary, .text-accent, .text-gold, [class*="text-sky-"], [class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"], [class*="text-blue-"], [class*="text-cyan-"], [class*="text-teal-"], [class*="text-pink-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-amber-"], [class*="text-yellow-"]):not(.fill-gold):not(button *):not(a *):not([role="button"] *) {
+  color: hsl(var(--muted-foreground)) !important;
+}
