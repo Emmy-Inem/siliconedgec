@@ -64,7 +64,7 @@ export default function VerifyReceipt() {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-primary text-xs font-medium mb-4">
               <ShieldCheck className="h-3.5 w-3.5" /> Receipt Verification
             </div>
             <h1 className="font-heading text-3xl md:text-4xl font-bold mb-2">Receipt Authenticity Check</h1>

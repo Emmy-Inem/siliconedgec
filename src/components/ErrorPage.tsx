@@ -106,7 +106,7 @@ export function ErrorPage({
         {/* Glowing badge */}
         <div className="relative mb-6">
           <div className="absolute -inset-2 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur-xl opacity-75 animate-pulse" />
-          <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider">
+          <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-muted text-foreground text-xs font-semibold uppercase tracking-wider">
             <AlertTriangle className="h-3.5 w-3.5" /> Error {statusCode}
           </div>
         </div>
@@ -196,7 +196,7 @@ export function ErrorPage({
                   to={item.href}
                   className="group flex items-start gap-3 p-3.5 rounded-xl border border-border/60 bg-card/40 hover:bg-card hover:border-primary/40 hover:shadow-sm transition-all"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">

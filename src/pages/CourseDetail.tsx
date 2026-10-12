@@ -738,7 +738,7 @@ export default function CourseDetail() {
                         </p>
                         <div className="pt-2 mt-2 border-t">
                           <div className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground" />
                             My Cohort Space
                           </div>
                           <CohortAccessButton courseId={course.id} />
@@ -841,7 +841,7 @@ export default function CourseDetail() {
                 {displayInstructor && (
                   <div className="bg-card rounded-xl border border-border p-5 space-y-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {displayInstructor.avatar_url ? (
                           <img src={displayInstructor.avatar_url} alt={displayInstructor.name} className="w-full h-full object-cover" />
                         ) : (
