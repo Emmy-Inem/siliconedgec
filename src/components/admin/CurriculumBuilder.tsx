@@ -605,7 +605,7 @@ export function CurriculumBuilder({ courseId }: Props) {
                       onChange={(e) => setQuizTarget(e.target.value)}
                       className={inputClass}
                     >
-                      <option value="new">➕ Create new lesson slot in this module</option>
+                      <option value="new">+ Create new lesson slot in this module</option>
                       {lessonsByModule(lessonForm.module_id).map((l) => (
                         <option key={l.id} value={l.id}>{l.title}</option>
                       ))}
@@ -742,7 +742,7 @@ export function CurriculumBuilder({ courseId }: Props) {
                       onChange={(e) => setAssignmentTarget(e.target.value)}
                       className={inputClass}
                     >
-                      <option value="new">➕ Create new lesson slot in this module</option>
+                      <option value="new">+ Create new lesson slot in this module</option>
                       {lessonsByModule(lessonForm.module_id)
                         .filter((l) => (l.content_type ?? "video") !== "assignment")
                         .map((l) => (

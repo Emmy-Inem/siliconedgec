@@ -125,7 +125,7 @@ export default function AdminEmail() {
       // Insert notifications in batches
       const notifs = userIds.map(uid => ({
         user_id: uid,
-        title: `📢 ${form.subject}`,
+        title: form.subject,
         message: form.body.slice(0, 200),
         type: "info" as const,
       }));

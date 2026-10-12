@@ -336,7 +336,7 @@ export default function CohortDiscussion({
               <div className="font-medium">Start the conversation</div>
               <p className="text-sm text-muted-foreground mt-1 mb-4">Say hello, ask a question, or share a win with your cohort.</p>
               <div className="flex flex-wrap gap-2 justify-center">
-                {["👋 Introduce yourself", "❓ Ask a question", "🎉 Share a win"].map((s) => (
+                {["Introduce yourself", "Ask a question", "Share a win"].map((s) => (
                   <Button key={s} size="sm" variant="outline" onClick={() => { setContent(s.slice(2) + ": "); setAsQuestion(s.includes("question")); }}>
                     {s}
                   </Button>
