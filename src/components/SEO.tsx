@@ -11,10 +11,10 @@ interface SEOProps {
   canonical?: string;
   jsonLd?: Record<string, unknown>;
   noIndex?: boolean;
+  locale?: string;
 }
 
 const DEFAULT_DESCRIPTION = "Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.";
-const DEFAULT_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ddc2d0fe-cdba-4f84-9bff-05dfcb6f4f25/id-preview-ad6dd644--39a05b61-2976-479d-954e-83ee91469ade.lovable.app-1772869755615.png";
 const PRODUCTION_ORIGIN = "https://siliconedgec.com";
 
 /** Force canonicals to use the production domain even when viewed on
@@ -29,7 +29,7 @@ function buildCanonical(pathname: string, search: string): string {
   return `${PRODUCTION_ORIGIN}${pathname}${qs ? `?${qs}` : ""}`;
 }
 
-export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_IMAGE, type = "website", canonical, jsonLd, noIndex }: SEOProps) {
+export function SEO({ title, description = DEFAULT_DESCRIPTION, image, type = "website", canonical, jsonLd, noIndex, locale = "en_NG" }: SEOProps) {
   const location = useLocation();
   const [override, setOverride] = useState<{
     title?: string | null;
@@ -42,6 +42,7 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
 
   useEffect(() => {
     let active = true;
+    setOverride(null);
     (async () => {
       const { data } = await supabase
         .from("page_seo")
@@ -74,16 +75,16 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image = DEFAULT_
 
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content="Silicon Edge Consulting" />
-      <meta property="og:locale" content="en_NG" />
+      <meta property="og:locale" content={locale} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={finalDescription} />
-      <meta property="og:image" content={finalImage} />
+      {finalImage && <meta property="og:image" content={finalImage} />}
       {url && <meta property="og:url" content={url} />}
 
-      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:card" content={finalImage ? "summary_large_image" : "summary"} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={finalDescription} />
-      <meta name="twitter:image" content={finalImage} />
+      {finalImage && <meta name="twitter:image" content={finalImage} />}
 
       {jsonLd && (
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
