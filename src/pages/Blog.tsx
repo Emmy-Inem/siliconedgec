@@ -62,7 +62,7 @@ export default function Blog() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title={activeCategory ? `${activeCategory} Articles — Blog` : "Blog — Tech Career Insights & Tutorials"}
-        description="Articles on AI, cloud, DevOps, careers and live training from Silicon Edge Consulting."
+        description="Practical cloud computing, Azure and DevOps training guides for UK learners and global teams, from Silicon Edge Consulting."
         canonical={siteUrl(activeCategory ? `/blog?category=${encodeURIComponent(activeCategory)}` : "/blog")}
         jsonLd={jsonLd}
       />
@@ -74,7 +74,7 @@ export default function Blog() {
             The Silicon Edge Blog
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mb-6">
-            Practical guides, career stories, and updates from our instructors on AI, cloud, DevOps, and more.
+            Practical cloud, Azure and DevOps guides for UK learners and global teams — from choosing a course to building a project portfolio.
           </p>
           {categories.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">

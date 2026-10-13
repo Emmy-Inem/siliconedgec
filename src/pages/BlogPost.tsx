@@ -40,6 +40,9 @@ export default function BlogPost() {
     let active = true;
     (async () => {
       setLoading(true);
+      setNotFound(false);
+      setPost(null);
+      setRelated([]);
       const { data } = await (supabase
         .from("blog_posts" as any)
         .select("*")
@@ -80,13 +83,14 @@ export default function BlogPost() {
         image: post.featured_image_url ?? undefined,
         datePublished: post.published_at,
         dateModified: post.updated_at ?? post.published_at,
-        author: { "@type": "Person", name: post.author_name || "Silicon Edge Consulting" },
+        author: { "@type": !post.author_name || post.author_name === "Silicon Edge Consulting" ? "Organization" : "Person", name: post.author_name || "Silicon Edge Consulting" },
         publisher: {
           "@type": "Organization",
           name: "Silicon Edge Consulting",
-          logo: { "@type": "ImageObject", url: "https://siliconedgec.com/favicon.ico" },
+          logo: { "@type": "ImageObject", url: "https://siliconedgec.com/favicon.png" },
         },
         mainEntityOfPage: siteUrl(`/blog/${post.slug}`),
+        inLanguage: post.tags?.includes("UK") ? "en-GB" : "en",
       },
       {
         "@type": "BreadcrumbList",
@@ -106,6 +110,9 @@ export default function BlogPost() {
         description={post?.meta_description ?? post?.excerpt ?? undefined}
         image={post?.featured_image_url ?? undefined}
         type="article"
+        canonical={slug ? siteUrl(`/blog/${slug}`) : undefined}
+        locale={post?.tags?.includes("UK") ? "en_GB" : "en_NG"}
+        noIndex={notFound}
         jsonLd={jsonLd ?? undefined}
       />
       <Header />
@@ -145,6 +152,9 @@ export default function BlogPost() {
                 <span className="inline-flex items-center gap-1.5">{post.reading_time_minutes} min read</span>
               ) : null}
             </div>
+            {post.featured_image_url && (
+              <img src={post.featured_image_url} alt={post.title} width={1200} height={630} className="w-full aspect-[1200/630] object-cover mb-8 rounded-lg" fetchPriority="high" />
+            )}
             <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary prose-table:w-full prose-th:bg-muted prose-th:text-left prose-th:p-2 prose-td:p-2 prose-td:border prose-th:border prose-table:border-collapse">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content ?? ""}</ReactMarkdown>
             </div>
