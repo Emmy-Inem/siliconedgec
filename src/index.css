@@ -391,3 +391,19 @@ svg.lucide:is(.text-primary, .text-accent, [class*="text-violet-"], [class*="tex
 }
 :is(.bg-primary, .bg-accent, .shimmer-btn) svg.lucide { color: hsl(var(--primary-foreground)) !important; }
 svg.lucide[class*="fill-primary"], svg.lucide[class*="fill-violet"], svg.lucide[class*="fill-purple"] { fill: hsl(var(--muted-foreground)) !important; }
+
+/* Reserve purple text for navigation, links and selected controls. Ordinary
+   copy stays neutral, including content rendered in dialogs and popovers. */
+:is(h1, h2, h3, h4, h5, h6, p, div, span, strong, b, label, dt, dd, li)
+  :is(.text-primary, .text-accent) {
+  /* Intentionally empty: the direct-element rule below avoids inheritance
+     changes to interactive descendants. */
+}
+:is(h1, h2, h3, h4, h5, h6, p, div, span, strong, b, label, dt, dd, li):is(.text-primary, .text-accent, [class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"])
+  :not(*) { color: inherit; }
+:is(h1, h2, h3, h4, h5, h6, p, div, span, strong, b, label, dt, dd, li):is(.text-primary, .text-accent, [class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]):not(:is(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], [aria-selected="true"], [aria-current], [data-state="active"], [data-state="checked"], .bg-primary, .bg-accent)):not(:is(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], [aria-selected="true"], [aria-current], [data-state="active"], [data-state="checked"], .bg-primary, .bg-accent) *) {
+  color: hsl(var(--foreground)) !important;
+}
+:where(.bg-hero, .bg-navy, .bg-navy-light) :is(h1, h2, h3, h4, h5, h6, p, div, span, strong, b, label, dt, dd, li):is(.text-primary, .text-accent, [class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]):not(:is(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], [aria-selected="true"], [aria-current], [data-state="active"], [data-state="checked"] *)) {
+  color: hsl(var(--hero-foreground)) !important;
+}
