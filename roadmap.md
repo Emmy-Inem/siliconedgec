@@ -6,3 +6,4 @@
 - [x] Remove decorative themed square icon wrappers across public, student, instructor, and admin pages while preserving functional icon buttons.
 - [x] Repair and verify the scheduled Google Drive database backup.
 - [x] Apply the professional SEC brand palette across the website without changing the design structure; verify the pages.
+- [ ] Improve website SEO and add a substantive UK-focused blog article with verified positioning.
