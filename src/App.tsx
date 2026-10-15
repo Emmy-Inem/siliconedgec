@@ -52,6 +52,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Contact = lazy(() => import("./pages/Contact"));
 const About = lazy(() => import("./pages/About"));
+const Locations = lazy(() => import("./pages/Locations"));
 const Faq = lazy(() => import("./pages/Faq"));
 const InstructorsIndex = lazy(() => import("./pages/Instructors"));
 const TestimonialsPage = lazy(() => import("./pages/Testimonials"));
@@ -189,6 +190,8 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
+              <Route path="/locations" element={<Locations />} />
+              <Route path="/locations/:city" element={<Locations />} />
               <Route path="/faq" element={<Faq />} />
               <Route path="/instructors" element={<InstructorsIndex />} />
               <Route path="/testimonials" element={<TestimonialsPage />} />
