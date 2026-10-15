@@ -15,8 +15,9 @@
 - [Learning Paths](/paths): Role-based sequences for Cloud, DevOps and Full-Stack careers.
 - [Blog](/blog): Career guides on cloud, DevOps, AI and certifications.
 - [Cloud Computing Courses in the UK: A Practical Guide](/blog/cloud-computing-courses-uk-practical-training-guide): How UK learners can choose cloud training, AWS vs Azure, projects and questions to ask.
-- [AI Skills for UK Professionals](/blog/ai-skills-uk-professionals-where-to-start): Roadmap for learning AI and machine learning.
+- [AI Skills for European Professionals](/blog/ai-skills-uk-professionals-where-to-start): Roadmap for learning AI in Europe.
 - [Data Engineering Careers in the UK](/blog/data-engineering-careers-uk-skills-roadmap): Skills, tools and a learning roadmap for data engineers.
+- [Locations](/locations): Cloud training for London, Manchester, Birmingham, Leeds, Glasgow, Edinburgh, Dublin, Amsterdam, Berlin, Paris and Lisbon. Based at 3rd Floor, 86-90 Paul Street, London EC2A 4NE.
 - [About](/about): What Silicon Edge Consulting is and who it serves.
 - [Contact](/contact): Course inquiries, corporate partnerships and admissions.
 - [FAQ](/faq): Delivery format, certificates, payments and refunds.
