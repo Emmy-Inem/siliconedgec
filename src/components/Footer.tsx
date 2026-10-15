@@ -160,6 +160,7 @@ export const Footer = forwardRef<HTMLElement>(function Footer(_, ref) {
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li><Link to="/about" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">About</Link></li>
+              <li><Link to="/locations" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Locations</Link></li>
               <li><Link to="/instructors" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Instructors</Link></li>
               <li><Link to="/testimonials" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Testimonials</Link></li>
               <li><Link to="/blog" className="text-hero-muted/85 hover:text-white hover:translate-x-1 transition-all duration-200 inline-block">Blog</Link></li>

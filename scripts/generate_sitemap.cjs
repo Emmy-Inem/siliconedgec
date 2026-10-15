@@ -76,6 +76,18 @@ async function generate() {
     { path: '/privacy', priority: '0.5', changefreq: 'monthly' },
     { path: '/refund-policy', priority: '0.5', changefreq: 'monthly' },
     { path: '/cookie-policy', priority: '0.5', changefreq: 'monthly' },
+    { path: '/locations', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/london', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/manchester', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/birmingham', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/leeds', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/glasgow', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/edinburgh', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/dublin', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/amsterdam', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/berlin', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/paris', priority: '0.7', changefreq: 'monthly' },
+    { path: '/locations/lisbon', priority: '0.7', changefreq: 'monthly' },
   ];
 
   const entry = (loc, lastmod, changefreq, priority) =>
