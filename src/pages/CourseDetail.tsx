@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Clock, Star, Users, ArrowLeft, PlayCircle, Loader2, ShoppingCart,
   Lock, Award, FileText, MonitorPlay, Bookmark, BookmarkCheck,
-  CheckCircle2, Infinity as InfinityIcon,
+  CheckCircle2, Infinity as InfinityIcon, Eye, EyeOff,
 } from "lucide-react";
 import { StarRating } from "@/components/StarRating";
 import { motion } from "framer-motion";
@@ -433,6 +433,44 @@ export default function CourseDetail() {
     onError: (e) => toast({ title: "Enrollment failed", description: e.message, variant: "destructive" }),
   });
 
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      if (!courseId) return;
+      const { error } = await supabase
+        .from("courses")
+        .update({
+          is_published: true,
+          status: "published",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", courseId);
+      if (error) throw error;
+      await logUserActivity({
+        user_id: user!.id,
+        action: "course_publish",
+        entity_type: "course",
+        entity_id: courseId,
+        metadata: { title: course?.title },
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["course", id] });
+      qc.invalidateQueries({ queryKey: ["courses"] });
+      qc.invalidateQueries({ queryKey: ["admin-courses"] });
+      toast({
+        title: "Course Published!",
+        description: "This course is now live and visible to all visitors on the website.",
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Failed to publish course",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddToCart = () => {
     if (!user) { requestSignup("cart"); return; }
     if (courseId) {
@@ -491,6 +529,27 @@ export default function CourseDetail() {
         <div className="container mx-auto px-4 pt-32 text-center">
           <h1 className="font-heading text-2xl font-bold mb-4">Course Not Found</h1>
           <Button asChild><Link to="/courses">Browse Courses</Link></Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const isHidden = course.is_published === false;
+
+  if (isHidden && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 pt-32 pb-16 text-center max-w-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-4 shadow-sm">
+            <EyeOff className="h-8 w-8" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold mb-2">Course Unavailable</h1>
+          <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+            This course is currently hidden from the website or undergoing updates by the instructors. Please explore our active catalog of live courses and bootcamps.
+          </p>
+          <Button asChild><Link to="/courses">Browse Active Courses</Link></Button>
         </div>
         <Footer />
       </div>
@@ -559,6 +618,33 @@ export default function CourseDetail() {
       />
       <Header />
       <CourseAiCoach courseTitle={course.title} courseSlug={courseSlug} />
+
+      {/* Admin Preview Banner when course is hidden */}
+      {isHidden && isAdmin && (
+        <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-950 dark:text-amber-200 py-2.5 px-4 text-xs sm:text-sm font-medium sticky top-16 z-30 backdrop-blur-md">
+          <div className="container mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <EyeOff className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span>
+                <strong>Admin Preview:</strong> This course is currently <strong>hidden from the public website</strong>. Regular visitors cannot see or purchase this course.
+              </span>
+            </div>
+            <Button
+              size="sm"
+              disabled={publishMutation.isPending}
+              onClick={() => publishMutation.mutate()}
+              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-medium"
+            >
+              {publishMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+              ) : (
+                <Eye className="h-3.5 w-3.5 mr-1" />
+              )}
+              Publish on Website
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Hero Banner */}
       <CourseDetailHero

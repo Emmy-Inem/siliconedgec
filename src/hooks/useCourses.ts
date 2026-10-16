@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { courses as staticCourses, type Course as StaticCourse } from "@/data/courses";
 
 export interface DbLesson {
   id: string;
@@ -39,6 +40,48 @@ export interface DbCourse {
   modules: DbModule[];
 }
 
+function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
+  const slug = c.slug || c.id;
+  return {
+    id: c.id,
+    slug,
+    title: c.title,
+    description: c.description,
+    category: c.category,
+    price: c.price,
+    difficulty: c.difficulty,
+    duration_hours: c.durationHours,
+    thumbnail_url: c.thumbnailUrl || null,
+    rating: c.rating,
+    students_enrolled: c.studentsEnrolled,
+    learning_outcomes: c.learningOutcomes,
+    whats_included: c.whatsIncluded ?? [
+      "24 hours of interactive lessons, practical walkthroughs, and case studies",
+      "Prompt Engineering Cheat Sheet + 50+ Copy-Paste Workplace Prompt Templates",
+      "Weekly hands-on labs and capstone project review",
+      "Silicon Edge Consulting Certificate of Completion",
+    ],
+    is_published: c.isPublished !== false,
+    instructor: {
+      id: "inst-" + c.id,
+      name: c.instructorName,
+      bio: c.instructorBio,
+      avatar_url: c.instructorAvatar || null,
+    },
+    modules: c.modules.map((m, mIdx) => ({
+      id: m.id,
+      title: m.title,
+      order_index: mIdx,
+      lessons: m.lessons.map((l, lIdx) => ({
+        id: l.id,
+        title: l.title,
+        duration: l.duration,
+        order_index: lIdx,
+      })),
+    })),
+  };
+}
+
 // Webinars (free / titles starting with "FREE") sort first, then newest.
 export function isWebinarCourse(c: Pick<DbCourse, "price" | "title">): boolean {
   return (c.price ?? 0) === 0 || (c.title ?? "").toUpperCase().startsWith("FREE");
@@ -69,15 +112,32 @@ async function fetchCourses(): Promise<DbCourse[]> {
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  if (!courses || courses.length === 0) return [];
+  if (error) {
+    console.warn("fetchCourses DB query failed, falling back to static courses:", error);
+  }
 
-  const mapped = courses.map((c: any) => ({
-    ...c,
-    instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
-    modules: [],
-  }));
-  return sortWebinarsFirst(mapped);
+  const existingKeys = new Set<string>();
+  const mapped = (courses ?? []).map((c: any) => {
+    if (c.slug) existingKeys.add(c.slug.toLowerCase());
+    if (c.id) existingKeys.add(c.id.toLowerCase());
+    return {
+      ...c,
+      instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
+      modules: [],
+    };
+  });
+
+  // Seamlessly merge published static courses that aren't yet in the database
+  const extraCourses = staticCourses
+    .filter(
+      (sc) =>
+        sc.isPublished !== false &&
+        !existingKeys.has((sc.slug || sc.id).toLowerCase()) &&
+        !existingKeys.has(sc.id.toLowerCase())
+    )
+    .map(mapStaticCourseToDbCourse);
+
+  return sortWebinarsFirst([...mapped, ...extraCourses]);
 }
 
 // Full fetch with modules/lessons for detail page
@@ -91,8 +151,22 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
     .eq(column, idOrSlug)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!course) return null;
+  if (error) {
+    console.warn("fetchCourseByIdOrSlug DB query error:", error);
+  }
+
+  if (!course) {
+    const staticMatch = staticCourses.find(
+      (c) =>
+        c.id.toLowerCase() === idOrSlug.toLowerCase() ||
+        (c.slug && c.slug.toLowerCase() === idOrSlug.toLowerCase()) ||
+        c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") === idOrSlug.toLowerCase()
+    );
+    if (staticMatch) {
+      return mapStaticCourseToDbCourse(staticMatch);
+    }
+    return null;
+  }
 
   const { data: modules } = await supabase
     .from("modules")

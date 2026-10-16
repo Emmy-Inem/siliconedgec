@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File, X
+  ArrowLeft, ArrowRight, Check, Upload, Image, Loader2, Save, Send, Video, FileAudio, File, X, Eye, EyeOff
 } from "lucide-react";
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
@@ -653,20 +653,61 @@ export default function AdminCourseCreate() {
                 </div>
               </div>
 
-              {/* Publish */}
-              <div className="border-t border-border pt-5 space-y-3">
-                <h3 className="font-heading font-semibold text-sm">Publishing</h3>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" checked={form.enable_reviews} onChange={e => setForm({ ...form, enable_reviews: e.target.checked })} id="reviews" className="rounded" />
-                  <label htmlFor="reviews" className="text-sm">Enable Reviews</label>
-                </div>
+              {/* Website Visibility & Publishing */}
+              <div className="border-t border-border pt-5 space-y-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1">Course Status</label>
-                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={inputClass}>
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="published">Published</option>
-                  </select>
+                  <h3 className="font-heading font-semibold text-sm">Website Visibility</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Control whether this course is public on the website or hidden in draft mode.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, status: "published" })}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all ${
+                      form.status === "published"
+                        ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-200 ring-1 ring-emerald-500"
+                        : "border-border hover:border-muted-foreground/30 text-foreground"
+                    }`}
+                  >
+                    <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold flex items-center gap-1.5">
+                        <span>Visible on Website</span>
+                        {form.status === "published" && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Published publicly in catalog, search, and available for enrollments.
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, status: "draft" })}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all ${
+                      form.status !== "published"
+                        ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-950 dark:text-amber-200 ring-1 ring-amber-500"
+                        : "border-border hover:border-muted-foreground/30 text-foreground"
+                    }`}
+                  >
+                    <EyeOff className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold flex items-center gap-1.5">
+                        <span>Hidden from Website</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Draft mode. Hidden from public visitors and catalog; only staff can preview.
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input type="checkbox" checked={form.enable_reviews} onChange={e => setForm({ ...form, enable_reviews: e.target.checked })} id="reviews" className="rounded" />
+                  <label htmlFor="reviews" className="text-sm">Enable Reviews on Course Page</label>
                 </div>
               </div>
             </>
