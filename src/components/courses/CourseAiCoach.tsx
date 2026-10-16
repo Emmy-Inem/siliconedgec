@@ -56,13 +56,13 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="relative max-w-[220px] rounded-2xl rounded-br-sm border border-border bg-card shadow-lg px-3.5 py-2.5"
+            className="relative max-w-[220px] rounded-2xl rounded-bl-sm border border-border bg-card shadow-lg px-3.5 py-2.5"
           >
             <button
               type="button"
               onClick={dismissBubble}
               aria-label="Dismiss AI Coach tip"
-              className="absolute -top-2 -left-2 h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
+              className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
             >
               <X className="h-3 w-3" />
             </button>
