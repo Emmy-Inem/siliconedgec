@@ -6,7 +6,6 @@ import {
   MessageCircle,
   Route,
   HelpCircle,
-  Sparkles,
   Send,
   ChevronRight,
   ArrowLeft,
@@ -70,7 +69,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
       targetView: "quiz" as CoachView,
     },
     {
-      text: "✨ Curious what projects & skills you'll master? Ask me anything!",
+      text: "Curious what projects & skills you'll master? Ask me anything!",
       targetView: "menu" as CoachView,
     },
     {
@@ -147,7 +146,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
   const currentTeaser = teasers[bubbleIndex % teasers.length];
 
   return (
-    <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-40 flex flex-col items-start gap-2.5 print:hidden">
+    <div className="fixed bottom-3 left-3 sm:bottom-5 sm:left-5 z-40 flex flex-col items-start gap-2 print:hidden max-w-[calc(100vw-1.5rem)]">
       {/* Interactive Rotating Curiosity Bubble */}
       <AnimatePresence mode="wait">
         {(bubbleVisible || (isHovered && !panelOpen)) && !panelOpen && (
@@ -162,7 +161,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
               setPanelOpen(true);
               setBubbleVisible(false);
             }}
-            className="group relative max-w-[250px] sm:max-w-[270px] cursor-pointer rounded-2xl rounded-bl-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-4 py-3 transition-all"
+            className="group relative max-w-[245px] sm:max-w-[265px] cursor-pointer rounded-2xl rounded-bl-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
           >
             <button
               type="button"
@@ -172,33 +171,33 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             >
               <X className="h-3 w-3" />
             </button>
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary mb-1">
-              <Sparkles className="h-3 w-3 animate-pulse" />
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>AI Course Coach</span>
             </div>
-            <p className="text-xs text-foreground leading-relaxed font-medium group-hover:text-primary transition-colors">
+            <p className="text-xs text-foreground leading-snug font-medium group-hover:text-primary transition-colors">
               {currentTeaser.text}
             </p>
-            <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+            <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
               Click to explore <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Interactive Multi-View Coach Panel */}
+      {/* Interactive Multi-View Coach Panel — constrained so it never clips at the top on mobile or desktop */}
       <AnimatePresence>
         {panelOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.94 }}
+            initial={{ opacity: 0, y: 14, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 14, scale: 0.94 }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            className="w-[310px] sm:w-[350px] rounded-2xl border border-primary/25 bg-card shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            className="w-[calc(100vw-1.5rem)] max-w-[320px] sm:w-[340px] sm:max-w-[340px] max-h-[calc(100dvh-9.5rem)] sm:max-h-[min(460px,calc(100dvh-10.5rem))] rounded-2xl border border-primary/25 bg-card shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-gradient-to-r from-primary/15 via-primary/5 to-transparent">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="shrink-0 flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-gradient-to-r from-primary/15 via-primary/5 to-transparent">
+              <div className="flex items-center gap-2 min-w-0">
                 {view !== "menu" ? (
                   <button
                     type="button"
@@ -213,19 +212,18 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     <img
                       src={aiCoachAvatar}
                       alt="AI Coach"
-                      width={34}
-                      height={34}
-                      className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/40"
+                      width={30}
+                      height={30}
+                      className="h-7 w-7 rounded-full object-cover ring-2 ring-primary/40"
                     />
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <h4 className="text-sm font-heading font-bold text-foreground truncate flex items-center gap-1.5">
+                  <h4 className="text-xs sm:text-sm font-heading font-bold text-foreground truncate">
                     {view === "menu" && "AI Course Coach"}
                     {view === "quiz" && "15-Sec Course Fit Check"}
                     {view === "faqs" && "Course FAQs"}
-                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
                   </h4>
                   <p className="text-[10px] text-muted-foreground truncate">
                     {view === "menu" ? "Online • Personal Learning Advisor" : courseTitle}
@@ -236,18 +234,18 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                 type="button"
                 onClick={() => setPanelOpen(false)}
                 aria-label="Close AI Coach"
-                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Body Content */}
-            <div className="p-3.5 overflow-y-auto space-y-3 flex-1">
+            {/* Scrollable Body Content */}
+            <div className="p-3 overflow-y-auto overscroll-contain space-y-2.5 flex-1 min-h-0">
               {view === "menu" && (
                 <>
                   {/* Coach Greeting Bubble */}
-                  <div className="rounded-xl bg-muted/50 border border-border/60 p-3 text-xs text-foreground leading-relaxed">
+                  <div className="rounded-xl bg-muted/50 border border-border/60 px-3 py-2 text-xs text-foreground leading-relaxed">
                     Hi there! 👋 I'm your AI Coach for{" "}
                     <span className="font-semibold text-primary">{courseTitle}</span>. How can I help you today?
                   </div>
@@ -259,35 +257,35 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       resetQuiz();
                       setView("quiz");
                     }}
-                    className="w-full group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 text-left hover:border-primary/60 transition-all shadow-sm"
+                    className="w-full group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-3 py-2.5 text-left hover:border-primary/60 transition-all shadow-sm"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="space-y-0.5">
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
                           <Zap className="h-3 w-3" /> Interactive Quiz
                         </span>
                         <p className="text-xs font-semibold text-foreground">
                           Is this course right for me?
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          Answer 2 quick questions for a personalized match score.
+                        <p className="text-[11px] text-muted-foreground leading-tight">
+                          Answer 2 quick questions for a personalized match.
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-primary shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="h-4 w-4 text-primary shrink-0 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </button>
 
                   {/* Quick One-Click Smart Prompts */}
                   <div className="space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-0.5">
                       Instant AI Answers
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {[
                         "What will I build?",
                         "Do I need coding experience?",
-                        "Build me a 4-week study plan",
-                        "Installment payment options?",
+                        "4-week study plan",
+                        "Installment options?",
                       ].map((prompt) => (
                         <button
                           key={prompt}
@@ -295,7 +293,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                           onClick={() =>
                             openChatWithQuestion(`For the course "${courseTitle}": ${prompt}`)
                           }
-                          className="text-[11px] px-2.5 py-1.5 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
+                          className="text-[11px] px-2.5 py-1 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
                         >
                           💬 {prompt}
                         </button>
@@ -304,14 +302,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                   </div>
 
                   {/* Navigation Actions */}
-                  <div className="space-y-1 pt-1 border-t border-border/60">
+                  <div className="space-y-0.5 pt-1 border-t border-border/60">
                     <button
                       type="button"
                       onClick={() => openChatWithQuestion()}
-                      className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2.5">
-                        <MessageCircle className="h-4 w-4 text-primary shrink-0" />
+                      <span className="flex items-center gap-2">
+                        <MessageCircle className="h-3.5 w-3.5 text-primary shrink-0" />
                         Open Live AI Chat Assistant
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -320,10 +318,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     <Link
                       to={learningPathUrl}
                       onClick={() => setPanelOpen(false)}
-                      className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2.5">
-                        <Route className="h-4 w-4 text-primary shrink-0" />
+                      <span className="flex items-center gap-2">
+                        <Route className="h-3.5 w-3.5 text-primary shrink-0" />
                         See the full learning path
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -332,10 +330,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     <button
                       type="button"
                       onClick={() => setView("faqs")}
-                      className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2.5">
-                        <HelpCircle className="h-4 w-4 text-primary shrink-0" />
+                      <span className="flex items-center gap-2">
+                        <HelpCircle className="h-3.5 w-3.5 text-primary shrink-0" />
                         Read the course FAQs
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -346,12 +344,12 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
 
               {/* VIEW 2: Interactive 2-Step Fit Quiz */}
               {view === "quiz" && (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {quizStep === 1 && (
                     <motion.div
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="space-y-2.5"
+                      className="space-y-2"
                     >
                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>Step 1 of 2</span>
@@ -360,7 +358,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       <p className="text-xs font-semibold text-foreground">
                         What is your current experience level?
                       </p>
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         {EXPERIENCE_OPTIONS.map((opt) => (
                           <button
                             key={opt.id}
@@ -369,7 +367,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                               setSelectedExp(opt.id);
                               setQuizStep(2);
                             }}
-                            className="w-full text-left p-2.5 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
+                            className="w-full text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
                           >
                             <div className="text-xs font-semibold text-foreground">{opt.label}</div>
                             <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
@@ -383,7 +381,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     <motion.div
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="space-y-2.5"
+                      className="space-y-2"
                     >
                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>Step 2 of 2</span>
@@ -392,7 +390,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       <p className="text-xs font-semibold text-foreground">
                         What is your #1 goal for taking this course?
                       </p>
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         {GOAL_OPTIONS.map((opt) => (
                           <button
                             key={opt.id}
@@ -401,7 +399,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                               setSelectedGoal(opt.id);
                               setQuizStep(3);
                             }}
-                            className="w-full text-left p-2.5 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
+                            className="w-full text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
                           >
                             {opt.label}
                           </button>
@@ -414,7 +412,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="space-y-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 p-3.5"
+                      className="space-y-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 p-3"
                     >
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
@@ -435,7 +433,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                           ? `Expect to reclaim 10+ hours a week with ready-to-use templates.`
                           : `You'll graduate with a verifiable Silicon Edge certificate and portfolio project.`}
                       </p>
-                      <div className="flex flex-col gap-1.5 pt-1">
+                      <div className="flex flex-col gap-1.5 pt-0.5">
                         <button
                           type="button"
                           onClick={() =>
@@ -443,7 +441,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                               `I'm a ${selectedExp} learner looking to ${selectedGoal} with "${courseTitle}". Can you give me a tailored study plan?`
                             )
                           }
-                          className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full py-1.5 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
                         >
                           <GraduationCap className="h-3.5 w-3.5" />
                           Get My Custom Study Plan
@@ -451,7 +449,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         <button
                           type="button"
                           onClick={resetQuiz}
-                          className="text-[11px] text-muted-foreground hover:text-foreground text-center py-1"
+                          className="text-[11px] text-muted-foreground hover:text-foreground text-center py-0.5"
                         >
                           Retake quiz
                         </button>
@@ -463,7 +461,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
 
               {/* VIEW 3: Inline Interactive FAQs */}
               {view === "faqs" && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {COURSE_DETAIL_FAQS.map((faq, idx) => {
                     const isOpen = openFaqIndex === idx;
                     return (
@@ -506,7 +504,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     onClick={() =>
                       openChatWithQuestion(`I have a question about "${courseTitle}"`)
                     }
-                    className="w-full mt-2 py-2 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     Ask a different question
@@ -518,7 +516,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             {/* Direct Mini-Input Footer */}
             <form
               onSubmit={handleMiniSubmit}
-              className="p-2.5 border-t border-border bg-muted/20 flex items-center gap-1.5"
+              className="shrink-0 p-2 border-t border-border bg-muted/20 flex items-center gap-1.5"
             >
               <input
                 type="text"
@@ -578,7 +576,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
               ease: "easeInOut",
             },
           }}
-          className="relative h-16 w-16 rounded-full bg-card border-2 border-primary/50 shadow-xl hover:shadow-primary/25 hover:border-primary overflow-visible transition-colors"
+          className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-card border-2 border-primary/50 shadow-xl hover:shadow-primary/25 hover:border-primary overflow-visible transition-colors"
         >
           <div className="h-full w-full rounded-full overflow-hidden">
             <img
@@ -591,22 +589,21 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             />
           </div>
 
-          {/* Floating top-left badge */}
+          {/* Floating top-left badge (no sparkle icon/emoji) */}
           <motion.span
-            animate={{ scale: isHovered ? 1.15 : [1, 1.1, 1] }}
+            animate={{ scale: isHovered ? 1.12 : [1, 1.06, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold shadow-md flex items-center gap-0.5 pointer-events-none"
+            className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold shadow-md flex items-center pointer-events-none"
           >
-            <Sparkles className="h-2.5 w-2.5" />
             {isHovered ? "Hi! 👋" : "AI"}
           </motion.span>
 
           {/* Online status indicator dot */}
           <span
             title="AI Coach Online"
-            className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-card flex items-center justify-center pointer-events-none"
+            className="absolute bottom-0 right-0 h-3.5 w-3.5 sm:h-4 sm:w-4 rounded-full bg-emerald-500 ring-2 ring-card flex items-center justify-center pointer-events-none"
           >
-            <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white animate-pulse" />
           </span>
         </motion.button>
       </div>
