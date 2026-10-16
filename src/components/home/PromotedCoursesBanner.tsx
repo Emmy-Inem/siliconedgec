@@ -52,6 +52,17 @@ export function PromotedCoursesBanner() {
     return sessionStorage.getItem("dismissed_promoted_courses_banner") === "true";
   });
 
+  // Automatically hide the banner after 5 minutes so it doesn't linger
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDismissed(true);
+      try {
+        sessionStorage.setItem("dismissed_promoted_courses_banner", "true");
+      } catch {}
+    }, 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Fetch admin settings from site_content
   const { data: config = DEFAULT_PROMOTED_BANNER_CONFIG } = useQuery({
     queryKey: ["promoted-courses-banner-config"],
