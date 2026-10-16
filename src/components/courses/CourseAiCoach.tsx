@@ -47,7 +47,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-40 flex flex-col items-end gap-2 print:hidden">
+    <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-40 flex flex-col items-start gap-2 print:hidden">
       {/* Curiosity bubble */}
       <AnimatePresence>
         {bubbleVisible && !panelOpen && (
