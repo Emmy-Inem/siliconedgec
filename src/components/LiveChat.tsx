@@ -35,6 +35,13 @@ export function LiveChat() {
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
+  // Other widgets (e.g. the course-page AI Coach avatar) can ask the chat to open.
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("sec:open-live-chat", handler);
+    return () => window.removeEventListener("sec:open-live-chat", handler);
+  }, []);
+
   // Once the assistant hands over (it could not answer, or the user asked for a
   // person) the SAME thread continues with a human — we just open/attach the
   // live conversation behind the scenes.
