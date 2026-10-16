@@ -8,6 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, GripVertical, Pencil, Trash2, PlayCircle, Loader2, Paperclip } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LessonResourcesManager } from "@/components/admin/LessonResourcesManager";
+import { courses as staticCourses } from "@/data/courses";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface Module {
   id: string;
@@ -40,32 +43,51 @@ export default function AdminCourseModules() {
   const [lessonForm, setLessonForm] = useState({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
   const [resourcesLesson, setResourcesLesson] = useState<Lesson | null>(null);
 
+  const isUuid = UUID_REGEX.test(courseId || "");
+
   const { data: course } = useQuery({
     queryKey: ["admin-course", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courses").select("id, title").eq("id", courseId!).maybeSingle();
-      if (error) throw error;
-      return data;
+      if (!courseId) return null;
+      if (isUuid) {
+        const { data, error } = await supabase.from("courses").select("id, title").eq("id", courseId).maybeSingle();
+        if (error) console.warn("admin-course query error:", error);
+        if (data) return data;
+      } else {
+        const { data, error } = await supabase.from("courses").select("id, title").eq("slug", courseId).maybeSingle();
+        if (error) console.warn("admin-course query error:", error);
+        if (data) return data;
+      }
+      const staticMatch = staticCourses.find(
+        (c) =>
+          c.id.toLowerCase() === courseId.toLowerCase() ||
+          (c.slug || "").toLowerCase() === courseId.toLowerCase()
+      );
+      if (staticMatch) return { id: staticMatch.id, title: staticMatch.title };
+      return null;
     },
     enabled: !!courseId,
   });
 
+  const effectiveCourseId = course?.id || (isUuid ? courseId : null);
+
   const { data: modules = [], isLoading: modulesLoading } = useQuery({
-    queryKey: ["admin-modules", courseId],
+    queryKey: ["admin-modules", effectiveCourseId],
     queryFn: async () => {
+      if (!effectiveCourseId || !UUID_REGEX.test(effectiveCourseId)) return [];
       const { data, error } = await supabase
         .from("modules")
         .select("*")
-        .eq("course_id", courseId!)
+        .eq("course_id", effectiveCourseId)
         .order("order_index");
       if (error) throw error;
       return data as Module[];
     },
-    enabled: !!courseId,
+    enabled: !!effectiveCourseId && UUID_REGEX.test(effectiveCourseId),
   });
 
   const { data: lessons = [] } = useQuery({
-    queryKey: ["admin-lessons", courseId],
+    queryKey: ["admin-lessons", effectiveCourseId],
     queryFn: async () => {
       if (modules.length === 0) return [];
       const moduleIds = modules.map((m) => m.id);
@@ -89,19 +111,33 @@ export default function AdminCourseModules() {
         const { error } = await supabase.from("modules").update({ title: moduleTitle }).eq("id", editingModule.id);
         if (error) throw error;
       } else {
+        let parentId = effectiveCourseId;
+        if (!parentId || !UUID_REGEX.test(parentId)) {
+          const newId = crypto.randomUUID();
+          const { error: insErr } = await supabase.from("courses").insert({
+            id: newId,
+            title: course?.title || "New Course",
+            slug: courseId,
+          });
+          if (insErr) throw insErr;
+          parentId = newId;
+        }
         const nextIndex = modules.length;
-        const { error } = await supabase.from("modules").insert({ title: moduleTitle, course_id: courseId!, order_index: nextIndex });
+        const { error } = await supabase
+          .from("modules")
+          .insert({ title: moduleTitle, course_id: parentId, order_index: nextIndex });
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-modules", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-modules", effectiveCourseId] });
+      qc.invalidateQueries({ queryKey: ["admin-lessons", effectiveCourseId] });
       setModuleDialogOpen(false);
       setEditingModule(null);
       setModuleTitle("");
       toast({ title: editingModule ? "Module updated" : "Module created" });
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteModule = useMutation({
@@ -110,8 +146,12 @@ export default function AdminCourseModules() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-modules", courseId] });
-      qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-modules", effectiveCourseId] });
+      qc.invalidateQueries({ queryKey: ["admin-lessons", effectiveCourseId] });
+      if (courseId) {
+        qc.invalidateQueries({ queryKey: ["admin-modules", courseId] });
+        qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      }
       toast({ title: "Module deleted" });
     },
   });
@@ -136,7 +176,10 @@ export default function AdminCourseModules() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-lessons", effectiveCourseId] });
+      if (courseId) {
+        qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      }
       setLessonDialogOpen(false);
       setEditingLesson(null);
       setLessonForm({ title: "", duration: "", module_id: "", content_type: "video", content_url: "" });
@@ -151,7 +194,10 @@ export default function AdminCourseModules() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-lessons", effectiveCourseId] });
+      if (courseId) {
+        qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      }
       toast({ title: "Lesson deleted" });
     },
   });

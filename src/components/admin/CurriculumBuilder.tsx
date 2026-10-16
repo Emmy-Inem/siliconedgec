@@ -64,14 +64,17 @@ export function CurriculumBuilder({ courseId }: Props) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseId);
+
   const { data: modules = [], isLoading: modulesLoading } = useQuery({
     queryKey: ["admin-modules", courseId],
     queryFn: async () => {
+      if (!isUuid) return [];
       const { data, error } = await supabase.from("modules").select("*").eq("course_id", courseId).order("order_index");
       if (error) throw error;
       return data as Module[];
     },
-    enabled: !!courseId,
+    enabled: !!courseId && isUuid,
   });
 
   const { data: lessons = [] } = useQuery({

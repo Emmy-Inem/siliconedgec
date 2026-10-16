@@ -11,6 +11,9 @@ import {
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
 import { CurriculumBuilder } from "@/components/admin/CurriculumBuilder";
+import { courses as staticCourses } from "@/data/courses";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const STEPS = [
   { label: "Basics", description: "Title, category & cover" },
@@ -73,13 +76,73 @@ export default function AdminCourseCreate() {
     tag_ids: [] as string[],
   });
 
+  const isUuid = UUID_REGEX.test(courseId || "");
+
   // Load existing course for editing
   const { data: existingCourse } = useQuery({
     queryKey: ["admin-course-edit", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("courses").select("*").eq("id", courseId!).maybeSingle();
-      if (error) throw error;
-      return data;
+      if (!courseId) return null;
+
+      if (isUuid) {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("*")
+          .eq("id", courseId)
+          .maybeSingle();
+        if (error) console.warn("Error querying course by ID:", error);
+        if (data) return data;
+      } else {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("*")
+          .eq("slug", courseId)
+          .maybeSingle();
+        if (error) console.warn("Error querying course by slug:", error);
+        if (data) return data;
+      }
+
+      // Check static courses fallback
+      const staticMatch = staticCourses.find(
+        (sc) =>
+          sc.id.toLowerCase() === courseId.toLowerCase() ||
+          (sc.slug || "").toLowerCase() === courseId.toLowerCase()
+      );
+      if (staticMatch) {
+        return {
+          id: staticMatch.id,
+          slug: staticMatch.slug || staticMatch.id,
+          title: staticMatch.title,
+          description: staticMatch.description,
+          category: staticMatch.category,
+          category_id: null,
+          difficulty: staticMatch.difficulty,
+          duration_hours: staticMatch.durationHours,
+          learning_outcomes: staticMatch.learningOutcomes,
+          whats_included: staticMatch.whatsIncluded ?? [],
+          thumbnail_url: staticMatch.thumbnailUrl,
+          price: staticMatch.price,
+          discount_price: staticMatch.discountPrice ?? null,
+          early_bird_price: null,
+          currency: "NGN",
+          is_published: staticMatch.isPublished !== false,
+          status: staticMatch.isPublished !== false ? "published" : "draft",
+          instructor_id: null,
+          product_type: "Simple Product",
+          course_type: "Virtual Course",
+          intro_video_url: null,
+          discount_start: null,
+          discount_end: null,
+          max_enrollment: null,
+          enrollment_start: null,
+          enrollment_end: null,
+          purchase_note: null,
+          enable_reviews: true,
+          upsell_course_ids: [],
+          cross_sell_course_ids: [],
+        } as any;
+      }
+      return null;
     },
     enabled: isEditing,
   });
@@ -119,15 +182,19 @@ export default function AdminCourseCreate() {
     }
   }, [existingCourse]);
 
-  // Load existing course tags
+  // Load existing course tags safely (only when courseId is a valid UUID)
   const { data: existingTags = [] } = useQuery({
     queryKey: ["admin-course-tags", courseId],
     queryFn: async () => {
+      if (!isUuid) return [];
       const { data, error } = await supabase.from("course_tags").select("tag_id").eq("course_id", courseId!);
-      if (error) throw error;
-      return data.map(t => t.tag_id);
+      if (error) {
+        console.warn("Error querying course tags:", error);
+        return [];
+      }
+      return data.map((t) => t.tag_id);
     },
-    enabled: isEditing,
+    enabled: isEditing && isUuid,
   });
 
   useEffect(() => {
@@ -220,48 +287,93 @@ export default function AdminCourseCreate() {
   const saveMutation = useMutation({
     mutationFn: async (statusOverride?: string) => {
       const payload = buildPayload(statusOverride);
-      let savedCourseId = courseId;
+      const targetId = existingCourse?.id || courseId;
+      const targetIsUuid = UUID_REGEX.test(targetId || "");
+
+      let savedCourseId: string | null = null;
+
       if (isEditing) {
-        const { error } = await supabase.from("courses").update(payload).eq("id", courseId!);
-        if (error) throw error;
+        let dbId: string | null = null;
+        if (targetIsUuid) {
+          const { data } = await supabase.from("courses").select("id").eq("id", targetId!).maybeSingle();
+          if (data) dbId = data.id;
+        } else {
+          const { data } = await supabase.from("courses").select("id").eq("slug", targetId!).maybeSingle();
+          if (data) dbId = data.id;
+        }
+
+        if (dbId) {
+          const { error } = await supabase.from("courses").update(payload).eq("id", dbId);
+          if (error) throw error;
+          savedCourseId = dbId;
+        } else {
+          // If not yet recorded in DB (e.g. from static courses), insert as a new course row
+          const newId = targetIsUuid ? targetId! : crypto.randomUUID();
+          const { data, error } = await supabase
+            .from("courses")
+            .insert({
+              ...payload,
+              id: newId,
+              slug: payload.slug || targetId,
+            })
+            .select("id")
+            .single();
+          if (error) throw error;
+          savedCourseId = data.id;
+        }
       } else {
         const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
         if (error) throw error;
         savedCourseId = data.id;
       }
 
-      // Sync tags
-      if (savedCourseId) {
+      // Sync tags if savedCourseId is a valid UUID
+      if (savedCourseId && UUID_REGEX.test(savedCourseId)) {
         await supabase.from("course_tags").delete().eq("course_id", savedCourseId);
         if (form.tag_ids.length > 0) {
           await supabase.from("course_tags").insert(
-            form.tag_ids.map(tag_id => ({ course_id: savedCourseId!, tag_id }))
+            form.tag_ids.map((tag_id) => ({ course_id: savedCourseId!, tag_id }))
           );
         }
       }
 
-      await logAdminActivity(isEditing ? "update" : "create", "course", savedCourseId ?? undefined, { title: form.title });
+      await logAdminActivity(
+        isEditing ? "update" : "create",
+        "course",
+        savedCourseId ?? undefined,
+        { title: form.title }
+      );
     },
     onSuccess: (_, statusOverride) => {
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
+      qc.invalidateQueries({ queryKey: ["courses"] });
       toast({ title: statusOverride === "published" ? "Course Published!" : "Course Saved" });
       navigate("/admin/courses");
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: any) =>
+      toast({ title: "Error saving course", description: e.message, variant: "destructive" }),
   });
 
-  // Auto-save draft 3s after the last edit (only when we already have a courseId)
+  // Auto-save draft 3s after the last edit (only when we already have a valid UUID courseId in DB)
   useEffect(() => {
     if (!form.title || !courseId) return;
+    const canAutoSave = UUID_REGEX.test(courseId);
+    if (!canAutoSave) return;
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     const timer = setTimeout(async () => {
       setAutoSaving(true);
-      const { error } = await supabase.from("courses").update(buildPayload()).eq("id", courseId);
+      try {
+        const { error } = await supabase.from("courses").update(buildPayload()).eq("id", courseId);
+        if (!error) setLastSavedAt(new Date());
+      } catch {
+        // silent catch for auto-save
+      }
       setAutoSaving(false);
-      if (!error) setLastSavedAt(new Date());
     }, 3000);
     setAutoSaveTimer(timer);
-    return () => { if (timer) clearTimeout(timer); };
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, courseId]);
 
@@ -273,22 +385,53 @@ export default function AdminCourseCreate() {
   // When advancing past Basics on a NEW course, auto-create a draft so the
   // Curriculum step has a courseId to attach modules/lessons to.
   const handleNext = async () => {
-    if (step === 0 && !isEditing) {
-      try {
-        const payload = buildPayload("draft");
-        const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
-        if (error) throw error;
-        if (form.tag_ids.length > 0) {
-          await supabase.from("course_tags").insert(form.tag_ids.map((tag_id) => ({ course_id: data.id, tag_id })));
+    if (step === 0) {
+      if (!isEditing) {
+        try {
+          const payload = buildPayload("draft");
+          const { data, error } = await supabase.from("courses").insert(payload).select("id").single();
+          if (error) throw error;
+          if (form.tag_ids.length > 0) {
+            await supabase
+              .from("course_tags")
+              .insert(form.tag_ids.map((tag_id) => ({ course_id: data.id, tag_id })));
+          }
+          await logAdminActivity("create", "course", data.id, { title: form.title });
+          toast({ title: "Draft saved", description: "You can now build the curriculum." });
+          navigate(`/admin/courses/${data.id}/edit`, { replace: true });
+          setStep(1);
+          return;
+        } catch (e: any) {
+          toast({ title: "Could not save draft", description: e.message, variant: "destructive" });
+          return;
         }
-        await logAdminActivity("create", "course", data.id, { title: form.title });
-        toast({ title: "Draft saved", description: "You can now build the curriculum." });
-        navigate(`/admin/courses/${data.id}/edit`, { replace: true });
-        setStep(1);
-        return;
-      } catch (e: any) {
-        toast({ title: "Could not save draft", description: e.message, variant: "destructive" });
-        return;
+      } else if (!UUID_REGEX.test(courseId || "")) {
+        // Course is being edited by slug or static ID; ensure it has a DB row with a valid UUID
+        try {
+          const { data: existing } = await supabase
+            .from("courses")
+            .select("id")
+            .eq("slug", courseId!)
+            .maybeSingle();
+          if (existing) {
+            navigate(`/admin/courses/${existing.id}/edit`, { replace: true });
+          } else {
+            const newId = crypto.randomUUID();
+            const { data, error } = await supabase
+              .from("courses")
+              .insert({
+                ...buildPayload("draft"),
+                id: newId,
+                slug: form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+              })
+              .select("id")
+              .single();
+            if (error) throw error;
+            navigate(`/admin/courses/${data.id}/edit`, { replace: true });
+          }
+        } catch (err: any) {
+          console.warn("Could not ensure UUID before navigating to curriculum:", err);
+        }
       }
     }
     setStep((s) => s + 1);
@@ -467,6 +610,59 @@ export default function AdminCourseCreate() {
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Quick Pricing */}
+              <div className="border-t border-border pt-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <label className="text-sm font-semibold flex items-center gap-1.5">
+                      <span>Course Pricing</span>
+                      <span className="text-xs font-normal text-muted-foreground">— set or edit price directly</span>
+                    </label>
+                  </div>
+                  {form.price > 0 && (
+                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
+                      {formatNaira(form.price)}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium block mb-1 text-foreground">
+                      Selling Price (₦) <span className="text-destructive">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">₦</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        value={form.price}
+                        onChange={e => setForm({ ...form, price: Number(e.target.value) })}
+                        className={`${inputClass} pl-8 font-semibold`}
+                        placeholder="e.g. 45000"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium block mb-1 text-foreground">
+                      Original / Strikethrough Price (₦) <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">₦</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        value={form.discount_price ?? ""}
+                        onChange={e => setForm({ ...form, discount_price: e.target.value ? Number(e.target.value) : null })}
+                        className={`${inputClass} pl-8`}
+                        placeholder="e.g. 75000 (shows strike-through discount)"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Featured Image */}

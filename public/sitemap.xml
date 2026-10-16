@@ -32,36 +32,13 @@
   <url><loc>https://siliconedgec.com/locations/paris</loc><lastmod>2026-10-16</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://siliconedgec.com/locations/lisbon</loc><lastmod>2026-10-16</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://siliconedgec.com/courses/cloud-engineering-accelerator-4-week-hands-on-bootcamp</loc><lastmod>2026-09-01</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/graphql-introduction-to-graphql-for-beginners</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/getting-started-with-javascript</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/modern-javascript-beginner-tutorial-simple</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/css-ultimate-css-course-from-beginner-to-advanced</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/gatsby-js-build-blog-with-graphql-and-react</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/the-python-course-build-web-application</loc><lastmod>2026-04-29</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/ai-ml-basics-tensorflow-scikit</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/aws-solutions-architect-associate</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/microsoft-azure-administrator-az104</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/google-associate-cloud-engineer</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/devops-docker-kubernetes-iac</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/data-engineering-bigdata-spark-kafka</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/cybersecurity-ethical-hacking-siem-ir</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/software-engineering-backend-dev</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/deep-learning-nlp-computer-vision</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/aws-solutions-architect-professional</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/microsoft-azure-solutions-architect-az305</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/google-professional-cloud-architect</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/advanced-kubernetes-cloud-devops</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/advanced-cloud-data-engineering</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/intro-devops-git-cicd</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/azure-cloud-engineering-accelerator</loc><lastmod>2026-07-11</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/aws-cloud-practitioner</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/microsoft-azure-fundamentals-az900</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/data-engineering-sql-etl-warehousing</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/google-cloud-digital-leader</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/cybersecurity-fundamentals-network-security</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/programming-python-java-web</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/cyber-threat-intelligence-red-teaming</loc><lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://siliconedgec.com/courses/advanced-algorithms-software-architecture</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/courses/the-roadmap-to-a-high-income-career-in-cloud-engineering</loc><lastmod>2026-10-08</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://siliconedgec.com/blog/devops-roadmap-2026-from-zero-to-hired</loc><lastmod>2026-06-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://siliconedgec.com/blog/azure-certification-path-az900-to-az104</loc><lastmod>2026-08-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
