@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   MessageCircle,
+  MessageSquare,
   Route,
   HelpCircle,
   Send,
@@ -13,6 +14,13 @@ import {
   Zap,
   GraduationCap,
   ChevronDown,
+  Compass,
+  TrendingUp,
+  Briefcase,
+  Target,
+  Layers,
+  BookOpen,
+  Bot,
 } from "lucide-react";
 import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
 import { COURSE_DETAIL_FAQS } from "./courseFaqs";
@@ -25,20 +33,47 @@ interface CourseAiCoachProps {
 type CoachView = "menu" | "quiz" | "faqs";
 
 const EXPERIENCE_OPTIONS = [
-  { id: "beginner", label: "🌱 Complete Beginner", desc: "Brand new — no prior technical background" },
-  { id: "intermediate", label: "🚀 Some Experience", desc: "Know the basics, ready for structured mastery" },
-  { id: "pro", label: "💼 Working Professional", desc: "Want practical workflows & 10x productivity" },
+  {
+    id: "beginner",
+    label: "Complete Beginner",
+    desc: "Brand new — no prior technical background",
+    Icon: Compass,
+  },
+  {
+    id: "intermediate",
+    label: "Some Experience",
+    desc: "Know the basics, ready for structured mastery",
+    Icon: TrendingUp,
+  },
+  {
+    id: "pro",
+    label: "Working Professional",
+    desc: "Want practical workflows & 10x productivity",
+    Icon: Briefcase,
+  },
 ];
 
 const GOAL_OPTIONS = [
-  { id: "productivity", label: "⚡ Save 10+ hrs/week & automate work" },
-  { id: "career", label: "🎯 Land a promotion or high-growth tech role" },
-  { id: "projects", label: "🛠️ Build real projects & earn a certificate" },
+  {
+    id: "productivity",
+    label: "Save 10+ hrs/week & automate work",
+    Icon: Zap,
+  },
+  {
+    id: "career",
+    label: "Land a promotion or high-growth tech role",
+    Icon: Target,
+  },
+  {
+    id: "projects",
+    label: "Build real projects & earn a certificate",
+    Icon: Layers,
+  },
 ];
 
 /**
  * An interactive, lively AI Coach companion for course pages.
- * Features floating levitation, pulsing aura, rotating curiosity prompts,
+ * Uses clean vector Lucide icons, floating levitation, rotating curiosity prompts,
  * a 2-step "Is this course right for me?" fit quiz, inline FAQs, and
  * direct question handoff to the live AI assistant.
  */
@@ -63,22 +98,40 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
     return sessionStorage.getItem("dismissed_ai_coach_bubble") === "true";
   });
 
+  // Notify global floating buttons (LiveChat / WhatsAppFAB) to hide while AI Coach is present
+  useEffect(() => {
+    document.documentElement.setAttribute("data-ai-coach-active", "true");
+    window.dispatchEvent(
+      new CustomEvent("sec:ai-coach-presence", { detail: { active: true } })
+    );
+    return () => {
+      document.documentElement.removeAttribute("data-ai-coach-active");
+      window.dispatchEvent(
+        new CustomEvent("sec:ai-coach-presence", { detail: { active: false } })
+      );
+    };
+  }, []);
+
   const teasers = [
     {
-      text: `👋 Not sure if ${courseTitle} is right for you? Take a 15-sec fit check!`,
+      text: `Not sure if ${courseTitle} is right for you? Take a 15-sec fit check!`,
       targetView: "quiz" as CoachView,
+      Icon: Compass,
     },
     {
       text: "Curious what projects & skills you'll master? Ask me anything!",
       targetView: "menu" as CoachView,
+      Icon: BookOpen,
     },
     {
-      text: "🗺️ Want to see the full career learning path for this track?",
+      text: "Want to see the full career learning path for this track?",
       targetView: "menu" as CoachView,
+      Icon: Route,
     },
     {
-      text: "💡 Need quick answers on certificates, live classes, or installments?",
+      text: "Need quick answers on certificates, live classes, or installments?",
       targetView: "faqs" as CoachView,
+      Icon: HelpCircle,
     },
   ];
 
@@ -144,6 +197,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
   };
 
   const currentTeaser = teasers[bubbleIndex % teasers.length];
+  const TeaserIcon = currentTeaser.Icon;
 
   return (
     <div className="fixed bottom-3 left-3 sm:bottom-5 sm:left-5 z-40 flex flex-col items-start gap-2 print:hidden max-w-[calc(100vw-1.5rem)]">
@@ -161,7 +215,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
               setPanelOpen(true);
               setBubbleVisible(false);
             }}
-            className="group relative max-w-[245px] sm:max-w-[265px] cursor-pointer rounded-2xl rounded-bl-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
+            className="group relative max-w-[250px] sm:max-w-[270px] cursor-pointer rounded-2xl rounded-bl-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
           >
             <button
               type="button"
@@ -171,14 +225,19 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             >
               <X className="h-3 w-3" />
             </button>
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary mb-0.5">
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary mb-1">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>AI Course Coach</span>
             </div>
-            <p className="text-xs text-foreground leading-snug font-medium group-hover:text-primary transition-colors">
-              {currentTeaser.text}
-            </p>
-            <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+            <div className="flex items-start gap-2">
+              <div className="mt-0.5 h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <TeaserIcon className="h-3 w-3" />
+              </div>
+              <p className="text-xs text-foreground leading-snug font-medium group-hover:text-primary transition-colors">
+                {currentTeaser.text}
+              </p>
+            </div>
+            <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
               Click to explore <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </motion.div>
@@ -245,9 +304,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
               {view === "menu" && (
                 <>
                   {/* Coach Greeting Bubble */}
-                  <div className="rounded-xl bg-muted/50 border border-border/60 px-3 py-2 text-xs text-foreground leading-relaxed">
-                    Hi there! 👋 I'm your AI Coach for{" "}
-                    <span className="font-semibold text-primary">{courseTitle}</span>. How can I help you today?
+                  <div className="flex items-start gap-2 rounded-xl bg-muted/50 border border-border/60 px-3 py-2 text-xs text-foreground leading-relaxed">
+                    <div className="mt-0.5 h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Bot className="h-3.5 w-3.5" />
+                    </div>
+                    <div>
+                      Hello! I'm your AI Coach for{" "}
+                      <span className="font-semibold text-primary">{courseTitle}</span>. How can I help you today?
+                    </div>
                   </div>
 
                   {/* Highlighted Interactive Fit Check Card */}
@@ -293,9 +357,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                           onClick={() =>
                             openChatWithQuestion(`For the course "${courseTitle}": ${prompt}`)
                           }
-                          className="text-[11px] px-2.5 py-1 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
+                          className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
                         >
-                          💬 {prompt}
+                          <MessageSquare className="h-3 w-3 text-primary shrink-0" />
+                          <span>{prompt}</span>
                         </button>
                       ))}
                     </div>
@@ -359,20 +424,28 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         What is your current experience level?
                       </p>
                       <div className="space-y-1.5">
-                        {EXPERIENCE_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedExp(opt.id);
-                              setQuizStep(2);
-                            }}
-                            className="w-full text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
-                          >
-                            <div className="text-xs font-semibold text-foreground">{opt.label}</div>
-                            <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
-                          </button>
-                        ))}
+                        {EXPERIENCE_OPTIONS.map((opt) => {
+                          const OptIcon = opt.Icon;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedExp(opt.id);
+                                setQuizStep(2);
+                              }}
+                              className="w-full flex items-start gap-2.5 text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
+                            >
+                              <div className="mt-0.5 h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <OptIcon className="h-3.5 w-3.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold text-foreground">{opt.label}</div>
+                                <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -391,19 +464,25 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         What is your #1 goal for taking this course?
                       </p>
                       <div className="space-y-1.5">
-                        {GOAL_OPTIONS.map((opt) => (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedGoal(opt.id);
-                              setQuizStep(3);
-                            }}
-                            className="w-full text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
+                        {GOAL_OPTIONS.map((opt) => {
+                          const GoalIcon = opt.Icon;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedGoal(opt.id);
+                                setQuizStep(3);
+                              }}
+                              className="w-full flex items-center gap-2.5 text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
+                            >
+                              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <GoalIcon className="h-3.5 w-3.5" />
+                              </div>
+                              <span>{opt.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -589,13 +668,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             />
           </div>
 
-          {/* Floating top-left badge (no sparkle icon/emoji) */}
+          {/* Floating top-left badge with vector Bot icon */}
           <motion.span
             animate={{ scale: isHovered ? 1.12 : [1, 1.06, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold shadow-md flex items-center pointer-events-none"
+            className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold shadow-md flex items-center gap-0.5 pointer-events-none"
           >
-            {isHovered ? "Hi! 👋" : "AI"}
+            <Bot className="h-2.5 w-2.5" />
+            <span>{isHovered ? "Ask AI" : "AI"}</span>
           </motion.span>
 
           {/* Online status indicator dot */}

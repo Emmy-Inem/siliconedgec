@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,10 @@ export function LiveChat() {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [aiCoachActive, setAiCoachActive] = useState(() =>
+    typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-ai-coach-active") === "true"
+  );
   const [escalated, setEscalated] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,6 +38,18 @@ export function LiveChat() {
   // Hide chat widget on admin routes — it conflicts with the admin
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
+
+  // Track whether the AI Coach is currently active on the page so the floating
+  // right-hand support launcher button disappears whenever the AI Coach appears.
+  useEffect(() => {
+    setAiCoachActive(document.documentElement.getAttribute("data-ai-coach-active") === "true");
+    const onPresence = (e: Event) => {
+      const customEvent = e as CustomEvent<{ active?: boolean }>;
+      setAiCoachActive(Boolean(customEvent?.detail?.active));
+    };
+    window.addEventListener("sec:ai-coach-presence", onPresence);
+    return () => window.removeEventListener("sec:ai-coach-presence", onPresence);
+  }, [location.pathname]);
 
   // Other widgets (e.g. the course-page AI Coach avatar or SupportTicket page) can ask the chat to open.
   useEffect(() => {
@@ -253,7 +269,7 @@ export function LiveChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[540px] max-h-[calc(100vh-8rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className={`fixed ${aiCoachActive ? "bottom-6" : "bottom-24"} right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[540px] max-h-[calc(100vh-8rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
           >
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
@@ -300,7 +316,7 @@ export function LiveChat() {
                         className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
                         title="Return to instant AI assistant"
                       >
-                        🤖 Ask AI Assistant
+                        <Bot className="h-3.5 w-3.5" /> Ask AI Assistant
                       </button>
                       <span className="text-muted-foreground/60 text-xs">•</span>
                       <Link to="/support" className="text-[11px] text-muted-foreground hover:underline" onClick={() => setOpen(false)}>
@@ -385,13 +401,15 @@ export function LiveChat() {
         )}
       </AnimatePresence>
 
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
-        aria-label="Open support chat"
-      >
-        {open ? <X className="h-6 w-6 text-primary-foreground" /> : <MessageCircle className="h-6 w-6 text-primary-foreground" />}
-      </button>
+      {!aiCoachActive && (
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
+          aria-label="Open support chat"
+        >
+          {open ? <X className="h-6 w-6 text-primary-foreground" /> : <MessageCircle className="h-6 w-6 text-primary-foreground" />}
+        </button>
+      )}
     </>
   );
 }

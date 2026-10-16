@@ -1,13 +1,28 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export const WhatsAppFAB = forwardRef<HTMLAnchorElement>(function WhatsAppFAB(_, ref) {
   const { data: settings } = useSiteSettings();
+  const [aiCoachActive, setAiCoachActive] = useState(() =>
+    typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-ai-coach-active") === "true"
+  );
+
+  useEffect(() => {
+    setAiCoachActive(document.documentElement.getAttribute("data-ai-coach-active") === "true");
+    const onPresence = (e: Event) => {
+      const customEvent = e as CustomEvent<{ active?: boolean }>;
+      setAiCoachActive(Boolean(customEvent?.detail?.active));
+    };
+    window.addEventListener("sec:ai-coach-presence", onPresence);
+    return () => window.removeEventListener("sec:ai-coach-presence", onPresence);
+  }, []);
+
   const raw = settings?.whatsapp_number || "";
   const number = raw.replace(/\D/g, "");
-  // Hide FAB if not configured (placeholder or empty)
-  if (!number || raw.toUpperCase().includes("UPDATE")) return null;
+  // Hide FAB if not configured (placeholder or empty) or when AI Coach is active
+  if (aiCoachActive || !number || raw.toUpperCase().includes("UPDATE")) return null;
 
   return (
     <a
