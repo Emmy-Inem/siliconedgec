@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageCircle, Sparkles, Route, HelpCircle } from "lucide-react";
+import { X, MessageCircle, Bot, Route, HelpCircle } from "lucide-react";
 
 interface CourseAiCoachProps {
   courseTitle: string;
@@ -137,7 +137,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
         className="relative h-12 w-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all"
       >
         <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping [animation-duration:3s] motion-reduce:hidden pointer-events-none" />
-        <Sparkles className="h-5 w-5 text-muted-foreground" />
+        <Bot className="h-5 w-5 text-muted-foreground" />
       </motion.button>
     </div>
   );
