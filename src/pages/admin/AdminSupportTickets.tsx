@@ -89,6 +89,17 @@ export default function AdminSupportTickets() {
     if (status === "resolved") patch.resolution_note = patch.resolution_note ?? "Resolved by the support team.";
     const { error } = await supabase.from("support_tickets").update(patch).eq("id", activeId);
     if (error) return toast({ title: "Update failed", description: error.message, variant: "destructive" });
+
+    // When ticket is resolved or closed, also close active live chat conversation for that user
+    // so their chat widget immediately returns to AI Assistant mode.
+    if ((status === "resolved" || status === "closed") && active?.user_id) {
+      await supabase
+        .from("chat_conversations")
+        .update({ status: "closed" })
+        .eq("user_id", active.user_id)
+        .eq("status", "open");
+    }
+
     if (status === "resolved") await supabase.functions.invoke("support-notify", { body: { ticketId: activeId, event: "resolved" } });
     toast({ title: `Ticket ${status}` });
     load();

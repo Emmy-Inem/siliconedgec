@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourse, useCourses } from "@/hooks/useCourses";
+import { courses as staticCourses } from "@/data/courses";
 import { CourseCard } from "@/components/CourseCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -127,32 +128,72 @@ export default function CourseDetail() {
       ? { ...course.instructor, isReal: false }
       : null;
 
-  const curriculumModules = useMemo(() => {
-    if (!courseId) return [];
+  const staticMatch = useMemo(() => {
+    return staticCourses.find(
+      (c) =>
+        c.id.toLowerCase() === (id || "").toLowerCase() ||
+        (c.slug && c.slug.toLowerCase() === (id || "").toLowerCase()) ||
+        c.id.toLowerCase() === (courseId || "").toLowerCase() ||
+        (course && c.slug && c.slug.toLowerCase() === ((course as any).slug || "").toLowerCase()) ||
+        (course && c.title.toLowerCase().trim() === (course.title || "").toLowerCase().trim())
+    );
+  }, [id, courseId, course]);
 
-    const sourceRows = publicCurriculum.length
-      ? publicCurriculum
-      : (course?.modules ?? []).flatMap((module: any) =>
-          (module.lessons?.length
-            ? module.lessons.map((lesson: any) => ({
-                module_id: module.id,
-                module_title: module.title,
-                module_order_index: module.order_index,
-                lesson_id: lesson.id,
-                lesson_title: lesson.title,
-                lesson_duration: lesson.duration,
-                lesson_order_index: lesson.order_index,
-              }))
-            : [{
-                module_id: module.id,
-                module_title: module.title,
-                module_order_index: module.order_index,
-                lesson_id: null,
-                lesson_title: null,
-                lesson_duration: null,
-                lesson_order_index: null,
-              }])
-        );
+  const curriculumModules = useMemo(() => {
+    if (!course && !staticMatch) return [];
+
+    let sourceRows: any[] = [];
+    if (publicCurriculum && publicCurriculum.length > 0) {
+      sourceRows = publicCurriculum;
+    } else if (course?.modules && course.modules.length > 0) {
+      sourceRows = course.modules.flatMap((module: any) =>
+        (module.lessons?.length
+          ? module.lessons.map((lesson: any) => ({
+              module_id: module.id,
+              module_title: module.title,
+              module_order_index: module.order_index,
+              lesson_id: lesson.id,
+              lesson_title: lesson.title,
+              lesson_duration: lesson.duration,
+              lesson_description: lesson.description,
+              lesson_order_index: lesson.order_index,
+            }))
+          : [{
+              module_id: module.id,
+              module_title: module.title,
+              module_order_index: module.order_index,
+              lesson_id: null,
+              lesson_title: null,
+              lesson_duration: null,
+              lesson_description: null,
+              lesson_order_index: null,
+            }])
+      );
+    } else if (staticMatch?.modules?.length) {
+      sourceRows = staticMatch.modules.flatMap((module: any, mIdx: number) =>
+        (module.lessons?.length
+          ? module.lessons.map((lesson: any, lIdx: number) => ({
+              module_id: module.id,
+              module_title: module.title,
+              module_order_index: mIdx,
+              lesson_id: lesson.id,
+              lesson_title: lesson.title,
+              lesson_duration: lesson.duration,
+              lesson_description: lesson.description,
+              lesson_order_index: lIdx,
+            }))
+          : [{
+              module_id: module.id,
+              module_title: module.title,
+              module_order_index: mIdx,
+              lesson_id: null,
+              lesson_title: null,
+              lesson_duration: null,
+              lesson_description: null,
+              lesson_order_index: null,
+            }])
+      );
+    }
 
     const moduleMap = new Map<string, any>();
     sourceRows.forEach((row: any) => {
@@ -168,6 +209,7 @@ export default function CourseDetail() {
           id: row.lesson_id,
           title: row.lesson_title,
           duration: row.lesson_duration,
+          description: row.lesson_description,
           order_index: row.lesson_order_index ?? 0,
         });
       }
@@ -181,7 +223,7 @@ export default function CourseDetail() {
         ...module,
         lessons: module.lessons.sort((a: any, b: any) => a.order_index - b.order_index),
       }));
-  }, [course?.modules, courseId, publicCurriculum]);
+  }, [course, staticMatch, courseId, publicCurriculum]);
 
   // Flattened ordered lesson list for sequential unlock logic.
   const orderedLessons: { id: string; module_id: string }[] = curriculumModules
@@ -556,7 +598,7 @@ export default function CourseDetail() {
     );
   }
 
-  const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+  const totalLessons = curriculumModules.reduce((sum, m) => sum + m.lessons.length, 0);
   const isFreeWebinar = course.price === 0 || course.title.toUpperCase().startsWith("FREE");
   const isEnrolled = !!enrollment || (isFreeWebinar && !!webinarReg);
   const bookmarked = isBookmarked(course.id);
@@ -686,38 +728,56 @@ export default function CourseDetail() {
                                   const unlocked = isLessonUnlocked(lesson.id);
                                   const completed = completedIds.has(lesson.id);
                                   return (
-                                    <li key={lesson.id} className="border-t border-border/50">
+                                    <li key={lesson.id} className="border-t border-border/50 py-3">
                                       {unlocked ? (
                                         <Link
                                           to={`${courseLearnHref(course)}?lesson=${lesson.id}`}
-                                          className="flex items-center justify-between text-sm text-foreground hover:text-primary py-2.5 transition-colors"
+                                          className="flex items-start justify-between text-sm text-foreground hover:text-primary transition-colors group"
                                         >
-                                          <span className="flex items-center gap-2">
+                                          <div className="flex items-start gap-2.5 min-w-0 pr-3">
                                             {completed ? (
-                                              <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-green-500" />
+                                              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500 mt-0.5" />
                                             ) : (
-                                              <PlayCircle className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                                              <PlayCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground group-hover:text-primary mt-0.5 transition-colors" />
                                             )}
-                                            {lesson.title}
-                                            <AssignmentDot lessonId={lesson.id} />
-                                          </span>
-                                          <span className="text-xs text-muted-foreground flex-shrink-0 ml-4">{lesson.duration}</span>
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <span className="font-medium text-foreground group-hover:text-primary transition-colors">{lesson.title}</span>
+                                                <AssignmentDot lessonId={lesson.id} />
+                                              </div>
+                                              {lesson.description && (
+                                                <p className="text-xs text-muted-foreground line-clamp-2 mt-1 font-normal leading-relaxed">
+                                                  {lesson.description}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <span className="text-xs text-muted-foreground flex-shrink-0 ml-auto whitespace-nowrap">{lesson.duration}</span>
                                         </Link>
                                       ) : (
                                         <div
-                                          className="flex items-center justify-between text-sm text-muted-foreground py-2.5"
+                                          className="flex items-start justify-between text-sm text-muted-foreground"
                                           title={
                                             hasPaidAccess
                                               ? "Complete the previous lesson to unlock"
                                               : "Enroll to unlock this lesson"
                                           }
                                         >
-                                          <span className="flex items-center gap-2">
-                                            <Lock className="h-3.5 w-3.5 flex-shrink-0" />
-                                            {lesson.title}
-                                            <AssignmentDot lessonId={lesson.id} />
-                                          </span>
-                                          <span className="text-xs flex-shrink-0 ml-4">{lesson.duration}</span>
+                                          <div className="flex items-start gap-2.5 min-w-0 pr-3">
+                                            <Lock className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <span className="font-medium">{lesson.title}</span>
+                                                <AssignmentDot lessonId={lesson.id} />
+                                              </div>
+                                              {lesson.description && (
+                                                <p className="text-xs text-muted-foreground/80 line-clamp-2 mt-1 font-normal leading-relaxed">
+                                                  {lesson.description}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <span className="text-xs flex-shrink-0 ml-auto whitespace-nowrap">{lesson.duration}</span>
                                         </div>
                                       )}
                                     </li>
@@ -744,20 +804,86 @@ export default function CourseDetail() {
                     )}
                   </TabsContent>
                   <TabsContent value="description" className="mt-0">
-                    <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-4">
-                      <p>{course.description}</p>
-                      {course.learning_outcomes && course.learning_outcomes.length > 0 && (
-                        <>
-                          <h2 className="font-heading font-semibold text-foreground text-base mt-6">What You'll Learn</h2>
-                          <ul className="space-y-2">
-                            {course.learning_outcomes.map((outcome, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <span className="text-muted-foreground mt-0.5">✓</span>
+                    <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-6">
+                      {/* Course Overview */}
+                      <div>
+                        <h2 className="font-heading font-semibold text-foreground text-lg mb-2">Course Overview</h2>
+                        <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line">
+                          {course.long_description || staticMatch?.longDescription || course.description}
+                        </p>
+                      </div>
+
+                      {/* What You'll Learn */}
+                      {((course.learning_outcomes && course.learning_outcomes.length > 0) || (staticMatch?.learningOutcomes && staticMatch.learningOutcomes.length > 0)) && (
+                        <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-5 border border-primary/20 not-prose">
+                          <h2 className="font-heading font-semibold text-foreground text-base mb-3 flex items-center gap-2">
+                            <Award className="h-5 w-5 text-primary" />
+                            What You'll Learn
+                          </h2>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {(course.learning_outcomes?.length ? course.learning_outcomes : staticMatch?.learningOutcomes || []).map((outcome: string, i: number) => (
+                              <div key={i} className="flex items-start gap-2.5 text-sm text-foreground/90">
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
                                 <span>{outcome}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Who This Course Is For */}
+                      {((course as any).who_is_this_for?.length || staticMatch?.whoIsThisFor?.length) && (
+                        <div className="border-t border-border pt-5">
+                          <h2 className="font-heading font-semibold text-foreground text-base mb-3 flex items-center gap-2">
+                            <Users className="h-5 w-5 text-primary" />
+                            Who This Course Is For
+                          </h2>
+                          <ul className="space-y-2.5">
+                            {((course as any).who_is_this_for?.length ? (course as any).who_is_this_for : staticMatch?.whoIsThisFor || []).map((target: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                                <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-2" />
+                                <span className="text-foreground/90">{target}</span>
                               </li>
                             ))}
                           </ul>
-                        </>
+                        </div>
+                      )}
+
+                      {/* Prerequisites & Requirements */}
+                      {((course as any).prerequisites || staticMatch?.prerequisites || (course as any).requirements?.length || staticMatch?.requirements?.length) && (
+                        <div className="border-t border-border pt-5">
+                          <h2 className="font-heading font-semibold text-foreground text-base mb-3">Prerequisites & Requirements</h2>
+                          {((course as any).prerequisites || staticMatch?.prerequisites) && (
+                            <p className="text-sm text-foreground/90 mb-3">
+                              {((course as any).prerequisites || staticMatch?.prerequisites)}
+                            </p>
+                          )}
+                          {((course as any).requirements?.length || staticMatch?.requirements?.length) && (
+                            <ul className="space-y-2">
+                              {((course as any).requirements?.length ? (course as any).requirements : staticMatch?.requirements || []).map((req: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                  <span className="text-primary font-bold">•</span>
+                                  <span className="text-foreground/90">{req}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+
+                      {/* What's Included */}
+                      {((course as any).whats_included?.length || staticMatch?.whatsIncluded?.length) && (
+                        <div className="border-t border-border pt-5 not-prose">
+                          <h2 className="font-heading font-semibold text-foreground text-base mb-3">What's Included</h2>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {((course as any).whats_included?.length ? (course as any).whats_included : staticMatch?.whatsIncluded || []).map((inc: string, i: number) => (
+                              <div key={i} className="flex items-start gap-2 text-sm text-foreground/90">
+                                <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                <span>{inc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </TabsContent>

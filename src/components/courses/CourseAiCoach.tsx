@@ -108,7 +108,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                 Ask a question about this course
               </button>
               <Link
-                to="/learning-paths"
+                to={
+                  courseSlug.includes("ai-") || courseTitle.toLowerCase().includes("ai") || courseTitle.toLowerCase().includes("llm")
+                    ? "/paths/ai-generative-productivity-track"
+                    : courseTitle.toLowerCase().includes("cloud") || courseTitle.toLowerCase().includes("azure")
+                    ? "/paths/cloud-engineering-accelerator-track"
+                    : "/paths"
+                }
+                onClick={() => setPanelOpen(false)}
                 className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
                 <Route className="h-4 w-4 text-muted-foreground shrink-0" />

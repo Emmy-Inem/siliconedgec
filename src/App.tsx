@@ -183,6 +183,8 @@ const App = () => (
               <Route path="/instructors/:id" element={<InstructorDetail />} />
               <Route path="/paths" element={<LearningPaths />} />
               <Route path="/paths/:id" element={<LearningPathDetail />} />
+              <Route path="/learning-paths" element={<Navigate to="/paths" replace />} />
+              <Route path="/learning-paths/:id" element={<Navigate to="/paths" replace />} />
               <Route path="/help" element={<Help />} />
               <Route path="/help/:slug" element={<HelpArticle />} />
               <Route path="/trust" element={<Trust />} />

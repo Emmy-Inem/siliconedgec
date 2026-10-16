@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { useMemo } from "react";
+import { CURATED_LEARNING_PATHS } from "@/data/learningPaths";
+
 const iconFor = (title: string) => {
   const t = title.toLowerCase();
   if (t.includes("devops")) return Terminal;
@@ -65,6 +68,32 @@ export default function LearningPaths() {
     return { count: ids.length, hours: Math.round(hours), level };
   };
 
+  const displayPaths = useMemo(() => {
+    const dbPaths = paths ?? [];
+    if (dbPaths.length === 0) {
+      return CURATED_LEARNING_PATHS.map((cp, idx) => ({
+        id: cp.id,
+        title: cp.title,
+        description: cp.description,
+        order_index: idx,
+        is_curated: true,
+        stats: {
+          count: cp.courseCount,
+          hours: cp.hours,
+          level: cp.level,
+        },
+        learning_path_courses: cp.courses.map((c, cIdx) => ({
+          course_id: c.id,
+          order_index: cIdx,
+        })),
+      }));
+    }
+    return dbPaths.map((p: any) => ({
+      ...p,
+      stats: statsFor(p),
+    }));
+  }, [paths, courseMeta]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
@@ -101,13 +130,13 @@ export default function LearningPaths() {
               <div key={i} className="h-52 rounded-2xl border border-border/60 bg-muted/40 animate-pulse" />
             ))}
           </div>
-        ) : (paths?.length ?? 0) === 0 ? (
+        ) : displayPaths.length === 0 ? (
           <p className="text-muted-foreground">No learning paths published yet.</p>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(paths ?? []).map((p: any, i: number) => {
+            {displayPaths.map((p: any, i: number) => {
               const Icon = iconFor(p.title);
-              const { count, hours, level } = statsFor(p);
+              const { count, hours, level } = p.stats ?? statsFor(p);
               return (
                 <motion.div
                   key={p.id}

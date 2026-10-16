@@ -5,6 +5,7 @@ export interface Course {
   slug?: string;
   title: string;
   description: string;
+  longDescription?: string;
   category: string;
   price: number;
   discountPrice?: number;
@@ -20,12 +21,15 @@ export interface Course {
   whatsIncluded?: string[];
   instructorBio: string;
   isPublished?: boolean;
+  whoIsThisFor?: string[];
+  prerequisites?: string;
+  requirements?: string[];
 }
 
 export interface Module {
   id: string;
   title: string;
-  lessons: { id: string; title: string; duration: string }[];
+  lessons: { id: string; title: string; duration: string; description?: string }[];
 }
 
 export const categories = [
@@ -44,6 +48,7 @@ export const courses: Course[] = [
     slug: "ai-beginners-llm-productivity",
     title: "AI for Beginners: Mastering LLMs & Generative AI for 10x Productivity",
     description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build real-world productivity workflows to automate daily work, research, synthesis, writing, and spreadsheet tasks. Save 10+ hours every week and supercharge your everyday productivity.",
+    longDescription: "Artificial Intelligence is no longer just for software engineers and data scientists. Generative AI and Large Language Models (LLMs) represent the single biggest shift in knowledge work of our generation. In this beginner-friendly, hands-on masterclass, you will demystify how AI works behind the scenes without any complicated math or programming jargon. You will gain mastery over the leading frontier models—including OpenAI ChatGPT, Anthropic Claude 3.7, Google Gemini, and DeepSeek—and learn prompt engineering frameworks that deliver astonishingly accurate results on the first attempt. By the end of this course, you will have automated repetitive daily writing, mastered deep document synthesis, built custom GPT assistants for your job, and reclaimed 10 to 15 hours of your week.",
     category: "Artificial Intelligence & Machine Learning",
     price: 45000,
     discountPrice: 75000,
@@ -55,6 +60,18 @@ export const courses: Course[] = [
     rating: 4.9,
     studentsEnrolled: 840,
     isPublished: true,
+    whoIsThisFor: [
+      "Working Professionals & Executives looking to eliminate busywork and automate reports, emails, and presentations",
+      "Founders, Freelancers & Solopreneurs who need a 24/7 AI-powered team to draft copy, research competitors, and ideate",
+      "Researchers, Lawyers, & Analysts needing to synthesize massive 100+ page PDFs, extract data, and spot trends quickly",
+      "Non-Technical Creators & Students wanting a competitive edge in their career without learning complex code",
+    ],
+    prerequisites: "None! No coding, mathematics, or technical background required. Just a laptop, an internet connection, and curiosity.",
+    requirements: [
+      "A computer or tablet with modern web browser",
+      "Free account on ChatGPT (chatgpt.com), Claude (claude.ai), or Google Gemini (gemini.google.com)",
+      "Zero prior AI or coding experience needed",
+    ],
     learningOutcomes: [
       "Understand LLM fundamentals: tokens, context windows, and model reasoning without technical jargon",
       "Master core prompt engineering frameworks: Few-Shot, Role Prompting, Chain-of-Thought, and Output Constraints",
@@ -71,45 +88,120 @@ export const courses: Course[] = [
       "Lifetime access to updated lessons as new frontier models are released",
       "Verified Certificate of Completion from Silicon Edge Consulting",
     ],
-    instructorBio: "Dr. Amina Okafor is an AI researcher and consultant with 12+ years of experience in natural language processing and applied generative AI systems.",
+    instructorBio: "Dr. Amina Okafor is an AI researcher and consultant with 12+ years of experience in natural language processing and applied generative AI systems. She has trained over 15,000 professionals across EMEA on leveraging AI for enterprise productivity.",
     modules: [
       {
         id: "m1",
-        title: "Demystifying AI & Large Language Models (LLMs)",
+        title: "Module 1: Demystifying AI & Large Language Models (LLMs)",
         lessons: [
-          { id: "l1", title: "Welcome to the AI Era: What LLMs Can (and Cannot) Do for You", duration: "25 min" },
-          { id: "l2", title: "How LLMs Work: Tokens, Probabilities, and Context Windows Simplified", duration: "35 min" },
-          { id: "l3", title: "Comparing Frontier Models: ChatGPT, Claude, Gemini & DeepSeek", duration: "40 min" },
-          { id: "l4", title: "Setting Up Your Personal AI Productivity Workspace", duration: "30 min" },
+          {
+            id: "l1",
+            title: "Welcome to the AI Era: What LLMs Can (and Cannot) Do for You",
+            duration: "25 min",
+            description: "Orientation to modern generative AI, setting realistic expectations, and mapping the top productivity use cases across industries.",
+          },
+          {
+            id: "l2",
+            title: "How LLMs Work: Tokens, Probabilities, and Context Windows Simplified",
+            duration: "35 min",
+            description: "Understand tokens, parameters, and context limits using intuitive visual analogies without mathematical formulas.",
+          },
+          {
+            id: "l3",
+            title: "Comparing Frontier Models: ChatGPT, Claude, Gemini & DeepSeek",
+            duration: "40 min",
+            description: "A comprehensive breakdown of leading models, their strengths, weaknesses, reasoning abilities, and when to pick which tool.",
+          },
+          {
+            id: "l4",
+            title: "Setting Up Your Personal AI Productivity Workspace",
+            duration: "30 min",
+            description: "Configure your browser, extensions, keyboard shortcuts, and custom instructions for lightning-fast daily access.",
+          },
         ],
       },
       {
         id: "m2",
-        title: "Prompt Engineering: The Skill That Unlocks 10x Quality",
+        title: "Module 2: Prompt Engineering: The Skill That Unlocks 10x Quality",
         lessons: [
-          { id: "l5", title: "The Core Framework: Context, Task, Instructions, and Format", duration: "45 min" },
-          { id: "l6", title: "Advanced Techniques: Few-Shot Examples and Persona / Role Assignment", duration: "40 min" },
-          { id: "l7", title: "Chain-of-Thought & Step-by-Step Reasoning for Complex Decisions", duration: "45 min" },
-          { id: "l8", title: "Eliminating Hallucinations: Verification Strategies and Source Grounding", duration: "35 min" },
+          {
+            id: "l5",
+            title: "The Core Framework: Context, Task, Instructions, and Format",
+            duration: "45 min",
+            description: "Master the CTIF prompt formula to turn vague, generic AI outputs into executive-ready deliverables on your first try.",
+          },
+          {
+            id: "l6",
+            title: "Advanced Techniques: Few-Shot Examples and Persona / Role Assignment",
+            duration: "40 min",
+            description: "Learn how to supply high-quality examples and adopt specific expert personas (CFO, Senior Copywriter, Management Consultant).",
+          },
+          {
+            id: "l7",
+            title: "Chain-of-Thought & Step-by-Step Reasoning for Complex Decisions",
+            duration: "45 min",
+            description: "Unlock superior analytical thinking from models by forcing deliberation, hypothesis testing, and multi-step evaluation.",
+          },
+          {
+            id: "l8",
+            title: "Eliminating Hallucinations: Verification Strategies and Source Grounding",
+            duration: "35 min",
+            description: "Bulletproof your results against fake facts by forcing citation grounding, constraint adherence, and critical cross-checking.",
+          },
         ],
       },
       {
         id: "m3",
-        title: "10x Workplace Productivity with LLMs",
+        title: "Module 3: 10x Workplace Productivity with LLMs",
         lessons: [
-          { id: "l9", title: "High-Speed Writing: Emails, Proposals, Reports, and Executive Summaries", duration: "50 min" },
-          { id: "l10", title: "Deep Reading & Synthesis: Summarizing 50-page PDFs and Research in Minutes", duration: "45 min" },
-          { id: "l11", title: "Spreadsheet Magic: Excel & Google Sheets Formulas, Macros, and Data Cleaning", duration: "55 min" },
-          { id: "l12", title: "Everyday Coding & Scripting for Non-Developers", duration: "60 min" },
+          {
+            id: "l9",
+            title: "High-Speed Writing: Emails, Proposals, Reports, and Executive Summaries",
+            duration: "50 min",
+            description: "Draft polished, persuasive professional communication in seconds, maintaining your personal voice and tone.",
+          },
+          {
+            id: "l10",
+            title: "Deep Reading & Synthesis: Summarizing 50-page PDFs and Research in Minutes",
+            duration: "45 min",
+            description: "Upload dense documents, contracts, and financial reports; extract key risks, takeaways, and action items effortlessly.",
+          },
+          {
+            id: "l11",
+            title: "Spreadsheet Magic: Excel & Google Sheets Formulas, Macros, and Data Cleaning",
+            duration: "55 min",
+            description: "Generate complex nested formulas, regex queries, and python/macro scripts simply by describing what you need in plain English.",
+          },
+          {
+            id: "l12",
+            title: "Everyday Coding & Scripting for Non-Developers",
+            duration: "60 min",
+            description: "Automate repetitive computer tasks, parse CSV files, and scrape public information without needing a computer science degree.",
+          },
         ],
       },
       {
         id: "m4",
-        title: "Custom AI Assistants & Ethical Best Practices",
+        title: "Module 4: Custom AI Assistants & Ethical Best Practices",
         lessons: [
-          { id: "l13", title: "Building Custom GPTs and Claude Projects with Knowledge Files", duration: "60 min" },
-          { id: "l14", title: "Data Privacy, Enterprise Security, and Confidentiality Protocols", duration: "35 min" },
-          { id: "l15", title: "Capstone Project: Designing Your Personal AI Productivity System", duration: "90 min" },
+          {
+            id: "l13",
+            title: "Building Custom GPTs and Claude Projects with Knowledge Files",
+            duration: "60 min",
+            description: "Create specialized AI tools tailored to your exact team guidelines, tone of voice, product specs, and company SOPs.",
+          },
+          {
+            id: "l14",
+            title: "Data Privacy, Enterprise Security, and Confidentiality Protocols",
+            duration: "35 min",
+            description: "How to safely use AI with corporate data, opt out of model training, and navigate workplace policies ethically.",
+          },
+          {
+            id: "l15",
+            title: "Capstone Project: Designing Your Personal AI Productivity System",
+            duration: "90 min",
+            description: "Build an end-to-end AI workflow that automates your most time-consuming weekly responsibility and submit for verification.",
+          },
         ],
       },
     ],

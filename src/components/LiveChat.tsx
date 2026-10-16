@@ -35,12 +35,21 @@ export function LiveChat() {
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
-  // Other widgets (e.g. the course-page AI Coach avatar) can ask the chat to open.
+  // Other widgets (e.g. the course-page AI Coach avatar or SupportTicket page) can ask the chat to open.
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = (e?: Event) => {
+      const customEvent = e as CustomEvent<{ resetToAi?: boolean }>;
+      if (customEvent?.detail?.resetToAi) {
+        setEscalated(false);
+        setConversationId(null);
+        setMessages([]);
+        assistant.reset();
+      }
+      setOpen(true);
+    };
     window.addEventListener("sec:open-live-chat", handler);
     return () => window.removeEventListener("sec:open-live-chat", handler);
-  }, []);
+  }, [assistant]);
 
   // Once the assistant hands over (it could not answer, or the user asked for a
   // person) the SAME thread continues with a human — we just open/attach the
@@ -83,31 +92,101 @@ export function LiveChat() {
     }
   }, [user, toast]);
 
-  // Escalation is driven entirely by the assistant.
+  // Escalation is driven by the assistant.
   useEffect(() => {
     if (!assistant.escalated || escalated) return;
     setEscalated(true);
     ensureConversation();
   }, [assistant.escalated, escalated, ensureConversation]);
 
-  // Re-opening the widget after a handover keeps the same thread: if an open
-  // conversation with the team already exists, resume it instead of the AI.
+  // Re-opening the widget: check whether an open conversation currently exists.
+  // If the previous conversation was closed, reset back to the AI assistant!
   useEffect(() => {
-    if (!open || !user || escalated) return;
+    if (!open || !user) return;
+    let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("chat_conversations")
-        .select("id")
+        .select("id, status")
         .eq("user_id", user.id)
-        .eq("status", "open")
         .order("created_at", { ascending: false })
         .limit(1);
-      if (data?.[0]) {
+
+      if (cancelled) return;
+      const latest = data?.[0];
+      if (latest && latest.status === "open") {
         setEscalated(true);
-        await ensureConversation();
+        setConversationId(latest.id);
+        const { data: msgs } = await supabase
+          .from("chat_messages")
+          .select("*")
+          .eq("conversation_id", latest.id)
+          .order("created_at", { ascending: true });
+        if (!cancelled) {
+          setMessages((msgs || []) as Message[]);
+        }
+      } else {
+        // No open ticket / conversation is closed -> Return directly to AI Assistant mode!
+        setEscalated(false);
+        setConversationId(null);
+        setMessages([]);
       }
     })();
-  }, [open, user, escalated, ensureConversation]);
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user]);
+
+  // Realtime subscription for conversation status changes (e.g. ticket marked resolved by admin or user)
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`chat-conv-status-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_conversations",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const rec = payload.new as any;
+          if (rec && (rec.status === "closed" || rec.status === "resolved")) {
+            setEscalated(false);
+            setConversationId(null);
+            setMessages([]);
+            assistant.reset();
+            toast({
+              title: "Ticket resolved",
+              description: "Support conversation closed. The AI Assistant is ready to help you with anything!",
+            });
+          } else if (rec && rec.status === "open") {
+            setConversationId(rec.id);
+            setEscalated(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user, assistant, toast]);
+
+  const returnToAi = async () => {
+    if (conversationId) {
+      await supabase.from("chat_conversations").update({ status: "closed" }).eq("id", conversationId);
+    }
+    setEscalated(false);
+    setConversationId(null);
+    setMessages([]);
+    assistant.reset();
+    toast({
+      title: "AI Assistant Active",
+      description: "Ask any question about courses, admissions, curriculum, or certificates.",
+    });
+  };
 
   // Realtime subscription for the human conversation
   useEffect(() => {
@@ -191,26 +270,56 @@ export function LiveChat() {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/30">
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full ${escalated ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-                    {escalated ? "Human agent joined" : "AI assistant"}
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${escalated ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"}`}>
+                    {escalated ? "● Human agent joined" : "● AI assistant"}
                   </span>
                   {!escalated ? (
                     <button
                       onClick={talkToHuman}
                       disabled={assistant.loading}
-                      className="ml-auto text-[11px] text-primary hover:underline disabled:opacity-50"
+                      className="ml-auto text-[11px] text-primary hover:underline font-medium disabled:opacity-50"
                     >
                       Talk to a human
                     </button>
                   ) : (
-                    <Link to="/support" className="ml-auto text-[11px] text-primary hover:underline" onClick={() => setOpen(false)}>
-                      My tickets
-                    </Link>
+                    <div className="ml-auto flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={returnToAi}
+                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+                        title="Return to instant AI assistant"
+                      >
+                        🤖 Ask AI Assistant
+                      </button>
+                      <span className="text-muted-foreground/60 text-xs">•</span>
+                      <Link to="/support" className="text-[11px] text-muted-foreground hover:underline" onClick={() => setOpen(false)}>
+                        My tickets
+                      </Link>
+                    </div>
                   )}
                 </div>
 
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
+                    {escalated && (
+                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-foreground/90 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                            <Headphones className="h-3.5 w-3.5" /> Support Agent Connected
+                          </p>
+                          <button
+                            type="button"
+                            onClick={returnToAi}
+                            className="text-[11px] font-semibold text-primary hover:underline"
+                          >
+                            Return to AI
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          Your request is with our human support team. If your question is resolved or you want instant answers to new questions, switch back to the AI anytime.
+                        </p>
+                      </div>
+                    )}
                     {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
                         <LifeBuoy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />

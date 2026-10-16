@@ -31,6 +31,9 @@ export interface DbCourse {
   learning_outcomes: string[] | null;
   whats_included: string[] | null;
   is_published: boolean | null;
+  who_is_this_for?: string[];
+  prerequisites?: string | null;
+  requirements?: string[];
   instructor: {
     id: string;
     name: string;
@@ -142,7 +145,6 @@ async function fetchCourses(): Promise<DbCourse[]> {
 
 // Full fetch with modules/lessons for detail page
 async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null> {
-  // UUIDs match this pattern; everything else is treated as a slug
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
   const column = isUuid ? "id" : "slug";
   const { data: course, error } = await supabase
@@ -155,34 +157,136 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
     console.warn("fetchCourseByIdOrSlug DB query error:", error);
   }
 
+  const staticMatch = staticCourses.find(
+    (c) =>
+      c.id.toLowerCase() === idOrSlug.toLowerCase() ||
+      (c.slug && c.slug.toLowerCase() === idOrSlug.toLowerCase()) ||
+      c.id.toLowerCase() === ((course as any)?.id || "").toLowerCase() ||
+      (c.slug && c.slug.toLowerCase() === ((course as any)?.slug || "").toLowerCase()) ||
+      c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") === idOrSlug.toLowerCase() ||
+      (course && c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") === ((course as any)?.slug || "").toLowerCase())
+  );
+
   if (!course) {
-    const staticMatch = staticCourses.find(
-      (c) =>
-        c.id.toLowerCase() === idOrSlug.toLowerCase() ||
-        (c.slug && c.slug.toLowerCase() === idOrSlug.toLowerCase()) ||
-        c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") === idOrSlug.toLowerCase()
-    );
     if (staticMatch) {
       return mapStaticCourseToDbCourse(staticMatch);
     }
     return null;
   }
 
-  const { data: modules } = await supabase
+  const { data: dbModules } = await supabase
     .from("modules")
     .select("*, lessons:lessons(id, title, duration, order_index)")
     .eq("course_id", (course as any).id)
     .order("order_index");
 
-  return {
-    ...course,
-    instructor: Array.isArray(course.instructor) ? course.instructor[0] ?? null : course.instructor,
-    modules: (modules ?? []).map((m: any) => ({
+  let resolvedModules: DbModule[] = (dbModules ?? [])
+    .map((m: any) => ({
       id: m.id,
       title: m.title,
       order_index: m.order_index,
       lessons: (m.lessons ?? []).sort((a: DbLesson, b: DbLesson) => a.order_index - b.order_index),
-    })).sort((a, b) => a.order_index - b.order_index),
+    }))
+    .sort((a, b) => a.order_index - b.order_index);
+
+  // Fallback to static modules if database has no modules yet
+  if (resolvedModules.length === 0 && staticMatch?.modules?.length) {
+    resolvedModules = staticMatch.modules.map((m, mIdx) => ({
+      id: m.id,
+      title: m.title,
+      order_index: mIdx,
+      lessons: m.lessons.map((l, lIdx) => ({
+        id: l.id,
+        title: l.title,
+        duration: l.duration,
+        order_index: lIdx,
+      })),
+    }));
+
+    // Asynchronously seed modules & lessons into DB if course exists with a valid UUID
+    const isDbUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((course as any).id);
+    if (isDbUuid) {
+      (async () => {
+        try {
+          for (let mIdx = 0; mIdx < staticMatch.modules.length; mIdx++) {
+            const sm = staticMatch.modules[mIdx];
+            const { data: modRow } = await supabase
+              .from("modules")
+              .insert({
+                course_id: (course as any).id,
+                title: sm.title,
+                order_index: mIdx,
+              })
+              .select("id")
+              .single();
+
+            if (modRow && sm.lessons?.length) {
+              await supabase.from("lessons").insert(
+                sm.lessons.map((sl, lIdx) => ({
+                  module_id: modRow.id,
+                  title: sl.title,
+                  duration: sl.duration,
+                  order_index: lIdx,
+                }))
+              );
+            }
+          }
+        } catch (seedErr) {
+          console.warn("Async modules seed error:", seedErr);
+        }
+      })();
+    }
+  }
+
+  // Merge missing metadata with rich static defaults
+  const learningOutcomes =
+    course.learning_outcomes && (course.learning_outcomes as string[]).length > 0
+      ? course.learning_outcomes
+      : staticMatch?.learningOutcomes ?? [];
+
+  const whatsIncluded =
+    course.whats_included && (course.whats_included as string[]).length > 0
+      ? course.whats_included
+      : staticMatch?.whatsIncluded ?? [
+          "24 hours of interactive lessons, practical walkthroughs, and case studies",
+          "Prompt Engineering Cheat Sheet + 50+ Copy-Paste Workplace Prompt Templates",
+          "Weekly hands-on labs: Document synthesis, Excel automation, and custom GPT creation",
+          "Verified Certificate of Completion from Silicon Edge Consulting",
+        ];
+
+  const description =
+    course.description && course.description.trim().length > 0
+      ? course.description
+      : staticMatch?.longDescription || staticMatch?.description || "";
+
+  return {
+    ...course,
+    description,
+    learning_outcomes: learningOutcomes,
+    whats_included: whatsIncluded,
+    who_is_this_for: (course as any).who_is_this_for ?? staticMatch?.whoIsThisFor ?? [],
+    prerequisites: (course as any).prerequisites ?? staticMatch?.prerequisites ?? null,
+    requirements: (course as any).requirements ?? staticMatch?.requirements ?? [],
+    instructor: Array.isArray(course.instructor)
+      ? course.instructor[0] ??
+        (staticMatch
+          ? {
+              id: "inst-" + staticMatch.id,
+              name: staticMatch.instructorName,
+              bio: staticMatch.instructorBio,
+              avatar_url: staticMatch.instructorAvatar,
+            }
+          : null)
+      : course.instructor ??
+        (staticMatch
+          ? {
+              id: "inst-" + staticMatch.id,
+              name: staticMatch.instructorName,
+              bio: staticMatch.instructorBio,
+              avatar_url: staticMatch.instructorAvatar,
+            }
+          : null),
+    modules: resolvedModules,
   };
 }
 
