@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageCircle, Bot, Route, HelpCircle } from "lucide-react";
+import { X, MessageCircle, Route, HelpCircle } from "lucide-react";
+import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
 
 interface CourseAiCoachProps {
   courseTitle: string;
@@ -84,7 +85,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             className="w-64 rounded-2xl border border-border bg-card shadow-xl overflow-hidden"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-              <span className="text-sm font-heading font-semibold text-foreground">AI Coach</span>
+              <span className="flex items-center gap-2 text-sm font-heading font-semibold text-foreground">
+                <img src={aiCoachAvatar} alt="" loading="lazy" width={24} height={24} className="h-6 w-6 rounded-full object-cover" />
+                AI Coach
+              </span>
               <button
                 type="button"
                 onClick={() => setPanelOpen(false)}
@@ -134,10 +138,17 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.2, type: "spring", stiffness: 260, damping: 20 }}
-        className="relative h-12 w-12 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all"
+        className="relative h-16 w-16 rounded-full bg-card border border-border shadow-lg overflow-hidden hover:shadow-xl hover:scale-105 transition-all"
       >
         <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping [animation-duration:3s] motion-reduce:hidden pointer-events-none" />
-        <Bot className="h-5 w-5 text-muted-foreground" />
+        <img
+          src={aiCoachAvatar}
+          alt="AI Coach"
+          loading="lazy"
+          width={64}
+          height={64}
+          className="h-full w-full object-cover"
+        />
       </motion.button>
     </div>
   );
