@@ -38,7 +38,7 @@ export function LiveChat() {
   // Other widgets (e.g. the course-page AI Coach avatar or SupportTicket page) can ask the chat to open.
   useEffect(() => {
     const handler = (e?: Event) => {
-      const customEvent = e as CustomEvent<{ resetToAi?: boolean }>;
+      const customEvent = e as CustomEvent<{ resetToAi?: boolean; initialQuestion?: string }>;
       if (customEvent?.detail?.resetToAi) {
         setEscalated(false);
         setConversationId(null);
@@ -46,10 +46,20 @@ export function LiveChat() {
         assistant.reset();
       }
       setOpen(true);
+      if (customEvent?.detail?.initialQuestion) {
+        const q = customEvent.detail.initialQuestion;
+        if (user) {
+          setTimeout(() => {
+            assistant.send(q);
+          }, 150);
+        } else {
+          setDraft(q);
+        }
+      }
     };
     window.addEventListener("sec:open-live-chat", handler);
     return () => window.removeEventListener("sec:open-live-chat", handler);
-  }, [assistant]);
+  }, [assistant, user]);
 
   // Once the assistant hands over (it could not answer, or the user asked for a
   // person) the SAME thread continues with a human — we just open/attach the
