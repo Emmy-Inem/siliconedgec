@@ -1,16 +1,10 @@
-import { motion } from "framer-motion";
 import { 
   Server, 
   GitPullRequest, 
   CheckCircle2, 
   Users2, 
-  ShieldCheck, 
-  Terminal, 
-  Layers, 
-  ArrowRight 
+  ShieldCheck 
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 const OUTCOME_PILLARS = [
   {
@@ -39,24 +33,6 @@ const OUTCOME_PILLARS = [
   },
 ];
 
-const COMPETENCY_TOOLS = [
-  { name: "Microsoft Azure", slug: "azure" },
-  { name: "Amazon Web Services", slug: "aws" },
-  { name: "Terraform", slug: "terraform" },
-  { name: "Docker", slug: "docker" },
-  { name: "Kubernetes", slug: "kubernetes" },
-  { name: "Linux Bash", slug: "linux" },
-  { name: "GitHub Actions", slug: "githubactions" },
-  { name: "Python", slug: "python" },
-];
-
-const METRICS = [
-  { value: "100%", label: "Practical Lab Environment", detail: "Real cloud subscriptions, not slide presentations" },
-  { value: "4–12 Wks", label: "Structured Immersion", detail: "Accelerated tracks designed for career transition" },
-  { value: "5+ Capstones", label: "Production Projects", detail: "Production repos for interview discussions" },
-  { value: "Lifetime", label: "Community & Recordings", detail: "Continuous access to curriculum updates" },
-];
-
 export function GraduateOutcomes() {
   return (
     <section className="py-20 md:py-28 border-t border-border/40 bg-muted/20 relative">
@@ -75,7 +51,7 @@ export function GraduateOutcomes() {
         </div>
 
         {/* 4 Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {OUTCOME_PILLARS.map((pillar) => {
             const Icon = pillar.icon;
             return (
@@ -101,46 +77,6 @@ export function GraduateOutcomes() {
               </div>
             );
           })}
-        </div>
-
-        {/* Real Metrics Banner */}
-        <div className="rounded-3xl border border-border/80 bg-card/80 p-8 mb-16 shadow-sm">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y lg:divide-y-0 lg:divide-x divide-border/60">
-            {METRICS.map((m, idx) => (
-              <div key={m.label} className={`${idx > 0 ? "pt-6 lg:pt-0 lg:pl-8" : ""}`}>
-                <p className="font-heading text-3xl md:text-4xl font-extrabold text-foreground mb-1">
-                  {m.value}
-                </p>
-                <p className="font-heading font-semibold text-sm text-primary mb-1">
-                  {m.label}
-                </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {m.detail}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Competency Toolstack */}
-        <div className="rounded-2xl border border-border/60 bg-background/50 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="max-w-md">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary block mb-1">Enterprise Toolstack</span>
-            <h4 className="font-heading font-bold text-lg text-foreground mb-1">Tools You Will Master Hands-On</h4>
-            <p className="text-xs text-muted-foreground">The industry-standard tooling powering modern cloud and DevOps organizations.</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 md:justify-end">
-            {COMPETENCY_TOOLS.map((tool) => (
-              <div 
-                key={tool.name}
-                className="px-3 py-1.5 rounded-lg border border-border/80 bg-muted/40 text-xs font-medium text-foreground/90 flex items-center gap-2"
-              >
-                <Terminal className="h-3.5 w-3.5 text-primary" />
-                <span>{tool.name}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
