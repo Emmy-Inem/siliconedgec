@@ -24,5 +24,6 @@ export function analyticsPagePath(pathname: string, search: string): string {
     const value = input.get(key);
     if (value) safe.set(key, value);
   }
-  return `${pathname}${safe.size ? `?${safe}` : ""}`;
+  const query = safe.toString();
+  return `${pathname}${query ? `?${query}` : ""}`;
 }
