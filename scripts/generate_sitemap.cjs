@@ -16,48 +16,15 @@ if (fs.existsSync(envPath)) {
 
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
+const { renderEntry, preservedEntries, cmsPath, fetchAll } = require('./sitemap-utils.cjs');
+
 async function generate() {
-  let courses = [];
-  let blogPosts = [];
-  let categories = [];
-
-  if (supabase) {
-    try {
-      const results = await Promise.all([
-        supabase.from('courses').select('id, slug, updated_at').eq('is_published', true),
-        supabase.from('blog_posts').select('slug, updated_at').eq('status', 'published'),
-        supabase.from('categories').select('slug, created_at'),
-      ]);
-      if (results.some((r) => r.error)) throw new Error(results.find((r) => r.error).error.message);
-      courses = results[0].data || [];
-      blogPosts = results[1].data || [];
-      categories = results[2].data || [];
-    } catch (e) {
-      console.warn('Sitemap: dynamic routes skipped —', e.message);
-    }
-  } else {
-    console.warn('Sitemap: no Supabase key available, generating static routes only.');
-  }
-
-  // Safety net: if the database was unreachable, keep the dynamic URLs from the
-  // existing sitemap rather than silently dropping every course/blog/category page.
   const sitemapPath = path.resolve(__dirname, '../public/sitemap.xml');
-  let preservedDynamic = [];
-  if (!courses.length && !blogPosts.length && !categories.length && fs.existsSync(sitemapPath)) {
-    const existing = fs.readFileSync(sitemapPath, 'utf8');
-    preservedDynamic = (existing.match(/^\s*<url>.*<\/url>\s*$/gm) || [])
-      .map((l) => l.trim())
-      .filter((l) => /<loc>https:\/\/siliconedgec\.com\/(courses|blog|category)\/[^<]+<\/loc>/.test(l));
-    if (preservedDynamic.length) {
-      console.warn(`Sitemap: preserved ${preservedDynamic.length} dynamic URLs from the existing sitemap.`);
-    }
-  }
-
-  const baseUrl = 'https://siliconedgec.com';
-  const today = new Date().toISOString().split('T')[0];
-
+  const existing = fs.existsSync(sitemapPath) ? fs.readFileSync(sitemapPath, 'utf8') : '';
   const staticRoutes = [
     { path: '/', priority: '1.0', changefreq: 'daily' },
+    { path: '/help', priority: '0.6', changefreq: 'monthly' },
+    { path: '/verify', priority: '0.5', changefreq: 'monthly' },
     { path: '/courses', priority: '0.9', changefreq: 'daily' },
     { path: '/blog', priority: '0.8', changefreq: 'daily' },
     { path: '/pricing', priority: '0.8', changefreq: 'weekly' },
@@ -90,33 +57,54 @@ async function generate() {
     { path: '/locations/lisbon', priority: '0.7', changefreq: 'monthly' },
   ];
 
-  const entry = (loc, lastmod, changefreq, priority) =>
-    `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
-
-  const all = [
-    ...staticRoutes.map((r) => entry(`${baseUrl}${r.path}`, today, r.changefreq, r.priority)),
-    ...(courses || []).map((c) => {
-      const slugOrId = c.slug || c.id;
-      const lastmod = (c.updated_at || today).split('T')[0];
-      return entry(`${baseUrl}/courses/${slugOrId}`, lastmod, 'weekly', '0.8');
-    }),
-    ...(blogPosts || []).map((b) => {
-      const lastmod = (b.updated_at || today).split('T')[0];
-      return entry(`${baseUrl}/blog/${b.slug}`, lastmod, 'monthly', '0.7');
-    }),
-    ...(categories || []).map((cat) => {
-      return entry(`${baseUrl}/category/${cat.slug}`, today, 'weekly', '0.7');
-    }),
+  const sources = [
+    { table: 'courses', columns: 'id, slug, updated_at', filter: ['is_published', true], prefix: '/courses', path: (r) => `/courses/${r.slug || r.id}` },
+    { table: 'blog_posts', columns: 'slug, updated_at', filter: ['status', 'published'], prefix: '/blog', path: (r) => `/blog/${r.slug}` },
+    { table: 'categories', columns: 'id, slug', prefix: '/category', path: (r) => `/category/${r.slug}` },
+    { table: 'learning_paths', columns: 'id, updated_at', filter: ['is_published', true], prefix: '/paths', path: (r) => `/paths/${r.id}` },
+    { table: 'jobs', columns: 'id, updated_at', filter: ['is_published', true], prefix: '/jobs', path: (r) => `/jobs/${r.id}` },
+    { table: 'instructors', columns: 'id, updated_at', prefix: '/instructors', path: (r) => `/instructors/${r.id}` },
+    { table: 'cms_pages', columns: 'id, slug, updated_at', filter: ['status', 'published'], prefix: '/p', path: (r) => cmsPath(r.slug) },
+    { table: 'kb_articles', columns: 'id, slug, updated_at', filter: ['is_published', true], prefix: '/help', path: (r) => `/help/${r.slug}` },
   ];
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  const dynamic = await Promise.all(sources.map(async (source) => {
+    try {
+      if (!supabase) throw new Error('Database unavailable');
+      const rows = await fetchAll(() => {
+        let query = supabase.from(source.table).select(source.columns).order('id');
+        if (source.filter) query = query.eq(...source.filter);
+        return query;
+      });
+      return rows.flatMap((row) => {
+        const route = source.path(row);
+        return route ? [renderEntry(route, row.updated_at)] : [];
+      });
+    } catch {
+      console.warn(`Sitemap: preserving unavailable ${source.table} source.`);
+      return preservedEntries(existing, source.prefix);
+    }
+  }));
+  let excluded = new Set();
+  if (supabase) {
+    try {
+      const [gone, seo] = await Promise.all([
+        fetchAll(() => supabase.from('gone_urls').select('id, path').order('id')),
+        fetchAll(() => supabase.from('page_seo').select('id, path').eq('no_index', true).order('id')),
+      ]);
+      excluded = new Set([...gone, ...seo].map((row) => row.path));
+    } catch { console.warn('Sitemap: exclusion lookup unavailable.'); }
+  }
+  const urls = new Map();
+  for (const entry of [...staticRoutes.map((r) => renderEntry(r.path, undefined, r.changefreq, r.priority)), ...dynamic.flat()]) {
+    const loc = entry.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (loc && !excluded.has(loc.replace('https://siliconedgec.com', ''))) urls.set(loc, entry);
+  }
+  fs.writeFileSync(sitemapPath, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...all, ...preservedDynamic].join('\n')}
+${[...urls.values()].join('\n')}
 </urlset>
-`;
-
-  fs.writeFileSync(sitemapPath, xml, 'utf8');
-  console.log(`Generated sitemap with ${all.length} URLs at ${sitemapPath}`);
+`);
+  console.log(`Generated sitemap with ${urls.size} URLs.`);
 }
-
-generate().catch(console.error);
+if (require.main === module) generate().catch((error) => { console.error(error.message); process.exitCode = 1; });
+module.exports = { generate };

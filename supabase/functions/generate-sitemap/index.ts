@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     );
 
     const url = new URL(req.url);
-    const baseUrl = url.searchParams.get("base") ?? "https://siliconedgec.com";
+    const baseUrl = "https://siliconedgec.com";
 
     const [
       { data: courses },
@@ -27,6 +27,8 @@ Deno.serve(async (req) => {
       { data: jobs },
       { data: instructors },
       { data: gone },
+      { data: articles },
+      { data: hidden },
     ] = await Promise.all([
       supabase.from("courses").select("id, slug, updated_at").eq("is_published", true),
       supabase.from("blog_posts").select("slug, updated_at").eq("status", "published"),
@@ -36,14 +38,18 @@ Deno.serve(async (req) => {
       supabase.from("jobs").select("id, updated_at").eq("is_published", true),
       supabase.from("instructors").select("id, updated_at"),
       supabase.from("gone_urls").select("path"),
+      supabase.from("kb_articles").select("slug, updated_at").eq("is_published", true),
+      supabase.from("page_seo").select("path").eq("no_index", true),
     ]);
 
-    const gonePaths = new Set<string>((gone ?? []).map((g: any) => g.path));
+    const gonePaths = new Set<string>([...(gone ?? []), ...(hidden ?? [])].map((g: any) => g.path));
 
-    const today = new Date().toISOString().split("T")[0];
+
 
     const staticRoutes: { path: string; priority: string; changefreq: string }[] = [
       { path: "/", priority: "1.0", changefreq: "daily" },
+      { path: "/help", priority: "0.6", changefreq: "monthly" },
+      { path: "/verify", priority: "0.5", changefreq: "monthly" },
       { path: "/courses", priority: "0.9", changefreq: "daily" },
       { path: "/blog", priority: "0.8", changefreq: "daily" },
       { path: "/pricing", priority: "0.8", changefreq: "weekly" },
@@ -76,20 +82,22 @@ Deno.serve(async (req) => {
       { path: "/locations/lisbon", priority: "0.7", changefreq: "monthly" },
     ];
 
-    const entry = (loc: string, lastmod: string, changefreq: string, priority: string) =>
-      `<url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+    const entry = (loc: string, lastmod: string | undefined, changefreq: string, priority: string) =>
+      `<url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
 
-    const all: { loc: string; lastmod: string; cf: string; pr: string; path: string }[] = [
-      ...staticRoutes.map((r) => ({ loc: `${baseUrl}${r.path}`, lastmod: today, cf: r.changefreq, pr: r.priority, path: r.path })),
+    const all: { loc: string; lastmod?: string; cf: string; pr: string; path: string }[] = [
+      ...staticRoutes.map((r) => ({ loc: `${baseUrl}${r.path}`, lastmod: undefined, cf: r.changefreq, pr: r.priority, path: r.path })),
       ...(courses ?? []).map((c: any) => {
         const slugOrId = c.slug || c.id;
-        return { loc: `${baseUrl}/courses/${slugOrId}`, lastmod: (c.updated_at ?? today).split("T")[0], cf: "weekly", pr: "0.8", path: `/courses/${slugOrId}` };
+        return { loc: `${baseUrl}/courses/${slugOrId}`, lastmod: c.updated_at?.split("T")[0], cf: "weekly", pr: "0.8", path: `/courses/${slugOrId}` };
       }),
-      ...(blogPosts ?? []).map((b: any) => ({ loc: `${baseUrl}/blog/${b.slug}`, lastmod: (b.updated_at ?? today).split("T")[0], cf: "monthly", pr: "0.7", path: `/blog/${b.slug}` })),
-      ...(categories ?? []).map((cat: any) => ({ loc: `${baseUrl}/category/${cat.slug}`, lastmod: today, cf: "weekly", pr: "0.7", path: `/category/${cat.slug}` })),
-      ...(paths ?? []).map((p: any) => ({ loc: `${baseUrl}/paths/${p.id}`, lastmod: (p.updated_at ?? today).split("T")[0], cf: "weekly", pr: "0.7", path: `/paths/${p.id}` })),
-      ...(jobs ?? []).map((j: any) => ({ loc: `${baseUrl}/jobs/${j.id}`, lastmod: (j.updated_at ?? today).split("T")[0], cf: "weekly", pr: "0.6", path: `/jobs/${j.id}` })),
-      ...(instructors ?? []).map((i: any) => ({ loc: `${baseUrl}/instructors/${i.id}`, lastmod: (i.updated_at ?? today).split("T")[0], cf: "monthly", pr: "0.5", path: `/instructors/${i.id}` })),
+      ...(blogPosts ?? []).map((b: any) => ({ loc: `${baseUrl}/blog/${b.slug}`, lastmod: b.updated_at?.split("T")[0], cf: "monthly", pr: "0.7", path: `/blog/${b.slug}` })),
+      ...(categories ?? []).map((cat: any) => ({ loc: `${baseUrl}/category/${cat.slug}`, lastmod: undefined, cf: "weekly", pr: "0.7", path: `/category/${cat.slug}` })),
+      ...(paths ?? []).map((p: any) => ({ loc: `${baseUrl}/paths/${p.id}`, lastmod: p.updated_at?.split("T")[0], cf: "weekly", pr: "0.7", path: `/paths/${p.id}` })),
+      ...(jobs ?? []).map((j: any) => ({ loc: `${baseUrl}/jobs/${j.id}`, lastmod: j.updated_at?.split("T")[0], cf: "weekly", pr: "0.6", path: `/jobs/${j.id}` })),
+      ...(instructors ?? []).map((i: any) => ({ loc: `${baseUrl}/instructors/${i.id}`, lastmod: i.updated_at?.split("T")[0], cf: "monthly", pr: "0.5", path: `/instructors/${i.id}` })),
+      ...(cmsPages ?? []).filter((p: any) => !["about", "privacy", "terms", "refund"].includes(p.slug)).map((p: any) => ({ loc: `${baseUrl}/p/${p.slug}`, lastmod: p.updated_at?.split("T")[0], cf: "monthly", pr: "0.6", path: `/p/${p.slug}` })),
+      ...(articles ?? []).map((a: any) => ({ loc: `${baseUrl}/help/${a.slug}`, lastmod: a.updated_at?.split("T")[0], cf: "monthly", pr: "0.6", path: `/help/${a.slug}` })),
     ];
 
     const urls = all
