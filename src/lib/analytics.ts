@@ -37,12 +37,13 @@ declare global {
 
 function safeGtag(...args: any[]) {
   if (typeof window === "undefined") return;
-  // Always push to dataLayer — works even before gtag.js has loaded.
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(args);
-  // Some installs expose `gtag` directly; call it too so dev-tools "Network"
-  // shows the request promptly (defensive — push() above is the real path).
-  try { window.gtag?.(...args); } catch { /* ignore */ }
+  // gtag itself queues into dataLayer: use one path, never both.
+  if (window.gtag) {
+    try { window.gtag(...args); } catch { /* ignore */ }
+  } else {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(args);
+  }
 }
 
 /** TikTok Pixel — safe wrapper. The base snippet in index.html stubs `ttq`
@@ -175,7 +176,7 @@ function isTtqSdkLoaded(): boolean {
 export function gaPageview(path: string, title?: string) {
   safeGtag("event", "page_view", {
     page_path: path,
-    page_location: typeof window !== "undefined" ? window.location.href : path,
+    page_location: typeof window !== "undefined" ? `${window.location.origin}${path}` : path,
     page_title: title ?? (typeof document !== "undefined" ? document.title : undefined),
   });
   // TikTok Pixel: fire a SPA pageview on every route change. The base snippet

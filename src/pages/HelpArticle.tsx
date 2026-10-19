@@ -22,8 +22,8 @@ export default function HelpArticle() {
     queryFn: async () => {
       const { data } = await supabase
         .from("kb_articles")
-        .select("id, title, summary, body, tags, updated_at, helpful_yes, helpful_no, category_id, kb_categories(title, slug)")
-        .eq("slug", slug!)
+        .select("id, slug, title, summary, body, tags, updated_at, helpful_yes, helpful_no, category_id, kb_categories(title, slug)")
+        .eq("slug", slug ?? "")
         .eq("is_published", true)
         .maybeSingle();
       return data;
@@ -52,14 +52,15 @@ export default function HelpArticle() {
       <SEO
         title={article ? `${article.title} · Help Center` : "Help Center"}
         description={article?.summary ?? "Silicon Edge help articles."}
-        canonical={article ? siteUrl(`/help/${(article as any).slug}`) : siteUrl("/help")}
+        canonical={siteUrl(`/help/${slug ?? ""}`)}
+        noIndex={!isLoading && !article}
         jsonLd={article ? {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
             { "@type": "ListItem", position: 1, name: "Home", item: siteUrl("/") },
             { "@type": "ListItem", position: 2, name: "Help Center", item: siteUrl("/help") },
-            { "@type": "ListItem", position: 3, name: article.title, item: siteUrl(`/help/${(article as any).slug}`) },
+            { "@type": "ListItem", position: 3, name: article.title, item: siteUrl(`/help/${slug ?? ""}`) },
           ],
         } : undefined}
       />

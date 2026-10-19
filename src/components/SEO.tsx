@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { canonicalPageUrl, isPrivateSearchPage } from "@/lib/search-policy";
 
 interface SEOProps {
   title: string;
@@ -15,20 +16,6 @@ interface SEOProps {
 }
 
 const DEFAULT_DESCRIPTION = "Master AI, Cloud, DevOps and more with live, instructor-led training programs. Job-ready skills from industry veterans.";
-const PRODUCTION_ORIGIN = "https://siliconedgec.com";
-
-/** Force canonicals to use the production domain even when viewed on
- *  preview/lovable subdomains, and strip tracking params. */
-function buildCanonical(pathname: string, search: string): string {
-  const params = new URLSearchParams(search);
-  // Strip UTM + common tracking params from canonicals
-  ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "ref", "gclid", "fbclid"].forEach((k) =>
-    params.delete(k)
-  );
-  const qs = params.toString();
-  return `${PRODUCTION_ORIGIN}${pathname}${qs ? `?${qs}` : ""}`;
-}
-
 export function SEO({ title, description = DEFAULT_DESCRIPTION, image, type = "website", canonical, jsonLd, noIndex, locale = "en_NG" }: SEOProps) {
   const location = useLocation();
   const [override, setOverride] = useState<{
@@ -59,16 +46,15 @@ export function SEO({ title, description = DEFAULT_DESCRIPTION, image, type = "w
   const finalImage = override?.og_image_url || image;
   const fullTitle = finalTitle.includes("Silicon Edge") ? finalTitle : `${finalTitle} | Silicon Edge Consulting`;
   const rawCanonical = override?.canonical_url || canonical;
-  const url = rawCanonical
-    ? (rawCanonical.startsWith("http") ? rawCanonical : `${PRODUCTION_ORIGIN}${rawCanonical.startsWith("/") ? "" : "/"}${rawCanonical}`)
-    : buildCanonical(location.pathname, location.search);
+  const url = canonicalPageUrl(location.pathname, rawCanonical);
+  const hiddenFromSearch = isPrivateSearchPage(location.pathname) || override?.no_index || noIndex;
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={finalDescription} />
       {override?.keywords && <meta name="keywords" content={override.keywords} />}
-      {(override?.no_index || noIndex) && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="robots" content={hiddenFromSearch ? "noindex, nofollow" : "index, follow, max-image-preview:large"} />
       {url && <link rel="canonical" href={url} />}
       {url && <link rel="alternate" hrefLang="en" href={url} />}
       {url && <link rel="alternate" hrefLang="x-default" href={url} />}

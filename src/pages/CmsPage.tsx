@@ -75,7 +75,7 @@ export default function CmsPagePublic() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title={page?.title ?? "Page"} description={page?.meta_description ?? undefined} />
+      <SEO title={page?.title ?? "Page"} description={page?.meta_description ?? undefined} noIndex={notFound} />
       <Header />
       <main className="flex-1">
         {loading ? (
