@@ -114,10 +114,15 @@ export default function AdminCourseModules() {
         let parentId = effectiveCourseId;
         if (!parentId || !UUID_REGEX.test(parentId)) {
           const newId = crypto.randomUUID();
+          const source = staticCourses.find((c) => c.id === courseId || c.slug === courseId);
           const { error: insErr } = await supabase.from("courses").insert({
             id: newId,
             title: course?.title || "New Course",
             slug: courseId,
+            category: source?.category ?? "General",
+            difficulty: source?.difficulty ?? "Beginner",
+            duration_hours: source?.durationHours ?? 0,
+            price: source?.price ?? 0,
           });
           if (insErr) throw insErr;
           parentId = newId;

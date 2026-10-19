@@ -21,6 +21,7 @@ export interface DbCourse {
   slug: string | null;
   title: string;
   description: string | null;
+  long_description?: string | null;
   category: string;
   price: number;
   difficulty: string;
