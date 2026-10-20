@@ -183,7 +183,9 @@ export const HOME_CONTENT_KEYS = [
 export function useHomeContent() {
   return useQuery({
     queryKey: ["home-content"],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<HomeContent> => {
       const { data } = await supabase
         .from("site_content")
