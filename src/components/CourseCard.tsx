@@ -43,9 +43,7 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
       if (!user) { requestSignup("bookmark"); return; }
       toggleBookmark(course.id);
     };
-    const instructorName = course.instructor?.name && course.instructor.name.toLowerCase() !== "silicon-edge"
-      ? course.instructor.name
-      : "Silicon Edge Mentor";
+    const instructorName = course.instructor?.name || "Silicon Edge Mentor";
     const instructorAvatar = course.instructor?.avatar_url && course.instructor.avatar_url.trim().length > 0
       ? course.instructor.avatar_url
       : pickFallbackAvatar(course.instructor?.id ?? course.id);
