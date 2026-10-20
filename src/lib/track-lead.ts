@@ -43,7 +43,40 @@ function clampString(v: unknown, max: number): string | null {
  * Standardizes on `course_id` (snake_case) inside form_data — callers that pass
  * `courseId` will be normalized for downstream reporting joins.
  */
+/** Passive navigation events (not real form submissions). */
+const PASSIVE_FORM_TYPES = new Set([
+  "pageview",
+  "auth_signin_view",
+  "auth_signup_view",
+  "auth_forgot_password_view",
+  "auth_reset_password_view",
+]);
+
+const BOT_UA_RE = /bot|crawler|spider|crawling|headless|lighthouse|slurp|preview/i;
+
+/**
+ * Passive pageview-style events are skipped on preview/local hosts and for
+ * crawlers so they don't keep the database awake. Real leads always record.
+ */
+export function shouldSkipPassiveEvent(formType: string, hostname: string, userAgent: string): boolean {
+  if (!PASSIVE_FORM_TYPES.has(formType)) return false;
+  const host = hostname.toLowerCase();
+  const isPreviewHost =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.startsWith("id-preview--") ||
+    host.endsWith(".lovableproject.com") ||
+    host.includes("preview");
+  return isPreviewHost || BOT_UA_RE.test(userAgent);
+}
+
 export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
+  if (
+    typeof window !== "undefined" &&
+    shouldSkipPassiveEvent(formType, window.location.hostname, typeof navigator !== "undefined" ? navigator.userAgent : "")
+  ) {
+    return;
+  }
   const utm = getStoredUtmParams();
   const { data: { user } } = await supabase.auth.getUser();
 
