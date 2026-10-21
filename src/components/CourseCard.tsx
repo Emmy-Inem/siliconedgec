@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Users, Heart } from "lucide-react";
+import { Clock, Users, Heart, User } from "lucide-react";
 import { motion } from "framer-motion";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
@@ -43,10 +43,10 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
       if (!user) { requestSignup("bookmark"); return; }
       toggleBookmark(course.id);
     };
-    const instructorName = course.instructor?.name || "Silicon Edge Mentor";
+    const instructorName = course.instructor?.name || "Instructor to be confirmed";
     const instructorAvatar = course.instructor?.avatar_url && course.instructor.avatar_url.trim().length > 0
       ? course.instructor.avatar_url
-      : pickFallbackAvatar(course.instructor?.id ?? course.id);
+      : null;
     return (
       <motion.div
         ref={ref}
@@ -128,13 +128,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-border">
-                  <SafeImage
+                  {instructorAvatar ? <SafeImage
                     src={instructorAvatar}
-                    fallback={pickFallbackAvatar(course.id)}
                     alt={instructorName}
                     className="w-full h-full object-cover"
                     loading="lazy"
-                  />
+                  /> : <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">Instructor</span>

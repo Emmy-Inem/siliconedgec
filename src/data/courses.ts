@@ -12,10 +12,10 @@ export interface Course {
   difficulty: "Beginner" | "Intermediate" | "Expert";
   durationHours: number;
   thumbnailUrl: string;
-  instructorName: string;
+  instructorName: string | null;
   instructorAvatar: string;
-  rating: number;
-  studentsEnrolled: number;
+  rating: number | null;
+  studentsEnrolled: number | null;
   modules: Module[];
   learningOutcomes: string[];
   whatsIncluded?: string[];
@@ -46,19 +46,19 @@ export const courses: Course[] = [
   {
     id: "a11b0001-1111-4000-8000-000000000001",
     slug: "ai-beginners-llm-productivity",
-    title: "AI for Beginners: Mastering LLMs & Generative AI for 10x Productivity",
-    description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build real-world productivity workflows to automate daily work, research, synthesis, writing, and spreadsheet tasks. Save 10+ hours every week and supercharge your everyday productivity.",
-    longDescription: "Artificial Intelligence is no longer just for software engineers and data scientists. Generative AI and Large Language Models (LLMs) represent the single biggest shift in knowledge work of our generation. In this beginner-friendly, hands-on masterclass, you will demystify how AI works behind the scenes without any complicated math or programming jargon. You will gain mastery over the leading frontier models—including OpenAI ChatGPT, Anthropic Claude 3.7, Google Gemini, and DeepSeek—and learn prompt engineering frameworks that deliver astonishingly accurate results on the first attempt. By the end of this course, you will have automated repetitive daily writing, mastered deep document synthesis, built custom GPT assistants for your job, and reclaimed 10 to 15 hours of your week.",
+    title: "AI for Beginners: Mastering LLMs & Generative AI for Workplace Productivity",
+    description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build practical workflows for daily work, research, synthesis, writing, and spreadsheet tasks.",
+    longDescription: "Explore generative AI and Large Language Models in a beginner-friendly, hands-on course without complicated mathematics or programming jargon. Learn how ChatGPT, Claude, Gemini, and DeepSeek work, practise prompt engineering, and build workflows for writing, document synthesis, and custom AI assistants for your job.",
     category: "Artificial Intelligence & Machine Learning",
     price: 45000,
     discountPrice: 75000,
     difficulty: "Beginner",
     durationHours: 24,
     thumbnailUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
-    instructorName: "Dr. Amina Okafor",
+    instructorName: null,
     instructorAvatar: "",
-    rating: 4.9,
-    studentsEnrolled: 840,
+    rating: null,
+    studentsEnrolled: null,
     isPublished: true,
     whoIsThisFor: [
       "Working Professionals & Executives looking to eliminate busywork and automate reports, emails, and presentations",
@@ -82,13 +82,13 @@ export const courses: Course[] = [
     ],
     whatsIncluded: [
       "24 hours of interactive lessons, practical walkthroughs, and case studies",
-      "Prompt Engineering Cheat Sheet + 50+ Copy-Paste Workplace Prompt Templates",
+      "Prompt Engineering Cheat Sheet and Workplace Prompt Templates",
       "Weekly hands-on labs: Document synthesis, Excel automation, and custom GPT creation",
       "Live Q&A sessions with AI practitioners and peer accountability group",
       "Lifetime access to updated lessons as new frontier models are released",
       "Verified Certificate of Completion from Silicon Edge Consulting",
     ],
-    instructorBio: "Dr. Amina Okafor is an AI researcher and consultant with 12+ years of experience in natural language processing and applied generative AI systems. She has trained over 15,000 professionals across EMEA on leveraging AI for enterprise productivity.",
+    instructorBio: "",
     modules: [
       {
         id: "m1",
@@ -122,7 +122,7 @@ export const courses: Course[] = [
       },
       {
         id: "m2",
-        title: "Module 2: Prompt Engineering: The Skill That Unlocks 10x Quality",
+        title: "Module 2: Prompt Engineering for Better Results",
         lessons: [
           {
             id: "l5",
@@ -152,7 +152,7 @@ export const courses: Course[] = [
       },
       {
         id: "m3",
-        title: "Module 3: 10x Workplace Productivity with LLMs",
+        title: "Module 3: Workplace Productivity with LLMs",
         lessons: [
           {
             id: "l9",

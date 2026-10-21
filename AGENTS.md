@@ -7,3 +7,4 @@
 - Send Google pageviews once per navigation, excluding admin paths and sensitive query parameters, so public navigation is measurable without leaking callback or recovery data.
 - Keep passive internal analytics gated before authentication and database work on preview hosts and crawlers; real submissions remain eligible so testing cannot discard genuine leads.
 - Cache public settings and homepage content with explicit freshness and retention windows, with admin-save invalidation preserved, to avoid redundant reads without hiding saved changes.
+- Keep course instructor identity sourced from saved assignments, not static content or randomly chosen portraits; unassigned courses stay unattributed so fallback content cannot impersonate an instructor.

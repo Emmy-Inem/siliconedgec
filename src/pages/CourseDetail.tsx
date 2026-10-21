@@ -119,9 +119,9 @@ export default function CourseDetail() {
   const displayInstructor = primaryInstructor
     ? {
         id: primaryInstructor.user_id,
-        name: primaryInstructor.full_name ?? course?.instructor?.name ?? "Silicon Edge Mentor",
-        avatar_url: primaryInstructor.avatar_url ?? course?.instructor?.avatar_url ?? null,
-        bio: course?.instructor?.bio ?? null,
+        name: primaryInstructor.full_name ?? "Course instructor",
+        avatar_url: primaryInstructor.avatar_url ?? null,
+        bio: null,
         isReal: true,
       }
     : course?.instructor

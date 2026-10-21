@@ -29,7 +29,7 @@ export const CURATED_LEARNING_PATHS: CuratedLearningPath[] = [
       {
         id: "a11b0001-1111-4000-8000-000000000001",
         slug: "ai-beginners-llm-productivity",
-        title: "AI for Beginners: Mastering LLMs & Generative AI for 10x Productivity",
+        title: "AI for Beginners: Mastering LLMs & Generative AI for Workplace Productivity",
         difficulty: "Beginner",
         duration: "24h",
         description:
