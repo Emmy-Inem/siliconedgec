@@ -128,11 +128,12 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 ring-2 ring-background shadow-md border border-border">
-                  {instructorAvatar ? <SafeImage
+                  {instructorAvatar ? <img
                     src={instructorAvatar}
                     alt={instructorName}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={(event) => { event.currentTarget.style.display = "none"; }}
                   /> : <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
                 </div>
                 <div className="flex flex-col min-w-0 leading-tight">
