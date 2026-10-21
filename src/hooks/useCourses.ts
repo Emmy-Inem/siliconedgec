@@ -66,12 +66,12 @@ function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
       "Silicon Edge Consulting Certificate of Completion",
     ],
     is_published: c.isPublished !== false,
-    instructor: {
+    instructor: c.instructorName ? {
       id: "inst-" + c.id,
       name: c.instructorName,
       bio: c.instructorBio,
       avatar_url: c.instructorAvatar || null,
-    },
+    } : null,
     modules: c.modules.map((m, mIdx) => ({
       id: m.id,
       title: m.title,
@@ -268,25 +268,10 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
     who_is_this_for: (course as any).who_is_this_for ?? staticMatch?.whoIsThisFor ?? [],
     prerequisites: (course as any).prerequisites ?? staticMatch?.prerequisites ?? null,
     requirements: (course as any).requirements ?? staticMatch?.requirements ?? [],
+    // Only the saved assignment can identify a person; content fallbacks must not invent one.
     instructor: Array.isArray(course.instructor)
-      ? course.instructor[0] ??
-        (staticMatch
-          ? {
-              id: "inst-" + staticMatch.id,
-              name: staticMatch.instructorName,
-              bio: staticMatch.instructorBio,
-              avatar_url: staticMatch.instructorAvatar,
-            }
-          : null)
-      : course.instructor ??
-        (staticMatch
-          ? {
-              id: "inst-" + staticMatch.id,
-              name: staticMatch.instructorName,
-              bio: staticMatch.instructorBio,
-              avatar_url: staticMatch.instructorAvatar,
-            }
-          : null),
+      ? course.instructor[0] ?? null
+      : course.instructor ?? null,
     modules: resolvedModules,
   };
 }
@@ -302,7 +287,7 @@ export function useCourses() {
 export function useCourse(id: string | undefined) {
   return useQuery({
     queryKey: ["course", id],
-    queryFn: () => fetchCourseByIdOrSlug(id!),
+    queryFn: () => id ? fetchCourseByIdOrSlug(id) : Promise.resolve(null),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
   });
