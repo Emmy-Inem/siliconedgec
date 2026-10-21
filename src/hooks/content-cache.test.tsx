@@ -1,5 +1,5 @@
 import { createElement, type PropsWithChildren } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, type QueryObserverOptions } from "@tanstack/react-query";
 import { renderHook, waitFor, cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useHomeContent } from "./useHomeContent";
@@ -36,9 +36,10 @@ describe("public content caching", () => {
     await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
     expect(from).toHaveBeenCalledTimes(1);
     const query = client.getQueryCache().find({ queryKey: [key] });
-    expect(query?.options.staleTime).toBe(30 * 60 * 1000);
-    expect(query?.options.gcTime).toBe(60 * 60 * 1000);
-    expect(query?.options.refetchOnWindowFocus).toBe(false);
+    const options = query?.options as QueryObserverOptions | undefined;
+    expect(options?.staleTime).toBe(30 * 60 * 1000);
+    expect(options?.gcTime).toBe(60 * 60 * 1000);
+    expect(options?.refetchOnWindowFocus).toBe(false);
     second.unmount();
     client.clear();
   });
