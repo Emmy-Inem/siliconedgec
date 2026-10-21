@@ -9,5 +9,5 @@
 - [x] Improve website SEO and add a substantive UK-focused blog article with verified positioning.
 - [x] Improve public-page discovery, canonical URLs and Google page tracking; exclude admin and private pages.
 - [x] Verify Google Search Console coverage and submit the public sitemap when ownership is available.
-- [ ] Verify the approved passive-tracking and content-cache cost optimizations with tests and the preview.
+- [x] Verify the approved passive-tracking and content-cache cost optimizations with tests and the preview.
 - [ ] Publish the verified optimizations and measure running-hour changes after deployment (awaiting publishing authorization and a comparable observation window).
