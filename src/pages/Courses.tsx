@@ -206,13 +206,6 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
               <span className="relative inline-block whitespace-nowrap">
                 <span className="text-gradient">moves your career</span>
                 <span className="text-gold">.</span>
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
-                  aria-hidden
-                  className="absolute -bottom-1 left-0 right-2 h-[5px] origin-left rounded-full bg-border"
-                />
               </span>
             </h1>
             <p className="text-muted-foreground text-base md:text-lg max-w-xl leading-relaxed">
