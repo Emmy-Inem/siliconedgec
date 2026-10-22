@@ -269,9 +269,8 @@ export default function Index() {
     : fallbackTestimonials;
 
   const typewriterWords = home?.typewriter_words ?? [
-    "Cloud Engineering", "Software Engineering", "Artificial Intelligence",
-    "Web Development", "Cybersecurity", "Data Science", "DevOps",
-    "Product Design", "UI/UX Design",
+    "Cloud Engineering", "Generative AI & LLM", "Cybersecurity",
+    "Data Engineering", "Software Engineering",
   ];
   const typedText = useTypewriter(typewriterWords);
 
