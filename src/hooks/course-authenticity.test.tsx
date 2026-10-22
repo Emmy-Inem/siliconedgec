@@ -40,6 +40,25 @@ describe("course authenticity", () => {
     expect(result.current.data?.instructor).toBeNull();
   });
 
+  it("uses Sophie Bennett's saved assignment and portrait for the AI course", async () => {
+    const instructor = {
+      id: "2aeac898-8dc2-42e5-b64b-7430d73ce130",
+      name: "Sophie Bennett",
+      bio: "Saved instructor biography",
+      avatar_url: "/saved-sophie-portrait.jpg",
+    };
+    const saved = { id: ai.id, slug: ai.slug, instructor, description: "Saved description" };
+    from.mockImplementation((table: string) => ({
+      select: () => ({ eq: () => table === "courses"
+        ? { maybeSingle: async () => ({ data: saved }) }
+        : { order: async () => ({ data: [{ id: "module", title: "Saved module", order_index: 0, lessons: [] }] }) },
+      }),
+    }));
+    const { result } = renderHook(() => useCourse(ai.slug), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.instructor).toEqual(instructor);
+  });
+
   it("keeps fallback listings free of fictional instructors and statistics", async () => {
     from.mockImplementation(() => ({ select: () => ({ eq: () => ({ order: async () => ({ data: [] }) }) }) }));
     const { result } = renderHook(() => useCourses(), { wrapper: wrapper() });
