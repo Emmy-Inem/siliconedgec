@@ -11,4 +11,5 @@
 - [x] Verify Google Search Console coverage and submit the public sitemap when ownership is available.
 - [x] Verify the approved passive-tracking and content-cache cost optimizations with tests and the preview.
 - [x] Assign Sophie Bennett to the AI course, standardize its title, and finish verifying instructor attribution and genuine statistics.
-- [ ] Publish the verified optimizations and measure running-hour changes after deployment (awaiting publishing authorization and a comparable observation window).
+- [x] Obtain publishing authorization and request deployment of the verified course corrections and cost optimizations.
+- [ ] Measure running-hour changes after deployment (awaiting confirmed deployment and a comparable post-deployment observation window).
