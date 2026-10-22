@@ -46,7 +46,7 @@ export const courses: Course[] = [
   {
     id: "a11b0001-1111-4000-8000-000000000001",
     slug: "ai-beginners-llm-productivity",
-    title: "AI for Beginners: Mastering LLMs & Generative AI for Workplace Productivity",
+    title: "Generative AI & Large Language Models",
     description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build practical workflows for daily work, research, synthesis, writing, and spreadsheet tasks.",
     longDescription: "Explore generative AI and Large Language Models in a beginner-friendly, hands-on course without complicated mathematics or programming jargon. Learn how ChatGPT, Claude, Gemini, and DeepSeek work, practise prompt engineering, and build workflows for writing, document synthesis, and custom AI assistants for your job.",
     category: "Artificial Intelligence & Machine Learning",
