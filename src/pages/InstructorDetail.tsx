@@ -170,9 +170,10 @@ export default function InstructorDetail() {
                       price: c.price,
                       difficulty: c.difficulty,
                       duration_hours: c.duration_hours,
-                      thumbnail_url: c.thumbnail_url,
+                    thumbnail_url: c.thumbnail_url,
                       rating: c.rating,
                       students_enrolled: c.students_enrolled,
+                      instructor: { name: instructor.name, avatar_url: instructor.avatar_url },
                     } as any}
                   />
                 ))}
