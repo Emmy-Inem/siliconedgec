@@ -74,7 +74,6 @@ export default function Instructors() {
                     {i.role && <p className="text-sm text-muted-foreground">{i.role}</p>}
                   </div>
                 </div>
-                {i.bio && <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{i.bio}</p>}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   {i.rating != null && (<span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-500" /> {Number(i.rating).toFixed(1)}</span>)}
                   {i.students_count != null && (<span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {i.students_count.toLocaleString()} students</span>)}
