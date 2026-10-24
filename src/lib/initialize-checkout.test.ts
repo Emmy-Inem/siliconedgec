@@ -14,6 +14,37 @@ describe("checkout deployment compatibility", () => {
     expect(invoke).toHaveBeenCalledTimes(1);
   });
 
+  it("falls back when the missing router's failed preflight hides its HTTP status", async () => {
+    invoke.mockResolvedValueOnce({ data: null, error: { name: "FunctionsFetchError", context: new TypeError("Failed to fetch") } })
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/test", currency: "EUR", total: 1342 }, error: null });
+    const result = await initializeCheckout({ currency: "EUR", course_ids: ["course"] });
+    expect(result).toMatchObject({ currency: "EUR", total: 1342, gateway: "stripe" });
+    expect(invoke.mock.calls[1][0]).toBe("stripe-cart-initialize");
+  });
+
+  it("reaches the existing USD cart checkout when a failed preflight hides the missing router and the old handler only supports USD", async () => {
+    invoke.mockResolvedValueOnce({ data: null, error: { name: "FunctionsFetchError", context: new TypeError("Failed to fetch") } })
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/old-local", currency: "USD", total: 1342 }, error: null })
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/usd", currency: "USD", total: 1342 }, error: null });
+    const result = await initializeCheckout({ currency: "EUR", course_ids: ["course"] });
+    expect(result).toMatchObject({ currency: "USD", total: 1342, fallback: true });
+    expect(invoke.mock.calls[2][1].body.currency).toBe("USD");
+  });
+
+  it("does not repeat provider attempts when a deployed router reports service unavailability", async () => {
+    invoke.mockResolvedValueOnce(httpError(503, "Payment services unavailable"));
+    await expect(initializeCheckout({ currency: "EUR", course_id: "course" })).rejects.toThrow("Payment services unavailable");
+    expect(invoke).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves authentication errors from a response in a preview frame", async () => {
+    invoke.mockResolvedValueOnce({ data: null, error: { context: {
+      status: 401, clone: () => ({ json: async () => ({ message: "Session expired. Please sign in." }) }),
+    } } });
+    await expect(initializeCheckout({ currency: "EUR", course_id: "course" })).rejects.toThrow("Session expired. Please sign in.");
+    expect(invoke).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps Nigerian single-course checkout working before router deployment", async () => {
     invoke.mockResolvedValueOnce(httpError(404, "Missing function"))
       .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.paystack.com/test", access_code: "test" }, error: null });
