@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Loader2, BookmarkX } from "lucide-react";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
 interface Course {
   id: string;
@@ -23,6 +24,7 @@ export default function Bookmarks() {
   const { bookmarks, isLoading, toggleBookmark } = useBookmarks();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const { format: formatPrice } = useLocalizedPrice();
 
   useEffect(() => {
     if (!bookmarks.length) { setCourses([]); setLoading(false); return; }
@@ -67,7 +69,7 @@ export default function Bookmarks() {
                   <Link to={`/courses/${c.slug || c.id}`} className="font-heading font-semibold mb-2 hover:text-primary">{c.title}</Link>
                   {c.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{c.description}</p>}
                   <div className="mt-auto flex items-center justify-between">
-                    {c.price != null && <span className="font-semibold">₦{Number(c.price).toLocaleString()}</span>}
+                    {c.price != null && <span className="font-semibold">{formatPrice(Number(c.price))}</span>}
                     <button onClick={() => toggleBookmark(c.id)} className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
                       <BookmarkX className="h-3.5 w-3.5" /> Remove
                     </button>

@@ -1075,11 +1075,13 @@ export default function CourseDetail() {
                         ) : null}
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
+                    <div className={`grid gap-3 pt-2 border-t border-border ${(course.students_enrolled ?? 0) > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
+                      {(course.students_enrolled ?? 0) > 0 && (
                       <div className="text-center">
-                        <p className="font-heading font-bold text-lg">{course.students_enrolled ?? 0}</p>
+                        <p className="font-heading font-bold text-lg">{course.students_enrolled}</p>
                         <p className="text-xs text-muted-foreground">Students</p>
                       </div>
+                      )}
                       <div className="text-center">
                         <p className="font-heading font-bold text-lg">{course.modules.length}</p>
                         <p className="text-xs text-muted-foreground">Modules</p>
