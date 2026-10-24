@@ -48,6 +48,7 @@ const HERO_TRACKS = [
 const AZURE_BOOTCAMP_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
 
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
+  const { format: formatPrice } = useLocalizedPrice();
   // Query promoted banner config from site_content
   const { data: config } = useQuery({
     queryKey: ["promoted-courses-banner-config"],
@@ -393,7 +394,6 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
 export default function Courses() {
   const { data: courses = [], isLoading } = useCourses();
-  const { format: formatPrice } = useLocalizedPrice();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") ?? "All");
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
