@@ -1,3 +1,5 @@
+import { getNgnExchangeRate, resolveCheckoutCurrency } from "../_shared/stripe-checkout.ts";
+import { roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Initializes a single Paystack transaction for an entire cart of courses.
 // Creates one pending order per course sharing a common reference.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -14,7 +16,7 @@ Deno.serve(async (req) => {
     const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
     if (!PAYSTACK_SECRET_KEY) {
       return new Response(
-        JSON.stringify({ error: "Paystack is not configured. Add PAYSTACK_SECRET_KEY in secrets." }),
+        JSON.stringify({ retryable: true, error: "Paystack is not configured. Add PAYSTACK_SECRET_KEY in secrets." }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -39,7 +41,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { course_ids, callback_url, utm, promo_code_id, affiliate_code } = await req.json();
+    const { course_ids, callback_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency } = await req.json();
+    const currency = resolveCheckoutCurrency(requestedCurrency ?? "NGN");
+    const fxRate = await getNgnExchangeRate(currency);
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -91,9 +95,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+    let total = 0;
     const reference = `SE-CART-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    const currency = valid[0]?.currency ?? "NGN";
+
 
     // Create one pending order per course sharing the same reference (allows verification later)
     // Distribute the discount proportionally across line items
@@ -101,7 +105,8 @@ Deno.serve(async (req) => {
       const lineRef = `${reference}--${c.id.slice(0, 8)}`;
       const lineSubtotal = Number(c.discount_price ?? c.price);
       const lineDiscount = subtotal > 0 ? Math.round((lineSubtotal / subtotal) * discount * 100) / 100 : 0;
-      const lineAmount = Math.max(0, Math.round((lineSubtotal - lineDiscount) * 100) / 100);
+      const lineAmount = roundCurrencyAmount(Math.max(0, lineSubtotal - lineDiscount) * fxRate, currency);
+      total += lineAmount;
       await supabase.from("orders").insert({
         user_id: user.id,
         course_id: c.id,
@@ -110,12 +115,12 @@ Deno.serve(async (req) => {
         currency,
         status: "pending",
         promo_code_id: validPromoId,
-        discount_amount: lineDiscount,
+        discount_amount: roundCurrencyAmount(lineDiscount * fxRate, currency),
         metadata: { cart_reference: reference, course_title: c.title, utm: utm ?? null, affiliate_code: affiliate_code ?? null },
       });
     }
 
-    if (total === 0) {
+    if (subtotal - discount === 0) {
       // Free cart: mark complete and enroll all
       for (const c of valid) {
         const lineRef = `${reference}--${c.id.slice(0, 8)}`;
@@ -147,8 +152,9 @@ Deno.serve(async (req) => {
     });
     const psData = await psRes.json();
     if (!psData.status) {
+      await supabase.from("orders").update({ status: "failed" }).like("reference", `${reference}--%`).eq("status", "pending");
       console.error("Paystack cart init failed", psData);
-      return new Response(JSON.stringify({ error: psData.message ?? "Paystack init failed" }), {
+      return new Response(JSON.stringify({ retryable: true, error: psData.message ?? "Paystack init failed" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

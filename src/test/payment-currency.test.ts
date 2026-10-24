@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { detectVisitorCurrency, ensureGeoCountry, formatLocalized } from "@/lib/currency";
 import { resolvePaymentGateway } from "@/lib/geo-routing";
 import { currencyFactor, roundCurrencyAmount } from "../../supabase/functions/_shared/currency-config";
-import { createStripeCheckoutSession, getNgnExchangeRate, resolveCheckoutCurrency } from "../../supabase/functions/_shared/stripe-checkout";
+import { createStripeCheckoutSession, getNgnExchangeRate, resolveCheckoutCurrency, retrieveStripeCheckoutSession } from "../../supabase/functions/_shared/stripe-checkout";
 import { createElement } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
@@ -22,8 +22,8 @@ afterEach(() => {
 describe("visitor checkout currencies", () => {
   it.each([
     ["NG", "NGN", "paystack"], ["NL", "EUR", "stripe"],
-    ["GB", "GBP", "stripe"], ["KE", "KES", "stripe"],
-    ["ZA", "ZAR", "stripe"], ["JP", "JPY", "stripe"],
+    ["GB", "GBP", "stripe"], ["KE", "KES", "paystack"],
+    ["ZA", "ZAR", "paystack"], ["JP", "JPY", "stripe"],
   ])("uses %s's own currency and automatic gateway", (country, currency, gateway) => {
     localStorage.setItem("sec_geo_country", country);
     localStorage.setItem("sec_geo_at", String(Date.now()));
@@ -59,6 +59,22 @@ describe("visitor checkout currencies", () => {
     client.clear();
   });
 
+  it("offers USD pricing when a local exchange rate is unavailable", async () => {
+    localStorage.setItem("sec_geo_country", "PL");
+    localStorage.setItem("sec_geo_at", String(Date.now()));
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result, unmount } = renderHook(() => useLocalizedPrice(), {
+      wrapper: ({ children }) => createElement(QueryClientProvider, { client }, children),
+    });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.currency).toBe("USD");
+    expect(result.current.format(500000)).toContain("335");
+    expect(result.current.format(500000)).not.toMatch(/₦|unavailable/);
+    unmount();
+    client.clear();
+  });
+
   it("preserves local minor units in displayed prices", () => {
     expect(formatLocalized(1000, "KES", 0.08735, "en-US")).toContain("87.35");
     expect(formatLocalized(1000, "JPY", 0.1004, "en-US")).toBe("¥100");
@@ -66,8 +82,9 @@ describe("visitor checkout currencies", () => {
     expect(roundCurrencyAmount(123.95, "ISK") * currencyFactor("ISK")).toBe(12400);
   });
 
-  it("does not substitute another currency when local payment is unsupported", () => {
-    expect(() => resolveCheckoutCurrency("GHS")).toThrow("currently unavailable");
+  it("lets the provider decide which valid currencies the account supports", () => {
+    expect(resolveCheckoutCurrency("GHS")).toBe("GHS");
+    expect(resolveCheckoutCurrency("NGN")).toBe("NGN");
     expect(() => resolveCheckoutCurrency("INVALID")).toThrow();
     expect(resolveCheckoutCurrency("eur")).toBe("EUR");
   });
@@ -83,6 +100,16 @@ describe("visitor checkout currencies", () => {
     expect(await getNgnExchangeRate("EUR")).toBe(0.00062);
   });
 
+  it.each(["processing", "requires_payment_method"])("rechecks delayed payment status: %s", async (status) => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({ id: "cs_test", status: "complete", payment_status: "unpaid", payment_intent: "pi_test" }))
+      .mockResolvedValueOnce(Response.json({ id: "pi_test", status }));
+    vi.stubGlobal("fetch", fetchMock);
+    const session = await retrieveStripeCheckoutSession("cs_test", "test-key");
+    expect(session.payment_intent_status).toBe(status);
+    expect(fetchMock.mock.calls[1][0]).toBe("https://api.stripe.com/v1/payment_intents/pi_test");
+  });
+
   it.each([["EUR", 335.5, 33550], ["JPY", 50000, 50000], ["KES", 120.35, 12035]])(
     "sends %s and its correct minor units to hosted checkout without changing the amount",
     async (currency, amount, minor) => {
@@ -96,7 +123,7 @@ describe("visitor checkout currencies", () => {
       const body = new URLSearchParams(request.mock.calls[0][1].body);
       expect(body.get("line_items[0][price_data][currency]")).toBe(currency.toLowerCase());
       expect(body.get("line_items[0][price_data][unit_amount]")).toBe(String(minor));
-      expect(body.get("payment_method_types[0]")).toBe("card");
+      expect(body.has("payment_method_types[0]")).toBe(false);
       expect(body.get("adaptive_pricing[enabled]")).toBe("false");
     },
   );

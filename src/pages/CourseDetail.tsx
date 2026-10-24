@@ -376,6 +376,8 @@ export default function CourseDetail() {
             formType: "paid_enrollment",
             formData: { course_id: courseId, order_ref: reference || sessionId },
           }).catch(() => {});
+        } else if (data?.pending) {
+          toast({ title: "Payment processing", description: data.message });
         } else {
           toast({ title: "Payment not confirmed", description: data?.message ?? "Please contact support.", variant: "destructive" });
         }

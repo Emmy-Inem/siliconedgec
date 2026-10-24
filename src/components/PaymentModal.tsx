@@ -1,4 +1,5 @@
-import { readFunctionError } from "@/lib/function-error";
+import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
+import { initializeCheckout } from "@/lib/initialize-checkout";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -39,7 +40,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(false);
   const { format: formatLocalizedPrice, currency, ready } = useLocalizedPrice();
-  const gateway = currency === "NGN" ? "paystack" : "stripe";
+  const { redirect: redirectToCheckout, confirmation: currencyConfirmation } = useCheckoutRedirect();
   const { toast } = useToast();
 
   const [promoInput, setPromoInput] = useState("");
@@ -164,21 +165,16 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
     setProcessing(true);
     try {
       const utm = getStoredUtmParams();
-      const functionName = gateway === "stripe" ? "stripe-initialize" : "paystack-initialize";
       
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: {
+      const data = await initializeCheckout({
           course_id: courseId,
           currency,
           promo_code_id: appliedPromo?.id ?? null,
-          callback_url: `${window.location.origin}/courses/${courseId}?verify=1${gateway === "stripe" ? "&stripe=1" : ""}`,
+          callback_url: `${window.location.origin}/courses/${courseId}?verify=1`,
           cancel_url: `${window.location.origin}/courses/${courseId}`,
           utm,
           affiliate_code: getStoredAffiliateCode(),
-        },
       });
-      if (error) throw await readFunctionError(error);
-      if (data?.error) throw new Error(data.error);
 
       // Free path (100% promo)
       if (data?.free) {
@@ -189,10 +185,8 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       }
 
       if (data?.authorization_url) {
-        if (gateway === "stripe" && data.currency?.toUpperCase() !== currency) {
-          throw new Error("Local-currency checkout is being updated. Please try again shortly or contact support.");
-        }
-        window.location.href = data.authorization_url;
+        redirectToCheckout(data, currency);
+        setProcessing(false);
         return;
       }
       throw new Error("Unexpected response from payment provider");
@@ -331,9 +325,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                     Secure checkout
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {gateway === "stripe"
-                      ? "Available cards and wallets, including Apple Pay and Google Pay on eligible devices, appear at checkout."
-                      : "Pay securely with the payment options available in your country."}
+                    Available cards, bank payments and wallets appear automatically at checkout where supported.
                   </p>
                 </div>
                 <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing || checkingEnrollment || !ready}>
@@ -353,6 +345,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
             <span>Secure, encrypted payment</span>
           </div>
         </div>
+        {currencyConfirmation}
       </DialogContent>
     </Dialog>
   );

@@ -1,21 +1,18 @@
-import { COUNTRY_TO_CURRENCY, FALLBACK_RATES_FROM_NGN } from "./currency-config.ts";
+import { FALLBACK_RATES_FROM_NGN } from "./currency-config.ts";
 
 export class CheckoutCurrencyError extends Error {}
 
 /** Resolve an explicitly requested currency; never silently charge a different one. */
 export function resolveCheckoutCurrency(value: unknown): string {
   const currency = typeof value === "string" ? value.toUpperCase() : "USD";
-  if (currency === "NGN" || !Object.values(COUNTRY_TO_CURRENCY).includes(currency)) {
+  if (!/^[A-Z]{3}$/.test(currency)) {
     throw new CheckoutCurrencyError("This checkout currency is unavailable.");
-  }
-  // These currencies are not supported by this card checkout integration.
-  if (["GHS", "KWD", "BHD", "OMR", "JOD"].includes(currency)) {
-    throw new CheckoutCurrencyError("Online payment in your currency is currently unavailable. Please contact support.");
   }
   return currency;
 }
 
 export async function getNgnExchangeRate(currency: string): Promise<number> {
+  if (currency === "NGN") return 1;
   try {
     const res = await fetch("https://open.er-api.com/v6/latest/NGN", { signal: AbortSignal.timeout(3000) });
     if (res.ok) {
@@ -61,9 +58,8 @@ export async function createStripeCheckoutSession(input: CreateStripeSessionInpu
   params.append("client_reference_id", input.clientReferenceId);
   params.append("success_url", input.successUrl);
   params.append("cancel_url", input.cancelUrl);
-  // Card checkout automatically displays eligible Apple Pay and Google Pay wallets.
-  // Keep immediate payment methods: enrollment is fulfilled on successful payment.
-  params.append("payment_method_types[0]", "card");
+  // Let Stripe choose all eligible methods from the merchant's Dashboard settings,
+  // including wallets and delayed methods. Fulfillment waits for payment confirmation.
   params.append("adaptive_pricing[enabled]", "false");
 
   input.lineItems.forEach((item, index) => {
@@ -119,6 +115,7 @@ export async function retrieveStripeCheckoutSession(
   currency?: string;
   client_reference_id?: string;
   payment_intent?: string;
+  payment_intent_status?: string;
   metadata?: Record<string, string>;
 }> {
   const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
@@ -134,5 +131,15 @@ export async function retrieveStripeCheckoutSession(
     throw new Error(data?.error?.message || "Failed to retrieve Stripe session");
   }
 
+  // A completed checkout can still be processing or have failed with a delayed method.
+  // Query the payment itself so a failed debit is not shown as processing forever.
+  if (data.payment_status === "unpaid" && data.status === "complete" && typeof data.payment_intent === "string") {
+    const intentRes = await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(data.payment_intent)}`, {
+      headers: { Authorization: `Bearer ${secretKey}` },
+    });
+    if (!intentRes.ok) throw new Error("Unable to confirm payment status. Please try again shortly.");
+    const intent = await intentRes.json();
+    data.payment_intent_status = intent.status;
+  }
   return data;
 }

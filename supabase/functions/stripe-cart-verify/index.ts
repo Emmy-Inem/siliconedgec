@@ -1,3 +1,4 @@
+import { stripePaymentState } from "../_shared/payment-routing.ts";
 // Verifies a cart-level Stripe transaction and enrolls the user in all courses.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
@@ -56,8 +57,12 @@ Deno.serve(async (req) => {
     }
 
     const session = await retrieveStripeCheckoutSession(targetSessionId, stripeKey);
-    const isPaid = session.payment_status === "paid" || session.status === "complete";
+    const state = stripePaymentState(session);
+    const isPaid = state === "paid";
 
+    if (state === "pending") {
+      return new Response(JSON.stringify({ verified: false, pending: true, message: "Your payment is processing. Access will be added automatically once payment is confirmed." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     if (!isPaid) {
       const orderIds = orders.map((o: any) => o.id);
       await supabase.from("orders").update({ status: "failed" }).in("id", orderIds);

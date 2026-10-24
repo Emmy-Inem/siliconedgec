@@ -1,3 +1,5 @@
+import { getNgnExchangeRate, resolveCheckoutCurrency } from "../_shared/stripe-checkout.ts";
+import { roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Paystack payment initialization edge function
 // Creates a transaction with Paystack and returns the authorization URL.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -17,7 +19,7 @@ Deno.serve(async (req) => {
     if (!PAYSTACK_SECRET_KEY) {
       return new Response(
         JSON.stringify({
-          error: "Paystack is not configured yet. Please add PAYSTACK_SECRET_KEY in your project secrets.",
+          retryable: true, error: "Paystack is not configured yet. Please add PAYSTACK_SECRET_KEY in your project secrets.",
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -46,6 +48,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { course_id, promo_code_id, callback_url, utm, affiliate_code } = body;
+    const currency = resolveCheckoutCurrency(body.currency ?? "NGN");
+    const fxRate = await getNgnExchangeRate(currency);
     if (!course_id) {
       return new Response(JSON.stringify({ error: "course_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const finalAmount = Math.max(0, basePrice - discount);
+    const finalAmount = roundCurrencyAmount(Math.max(0, basePrice - discount) * fxRate, currency);
     const reference = `SE-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     // Insert pending order
@@ -103,16 +107,16 @@ Deno.serve(async (req) => {
       course_id,
       reference,
       amount: finalAmount,
-      currency: course.currency ?? "NGN",
+      currency,
       status: "pending",
       promo_code_id: promo_code_id ?? null,
-      discount_amount: discount,
+      discount_amount: roundCurrencyAmount(discount * fxRate, currency),
       metadata: { course_title: course.title, utm: utm ?? null, affiliate_code: affiliate_code ?? null },
     });
     if (orderErr) throw orderErr;
 
     // If amount is 0 (100% promo), mark complete and skip Paystack
-    if (finalAmount === 0) {
+    if (basePrice - discount === 0) {
       await supabase.from("orders").update({ status: "completed" }).eq("reference", reference);
       await supabase.from("enrollments").upsert(
         { user_id: user.id, course_id, payment_status: "paid" },
@@ -134,7 +138,7 @@ Deno.serve(async (req) => {
         email: user.email,
         amount: Math.round(finalAmount * 100), // Paystack expects kobo
         reference,
-        currency: course.currency ?? "NGN",
+        currency,
         callback_url,
         metadata: {
           course_id,
@@ -146,8 +150,9 @@ Deno.serve(async (req) => {
 
     const psData = await psRes.json();
     if (!psData.status) {
+      await supabase.from("orders").update({ status: "failed" }).eq("reference", reference).eq("status", "pending");
       console.error("Paystack init failed", psData);
-      return new Response(JSON.stringify({ error: psData.message ?? "Paystack initialization failed" }), {
+      return new Response(JSON.stringify({ retryable: true, error: psData.message ?? "Paystack initialization failed" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -156,6 +161,8 @@ Deno.serve(async (req) => {
       authorization_url: psData.data.authorization_url,
       reference: psData.data.reference,
       access_code: psData.data.access_code,
+      currency,
+      amount: finalAmount,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("paystack-initialize error", e);

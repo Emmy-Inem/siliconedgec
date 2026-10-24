@@ -22,14 +22,14 @@ export function useLocalizedPrice(opts?: { forceCurrency?: string }) {
     return () => { active = false; };
   }, []);
 
-  const currency =
+  const requestedCurrency =
     opts?.forceCurrency ?? detectVisitorCurrency();
-  const isNgn = currency === "NGN";
+  const isNgn = requestedCurrency === "NGN";
   // tick is referenced so React re-runs detection after IP geo lands
   void tick;
 
   const { data: rate, isFetched } = useQuery({
-    queryKey: ["fx-ngn", currency],
+    queryKey: ["fx-ngn", requestedCurrency],
     enabled: !isNgn,
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
@@ -39,18 +39,21 @@ export function useLocalizedPrice(opts?: { forceCurrency?: string }) {
         const res = await fetch("https://open.er-api.com/v6/latest/NGN", { signal: AbortSignal.timeout(3000) });
         if (!res.ok) throw new Error("fx http");
         const json = await res.json();
-        const r = json?.rates?.[currency];
+        const r = json?.rates?.[requestedCurrency];
         if (typeof r === "number" && r > 0) return r;
         throw new Error("missing rate");
       } catch {
-        const fallback = FALLBACK_RATES_FROM_NGN[currency];
+        const fallback = FALLBACK_RATES_FROM_NGN[requestedCurrency];
         if (fallback) return fallback;
         throw new Error("Currency pricing unavailable");
       }
     },
   });
 
-  const effectiveRate = isNgn ? 1 : (rate ?? FALLBACK_RATES_FROM_NGN[currency]);
+  const localRate = isNgn ? 1 : (rate ?? FALLBACK_RATES_FROM_NGN[requestedCurrency]);
+  const useUsdFallback = !isNgn && isFetched && !Number.isFinite(localRate);
+  const currency = useUsdFallback ? "USD" : requestedCurrency;
+  const effectiveRate = useUsdFallback ? FALLBACK_RATES_FROM_NGN.USD : localRate;
 
   const format = (amountNgn: number): string => {
     if (!geoReady) return "…";

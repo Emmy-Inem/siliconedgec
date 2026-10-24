@@ -1,3 +1,4 @@
+import { stripePaymentState } from "../_shared/payment-routing.ts";
 // Stripe payment verification edge function
 // Verifies Stripe Checkout Session and activates course enrollment on success.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -58,8 +59,12 @@ Deno.serve(async (req) => {
 
     // Verify session with Stripe
     const session = await retrieveStripeCheckoutSession(targetSessionId, stripeKey);
-    const isPaid = session.payment_status === "paid" || session.status === "complete";
+    const state = stripePaymentState(session);
+    const isPaid = state === "paid";
 
+    if (state === "pending") {
+      return new Response(JSON.stringify({ verified: false, pending: true, message: "Your payment is processing. Access will be added automatically once payment is confirmed." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     if (!isPaid) {
       await supabase.from("orders").update({ status: "failed" }).eq("id", order.id);
       return new Response(

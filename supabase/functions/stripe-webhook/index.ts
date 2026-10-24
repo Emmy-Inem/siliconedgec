@@ -1,3 +1,4 @@
+import { stripePaymentState } from "../_shared/payment-routing.ts";
 // Stripe webhook receiver — ensures enrollment is fulfilled even if user closes window before redirect
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
@@ -25,14 +26,20 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const eventType = payload?.type;
 
-    if (eventType === "checkout.session.completed") {
+    if (["checkout.session.completed", "checkout.session.async_payment_succeeded", "checkout.session.async_payment_failed"].includes(eventType)) {
       const sessionObj = payload?.data?.object;
       const sessionId = sessionObj?.id;
 
       if (sessionId) {
         // Re-verify directly with Stripe API to ensure event payload authenticity
         const verifiedSession = await retrieveStripeCheckoutSession(sessionId, stripeKey);
-        const isPaid = verifiedSession.payment_status === "paid" || verifiedSession.status === "complete";
+        const isPaid = stripePaymentState(verifiedSession) === "paid";
+
+        if (stripePaymentState(verifiedSession) === "failed") {
+          const { error: updateError } = await supabase.from("orders").update({ status: "failed" })
+            .eq("stripe_session_id", sessionId).eq("status", "pending");
+          if (updateError) throw updateError;
+        }
 
         if (isPaid) {
           const clientRef = verifiedSession.client_reference_id;

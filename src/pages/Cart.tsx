@@ -1,3 +1,5 @@
+import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
+import { initializeCheckout } from "@/lib/initialize-checkout";
 import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,7 +28,7 @@ export default function Cart() {
   const { data: publicAccess } = usePublicAccessMode();
   const { format: formatPrice, currency, convert, ready } = useLocalizedPrice();
   const navigate = useNavigate();
-  const gateway = currency === "NGN" ? "paystack" : "stripe";
+  const { redirect: redirectToCheckout, confirmation: currencyConfirmation } = useCheckoutRedirect();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
 
@@ -101,6 +103,10 @@ export default function Cart() {
         const payload = isStripe ? { session_id: sessionId, reference } : { reference };
         const { data, error } = await supabase.functions.invoke(verifyFunction, { body: payload });
         if (error) throw await readFunctionError(error);
+        if (data?.pending) {
+          toast({ title: "Payment processing", description: data.message });
+          return;
+        }
         if (!data?.verified) {
           toast({ title: "Payment not completed", description: data?.message ?? "Please try again.", variant: "destructive" });
           return;
@@ -205,8 +211,6 @@ export default function Cart() {
     try {
       const { getStoredUtmParams } = await import("@/hooks/useUtmTracking");
       const utm = getStoredUtmParams();
-      const isStripe = gateway === "stripe";
-      const functionName = isStripe ? "stripe-cart-initialize" : "paystack-cart-initialize";
       const checkoutCurrency = currency;
 
       tikTokEvent("InitiateCheckout", {
@@ -228,19 +232,15 @@ export default function Cart() {
         items: items.map((i) => ({ id: i.course_id, quantity: 1 })),
       });
 
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: {
+      const data = await initializeCheckout({
           course_ids: items.map((i) => i.course_id),
           currency,
-          callback_url: isStripe ? `${window.location.origin}/cart?stripe=1` : `${window.location.origin}/cart`,
+          callback_url: `${window.location.origin}/cart`,
           cancel_url: `${window.location.origin}/cart`,
           utm,
           promo_code_id: appliedPromo?.id ?? null,
           affiliate_code: getStoredAffiliateCode(),
-        },
       });
-      if (error) throw await readFunctionError(error);
-      if (data?.error) throw new Error(data.error);
       if (data?.free) {
         await clearCart();
         toast({ title: "Enrolled successfully!" });
@@ -248,10 +248,8 @@ export default function Cart() {
         return;
       }
       if (data?.authorization_url) {
-        if (isStripe && data.currency?.toUpperCase() !== currency) {
-          throw new Error("Local-currency checkout is being updated. Please try again shortly or contact support.");
-        }
-        window.location.href = data.authorization_url;
+        redirectToCheckout(data, currency);
+        setProcessing(false);
         return;
       }
       throw new Error("Unexpected response from payment provider");
@@ -491,6 +489,7 @@ export default function Cart() {
         </div>
       </section>
 
+      {currencyConfirmation}
       <Footer />
       <WhatsAppFAB />
     </div>

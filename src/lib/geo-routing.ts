@@ -1,9 +1,10 @@
 /**
  * Payment gateway routing based on visitor location.
- * Nigeria routes to Paystack (NGN).
- * Other countries route to Stripe in their checkout currency.
+ * Prefer local Paystack markets, otherwise Stripe. Actual eligibility and
+ * fallback are resolved during initialization against the connected accounts.
  */
-import { detectVisitorCountry } from "./currency";
+import { detectVisitorCountry, COUNTRY_TO_CURRENCY } from "./currency";
+import { checkoutRoutes } from "../../supabase/functions/_shared/payment-routing";
 import { getVisitorGeo, getCachedVisitorGeo } from "./geo";
 
 // All 54 sovereign African states + major territories (ISO 3166-1 alpha-2)
@@ -28,12 +29,12 @@ export function isAfricanCountry(countryCode?: string | null): boolean {
 
 /**
  * Synchronously determine gateway based on a country code.
- * Nigeria uses Paystack. Other countries use Stripe.
- * Unknown locations use the shared currency detector's fallback.
+ * Returns the first preferred route. Initialization checks actual account support
+ * and tries the remaining routes automatically.
  */
 export function resolvePaymentGateway(countryCode?: string | null): PaymentGateway {
   const country = countryCode || getCachedVisitorGeo()?.country || detectVisitorCountry();
-  return country.trim().toUpperCase() === "NG" ? "paystack" : "stripe";
+  return checkoutRoutes(COUNTRY_TO_CURRENCY[country.trim().toUpperCase()] || "USD")[0].gateway;
 }
 
 /**

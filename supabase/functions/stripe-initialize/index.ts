@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (!stripeKey) {
       return new Response(
         JSON.stringify({
-          error: "Stripe payments are not configured yet. Please check back shortly or contact support.",
+          retryable: true, error: "Stripe payments are not configured yet. Please check back shortly or contact support.",
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -192,6 +192,9 @@ Deno.serve(async (req) => {
         user_id: user.id,
         course_id,
       },
+    }).catch(async (error) => {
+      await supabase.from("orders").update({ status: "failed" }).eq("reference", reference).eq("status", "pending");
+      throw error;
     });
 
     // Update order with stripe_session_id
@@ -209,7 +212,7 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     if (err instanceof CheckoutCurrencyError) {
-      return new Response(JSON.stringify({ error: err.message }), {
+      return new Response(JSON.stringify({ error: err.message, retryable: true }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

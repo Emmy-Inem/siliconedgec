@@ -1,5 +1,8 @@
 project_id = "sdddxnjlgjjaoayyraxn"
 
+[functions.checkout-initialize]
+verify_jwt = true
+
 [functions.paystack-initialize]
 verify_jwt = true
 
