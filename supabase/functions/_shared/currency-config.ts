@@ -1,0 +1,95 @@
+export const COUNTRY_TO_CURRENCY: Record<string, string> = {
+  NG: "NGN",
+  GH: "GHS",
+  KE: "KES",
+  ZA: "ZAR",
+  EG: "EGP",
+  MA: "MAD",
+  GB: "GBP",
+  IE: "EUR",
+  DE: "EUR",
+  FR: "EUR",
+  ES: "EUR",
+  IT: "EUR",
+  NL: "EUR",
+  BE: "EUR",
+  PT: "EUR",
+  AT: "EUR",
+  FI: "EUR",
+  SE: "SEK",
+  NO: "NOK",
+  DK: "DKK",
+  CH: "CHF",
+  US: "USD",
+  CA: "CAD",
+  MX: "MXN",
+  BR: "BRL",
+  AR: "ARS",
+  AE: "AED",
+  SA: "SAR",
+  PK: "PKR",
+  IN: "INR",
+  SG: "SGD",
+  HK: "HKD",
+  JP: "JPY",
+  KR: "KRW",
+  CN: "CNY",
+  TH: "THB",
+  PH: "PHP",
+  AU: "AUD",
+  NZ: "NZD",
+  BG: "EUR", HR: "EUR", CY: "EUR", EE: "EUR", GR: "EUR", LV: "EUR", LT: "EUR", LU: "EUR", MT: "EUR", SK: "EUR", SI: "EUR",
+  PL: "PLN", CZ: "CZK", HU: "HUF", RO: "RON", TR: "TRY", UA: "UAH", IS: "ISK",
+  BD: "BDT", MY: "MYR", ID: "IDR", VN: "VND", TW: "TWD", LK: "LKR", NP: "NPR",
+  QA: "QAR", KW: "KWD", BH: "BHD", OM: "OMR", JO: "JOD", IL: "ILS",
+  DZ: "DZD", AO: "AOA", BW: "BWP", ET: "ETB", TZ: "TZS", UG: "UGX", RW: "RWF", ZM: "ZMW", MU: "MUR", NA: "NAD", MW: "MWK", MZ: "MZN",
+  BJ: "XOF", BF: "XOF", CI: "XOF", GW: "XOF", ML: "XOF", NE: "XOF", SN: "XOF", TG: "XOF",
+  CM: "XAF", CF: "XAF", TD: "XAF", CG: "XAF", GQ: "XAF", GA: "XAF",
+  CL: "CLP", CO: "COP", PE: "PEN", UY: "UYU", CR: "CRC", DO: "DOP",
+};
+
+export const FALLBACK_RATES_FROM_NGN: Record<string, number> = {
+  NGN: 1,
+  USD: 0.00067,
+  EUR: 0.00062,
+  GBP: 0.00053,
+  CAD: 0.00092,
+  AUD: 0.00102,
+  NZD: 0.00112,
+  CHF: 0.00060,
+  SEK: 0.0070,
+  NOK: 0.0072,
+  DKK: 0.0046,
+  GHS: 0.0098,
+  KES: 0.087,
+  ZAR: 0.012,
+  EGP: 0.033,
+  MAD: 0.0067,
+  AED: 0.0025,
+  SAR: 0.0025,
+  PKR: 0.19,
+  INR: 0.057,
+  SGD: 0.00091,
+  HKD: 0.0052,
+  JPY: 0.10,
+  KRW: 0.92,
+  CNY: 0.0049,
+  THB: 0.024,
+  PHP: 0.039,
+  MXN: 0.013,
+  BRL: 0.0038,
+  ARS: 0.65,
+};
+
+// Stripe API exceptions to the usual two-decimal representation.
+export function currencyFactor(currency: string): number {
+  return ["BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA", "PYG", "RWF", "VND", "VUV", "XAF", "XOF", "XPF"].includes(currency.toUpperCase()) ? 1 : 100;
+}
+
+export function roundCurrencyAmount(amount: number, currency: string): number {
+  // ISK and UGX use two API decimal places but only accept whole currency units.
+  if (["ISK", "UGX"].includes(currency.toUpperCase())) return Math.round(amount);
+  const factor = currencyFactor(currency);
+  return Math.round(amount * factor) / factor;
+}
+

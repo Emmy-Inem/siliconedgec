@@ -10,14 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredAffiliateCode } from "@/components/AffiliateTracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X, CreditCard, Shield } from "lucide-react";
+import { ShoppingCart, Trash2, Loader2, ArrowLeft, ShoppingBag, Tag, CheckCircle2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
-import { getVisitorGeo } from "@/lib/geo";
-import { resolvePaymentGateway, PaymentGateway } from "@/lib/geo-routing";
 import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
@@ -27,24 +24,12 @@ export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
   const { user } = useAuth();
   const { data: publicAccess } = usePublicAccessMode();
-  const { format: formatPrice, isNgn } = useLocalizedPrice();
+  const { format: formatPrice, currency, convert, ready } = useLocalizedPrice();
   const navigate = useNavigate();
+  const gateway = currency === "NGN" ? "paystack" : "stripe";
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
-  const [gateway, setGateway] = useState<PaymentGateway>("paystack");
 
-  // Automatically determine gateway from user location
-  useEffect(() => {
-    let isMounted = true;
-    void getVisitorGeo().then((geo) => {
-      if (isMounted) {
-        setGateway(resolvePaymentGateway(geo?.country));
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Promo code state
   const [promoInput, setPromoInput] = useState("");
@@ -222,23 +207,23 @@ export default function Cart() {
       const utm = getStoredUtmParams();
       const isStripe = gateway === "stripe";
       const functionName = isStripe ? "stripe-cart-initialize" : "paystack-cart-initialize";
-      const checkoutCurrency = isStripe ? "USD" : "NGN";
+      const checkoutCurrency = currency;
 
       tikTokEvent("InitiateCheckout", {
         content_type: "product_group",
         contents: items.map((i) => ({ content_id: i.course_id, quantity: 1 })),
-        value: total,
+        value: convert(finalTotal),
         currency: checkoutCurrency,
       });
       metaEvent("InitiateCheckout", {
         content_ids: items.map((i) => i.course_id),
         content_type: "product",
         num_items: items.length,
-        value: total,
+        value: convert(finalTotal),
         currency: checkoutCurrency,
       });
       googleAdsConversion("InitiateCheckout", {
-        value: total,
+        value: convert(finalTotal),
         currency: checkoutCurrency,
         items: items.map((i) => ({ id: i.course_id, quantity: 1 })),
       });
@@ -246,6 +231,7 @@ export default function Cart() {
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           course_ids: items.map((i) => i.course_id),
+          currency,
           callback_url: isStripe ? `${window.location.origin}/cart?stripe=1` : `${window.location.origin}/cart`,
           cancel_url: `${window.location.origin}/cart`,
           utm,
@@ -342,7 +328,7 @@ export default function Cart() {
                 Your Cart
                 {count > 0 && <span className="text-lg text-hero-muted font-normal">({count} course{count !== 1 ? "s" : ""})</span>}
               </h1>
-              <p className="text-hero-muted text-lg mt-3 max-w-2xl">Review your selected programs, confirm pricing in Naira, and head to checkout when you’re ready.</p>
+              <p className="text-hero-muted text-lg mt-3 max-w-2xl">Review your selected programs, confirm your total, and head to checkout when you’re ready.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 md:p-6 space-y-4">
               <div className="flex items-center justify-between gap-3">
@@ -361,7 +347,7 @@ export default function Cart() {
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
                   <p className="text-hero-muted text-[11px] uppercase tracking-[0.16em]">Currency</p>
-                  <p className="mt-1 font-heading text-xl text-hero">NGN</p>
+                  <p className="mt-1 font-heading text-xl text-hero">{ready ? currency : "…"}</p>
                 </div>
               </div>
             </div>
@@ -480,49 +466,20 @@ export default function Cart() {
                     <span>Total</span>
                     <span className="text-primary">{formatPrice(finalTotal)}</span>
                   </div>
-                  {/* Gateway selector / badge */}
-                  <div className="flex items-center justify-between bg-muted/40 border border-border/60 rounded-lg p-2.5 text-xs">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div>
-                        <span className="font-medium text-foreground">
-                          {gateway === "stripe" ? "Stripe (International Cards)" : "Paystack (African Cards / Transfer)"}
-                        </span>
-                        <span className="text-muted-foreground block text-[10px]">
-                          {gateway === "stripe" ? "Charged in USD" : "Charged in NGN"}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setGateway(gateway === "stripe" ? "paystack" : "stripe")}
-                      className="text-primary hover:underline text-xs font-medium shrink-0 ml-2"
-                    >
-                      Use {gateway === "stripe" ? "Paystack" : "Stripe"}
-                    </button>
-                  </div>
 
-                  {!isNgn && finalTotal > 0 && gateway === "paystack" && (
-                    <p className="text-[11px] text-muted-foreground -mt-2">Charged in {formatNaira(finalTotal)} (NGN) via Paystack.</p>
-                  )}
-                  {!isNgn && finalTotal > 0 && gateway === "stripe" && (
-                    <p className="text-[11px] text-muted-foreground -mt-2">Estimated original price: {formatNaira(finalTotal)} (NGN).</p>
-                  )}
 
                   <Button
                     size="lg"
                     className="w-full gap-2"
                     onClick={handleCheckout}
-                    disabled={processing}
+                    disabled={processing || !ready}
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
                     {processing
                       ? "Processing..."
                       : finalTotal === 0
                       ? "Enroll for Free"
-                      : gateway === "stripe"
-                      ? `Checkout with Stripe (${formatPrice(finalTotal)})`
-                      : `Checkout with Paystack (${formatPrice(finalTotal)})`}
+                      : `Checkout (${formatPrice(finalTotal)})`}
                   </Button>
                 </div>
               </div>

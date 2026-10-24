@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/accordion";
 import { SEO } from "@/components/SEO";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
-import { formatNaira } from "@/lib/format-currency";
 
 const plans = [
   {
@@ -114,12 +113,12 @@ const sectionReveal = {
 };
 
 export default function Pricing() {
-  const { format: formatPrice, isNgn } = useLocalizedPrice();
+  const { format: formatPrice } = useLocalizedPrice();
   return (
     <div className="min-h-screen bg-background">
       <SEO
         title="Course Pricing & Plans"
-        description="Transparent pricing in Naira. Choose Beginner (₦100,000), Intermediate (₦600,000), or Advanced packages to match your career goals."
+        description="Explore Beginner, Intermediate, and Advanced packages with pricing in your local currency to match your career goals."
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
@@ -246,9 +245,6 @@ export default function Pricing() {
                           {formatPrice(plan.priceNgn)}
                         </span>
                       </div>
-                      {!isNgn && (
-                        <p className="text-[11px] text-muted-foreground mt-1">{formatNaira(plan.priceNgn)} (NGN)</p>
-                      )}
                     </div>
                     <Button
                       asChild

@@ -1,6 +1,8 @@
+import { COUNTRY_TO_CURRENCY, FALLBACK_RATES_FROM_NGN, currencyFactor } from "../../supabase/functions/_shared/currency-config";
+export { COUNTRY_TO_CURRENCY, FALLBACK_RATES_FROM_NGN };
 /**
  * Lightweight visitor-country detection + NGN→local currency conversion
- * for display only. Checkout still charges in NGN.
+ * shared by price displays and checkout currency selection.
  */
 
 // Minimal IANA timezone → ISO country code map for the most common visitors.
@@ -54,97 +56,27 @@ const TZ_TO_COUNTRY: Record<string, string> = {
   "Pacific/Auckland": "NZ",
 };
 
-const COUNTRY_TO_CURRENCY: Record<string, string> = {
-  NG: "NGN",
-  GH: "GHS",
-  KE: "KES",
-  ZA: "ZAR",
-  EG: "EGP",
-  MA: "MAD",
-  GB: "GBP",
-  IE: "EUR",
-  DE: "EUR",
-  FR: "EUR",
-  ES: "EUR",
-  IT: "EUR",
-  NL: "EUR",
-  BE: "EUR",
-  PT: "EUR",
-  AT: "EUR",
-  FI: "EUR",
-  SE: "SEK",
-  NO: "NOK",
-  DK: "DKK",
-  CH: "CHF",
-  US: "USD",
-  CA: "CAD",
-  MX: "MXN",
-  BR: "BRL",
-  AR: "ARS",
-  AE: "AED",
-  SA: "SAR",
-  PK: "PKR",
-  IN: "INR",
-  SG: "SGD",
-  HK: "HKD",
-  JP: "JPY",
-  KR: "KRW",
-  CN: "CNY",
-  TH: "THB",
-  PH: "PHP",
-  AU: "AUD",
-  NZ: "NZD",
-};
+
 
 /**
  * Fallback FX rates: 1 NGN = X foreign currency.
  * These are conservative defaults used only if the live rate fetch fails.
  * (Approximate rates, mid-2026.)
  */
-export const FALLBACK_RATES_FROM_NGN: Record<string, number> = {
-  NGN: 1,
-  USD: 0.00067,
-  EUR: 0.00062,
-  GBP: 0.00053,
-  CAD: 0.00092,
-  AUD: 0.00102,
-  NZD: 0.00112,
-  CHF: 0.00060,
-  SEK: 0.0070,
-  NOK: 0.0072,
-  DKK: 0.0046,
-  GHS: 0.0098,
-  KES: 0.087,
-  ZAR: 0.012,
-  EGP: 0.033,
-  MAD: 0.0067,
-  AED: 0.0025,
-  SAR: 0.0025,
-  PKR: 0.19,
-  INR: 0.057,
-  SGD: 0.00091,
-  HKD: 0.0052,
-  JPY: 0.10,
-  KRW: 0.92,
-  CNY: 0.0049,
-  THB: 0.024,
-  PHP: 0.039,
-  MXN: 0.013,
-  BRL: 0.0038,
-  ARS: 0.65,
-};
+
 
 export function detectVisitorCountry(): string {
-  if (typeof window === "undefined") return "NG";
+  if (typeof window === "undefined") return "US";
   try {
     // 1) Cached IP-derived country (set by ensureGeoCountry)
     const cached = window.localStorage.getItem("sec_geo_country");
-    if (cached && COUNTRY_TO_CURRENCY[cached]) return cached;
+    const cachedAt = Number(window.localStorage.getItem("sec_geo_at") || 0);
+    if (cached && Date.now() - cachedAt < 24 * 60 * 60 * 1000) return cached;
     // 2) Timezone heuristic (works for ~95% of visitors)
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz && TZ_TO_COUNTRY[tz]) return TZ_TO_COUNTRY[tz];
     // 3) navigator.language fallback (e.g. "en-US")
-    const lang = navigator.language || "en-NG";
+    const lang = navigator.language || "en-US";
     const region = lang.split("-")[1];
     if (region && COUNTRY_TO_CURRENCY[region.toUpperCase()]) return region.toUpperCase();
   } catch {
@@ -179,7 +111,7 @@ export async function ensureGeoCountry(): Promise<string | null> {
     if (!res.ok) throw new Error("trace http");
     const text = await res.text();
     const loc = text.split("\n").find((l) => l.startsWith("loc="))?.split("=")[1]?.trim();
-    if (loc && COUNTRY_TO_CURRENCY[loc.toUpperCase()]) {
+    if (loc && /^[A-Z]{2}$/i.test(loc)) {
       const code = loc.toUpperCase();
       window.localStorage.setItem("sec_geo_country", code);
       window.localStorage.setItem("sec_geo_at", String(Date.now()));
@@ -196,11 +128,10 @@ export function formatLocalized(amountNgn: number, currency: string, rateFromNgn
   const localAmount = amountNgn * rateFromNgn;
   const loc = locale || (typeof navigator !== "undefined" ? navigator.language : "en-US");
   try {
-    const noDecimals = ["NGN", "JPY", "KRW", "PKR", "INR", "PHP", "THB", "KES", "ZAR", "EGP", "MAD", "GHS", "ARS"];
     return new Intl.NumberFormat(loc, {
       style: "currency",
       currency,
-      maximumFractionDigits: noDecimals.includes(currency) ? 0 : 2,
+      maximumFractionDigits: currencyFactor(currency) === 1 || ["ISK", "UGX"].includes(currency) ? 0 : 2,
       minimumFractionDigits: 0,
     }).format(localAmount);
   } catch {

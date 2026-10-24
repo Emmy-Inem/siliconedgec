@@ -27,7 +27,6 @@ import {
 import { StarRating } from "@/components/StarRating";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
 import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
@@ -58,7 +57,7 @@ export default function CourseDetail() {
   const { addToCart, isInCart } = useCart();
   const { isBookmarked, toggleBookmark, isToggling } = useBookmarks();
   const { reviews, submitReview, userReview, avgRating, reviewCount } = useReviews(course?.id);
-  const { format: formatPrice, isNgn } = useLocalizedPrice();
+  const { format: formatPrice } = useLocalizedPrice();
   const { canAccess: hasPaidAccess } = useCourseAccess(course?.id);
 
   // The URL param may be a UUID or a slug. The DB row id is always a UUID,
@@ -924,9 +923,6 @@ export default function CourseDetail() {
                       </span>
                     )}
                   </div>
-                  {!isNgn && course.price > 0 && (
-                    <p className="text-[11px] text-muted-foreground">Charged in {formatNaira(course.price)} (NGN)</p>
-                  )}
 
                   {isEnrolled ? (
                     isFreeWebinar ? (

@@ -1,8 +1,9 @@
 /**
  * Payment gateway routing based on visitor location.
- * African countries route to Paystack (NGN native).
- * Non-African countries route to Stripe (International cards, USD).
+ * Nigeria routes to Paystack (NGN).
+ * Other countries route to Stripe in their checkout currency.
  */
+import { detectVisitorCountry } from "./currency";
 import { getVisitorGeo, getCachedVisitorGeo } from "./geo";
 
 // All 54 sovereign African states + major territories (ISO 3166-1 alpha-2)
@@ -27,43 +28,12 @@ export function isAfricanCountry(countryCode?: string | null): boolean {
 
 /**
  * Synchronously determine gateway based on a country code.
- * If country is African -> "paystack".
- * If country is non-African -> "stripe".
- * If country is unknown, checks local timezone for Africa/ prefix or defaults to paystack.
+ * Nigeria uses Paystack. Other countries use Stripe.
+ * Unknown locations use the shared currency detector's fallback.
  */
 export function resolvePaymentGateway(countryCode?: string | null): PaymentGateway {
-  if (countryCode) {
-    return isAfricanCountry(countryCode) ? "paystack" : "stripe";
-  }
-
-  // Check cached geo if available
-  const cached = getCachedVisitorGeo();
-  if (cached?.country) {
-    return isAfricanCountry(cached.country) ? "paystack" : "stripe";
-  }
-
-  // Timezone heuristic fallback
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz.startsWith("Africa/")) {
-      return "paystack";
-    }
-    // If clearly in US/Europe/Asia/Pacific/America, route to Stripe
-    if (
-      tz.startsWith("America/") ||
-      tz.startsWith("Europe/") ||
-      tz.startsWith("Asia/") ||
-      tz.startsWith("Australia/") ||
-      tz.startsWith("Pacific/")
-    ) {
-      return "stripe";
-    }
-  } catch {
-    /* ignore */
-  }
-
-  // Default fallback for international school
-  return "paystack";
+  const country = countryCode || getCachedVisitorGeo()?.country || detectVisitorCountry();
+  return country.trim().toUpperCase() === "NG" ? "paystack" : "stripe";
 }
 
 /**

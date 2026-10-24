@@ -5,15 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen, CreditCard } from "lucide-react";
+import { Loader2, Shield, Lock, Tag, CheckCircle2, X, LogIn, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { formatNaira } from "@/lib/format-currency";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
-import { getVisitorGeo } from "@/lib/geo";
-import { resolvePaymentGateway, PaymentGateway } from "@/lib/geo-routing";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { getStoredAffiliateCode } from "@/components/AffiliateTracker";
 
@@ -41,8 +38,8 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const [processing, setProcessing] = useState(false);
   const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(false);
-  const [gateway, setGateway] = useState<PaymentGateway>("paystack");
-  const { format: formatLocalizedPrice, isNgn } = useLocalizedPrice();
+  const { format: formatLocalizedPrice, currency, ready } = useLocalizedPrice();
+  const gateway = currency === "NGN" ? "paystack" : "stripe";
   const { toast } = useToast();
 
   const [promoInput, setPromoInput] = useState("");
@@ -50,19 +47,6 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const [appliedPromo, setAppliedPromo] = useState<PromoResult | null>(null);
   const [promoError, setPromoError] = useState("");
 
-  // Automatically determine gateway from user location
-  useEffect(() => {
-    let isMounted = true;
-    void getVisitorGeo().then((geo) => {
-      if (isMounted) {
-        const resolved = resolvePaymentGateway(geo?.country);
-        setGateway(resolved);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Check enrollment status when modal opens
   useEffect(() => {
@@ -185,6 +169,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           course_id: courseId,
+          currency,
           promo_code_id: appliedPromo?.id ?? null,
           callback_url: `${window.location.origin}/courses/${courseId}?verify=1${gateway === "stripe" ? "&stripe=1" : ""}`,
           cancel_url: `${window.location.origin}/courses/${courseId}`,
@@ -222,9 +207,6 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
     }
   };
 
-  const isStripe = gateway === "stripe";
-  // Localize displayed prices for every visitor; NGN stays Naira, and the
-  // actual charge currency is always noted alongside.
   const displayPrice = formatLocalizedPrice(price);
   const displayFinalPrice = formatLocalizedPrice(finalPrice);
   const displayDiscount = formatLocalizedPrice(discountAmount);
@@ -247,35 +229,12 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
               ) : (
                 <span className="font-heading text-2xl font-bold text-primary">{displayPrice}</span>
               )}
-              {!isNgn && (
-                <p className="text-[11px] text-muted-foreground">Charged as {isStripe ? "USD via Stripe" : `${formatNaira(finalPrice)} (NGN) via Paystack`}</p>
-              )}
             </div>
           </div>
         </div>
 
         <div className="px-6 py-5 space-y-5">
-          {/* Gateway selector / badge */}
-          <div className="flex items-center justify-between bg-muted/30 border border-border/60 rounded-lg p-2.5 text-xs">
-            <div className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-primary shrink-0" />
-              <div>
-                <span className="font-medium text-foreground">
-                  {gateway === "stripe" ? "Stripe (International Cards)" : "Paystack (African Cards / Transfer)"}
-                </span>
-                <span className="text-muted-foreground block text-[10px]">
-                  {gateway === "stripe" ? "Auto-selected for your region" : "Standard payment for African regions"}
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setGateway(gateway === "stripe" ? "paystack" : "stripe")}
-              className="text-primary hover:underline text-xs font-medium shrink-0 ml-2"
-            >
-              Switch to {gateway === "stripe" ? "Paystack" : "Stripe"}
-            </button>
-          </div>
+
 
           {/* Promo */}
           <div className="space-y-2">
@@ -366,22 +325,20 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                 <div className="bg-muted/40 rounded-lg p-4 space-y-2 text-sm">
                   <div className="flex items-center gap-2 font-medium">
                     <Shield className="h-4 w-4 text-primary" />
-                    {gateway === "stripe" ? "Secure checkout via Stripe" : "Secure checkout via Paystack"}
+                    Secure checkout
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {gateway === "stripe"
-                      ? "You'll be redirected to Stripe's secure checkout. Pay with Visa, Mastercard, American Express, Apple Pay or Google Pay."
-                      : "You'll be redirected to Paystack's PCI-compliant checkout. Pay with card, bank transfer, or USSD."}
+                      ? "Available cards and wallets, including Apple Pay and Google Pay on eligible devices, appear at checkout."
+                      : "Pay securely with the payment options available in your country."}
                   </p>
                 </div>
-                <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing || checkingEnrollment}>
+                <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing || checkingEnrollment || !ready}>
                   {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                   {processing
                     ? "Redirecting..."
                     : finalPrice === 0
                     ? "Enroll for Free"
-                    : gateway === "stripe"
-                    ? `Pay with Stripe (${displayFinalPrice})`
                     : `Pay ${displayFinalPrice}`}
                 </Button>
               </>
@@ -390,7 +347,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">
             <Shield className="h-3.5 w-3.5" />
-            <span>256-bit SSL · Powered by {gateway === "stripe" ? "Stripe" : "Paystack"}</span>
+            <span>Secure, encrypted payment</span>
           </div>
         </div>
       </DialogContent>

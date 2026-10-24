@@ -1,8 +1,9 @@
+import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Initializes a single Stripe Checkout session for an entire cart of courses.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { safeErrorResponse } from "../_shared/errors.ts";
-import { getStripeSecretKey, getNgnToUsdRate, createStripeCheckoutSession } from "../_shared/stripe.ts";
+import { getStripeSecretKey, getNgnExchangeRate, resolveCheckoutCurrency, createStripeCheckoutSession, CheckoutCurrencyError } from "../_shared/stripe.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -40,7 +41,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code } = await req.json();
+    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency } = await req.json();
+    const currency = resolveCheckoutCurrency(requestedCurrency);
+    const factor = currencyFactor(currency);
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
         status: 400,
@@ -98,7 +101,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const fxRate = await getNgnToUsdRate();
+    const fxRate = await getNgnExchangeRate(currency);
     const reference = `SE-CART-STRIPE-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     // Free cart handling (100% discount)
@@ -111,10 +114,10 @@ Deno.serve(async (req) => {
           course_id: c.id,
           reference: lineRef,
           amount: 0,
-          currency: "USD",
+          currency,
           status: "completed",
           promo_code_id: validPromoId,
-          discount_amount: Math.round(Number(c.discount_price ?? c.price) * fxRate * 100) / 100,
+          discount_amount: roundCurrencyAmount(Number(c.discount_price ?? c.price) * fxRate, currency),
           payment_gateway: "stripe",
           metadata: {
             cart_reference: reference,
@@ -145,7 +148,7 @@ Deno.serve(async (req) => {
 
     // Distribute discount proportionally across courses & create pending line orders
     const stripeLineItems = [];
-    let totalUsdAmount = 0;
+    let totalLocalAmount = 0;
 
     for (const c of valid) {
       const lineRef = `${reference}--${c.id.slice(0, 8)}`;
@@ -153,19 +156,19 @@ Deno.serve(async (req) => {
       const lineDiscountNgn = subtotalNgn > 0 ? Math.round(((lineSubtotalNgn / subtotalNgn) * discountNgn) * 100) / 100 : 0;
       const lineFinalNgn = Math.max(0, lineSubtotalNgn - lineDiscountNgn);
 
-      const lineUsdAmount = Math.max(0.5, Math.round(lineFinalNgn * fxRate * 100) / 100);
-      const lineDiscountUsd = Math.round(lineDiscountNgn * fxRate * 100) / 100;
-      totalUsdAmount += lineUsdAmount;
+      const lineLocalAmount = roundCurrencyAmount(lineFinalNgn * fxRate, currency);
+      const lineDiscountLocal = roundCurrencyAmount(lineDiscountNgn * fxRate, currency);
+      totalLocalAmount += lineLocalAmount;
 
       await supabase.from("orders").insert({
         user_id: user.id,
         course_id: c.id,
         reference: lineRef,
-        amount: lineUsdAmount,
-        currency: "USD",
+        amount: lineLocalAmount,
+        currency,
         status: "pending",
         promo_code_id: validPromoId,
-        discount_amount: lineDiscountUsd,
+        discount_amount: lineDiscountLocal,
         payment_gateway: "stripe",
         metadata: {
           cart_reference: reference,
@@ -180,7 +183,7 @@ Deno.serve(async (req) => {
       stripeLineItems.push({
         name: c.title,
         description: "Course Enrollment",
-        unitAmountCents: Math.round(lineUsdAmount * 100),
+        unitAmountCents: Math.round(lineLocalAmount * factor),
         quantity: 1,
       });
     }
@@ -191,6 +194,7 @@ Deno.serve(async (req) => {
 
     const session = await createStripeCheckoutSession({
       secretKey: stripeKey,
+      currency,
       customerEmail: user.email || "",
       clientReferenceId: reference,
       lineItems: stripeLineItems,
@@ -215,12 +219,17 @@ Deno.serve(async (req) => {
         authorization_url: session.url,
         session_id: session.id,
         reference,
-        total: Math.round(totalUsdAmount * 100) / 100,
-        currency: "USD",
+        total: Math.round(totalLocalAmount * factor) / factor,
+        currency,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    if (err instanceof CheckoutCurrencyError) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return safeErrorResponse(err, 500, corsHeaders, "Failed to initialize Stripe cart checkout");
   }
 });

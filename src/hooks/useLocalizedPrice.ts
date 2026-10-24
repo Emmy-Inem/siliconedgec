@@ -13,43 +13,52 @@ export function useLocalizedPrice(opts?: { forceCurrency?: string }) {
   // Re-evaluate after IP geo resolves so visitors abroad don't get stuck on
   // the timezone fallback.
   const [tick, setTick] = useState(0);
+  const [geoReady, setGeoReady] = useState(false);
   useEffect(() => {
     let active = true;
-    ensureGeoCountry().then((c) => { if (active && c) setTick((n) => n + 1); });
+    ensureGeoCountry().finally(() => {
+      if (active) { setTick((n) => n + 1); setGeoReady(true); }
+    });
     return () => { active = false; };
   }, []);
 
   const currency =
-    opts?.forceCurrency ?? (typeof window === "undefined" ? "NGN" : detectVisitorCurrency());
+    opts?.forceCurrency ?? detectVisitorCurrency();
   const isNgn = currency === "NGN";
   // tick is referenced so React re-runs detection after IP geo lands
   void tick;
 
-  const { data: rate } = useQuery({
+  const { data: rate, isFetched } = useQuery({
     queryKey: ["fx-ngn", currency],
     enabled: !isNgn,
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
+    retry: false,
     queryFn: async (): Promise<number> => {
       try {
-        const res = await fetch("https://open.er-api.com/v6/latest/NGN");
+        const res = await fetch("https://open.er-api.com/v6/latest/NGN", { signal: AbortSignal.timeout(3000) });
         if (!res.ok) throw new Error("fx http");
         const json = await res.json();
         const r = json?.rates?.[currency];
         if (typeof r === "number" && r > 0) return r;
         throw new Error("missing rate");
       } catch {
-        return FALLBACK_RATES_FROM_NGN[currency] ?? FALLBACK_RATES_FROM_NGN.USD;
+        const fallback = FALLBACK_RATES_FROM_NGN[currency];
+        if (fallback) return fallback;
+        throw new Error("Currency pricing unavailable");
       }
     },
   });
 
-  const effectiveRate = isNgn ? 1 : (rate ?? FALLBACK_RATES_FROM_NGN[currency] ?? FALLBACK_RATES_FROM_NGN.USD);
+  const effectiveRate = isNgn ? 1 : (rate ?? FALLBACK_RATES_FROM_NGN[currency]);
 
   const format = (amountNgn: number): string => {
+    if (!geoReady) return "…";
+    if (!Number.isFinite(effectiveRate)) return isFetched ? "Price unavailable" : "…";
     if (isNgn) return formatNaira(amountNgn);
     return formatLocalized(amountNgn, currency, effectiveRate);
   };
 
-  return { format, currency, isNgn };
+  return { format, currency, isNgn, convert: (amount: number) => amount * effectiveRate,
+    ready: geoReady && (isNgn || isFetched) && Number.isFinite(effectiveRate) };
 }

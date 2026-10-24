@@ -1,9 +1,10 @@
+import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Stripe payment initialization edge function
 // Creates a hosted Stripe Checkout session for a course enrollment.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { safeErrorResponse } from "../_shared/errors.ts";
-import { getStripeSecretKey, getNgnToUsdRate, createStripeCheckoutSession } from "../_shared/stripe.ts";
+import { getStripeSecretKey, getNgnExchangeRate, resolveCheckoutCurrency, createStripeCheckoutSession, CheckoutCurrencyError } from "../_shared/stripe.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -47,6 +48,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { course_id, promo_code_id, callback_url, cancel_url, utm, affiliate_code } = body;
+    const currency = resolveCheckoutCurrency(body.currency);
+    const factor = currencyFactor(currency);
+    const fxRate = await getNgnExchangeRate(currency);
     if (!course_id) {
       return new Response(JSON.stringify({ error: "course_id required" }), {
         status: 400,
@@ -112,10 +116,10 @@ Deno.serve(async (req) => {
         course_id,
         reference,
         amount: 0,
-        currency: "USD",
+        currency,
         status: "completed",
         promo_code_id: promo_code_id ?? null,
-        discount_amount: discountNgn,
+        discount_amount: roundCurrencyAmount(discountNgn * fxRate, currency),
         payment_gateway: "stripe",
         metadata: {
           course_title: course.title,
@@ -136,21 +140,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Convert NGN amount to USD
-    const fxRate = await getNgnToUsdRate();
-    const usdAmount = Math.round(finalNgnAmount * fxRate * 100) / 100;
-    const usdAmountCents = Math.round(usdAmount * 100);
+    // Convert using a server-resolved exchange rate and currency minor units
+    const localAmount = roundCurrencyAmount(finalNgnAmount * fxRate, currency);
+    const localAmountMinor = Math.round(localAmount * factor);
 
     // Insert pending order
     const { error: orderErr } = await supabase.from("orders").insert({
       user_id: user.id,
       course_id,
       reference,
-      amount: usdAmount,
-      currency: "USD",
+      amount: localAmount,
+      currency,
       status: "pending",
       promo_code_id: promo_code_id ?? null,
-      discount_amount: Math.round(discountNgn * fxRate * 100) / 100,
+      discount_amount: roundCurrencyAmount(discountNgn * fxRate, currency),
       payment_gateway: "stripe",
       metadata: {
         course_title: course.title,
@@ -171,13 +174,14 @@ Deno.serve(async (req) => {
 
     const session = await createStripeCheckoutSession({
       secretKey: stripeKey,
+      currency,
       customerEmail: user.email || "",
       clientReferenceId: reference,
       lineItems: [
         {
           name: course.title,
           description: "Silicon Edge Consulting Course Enrollment",
-          unitAmountCents: usdAmountCents,
+          unitAmountCents: localAmountMinor,
           quantity: 1,
         },
       ],
@@ -198,11 +202,17 @@ Deno.serve(async (req) => {
         authorization_url: session.url,
         session_id: session.id,
         reference,
-        amount_usd: usdAmount,
+        amount: localAmount,
+        currency,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    if (err instanceof CheckoutCurrencyError) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return safeErrorResponse(err, 500, corsHeaders, "Failed to initialize Stripe checkout. Please try again.");
   }
 });
