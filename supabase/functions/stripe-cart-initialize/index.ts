@@ -1,4 +1,5 @@
 import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
+import { checkoutRoutes } from "../_shared/payment-routing.ts";
 // Initializes a single Stripe Checkout session for an entire cart of courses.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
@@ -9,7 +10,7 @@ Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
-  const corsHeaders = getCorsHeaders(req);
+  const corsHeaders = { ...getCorsHeaders(req), "Cache-Control": "no-store" };
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -41,8 +42,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency } = await req.json();
+    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency, checkout_ui } = await req.json();
     const currency = resolveCheckoutCurrency(requestedCurrency);
+    const walletCheckout = checkout_ui === "elements";
+    if (walletCheckout && checkoutRoutes(currency)[0].gateway === "paystack") {
+      return new Response(JSON.stringify({ error: "Please use the local checkout for this currency." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const factor = currencyFactor(currency);
     if (!Array.isArray(course_ids) || course_ids.length === 0) {
       return new Response(JSON.stringify({ error: "course_ids required" }), {
@@ -194,6 +201,7 @@ Deno.serve(async (req) => {
 
     const session = await createStripeCheckoutSession({
       secretKey: stripeKey,
+      uiMode: walletCheckout ? "elements" : "hosted",
       currency,
       customerEmail: user.email || "",
       clientReferenceId: reference,
@@ -220,6 +228,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         authorization_url: session.url,
+        client_secret: session.client_secret,
         session_id: session.id,
         reference,
         total: Math.round(totalLocalAmount * factor) / factor,

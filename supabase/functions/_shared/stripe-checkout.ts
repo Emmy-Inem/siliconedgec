@@ -41,6 +41,7 @@ export interface CreateStripeSessionInput {
   lineItems: StripeLineItem[];
   successUrl: string;
   cancelUrl: string;
+  uiMode?: "hosted" | "elements";
   metadata?: Record<string, string>;
 }
 
@@ -50,14 +51,22 @@ export interface CreateStripeSessionInput {
 export async function createStripeCheckoutSession(input: CreateStripeSessionInput): Promise<{
   id: string;
   url: string;
+  client_secret?: string;
   payment_intent?: string;
 }> {
   const params = new URLSearchParams();
   params.append("mode", "payment");
   params.append("customer_email", input.customerEmail);
   params.append("client_reference_id", input.clientReferenceId);
-  params.append("success_url", input.successUrl);
-  params.append("cancel_url", input.cancelUrl);
+  if (input.uiMode === "elements") {
+    params.append("ui_mode", "elements");
+    params.append("return_url", input.successUrl);
+    // This session is specifically for Apple Pay / Google Pay, both card wallets.
+    params.append("payment_method_types[0]", "card");
+  } else {
+    params.append("success_url", input.successUrl);
+    params.append("cancel_url", input.cancelUrl);
+  }
   // Let Stripe choose all eligible methods from the merchant's Dashboard settings,
   // including wallets and delayed methods. Fulfillment waits for payment confirmation.
   params.append("adaptive_pricing[enabled]", "false");
@@ -88,7 +97,7 @@ export async function createStripeCheckoutSession(input: CreateStripeSessionInpu
   });
 
   const data = await res.json();
-  if (!res.ok || !data.id || !data.url) {
+  if (!res.ok || !data.id || (input.uiMode === "elements" ? !data.client_secret : !data.url)) {
     console.error("[Stripe] Session creation failed:", data);
     throw new Error(data?.error?.message || "Failed to create Stripe Checkout session");
   }
@@ -96,6 +105,7 @@ export async function createStripeCheckoutSession(input: CreateStripeSessionInpu
   return {
     id: data.id,
     url: data.url,
+    client_secret: data.client_secret,
     payment_intent: data.payment_intent,
   };
 }

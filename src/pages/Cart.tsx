@@ -1,6 +1,7 @@
 import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
 import { initializeCheckout } from "@/lib/initialize-checkout";
 import { WalletCheckoutButton } from "@/components/WalletCheckoutButton";
+import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -472,7 +473,10 @@ export default function Cart() {
 
 
                   {finalTotal > 0 && (
-                    <WalletCheckoutButton currency={currency} ready={ready} onCheckout={() => handleCheckout(true)} disabled={!ready} processing={processing} />
+                    <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={!ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
+                      request={{ currency, course_ids: items.map(item => item.course_id), promo_code_id: appliedPromo?.id ?? null,
+                        affiliate_code: getStoredAffiliateCode(), utm: getStoredUtmParams(),
+                        callback_url: `${window.location.origin}/cart`, cancel_url: `${window.location.origin}/cart` }} />
                   )}
                   <Button
                     size="lg"

@@ -1,19 +1,21 @@
-import { useId } from "react";
-import { Loader2, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { lazy, Suspense } from "react";
 import { usesLocalPaymentOptions } from "@/lib/payment-options";
+import type { WalletCheckoutRequest } from "@/lib/native-wallet-checkout";
+
+const NativeWalletCheckout = lazy(() => import("./NativeWalletCheckout"));
 
 interface WalletCheckoutButtonProps {
   currency: string;
   ready: boolean;
-  onCheckout: () => void;
+  request: WalletCheckoutRequest;
+  userId?: string;
+  onProcessingChange?: (processing: boolean) => void;
   disabled?: boolean;
   processing?: boolean;
 }
 
-/** A clearly labelled entry to hosted wallet checkout, not an imitation wallet payment sheet. */
-export function WalletCheckoutButton({ currency, ready, onCheckout, disabled, processing }: WalletCheckoutButtonProps) {
-  const descriptionId = useId();
+/** Local markets keep their preferred provider; eligible international devices get official wallets. */
+export function WalletCheckoutButton({ currency, ready, request, userId, disabled, processing, onProcessingChange }: WalletCheckoutButtonProps) {
   if (!ready) return null;
   if (usesLocalPaymentOptions(currency)) {
     return (
@@ -28,13 +30,9 @@ export function WalletCheckoutButton({ currency, ready, onCheckout, disabled, pr
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-center">International payment options</p>
-      <Button type="button" variant="outline" size="lg" className="w-full gap-2" disabled={disabled || processing} onClick={onCheckout} aria-describedby={descriptionId}>
-        {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
-        {processing ? "Opening checkout…" : "Apple Pay or Google Pay"}
-      </Button>
-      <p id={descriptionId} className="text-xs text-center text-muted-foreground">
-        Choose your wallet on the secure payment page. Available on supported devices.
-      </p>
+      {userId && <Suspense fallback={null}>
+        <NativeWalletCheckout request={request} userId={userId} disabled={disabled || processing} onProcessingChange={onProcessingChange} />
+      </Suspense>}
     </div>
   );
 }

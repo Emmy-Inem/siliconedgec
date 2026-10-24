@@ -1,4 +1,5 @@
 import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
+import { checkoutRoutes } from "../_shared/payment-routing.ts";
 // Stripe payment initialization edge function
 // Creates a hosted Stripe Checkout session for a course enrollment.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -10,7 +11,7 @@ Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
-  const corsHeaders = getCorsHeaders(req);
+  const corsHeaders = { ...getCorsHeaders(req), "Cache-Control": "no-store" };
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -49,6 +50,12 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { course_id, promo_code_id, callback_url, cancel_url, utm, affiliate_code } = body;
     const currency = resolveCheckoutCurrency(body.currency);
+    const walletCheckout = body.checkout_ui === "elements";
+    if (walletCheckout && checkoutRoutes(currency)[0].gateway === "paystack") {
+      return new Response(JSON.stringify({ error: "Please use the local checkout for this currency." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const factor = currencyFactor(currency);
     const fxRate = await getNgnExchangeRate(currency);
     if (!course_id) {
@@ -174,6 +181,7 @@ Deno.serve(async (req) => {
 
     const session = await createStripeCheckoutSession({
       secretKey: stripeKey,
+      uiMode: walletCheckout ? "elements" : "hosted",
       currency,
       customerEmail: user.email || "",
       clientReferenceId: reference,
@@ -203,6 +211,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         authorization_url: session.url,
+        client_secret: session.client_secret,
         session_id: session.id,
         reference,
         amount: localAmount,

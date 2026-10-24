@@ -127,4 +127,21 @@ describe("visitor checkout currencies", () => {
       expect(body.get("adaptive_pricing[enabled]")).toBe("false");
     },
   );
+
+  it("creates an Elements session with a return URL and client secret rather than a hosted redirect", async () => {
+    const request = vi.fn().mockResolvedValue(Response.json({ id: "cs_wallet", client_secret: "wallet-secret", url: null }));
+    vi.stubGlobal("fetch", request);
+    const session = await createStripeCheckoutSession({
+      secretKey: "test", currency: "EUR", customerEmail: "test@example.com", clientReferenceId: "order",
+      successUrl: "https://siliconedgec.com/cart?session_id={CHECKOUT_SESSION_ID}", cancelUrl: "https://siliconedgec.com/cart",
+      uiMode: "elements", lineItems: [{ name: "Course", unitAmountCents: 1000 }],
+    });
+    expect(session.client_secret).toBe("wallet-secret");
+    const body = new URLSearchParams(request.mock.calls[0][1].body);
+    expect(body.get("ui_mode")).toBe("elements");
+    expect(body.get("return_url")).toContain("session_id={CHECKOUT_SESSION_ID}");
+    expect(body.has("success_url")).toBe(false);
+    expect(body.has("cancel_url")).toBe(false);
+    expect(body.get("payment_method_types[0]")).toBe("card");
+  });
 });

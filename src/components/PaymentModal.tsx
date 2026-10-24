@@ -331,7 +331,10 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                   </p>
                 </div>
                 {finalPrice > 0 && (
-                  <WalletCheckoutButton currency={currency} ready={ready} onCheckout={() => handlePay(true)} disabled={checkingEnrollment || !ready} processing={processing} />
+                  <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={checkingEnrollment || !ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
+                    request={{ currency, course_id: courseId, promo_code_id: appliedPromo?.id ?? null,
+                      affiliate_code: getStoredAffiliateCode(), utm: getStoredUtmParams(),
+                      callback_url: `${window.location.origin}/courses/${courseId}?verify=1`, cancel_url: `${window.location.origin}/courses/${courseId}` }} />
                 )}
                 <Button className="w-full gap-2" size="lg" onClick={() => handlePay()} disabled={processing || checkingEnrollment || !ready}>
                   {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
