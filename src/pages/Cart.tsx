@@ -522,7 +522,7 @@ export default function Cart() {
                       ? "Enroll for Free"
                       : gateway === "stripe"
                       ? `Checkout with Stripe (${formatPrice(finalTotal)})`
-                      : `Checkout with Paystack (${formatNaira(finalTotal)})`}
+                      : `Checkout with Paystack (${formatPrice(finalTotal)})`}
                   </Button>
                 </div>
               </div>

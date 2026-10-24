@@ -6,6 +6,13 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Loader2, Star, Users } from "lucide-react";
 
+/** First sentence of a bio, used as the one-line card summary. */
+function firstSentence(bio: string): string {
+  const normalized = bio.split("\n")[0].trim();
+  const match = normalized.match(/^.*?[.!?](?=\s|$)/);
+  return (match ? match[0] : normalized).trim();
+}
+
 interface Instructor {
   id: string;
   name: string;
@@ -74,9 +81,10 @@ export default function Instructors() {
                     {i.role && <p className="text-sm text-muted-foreground">{i.role}</p>}
                   </div>
                 </div>
+                {i.bio && <p className="text-sm text-muted-foreground mb-4">{firstSentence(i.bio)}</p>}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  {i.rating != null && (<span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-500" /> {Number(i.rating).toFixed(1)}</span>)}
-                  {i.students_count != null && (<span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {i.students_count.toLocaleString()} students</span>)}
+                  {i.rating != null && Number(i.rating) > 0 && (<span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-amber-500" /> {Number(i.rating).toFixed(1)}</span>)}
+                  {i.students_count != null && i.students_count > 0 && (<span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {i.students_count.toLocaleString()} students</span>)}
                   {i.courses_count != null && <span>{i.courses_count} courses</span>}
                 </div>
               </Link>

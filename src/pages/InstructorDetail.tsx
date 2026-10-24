@@ -126,14 +126,18 @@ export default function InstructorDetail() {
               <h1 className="font-heading text-3xl md:text-4xl font-bold text-hero mb-2">{instructor.name}</h1>
               {instructor.role && <p className="text-primary font-medium text-base mb-3">{instructor.role}</p>}
               <div className="flex flex-wrap items-center gap-4 md:gap-6 text-hero-muted text-sm">
+                {instructor.rating != null && Number(instructor.rating) > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Star className="h-4 w-4 fill-accent text-accent" />
-                  {instructor.rating ?? 4.5} Instructor Rating
+                  {Number(instructor.rating).toFixed(1)} Instructor Rating
                 </span>
+                )}
+                {(instructor.students_count ?? 0) > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Users className="h-4 w-4" />
-                  {(instructor.students_count ?? 0).toLocaleString()} Students
+                  {Number(instructor.students_count).toLocaleString()} Students
                 </span>
+                )}
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="h-4 w-4" />
                   {courses.length} Course{courses.length !== 1 ? "s" : ""}

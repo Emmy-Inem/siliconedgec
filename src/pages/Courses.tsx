@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { shouldShowStagedFeature } from "@/lib/localhost-preview";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { cn } from "@/lib/utils";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
@@ -48,6 +48,7 @@ const HERO_TRACKS = [
 const AZURE_BOOTCAMP_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
 
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
+  const { format: formatPrice } = useLocalizedPrice();
   // Query promoted banner config from site_content
   const { data: config } = useQuery({
     queryKey: ["promoted-courses-banner-config"],
@@ -353,7 +354,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
                           <div>
                             <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
-                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatNaira(Number(activeCourse.price))}</span>
+                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatPrice(Number(activeCourse.price))}</span>
                           </div>
 
                           <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">

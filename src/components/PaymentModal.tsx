@@ -132,7 +132,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
         discount_value: data.discount_value, influencer_name: data.influencer_name,
         course_ids: scope,
       });
-      toast({ title: "Promo applied", description: `You saved ${formatNaira(calcDiscount)}` });
+      toast({ title: "Promo applied", description: `You saved ${formatLocalizedPrice(calcDiscount)}` });
     } catch {
       setPromoError("Failed to validate promo code");
     } finally {
@@ -223,9 +223,11 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   };
 
   const isStripe = gateway === "stripe";
-  const displayPrice = isStripe && !isNgn ? formatLocalizedPrice(price) : formatNaira(price);
-  const displayFinalPrice = isStripe && !isNgn ? formatLocalizedPrice(finalPrice) : formatNaira(finalPrice);
-  const displayDiscount = isStripe && !isNgn ? formatLocalizedPrice(discountAmount) : formatNaira(discountAmount);
+  // Localize displayed prices for every visitor; NGN stays Naira, and the
+  // actual charge currency is always noted alongside.
+  const displayPrice = formatLocalizedPrice(price);
+  const displayFinalPrice = formatLocalizedPrice(finalPrice);
+  const displayDiscount = formatLocalizedPrice(discountAmount);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -245,8 +247,8 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
               ) : (
                 <span className="font-heading text-2xl font-bold text-primary">{displayPrice}</span>
               )}
-              {isStripe && !isNgn && (
-                <p className="text-[11px] text-muted-foreground">Original: {formatNaira(finalPrice)}</p>
+              {!isNgn && (
+                <p className="text-[11px] text-muted-foreground">Charged as {isStripe ? "USD via Stripe" : `${formatNaira(finalPrice)} (NGN) via Paystack`}</p>
               )}
             </div>
           </div>
@@ -282,7 +284,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatNaira(appliedPromo.discount_value)} off`}
+                    {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatLocalizedPrice(appliedPromo.discount_value)} off`}
                   </span>
                 </div>
                 <button onClick={removePromo} className="text-muted-foreground hover:text-foreground">
@@ -380,7 +382,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                     ? "Enroll for Free"
                     : gateway === "stripe"
                     ? `Pay with Stripe (${displayFinalPrice})`
-                    : `Pay ${formatNaira(finalPrice)}`}
+                    : `Pay ${displayFinalPrice}`}
                 </Button>
               </>
             )}

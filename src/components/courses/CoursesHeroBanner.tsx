@@ -11,7 +11,7 @@ import {
   Layers,
   GraduationCap
 } from "lucide-react";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { Button } from "@/components/ui/button";
 
 const BOOTCAMP_4_WEEKS_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
@@ -30,6 +30,7 @@ interface PromotedCourse {
 }
 
 export function CoursesHeroBanner() {
+  const { format: formatPrice } = useLocalizedPrice();
   // Fetch active promoted config from site_content
   const { data: config } = useQuery({
     queryKey: ["promoted-courses-banner-config"],
@@ -132,11 +133,11 @@ export function CoursesHeroBanner() {
 
             <div className="flex items-baseline gap-2">
               <span className="text-xl md:text-2xl font-bold text-foreground font-heading">
-                {formatNaira(Number(effectivePrice))}
+                {formatPrice(Number(effectivePrice))}
               </span>
               {course.discount_price && course.price && (
                 <span className="text-xs text-muted-foreground line-through">
-                  {formatNaira(Number(course.price))}
+                  {formatPrice(Number(course.price))}
                 </span>
               )}
             </div>
