@@ -331,7 +331,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                   </p>
                 </div>
                 {finalPrice > 0 && (
-                  <WalletCheckoutButton onCheckout={() => handlePay(true)} disabled={checkingEnrollment || !ready} processing={processing} />
+                  <WalletCheckoutButton currency={currency} ready={ready} onCheckout={() => handlePay(true)} disabled={checkingEnrollment || !ready} processing={processing} />
                 )}
                 <Button className="w-full gap-2" size="lg" onClick={() => handlePay()} disabled={processing || checkingEnrollment || !ready}>
                   {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}

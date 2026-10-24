@@ -8,21 +8,21 @@ const httpError = (status: number, error: string) => ({ data: null, error: { con
 beforeEach(() => invoke.mockReset());
 
 describe("checkout deployment compatibility", () => {
-  it("sends wallet checkout to Stripe even in a Paystack market", async () => {
-    invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/wallet", currency: "NGN", total: 500000 }, error: null });
-    const result = await initializeCheckout({ currency: "NGN", course_ids: ["course"], wallet_checkout: true });
-    expect(result).toMatchObject({ gateway: "stripe", currency: "NGN" });
-    expect(invoke.mock.calls.map(call => call[0])).toEqual(["stripe-cart-initialize"]);
-    expect(invoke.mock.calls[0][1].body.wallet_checkout).toBe(true);
+  it.each(["NGN", "GHS", "KES", "ZAR", "XOF", "EGP"])("keeps a stale wallet entry on the local %s route", async (currency) => {
+    invoke.mockResolvedValueOnce(httpError(404, "Missing function"))
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.paystack.com/local", currency, total: 500 }, error: null });
+    const result = await initializeCheckout({ currency, course_ids: ["course"], wallet_checkout: true });
+    expect(result).toMatchObject({ gateway: "paystack", currency, fallback: false });
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(["checkout-initialize", "paystack-cart-initialize"]);
+    expect(invoke.mock.calls.every(call => call[1].body.wallet_checkout === false)).toBe(true);
   });
 
-  it("keeps USD wallet fallback on Stripe when the old handler cannot charge naira", async () => {
-    invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/legacy", amount_usd: 335.5 }, error: null })
-      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/wallet", amount_usd: 335.5 }, error: null });
+  it("keeps Nigerian single-course wallet entries on the working legacy naira checkout", async () => {
+    invoke.mockResolvedValueOnce(httpError(404, "Missing function"))
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.paystack.com/local", access_code: "test" }, error: null });
     const result = await initializeCheckout({ currency: "NGN", course_id: "course", wallet_checkout: true });
-    expect(result).toMatchObject({ gateway: "stripe", currency: "USD", amount: 335.5, fallback: true });
-    expect(invoke.mock.calls.map(call => call[0])).toEqual(["stripe-initialize", "stripe-initialize"]);
-    expect(invoke.mock.calls[1][1].body.currency).toBe("USD");
+    expect(result).toMatchObject({ gateway: "paystack", currency: "NGN", fallback: false });
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(["checkout-initialize", "paystack-initialize"]);
   });
 
   it("does not silently replace an unavailable wallet checkout with Paystack", async () => {

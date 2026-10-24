@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { initializeWithFallback, type CheckoutResult } from "../../supabase/functions/_shared/payment-routing";
+import { usesLocalPaymentOptions } from "./payment-options";
 
 async function invoke(name: string, body: Record<string, unknown>) {
   const { data, error } = await supabase.functions.invoke(name, { body });
@@ -20,13 +21,16 @@ async function invoke(name: string, body: Record<string, unknown>) {
 
 /** Keep checkout working while the new router and provider functions roll out separately. */
 export async function initializeCheckout(body: Record<string, unknown> & { currency: string }) {
+  // A stale wallet entry must never bypass the customer's preferred local provider.
+  const walletCheckout = body.wallet_checkout === true && !usesLocalPaymentOptions(body.currency);
+  body = { ...body, wallet_checkout: walletCheckout };
   const initializeDirectly = () => initializeWithFallback(body.currency, async (route) => {
     const cart = Array.isArray(body.course_ids);
     return invoke(`${route.gateway}-${cart ? "cart-" : ""}initialize`, { ...body, currency: route.currency });
-  }, body.wallet_checkout === true ? new Set<string>() : undefined);
+  }, walletCheckout ? new Set<string>() : undefined);
 
   // Explicit wallet checkout stays on the wallet-enabled account, including USD fallback.
-  if (body.wallet_checkout === true) {
+  if (walletCheckout) {
     const result = await initializeDirectly();
     if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start wallet checkout.");
     return result.data;

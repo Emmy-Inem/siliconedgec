@@ -472,7 +472,7 @@ export default function Cart() {
 
 
                   {finalTotal > 0 && (
-                    <WalletCheckoutButton onCheckout={() => handleCheckout(true)} disabled={!ready} processing={processing} />
+                    <WalletCheckoutButton currency={currency} ready={ready} onCheckout={() => handleCheckout(true)} disabled={!ready} processing={processing} />
                   )}
                   <Button
                     size="lg"
