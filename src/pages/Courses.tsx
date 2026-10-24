@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { shouldShowStagedFeature } from "@/lib/localhost-preview";
-import { formatNaira } from "@/lib/format-currency";
+import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { cn } from "@/lib/utils";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
@@ -353,7 +353,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
                           <div>
                             <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
-                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatNaira(Number(activeCourse.price))}</span>
+                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatPrice(Number(activeCourse.price))}</span>
                           </div>
 
                           <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">
@@ -393,6 +393,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
 export default function Courses() {
   const { data: courses = [], isLoading } = useCourses();
+  const { format: formatPrice } = useLocalizedPrice();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") ?? "All");
   const [activeDifficulty, setActiveDifficulty] = useState("All Levels");
