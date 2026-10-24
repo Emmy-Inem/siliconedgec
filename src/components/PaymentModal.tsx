@@ -189,6 +189,9 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       }
 
       if (data?.authorization_url) {
+        if (gateway === "stripe" && data.currency?.toUpperCase() !== currency) {
+          throw new Error("Local-currency checkout is being updated. Please try again shortly or contact support.");
+        }
         window.location.href = data.authorization_url;
         return;
       }

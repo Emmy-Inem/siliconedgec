@@ -21,7 +21,9 @@ describe("localized price display", () => {
 
   it("detects currency from a cached geo country", () => {
     window.localStorage.setItem("sec_geo_country", "GB");
+    window.localStorage.setItem("sec_geo_at", String(Date.now()));
     expect(detectVisitorCurrency()).toBe("GBP");
     window.localStorage.removeItem("sec_geo_country");
+    window.localStorage.removeItem("sec_geo_at");
   });
 });

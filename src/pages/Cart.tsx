@@ -248,6 +248,9 @@ export default function Cart() {
         return;
       }
       if (data?.authorization_url) {
+        if (isStripe && data.currency?.toUpperCase() !== currency) {
+          throw new Error("Local-currency checkout is being updated. Please try again shortly or contact support.");
+        }
         window.location.href = data.authorization_url;
         return;
       }
