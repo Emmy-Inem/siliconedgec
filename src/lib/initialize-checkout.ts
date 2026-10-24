@@ -20,14 +20,21 @@ async function invoke(name: string, body: Record<string, unknown>) {
 
 /** Keep checkout working while the new router and provider functions roll out separately. */
 export async function initializeCheckout(body: Record<string, unknown> & { currency: string }) {
+  const initializeDirectly = () => initializeWithFallback(body.currency, async (route) => {
+    const cart = Array.isArray(body.course_ids);
+    return invoke(`${route.gateway}-${cart ? "cart-" : ""}initialize`, { ...body, currency: route.currency });
+  }, body.wallet_checkout === true ? new Set<string>() : undefined);
+
+  // Explicit wallet checkout stays on the wallet-enabled account, including USD fallback.
+  if (body.wallet_checkout === true) {
+    const result = await initializeDirectly();
+    if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start wallet checkout.");
+    return result.data;
+  }
   const routerResult = await invoke("checkout-initialize", body);
   let result: { status: number; data: CheckoutResult } = routerResult;
   if (routerResult.status === 404 || routerResult.transportFailure) {
-    result = await initializeWithFallback(body.currency, async (route) => {
-      const cart = Array.isArray(body.course_ids);
-      const response = await invoke(`${route.gateway}-${cart ? "cart-" : ""}initialize`, { ...body, currency: route.currency });
-      return response;
-    });
+    result = await initializeDirectly();
   }
   if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start checkout.");
   return result.data;

@@ -8,6 +8,36 @@ const httpError = (status: number, error: string) => ({ data: null, error: { con
 beforeEach(() => invoke.mockReset());
 
 describe("checkout deployment compatibility", () => {
+  it("sends wallet checkout to Stripe even in a Paystack market", async () => {
+    invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/wallet", currency: "NGN", total: 500000 }, error: null });
+    const result = await initializeCheckout({ currency: "NGN", course_ids: ["course"], wallet_checkout: true });
+    expect(result).toMatchObject({ gateway: "stripe", currency: "NGN" });
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(["stripe-cart-initialize"]);
+    expect(invoke.mock.calls[0][1].body.wallet_checkout).toBe(true);
+  });
+
+  it("keeps USD wallet fallback on Stripe when the old handler cannot charge naira", async () => {
+    invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/legacy", amount_usd: 335.5 }, error: null })
+      .mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/wallet", amount_usd: 335.5 }, error: null });
+    const result = await initializeCheckout({ currency: "NGN", course_id: "course", wallet_checkout: true });
+    expect(result).toMatchObject({ gateway: "stripe", currency: "USD", amount: 335.5, fallback: true });
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(["stripe-initialize", "stripe-initialize"]);
+    expect(invoke.mock.calls[1][1].body.currency).toBe("USD");
+  });
+
+  it("does not silently replace an unavailable wallet checkout with Paystack", async () => {
+    invoke.mockResolvedValue(httpError(503, "Payment service unavailable"));
+    await expect(initializeCheckout({ currency: "EUR", course_ids: ["course"], wallet_checkout: true })).rejects.toThrow();
+    expect(invoke.mock.calls.map(call => call[0])).toEqual(["stripe-cart-initialize", "stripe-cart-initialize"]);
+  });
+
+  it("opens local-currency international wallet checkout without changing provider", async () => {
+    invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/wallet", currency: "EUR", total: 300 }, error: null });
+    expect((await initializeCheckout({ currency: "EUR", course_id: "course", wallet_checkout: true })).currency).toBe("EUR");
+    expect(invoke.mock.calls[0][0]).toBe("stripe-initialize");
+    expect(invoke).toHaveBeenCalledTimes(1);
+  });
+
   it("uses the server router when deployed", async () => {
     invoke.mockResolvedValueOnce({ data: { authorization_url: "https://checkout.stripe.com/test", currency: "EUR", total: 300 }, error: null });
     expect((await initializeCheckout({ currency: "EUR", course_ids: ["course"] })).currency).toBe("EUR");

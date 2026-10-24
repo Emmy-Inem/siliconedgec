@@ -24,7 +24,7 @@ export function useCheckoutRedirect() {
         <AlertDialogHeader>
           <AlertDialogTitle>Continue in USD</AlertDialogTitle>
           <AlertDialogDescription>
-            Payment in your local currency is currently unavailable. You can continue securely in USD.
+            This payment option is available in USD. Review the total before continuing securely.
             {pending && <span className="block mt-3 font-semibold">Total: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(pending.total)} USD</span>}
           </AlertDialogDescription>
         </AlertDialogHeader>

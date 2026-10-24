@@ -1,5 +1,6 @@
 import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
 import { initializeCheckout } from "@/lib/initialize-checkout";
+import { WalletCheckoutButton } from "@/components/WalletCheckoutButton";
 import { readFunctionError } from "@/lib/function-error";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -195,7 +196,7 @@ export default function Cart() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const handleCheckout = () => {
+  const handleCheckout = (walletCheckout = false) => {
     if (!user && !publicAccess) { navigate("/sign-in"); return; }
     if (!user && publicAccess) {
       toast({ title: "Sign in to checkout", description: "Public access lets you browse — sign in to complete a purchase." });
@@ -203,10 +204,10 @@ export default function Cart() {
       return;
     }
     if (finalTotal === 0) { handleFreeEnroll(); return; }
-    handlePaidCheckout();
+    handlePaidCheckout(walletCheckout);
   };
 
-  const handlePaidCheckout = async () => {
+  const handlePaidCheckout = async (walletCheckout = false) => {
     setProcessing(true);
     try {
       const { getStoredUtmParams } = await import("@/hooks/useUtmTracking");
@@ -233,6 +234,7 @@ export default function Cart() {
       });
 
       const data = await initializeCheckout({
+          wallet_checkout: walletCheckout,
           course_ids: items.map((i) => i.course_id),
           currency,
           callback_url: `${window.location.origin}/cart`,
@@ -469,10 +471,13 @@ export default function Cart() {
                   </div>
 
 
+                  {finalTotal > 0 && (
+                    <WalletCheckoutButton onCheckout={() => handleCheckout(true)} disabled={!ready} processing={processing} />
+                  )}
                   <Button
                     size="lg"
                     className="w-full gap-2"
-                    onClick={handleCheckout}
+                    onClick={() => handleCheckout()}
                     disabled={processing || !ready}
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}

@@ -1,5 +1,6 @@
 import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
 import { initializeCheckout } from "@/lib/initialize-checkout";
+import { WalletCheckoutButton } from "@/components/WalletCheckoutButton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -141,7 +142,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
     setPromoError("");
   };
 
-  const handlePay = async () => {
+  const handlePay = async (walletCheckout = false) => {
     if (!user) {
       toast({
         title: "Sign in required",
@@ -167,6 +168,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       const utm = getStoredUtmParams();
       
       const data = await initializeCheckout({
+          wallet_checkout: walletCheckout,
           course_id: courseId,
           currency,
           promo_code_id: appliedPromo?.id ?? null,
@@ -328,7 +330,10 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                     Available cards, bank payments and wallets appear automatically at checkout where supported.
                   </p>
                 </div>
-                <Button className="w-full gap-2" size="lg" onClick={handlePay} disabled={processing || checkingEnrollment || !ready}>
+                {finalPrice > 0 && (
+                  <WalletCheckoutButton onCheckout={() => handlePay(true)} disabled={checkingEnrollment || !ready} processing={processing} />
+                )}
+                <Button className="w-full gap-2" size="lg" onClick={() => handlePay()} disabled={processing || checkingEnrollment || !ready}>
                   {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                   {processing
                     ? "Redirecting..."
