@@ -13,3 +13,4 @@
 - [x] Assign Sophie Bennett to the AI course, standardize its title, and finish verifying instructor attribution and genuine statistics.
 - [x] Obtain publishing authorization and request deployment of the verified course corrections and cost optimizations.
 - [ ] Measure running-hour changes after deployment (awaiting confirmed deployment and a comparable post-deployment observation window).
+- [ ] Activate existing native Apple Pay / Google Pay on cart and single-course checkout, verify domain and routing, and publish after validation without making a live charge.
