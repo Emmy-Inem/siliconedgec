@@ -7,7 +7,7 @@ import { initializeNativeWalletCheckout, type NativeWalletSession, type WalletCh
 
 const fallback = <p className="text-xs text-center text-muted-foreground">Continue below for cards and available payment methods.</p>;
 
-function WalletButtons({ session, disabled, onProcessingChange }: { session: NativeWalletSession; disabled?: boolean; onProcessingChange?: (processing: boolean) => void }) {
+function WalletButtons({ session, requestedCurrency, disabled, onProcessingChange }: { session: NativeWalletSession; requestedCurrency: string; disabled?: boolean; onProcessingChange?: (processing: boolean) => void }) {
   const state = useCheckoutElements();
   const [available, setAvailable] = useState(false);
   const [error, setError] = useState("");
@@ -17,6 +17,7 @@ function WalletButtons({ session, disabled, onProcessingChange }: { session: Nat
   return (
     <div className="space-y-2">
       {available && <p className="text-sm text-center font-medium">
+        {session.currency !== requestedCurrency && <span className="block text-xs text-muted-foreground">{requestedCurrency} wallet payment unavailable. Charged in {session.currency}.</span>}
         Wallet total: {new Intl.NumberFormat(undefined, { style: "currency", currency: session.currency }).format(session.total)} {session.currency}
       </p>}
       <div aria-hidden={!available} className={available ? undefined : "h-0 overflow-hidden invisible"} {...(disabled || confirming ? { inert: "" } : {})}>
@@ -76,6 +77,6 @@ export default function NativeWalletCheckout({ request, userId, disabled, onProc
   const stripe = useMemo(() => config ? loadStripe(config) : null, [config]);
   if (!stripe || !session) return fallback;
   return <CheckoutElementsProvider key={session.sessionId} stripe={stripe} options={{ clientSecret: session.clientSecret }}>
-    <WalletButtons session={session} disabled={disabled} onProcessingChange={onProcessingChange} />
+    <WalletButtons session={session} requestedCurrency={request.currency} disabled={disabled} onProcessingChange={onProcessingChange} />
   </CheckoutElementsProvider>;
 }
