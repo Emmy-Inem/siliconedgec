@@ -30,6 +30,7 @@ describe("official wallet checkout", () => {
   it("shows the confirmed USD total next to the eligible official button before any payment", async () => {
     render(<NativeWalletCheckout request={request} userId="user" />);
     expect(await screen.findByText(/Wallet total:.*240.12.*USD/)).toBeInTheDocument();
+    expect(screen.getByText("EUR wallet payment unavailable. Charged in USD.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Official Google Pay" })).toBeVisible();
     expect(mocks.confirm).not.toHaveBeenCalled();
   });

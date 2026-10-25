@@ -8,3 +8,4 @@
 - Keep passive internal analytics gated before authentication and database work on preview hosts and crawlers; real submissions remain eligible so testing cannot discard genuine leads.
 - Cache public settings and homepage content with explicit freshness and retention windows, with admin-save invalidation preserved, to avoid redundant reads without hiding saved changes.
 - Keep course instructor identity sourced from saved assignments, not static content or randomly chosen portraits; unassigned courses stay unattributed so fallback content cannot impersonate an instructor.
+- Keep native wallet checkout on server-priced Checkout Elements sessions and validate session ownership, currency, totals, and the complete order set before fulfillment; verify webhook events against Stripe to prevent forged callbacks.
