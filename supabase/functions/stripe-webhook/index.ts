@@ -3,6 +3,7 @@ import { stripePaymentState } from "../_shared/payment-routing.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { getStripeSecretKey, retrieveStripeCheckoutSession } from "../_shared/stripe.ts";
+import { stripeSessionMatchesOrders } from "../_shared/stripe-order-validation.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -52,6 +53,12 @@ Deno.serve(async (req) => {
               .or(`stripe_session_id.eq.${sessionId},reference.like.${clientRef}--%`);
 
             if (orders && orders.length > 0) {
+              if (!stripeSessionMatchesOrders(verifiedSession, orders)) {
+                console.error("[Stripe Webhook] Cart session/order mismatch, fulfillment skipped", { sessionId, clientRef });
+                return new Response(JSON.stringify({ received: true }), {
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+              }
               const courseIds: string[] = [];
               for (const o of orders) {
                 if (o.status !== "completed") {
@@ -77,6 +84,12 @@ Deno.serve(async (req) => {
               .maybeSingle();
 
             if (order) {
+              if (!stripeSessionMatchesOrders(verifiedSession, [order])) {
+                console.error("[Stripe Webhook] Session/order mismatch, fulfillment skipped", { sessionId, clientRef });
+                return new Response(JSON.stringify({ received: true }), {
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                });
+              }
               if (order.status !== "completed") {
                 await supabase.from("orders").update({
                   status: "completed",
