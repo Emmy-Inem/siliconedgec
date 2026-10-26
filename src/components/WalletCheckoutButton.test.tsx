@@ -7,10 +7,9 @@ vi.mock("./NativeWalletCheckout", () => ({ default: () => <div>Official wallet i
 const request = { currency: "USD", course_id: "course", callback_url: "https://siliconedgec.com/cart", cancel_url: "https://siliconedgec.com/cart" };
 
 describe("regional checkout options", () => {
-  it.each(["NGN", "GHS", "KES", "ZAR", "XOF", "EGP"])("offers local %s checkout without a Stripe wallet detour", (currency) => {
-    render(<WalletCheckoutButton currency={currency} ready request={{ ...request, currency }} userId="user" />);
-    expect(screen.getByText("Local payment options")).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(`region in ${currency}`))).toBeInTheDocument();
+  it.each(["NGN", "GHS", "KES", "ZAR", "XOF", "EGP"])("routes %s checkout through the standard button without extra labels", (currency) => {
+    const { container } = render(<WalletCheckoutButton currency={currency} ready request={{ ...request, currency }} userId="user" />);
+    expect(container).toBeEmptyDOMElement();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
