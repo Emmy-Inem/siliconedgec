@@ -17,8 +17,8 @@ describe("native wallet sessions", () => {
     expect(url.searchParams.get("reference")).toBe("order");
     expect(url.searchParams.get("stripe")).toBe("1");
   });
-  it.each(["NGN", "GHS", "KES", "ZAR", "XOF", "EGP"])("never creates Stripe wallet sessions for local %s checkout", async (currency) => {
-    await expect(initializeNativeWalletCheckout({ ...request, currency })).rejects.toThrow("local checkout");
+  it.each(["NGN", "GHS", "KES", "ZAR", "XOF", "EGP"])("never creates Stripe wallet sessions for %s checkout", async (currency) => {
+    await expect(initializeNativeWalletCheckout({ ...request, currency })).rejects.toThrow("not supported");
     expect(invoke).not.toHaveBeenCalled();
   });
   it("falls back to a clearly identified USD session when local initialization is unavailable", async () => {
