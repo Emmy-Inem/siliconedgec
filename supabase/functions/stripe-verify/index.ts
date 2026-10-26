@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { safeErrorResponse } from "../_shared/errors.ts";
 import { getStripeSecretKey, retrieveStripeCheckoutSession } from "../_shared/stripe.ts";
+import { stripeSessionMatchesOrders } from "../_shared/stripe-order-validation.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -70,6 +71,15 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ verified: false, message: "Payment has not been completed." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Session ownership, currency, and totals must match the stored order before fulfillment.
+    if (!stripeSessionMatchesOrders(session, [order])) {
+      console.error("Stripe session/order mismatch", { session_id: session.id, order_id: order.id });
+      return new Response(
+        JSON.stringify({ verified: false, message: "Payment details could not be matched to this order. Please contact support." }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
