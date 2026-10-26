@@ -13,11 +13,11 @@ describe("regional checkout options", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it.each(["EUR", "GBP", "USD", "JPY"])("mounts official wallets for international %s checkout", async (currency) => {
+  it.each(["EUR", "GBP", "USD", "JPY"])("mounts official wallets for %s checkout without region labels", async (currency) => {
     render(<WalletCheckoutButton currency={currency} ready request={{ ...request, currency }} userId="user" />);
     expect(await screen.findByText("Official wallet integration")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Apple Pay or Google Pay" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/NGN|naira/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/NGN|naira|international|local payment/i)).not.toBeInTheDocument();
   });
 
   it("waits for the visitor's pricing region before offering a payment method", () => {
