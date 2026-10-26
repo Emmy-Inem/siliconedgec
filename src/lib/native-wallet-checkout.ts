@@ -23,7 +23,7 @@ export interface NativeWalletSession {
 }
 
 export async function initializeNativeWalletCheckout(body: WalletCheckoutRequest): Promise<NativeWalletSession> {
-  if (usesLocalPaymentOptions(body.currency)) throw new Error("Please use local checkout.");
+  if (usesLocalPaymentOptions(body.currency)) throw new Error("This currency is not supported for wallet checkout.");
   const currencies = body.currency === "USD" ? ["USD"] : [body.currency, "USD"];
   for (const currency of currencies) {
     const { data, error } = await supabase.functions.invoke(

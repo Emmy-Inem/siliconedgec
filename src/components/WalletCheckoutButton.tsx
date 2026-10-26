@@ -14,22 +14,11 @@ interface WalletCheckoutButtonProps {
   processing?: boolean;
 }
 
-/** Local markets keep their preferred provider; eligible international devices get official wallets. */
+/** NGN checkouts route through the standard checkout button; other currencies also offer official device wallets when eligible. */
 export function WalletCheckoutButton({ currency, ready, request, userId, disabled, processing, onProcessingChange }: WalletCheckoutButtonProps) {
-  if (!ready) return null;
-  if (usesLocalPaymentOptions(currency)) {
-    return (
-      <div className="space-y-1 text-center">
-        <p className="text-sm font-medium">Local payment options</p>
-        <p className="text-xs text-muted-foreground">
-          Continue below to see the payment methods available for your region in {currency}.
-        </p>
-      </div>
-    );
-  }
+  if (!ready || usesLocalPaymentOptions(currency)) return null;
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-center">International payment options</p>
       {userId && <Suspense fallback={null}>
         <NativeWalletCheckout request={request} userId={userId} disabled={disabled || processing} onProcessingChange={onProcessingChange} />
       </Suspense>}
