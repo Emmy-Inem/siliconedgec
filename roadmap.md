@@ -12,5 +12,5 @@
 - [x] Verify the approved passive-tracking and content-cache cost optimizations with tests and the preview.
 - [x] Assign Sophie Bennett to the AI course, standardize its title, and finish verifying instructor attribution and genuine statistics.
 - [x] Obtain publishing authorization and request deployment of the verified course corrections and cost optimizations.
-- [ ] Measure running-hour changes after deployment (awaiting confirmed deployment and a comparable post-deployment observation window).
-- [ ] Activate existing native Apple Pay / Google Pay on cart and single-course checkout, verify domain and routing, and publish after validation without making a live charge.
+- [ ] Measure running-hour changes after deployment (awaiting a clean post-deployment full-day window; Oct 13–26 partial window overlaps pre-change days and shows no reduction yet).
+- [ ] Native Apple Pay / Google Pay checkout: order/session validation now wired into stripe-verify, stripe-cart-verify, and stripe-webhook and deployed; wallet buttons live on checkout. Remaining: Apple Pay/Google Pay domain registration in the Stripe account is unverified — Stripe denied domain-status access, so it must be confirmed in the Stripe dashboard (blocker: Stripe account access).
