@@ -23,13 +23,16 @@ describe("shouldSkipPassiveEvent", () => {
   it("always records real leads, even on preview", () => {
     expect(shouldSkipPassiveEvent("business_lead", "id-preview--abc.lovable.app", UA)).toBe(false);
   });
-  it.each(["pageview", "auth_signin_view", "auth_signup_view", "auth_forgot_password_view", "auth_reset_password_view"])(
+  it.each(["pageview", "page_visit", "auth_signin_view", "auth_signup_view", "auth_forgot_password_view", "auth_reset_password_view"])(
     "skips %s on localhost", (formType) => {
       expect(shouldSkipPassiveEvent(formType, "localhost", UA)).toBe(true);
     },
   );
   it("keeps live campaign visits eligible for attribution", () => {
     expect(shouldSkipPassiveEvent("page_visit", "siliconedgec.com", UA)).toBe(false);
+  });
+  it("excludes campaign visits from crawlers", () => {
+    expect(shouldSkipPassiveEvent("page_visit", "siliconedgec.com", "Googlebot")).toBe(true);
   });
   it("keeps genuine submissions eligible even with a crawler-like user agent", () => {
     expect(shouldSkipPassiveEvent("business_lead", "localhost", "HeadlessChrome")).toBe(false);

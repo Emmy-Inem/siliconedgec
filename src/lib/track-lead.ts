@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredUtmParams } from "@/hooks/useUtmTracking";
 import { getCachedVisitorGeo, getVisitorGeo } from "@/lib/geo";
 import { z } from "zod";
+import { analyticsVisitorId } from "@/lib/audience-analytics";
 
 interface TrackLeadOptions {
   formType: string;
@@ -46,6 +47,7 @@ function clampString(v: unknown, max: number): string | null {
 /** Passive navigation events (not real form submissions). */
 const PASSIVE_FORM_TYPES = new Set([
   "pageview",
+  "page_visit",
   "auth_signin_view",
   "auth_signup_view",
   "auth_forgot_password_view",
@@ -80,16 +82,21 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
   const utm = getStoredUtmParams();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Best-effort visitor geo — never block the call if the lookup hasn't
-  // resolved yet. We fire-and-forget the warm-up and use whatever's cached.
+  // Allow the shared first-visit geo lookup a bounded window. Never block UI.
   let geo = getCachedVisitorGeo();
   if (!geo) {
-    // Kick off the lookup so the *next* event has it; don't await on first call.
-    void getVisitorGeo();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    geo = await Promise.race([
+      getVisitorGeo().catch(() => null),
+      new Promise<null>(resolve => { timer = setTimeout(() => resolve(null), 1200); }),
+    ]);
+    clearTimeout(timer);
   }
 
   // Normalize course id key + strip duplicate utm_* fields callers may have added
   const normalized: Record<string, unknown> = { ...formData };
+  normalized.visitor_id = analyticsVisitorId();
+  normalized.tracking_host = window.location.hostname;
   if (normalized.courseId && !normalized.course_id) {
     normalized.course_id = normalized.courseId;
   }

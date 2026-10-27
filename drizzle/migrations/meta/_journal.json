@@ -29,6 +29,13 @@
       "when": 1790924135331,
       "tag": "0003_admin_user_emails",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793083952464,
+      "tag": "0004_simple_audience_analytics",
+      "breakpoints": true
     }
   ]
 }

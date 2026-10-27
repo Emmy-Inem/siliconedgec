@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useUtmTracking, getStoredUtmParams } from "@/hooks/useUtmTracking";
+import { useUtmTracking } from "@/hooks/useUtmTracking";
 import { trackLead } from "@/lib/track-lead";
 import { gaPageview, gaSetUserId } from "@/lib/analytics";
 import { getVisitorGeo } from "@/lib/geo";
@@ -18,21 +18,12 @@ const AUTH_ROUTE_FORM_TYPES: Record<string, string> = {
   "/reset-password": "auth_reset_password_view",
 };
 
-/** Captures UTM params from URL on every route change and stores them in localStorage.
- *  - Records a high-signal `page_visit` lead row whenever UTM params are present in the URL
- *    (used by the marketing funnels + UTM coverage QA dashboard).
- *  - Records a lightweight `pageview` event on every route change (de-duped per session)
- *    so the QA dashboard can confirm tracking fires across the whole SPA, including
- *    /courses, /courses/:id, /verify/:code, /enroll callbacks, etc.
- *  - Records a discriminated `auth_*_view` event for /sign-in, /sign-up,
- *    /forgot-password and /reset-password so the auth funnel can be measured
- *    independently of generic pageviews and joined to UTM attribution. */
+/** Capture attribution and one internal/Google view per public navigation.
+ * Repeated consecutive renders do not count as visits; actual revisits do. */
 export function UtmTracker() {
   useUtmTracking();
   const location = useLocation();
-  const tracked = useRef<string | null>(null);
-  const seenPaths = useRef<Set<string>>(new Set());
-  const authTracked = useRef<Set<string>>(new Set());
+  const lastInternalPath = useRef<string | null>(null);
   const lastGaPath = useRef<string | null>(null);
 
   // Warm geo lookup + push GA4 user_id once per session (so reports can join
@@ -64,97 +55,25 @@ export function UtmTracker() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
-    if (/^\/admin(\/|$)/.test(location.pathname)) return;
-    const params = new URLSearchParams(location.search);
-    const hasUtm = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].some(
-      (k) => params.get(k)
-    );
-
-    if (hasUtm) {
-      // Build a unique key so we only track once per unique UTM+path combo per session
-      const key = `${params.get("utm_source") ?? ""}|${params.get("utm_campaign") ?? ""}|${location.pathname}`;
-      if (tracked.current !== key) {
-        tracked.current = key;
-        // Small delay to let useUtmTracking store the params first
-        const utmTimer = setTimeout(() => {
-          const utm = getStoredUtmParams();
-          trackLead({
-            formType: "page_visit",
-            formData: {
-              landing_page: location.pathname,
-              utm_source: utm.utm_source,
-              utm_medium: utm.utm_medium,
-              utm_campaign: utm.utm_campaign,
-              utm_content: utm.utm_content,
-              utm_term: utm.utm_term,
-              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-              language: typeof navigator !== "undefined" ? navigator.language : null,
-              screen_w: typeof window !== "undefined" ? window.innerWidth : null,
-            },
-          });
-        }, 100);
-        // Also record a pageview so non-UTM follow-up navigations are still measured
-        seenPaths.current.add(location.pathname);
-        return () => clearTimeout(utmTimer);
-      }
-    }
-
-    // Auth funnel events — fire once per (path + recovery flag) per session.
-    // We intentionally do NOT include the recovery token itself in form_data
-    // (it would be a credential leak); we only record whether one is present.
-    const authFormType = AUTH_ROUTE_FORM_TYPES[location.pathname];
-    if (authFormType) {
-      const hash = window.location.hash || "";
-      const hasRecoveryToken = hash.includes("type=recovery") || hash.includes("access_token");
-      const authKey = `${location.pathname}|${hasRecoveryToken ? "rec" : "std"}`;
-      if (!authTracked.current.has(authKey)) {
-        authTracked.current.add(authKey);
-        // Carry the next-redirect target so we can attribute completed signups
-        // back to the originating CTA (e.g. ?next=/courses/aws-cloud-practitioner).
-        const search = new URLSearchParams(location.search);
-        const nextParam = search.get("next") || search.get("redirect") || null;
-        const emailHint = search.get("email"); // forgot-password may carry a prefill
-        const authTimer = setTimeout(() => {
-          trackLead({
-            formType: authFormType,
-            formData: {
-              landing_page: location.pathname,
-              next: nextParam,
-              has_recovery_token: hasRecoveryToken || undefined,
-              email_hint_present: emailHint ? true : undefined,
-              referrer: document.referrer || null,
-              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-            },
-          }).catch(() => {});
-        }, 120);
-        // Don't double-count this path as a generic pageview
-        seenPaths.current.add(location.pathname);
-        return () => clearTimeout(authTimer);
-      }
-      // Already tracked this auth path this session — fall through to skip pageview
-      seenPaths.current.add(location.pathname);
+    if (/^\/admin(\/|$)/.test(location.pathname)) {
+      lastInternalPath.current = null;
       return;
     }
-
-    // Generic pageview tracking — once per pathname per session, skips admin to avoid noise
-    if (location.pathname.startsWith("/admin")) return;
-    if (seenPaths.current.has(location.pathname)) return;
-    seenPaths.current.add(location.pathname);
-    const pvTimer = setTimeout(() => {
-      trackLead({
-        formType: "pageview",
-        formData: {
-          path: location.pathname,
-          search: location.search || null,
-          referrer: document.referrer || null,
-          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-          language: typeof navigator !== "undefined" ? navigator.language : null,
-          screen_w: typeof window !== "undefined" ? window.innerWidth : null,
-        },
-      }).catch(() => {/* swallow — tracking must never block UX */});
+    const key = analyticsPagePath(location.pathname, location.search);
+    if (lastInternalPath.current === key) return;
+    const timer = setTimeout(() => {
+      lastInternalPath.current = key;
+      const params = new URLSearchParams(location.search);
+      const hasUtm = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].some(k => params.get(k));
+      // One row per navigation, including revisits. Auth view types remain
+      // available for funnels, without recording a second generic pageview.
+      void trackLead({
+        formType: AUTH_ROUTE_FORM_TYPES[location.pathname] || (hasUtm ? "page_visit" : "pageview"),
+        formData: { path: location.pathname },
+      }).catch(() => {});
     }, 150);
-    return () => clearTimeout(pvTimer);
-  }, [location.search, location.pathname, location.hash]);
+    return () => clearTimeout(timer);
+  }, [location.pathname, location.search]);
 
   return null;
 }

@@ -4418,6 +4418,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_audience_analytics: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       admin_create_installment_plan: {
         Args: {
           p_access_days: number
@@ -4657,6 +4661,7 @@ export type Database = {
         Args: { _order_id: string }
         Returns: undefined
       }
+      record_analytics_login: { Args: never; Returns: undefined }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       request_affiliate_payout: {
         Args: never
