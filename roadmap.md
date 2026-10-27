@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Audit website analytics accuracy and simplify the overview with date-filtered signups, visitors, logins, top pages, and countries.
+
 - [x] Reduce the globally heavy purple palette without changing layouts, content, or functionality.
 - [x] Resolve all current preview typecheck errors and verify the updated site.
 - [x] Audit current Lovable Cloud database usage and identify the remaining major cost drivers.
