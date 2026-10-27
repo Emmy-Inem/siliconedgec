@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminRole, ROLE_RANK, StaffRole } from "@/lib/admin-permissions";
@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [adminRole, setAdminRole] = useState<AdminRole>(null);
+  const recordedLoginUser = useRef<string | null>(null);
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -69,6 +70,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
+          if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && recordedLoginUser.current !== session.user.id) {
+            recordedLoginUser.current = session.user.id;
+            // Run outside the auth callback; the server deduplicates and uses
+            // the authenticated session's creation time, never page-load time.
+            setTimeout(() => { void supabase.rpc("record_analytics_login"); }, 0);
+          }
           checkAdminRole(session.user.id).finally(() => setLoading(false));
           // After OAuth callback, the user often lands on "/" (default OAuth
           // redirect_uri). If a post-auth destination was stashed by the
@@ -89,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } catch {}
           }
         } else {
+          recordedLoginUser.current = null;
           setAdminRole(null);
           setLoading(false);
         }
