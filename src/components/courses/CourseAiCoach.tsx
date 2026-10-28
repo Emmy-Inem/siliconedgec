@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LiveChat } from "@/components/LiveChat";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
@@ -84,7 +83,6 @@ const GOAL_OPTIONS = [
 export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachProps) {
   const reduceMotion = useReducedMotion();
   const [chatOpen, setChatOpen] = useState(false);
-  const { data: settings } = useSiteSettings();
   const whatsappUrl = COACH_WHATSAPP_URL;
   const { pathname } = useLocation();
   const pageContext = getCoachContext(pathname);
@@ -406,9 +404,6 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                     <Button variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs" onClick={() => openChatWithQuestion("I need help from Silicon Edge Support.")}>
                       <span className="flex items-center gap-2"><HelpCircle className="h-3.5 w-3.5" /> Silicon Edge Support</span><ChevronRight className="h-3.5 w-3.5" />
                     </Button>
-                    {whatsappUrl && <Button asChild className="w-full justify-between h-auto px-2.5 py-2 text-xs bg-[#25D366] hover:bg-[#1da851] !text-white">
-                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><span className="flex items-center gap-2"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span><ChevronRight className="h-3.5 w-3.5" /></a>
-                    </Button>}
                   </div>
                 </>
               )}

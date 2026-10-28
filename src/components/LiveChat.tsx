@@ -353,7 +353,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                         <p className="text-sm text-muted-foreground">{coach.greeting}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
                           {coach.suggestions.map(q => (
-                            <button key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
+                            <Button variant="ghost" key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
                               {q}
                             </Button>
                           ))}

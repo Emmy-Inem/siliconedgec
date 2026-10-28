@@ -7,5 +7,6 @@ export function AiCoach() {
   const { pathname } = useLocation();
   const match = matchPath("/courses/:id/*", pathname);
   const { data: course } = useCourse(match?.params.id);
+  if (pathname.startsWith("/admin")) return null;
   return <CourseAiCoach courseTitle={course?.title} courseSlug={course?.slug} />;
 }

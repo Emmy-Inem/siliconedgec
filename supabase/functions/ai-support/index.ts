@@ -34,7 +34,7 @@ async function buildContext(userId: string | null, question: string, page: { pat
     knowledgeCache = { documents: await loadPublicCoachDocuments(admin), expires: Date.now() + 5 * 60 * 1000 };
   }
   const path = typeof page?.path === "string" && page.path.startsWith("/") ? page.path.split(/[?#]/)[0].slice(0, 200) : "/";
-  const documents = rankCoachDocuments(knowledgeCache.documents, question, path);
+  const documents = rankCoachDocuments(knowledgeCache.documents, `${question} ${String(page?.title ?? "").slice(0, 200)}`, path);
   let personal = "Guest visitor. No account records accessed.";
   if (userId) {
     const { data } = await admin.from("enrollments").select("course_id,payment_status,progress_percentage").eq("user_id", userId).limit(20);
