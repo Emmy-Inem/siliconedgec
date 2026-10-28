@@ -73,7 +73,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
       onOpenChange?.(true);
       if (customEvent?.detail?.initialQuestion) {
         const q = customEvent.detail.initialQuestion;
-        assistant.send(q, Boolean(customEvent.detail.resetToAi));
+        void assistant.send(q, Boolean(customEvent.detail.resetToAi)).then(sent => { if (sent === false) setDraft(q); });
       }
     };
     const close = () => { setOpen(false); onOpenChange?.(false); };
@@ -251,7 +251,8 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
     if (!content) return;
     setDraft("");
     if (!escalated) {
-      await assistant.send(content);
+      const sent = await assistant.send(content);
+      if (sent === false) setDraft(content);
       return;
     }
     const convId = conversationId ?? (await ensureConversation());
@@ -351,6 +352,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                       <div className="text-center pt-6">
                         <LifeBuoy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">{coach.greeting}</p>
+                        {!user && <p className="mt-2 text-xs text-muted-foreground">Ask two questions free. Create an account or sign in to keep chatting.</p>}
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
                           {coach.suggestions.map(q => (
                             <Button variant="ghost" key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">

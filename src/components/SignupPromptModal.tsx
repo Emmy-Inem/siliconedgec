@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Reason = "enroll" | "register" | "bookmark" | "review" | "cart";
+type Reason = "enroll" | "register" | "bookmark" | "review" | "cart" | "coach";
 
 /** Signup appears only after an explicit account action. */
 export function SignupPromptModal() {
@@ -23,8 +23,8 @@ export function SignupPromptModal() {
   // Listen for explicit requests (Enroll / Add to cart taps from anon users).
   useEffect(() => {
     const handler = (e: Event) => {
-      if (user || location.pathname === "/for-businesses") return;
       const detail = (e as CustomEvent).detail as { reason?: Reason } | undefined;
+      if (user || (location.pathname === "/for-businesses" && detail?.reason !== "coach")) return;
       if (detail?.reason === ("auto" as Reason)) return;
       setReason(detail?.reason ?? "enroll");
       setOpen(true);
@@ -43,6 +43,10 @@ export function SignupPromptModal() {
   const qs = `?redirect=${encodeURIComponent(dest)}`;
 
   const copy: Record<Reason, { title: string; desc: string }> = {
+    coach: {
+      title: "Keep chatting with your AI Coach",
+      desc: "You've used your two free questions. Create a free account or sign in to ask your next question.",
+    },
     enroll: {
       title: "Create an account to enroll",
       desc: "Sign up in seconds to enroll in this course, track progress, and earn your certificate.",

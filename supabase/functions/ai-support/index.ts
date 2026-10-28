@@ -86,6 +86,12 @@ Deno.serve(async (req) => {
     "Access-Control-Expose-Headers": "X-Ticket-Id, X-Ticket-Number, X-Conversation-Id",
   });
 
+  let guestReservation: { visitorId: string; requestId: string } | null = null;
+  const releaseGuestQuestion = async () => {
+    if (!guestReservation) return;
+    await admin.from("guest_coach_questions").delete().eq("visitor_id", guestReservation.visitorId).eq("request_id", guestReservation.requestId);
+    guestReservation = null;
+  };
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace("Bearer ", "");
@@ -104,10 +110,12 @@ Deno.serve(async (req) => {
     });
     if (!rl.allowed) return rateLimitResponse(rl.retryAfter, corsHeaders);
 
-    const { messages: rawMessages, requestHuman, pageContext } = await req.json() as {
+    const { messages: rawMessages, requestHuman, pageContext, guestId, requestId } = await req.json() as {
       messages: { role: string; content: string }[];
       requestHuman?: boolean;
       pageContext?: { path?: string; title?: string; currency?: string };
+      guestId?: string;
+      requestId?: string;
     };
 
     const messages = Array.isArray(rawMessages) ? rawMessages.filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string").slice(-16).map(m => ({ role: m.role, content: m.content.slice(0, 4000) })) : [];
@@ -140,6 +148,17 @@ Deno.serve(async (req) => {
 
     const context = await buildContext(userId, messages.filter(m => m.role === "user").at(-1)?.content ?? "", pageContext ?? {});
 
+    if (!userId) {
+      const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuid.test(guestId ?? "") || !uuid.test(requestId ?? "")) {
+        return new Response(JSON.stringify({ code: "GUEST_COACH_LIMIT", signup_required: true }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data: allowed, error } = await admin.rpc("reserve_guest_coach_question", { p_visitor_id: guestId, p_request_id: requestId });
+      if (error) throw error;
+      if (!allowed) return new Response(JSON.stringify({ code: "GUEST_COACH_LIMIT", signup_required: true }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      guestReservation = { visitorId: guestId!, requestId: requestId! };
+    }
+
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -151,6 +170,7 @@ Deno.serve(async (req) => {
     });
 
     if (!upstream.ok || !upstream.body) {
+      await releaseGuestQuestion();
       if (upstream.status === 429) return new Response(JSON.stringify({ error: "Too many requests — please try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (upstream.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Our team has been notified." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       console.error("[ai-support] upstream", upstream.status, await upstream.text());
@@ -204,6 +224,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
+    await releaseGuestQuestion();
     return safeErrorResponse(e, 500, corsHeaders, "AI Support is temporarily unavailable. Please try again.");
   }
 });

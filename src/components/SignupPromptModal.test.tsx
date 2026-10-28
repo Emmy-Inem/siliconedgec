@@ -28,6 +28,12 @@ describe("intent-based signup", () => {
     act(() => requestSignup("register"));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+  it("explains the two-question allowance when a business-page visitor explicitly asks a third AI question", () => {
+    mount("/for-businesses");
+    act(() => requestSignup("coach"));
+    expect(screen.getByText("Keep chatting with your AI Coach")).toBeInTheDocument();
+    expect(screen.getByText(/two free questions/)).toBeInTheDocument();
+  });
   it("ignores legacy automatic prompt events", () => {
     mount("/");
     act(() => window.dispatchEvent(new CustomEvent("sec:request-signup", { detail: { reason: "auto" } })));

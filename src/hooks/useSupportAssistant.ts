@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoachContext } from "@/lib/coach-context";
 import { detectVisitorCurrency } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
+import { requestSignup } from "@/components/SignupPromptModal";
+import { GUEST_COACH_LIMIT, guestCoachAnswers, guestCoachIdentity, recordGuestCoachAnswer } from "@/lib/guest-coach";
 
 export type SupportMsg = { role: "user" | "assistant"; content: string };
 
@@ -19,6 +21,7 @@ export function useSupportAssistant() {
   const [loading, setLoading] = useState(false);
   const [escalated, setEscalated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const sendingRef = useRef(false);
 
   const call = useCallback(async (body: Record<string, unknown>, signal?: AbortSignal) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -38,6 +41,17 @@ export function useSupportAssistant() {
   }, []);
 
   const send = useCallback(async (input: string, resetHistory = false) => {
+    if (!input.trim() || sendingRef.current) return false;
+    sendingRef.current = true;
+    let session;
+    try {
+      ({ data: { session } } = await supabase.auth.getSession());
+    } catch { sendingRef.current = false; return false; }
+    if (!session && guestCoachAnswers() >= GUEST_COACH_LIMIT) {
+      sendingRef.current = false;
+      requestSignup("coach");
+      return false;
+    }
     const next: SupportMsg[] = [...(resetHistory ? [] : messages), { role: "user", content: input }];
     setMessages(next);
     setLoading(true);
@@ -46,9 +60,14 @@ export function useSupportAssistant() {
     const currentRequest = abortRef.current;
 
     try {
-      const resp = await call({ messages: next }, abortRef.current.signal);
+      const resp = await call({ messages: next, ...(!session ? { guestId: guestCoachIdentity(), requestId: crypto.randomUUID() } : {}) }, abortRef.current.signal);
       if (!resp.ok || !resp.body) {
         const err = await resp.json().catch(() => ({ error: "Assistant unavailable" }));
+        if (err.code === "GUEST_COACH_LIMIT") {
+          setMessages(resetHistory ? [] : messages);
+          requestSignup("coach");
+          return false;
+        }
         toast({ title: "Assistant error", description: err.error ?? "Please try again", variant: "destructive" });
         setLoading(false);
         return;
@@ -88,6 +107,7 @@ export function useSupportAssistant() {
           }
         }
       }
+      if (!session && acc.trim()) recordGuestCoachAnswer();
       if (!currentRequest.signal.aborted && ESCALATE_RE.test(acc)) {
         ESCALATE_RE.lastIndex = 0;
         const { data: { session } } = await supabase.auth.getSession();
@@ -100,9 +120,11 @@ export function useSupportAssistant() {
             : "Use the WhatsApp button to contact our team directly — no website account is needed.",
         }]);
       }
+      return true;
     } catch (e: any) {
       if (e.name !== "AbortError") toast({ title: "Assistant error", description: e.message, variant: "destructive" });
     } finally {
+      sendingRef.current = false;
       if (abortRef.current === currentRequest) setLoading(false);
     }
   }, [messages, call]);
