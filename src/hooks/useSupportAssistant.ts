@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getCoachContext } from "@/lib/coach-context";
+import { detectVisitorCurrency } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 
 export type SupportMsg = { role: "user" | "assistant"; content: string };
@@ -27,16 +29,21 @@ export function useSupportAssistant() {
         Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       signal,
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, pageContext: {
+        ...getCoachContext(window.location.pathname),
+        title: document.querySelector("h1")?.textContent?.slice(0, 200) ?? "",
+        currency: detectVisitorCurrency(),
+      } }),
     });
   }, []);
 
-  const send = useCallback(async (input: string) => {
-    const next: SupportMsg[] = [...messages, { role: "user", content: input }];
+  const send = useCallback(async (input: string, resetHistory = false) => {
+    const next: SupportMsg[] = [...(resetHistory ? [] : messages), { role: "user", content: input }];
     setMessages(next);
     setLoading(true);
     abortRef.current?.abort();
     abortRef.current = new AbortController();
+    const currentRequest = abortRef.current;
 
     try {
       const resp = await call({ messages: next }, abortRef.current.signal);
@@ -51,6 +58,7 @@ export function useSupportAssistant() {
       let buf = "";
       let acc = "";
       const push = (chunk: string) => {
+        if (currentRequest.signal.aborted) return;
         acc += chunk;
         const shown = stripMarker(acc);
         setMessages((prev) => {
@@ -80,18 +88,22 @@ export function useSupportAssistant() {
           }
         }
       }
-      if (ESCALATE_RE.test(acc)) {
+      if (!currentRequest.signal.aborted && ESCALATE_RE.test(acc)) {
         ESCALATE_RE.lastIndex = 0;
-        setEscalated(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (currentRequest.signal.aborted) return;
+        setEscalated(Boolean(session));
         setMessages((prev) => [...prev, {
           role: "assistant",
-          content: "I've passed this to our team and opened a support ticket — you can keep typing right here and a human will reply in this chat and by email.",
+          content: session
+            ? "You can continue with our support team here, or use the WhatsApp button to contact the team directly."
+            : "Use the WhatsApp button to contact our team directly — no website account is needed.",
         }]);
       }
     } catch (e: any) {
       if (e.name !== "AbortError") toast({ title: "Assistant error", description: e.message, variant: "destructive" });
     } finally {
-      setLoading(false);
+      if (abortRef.current === currentRequest) setLoading(false);
     }
   }, [messages, call]);
 
@@ -116,7 +128,7 @@ export function useSupportAssistant() {
     }
   }, [messages, call]);
 
-  const reset = useCallback(() => { setMessages([]); setEscalated(false); }, []);
+  const reset = useCallback(() => { abortRef.current?.abort(); setMessages([]); setEscalated(false); setLoading(false); }, []);
 
   return { messages, loading, escalated, send, requestHuman, reset };
 }

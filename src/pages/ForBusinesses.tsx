@@ -107,33 +107,6 @@ export default function ForBusinesses() {
   const [submitted, setSubmitted] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
 
-  // 10-second timed pop-up (gated to localhost as requested)
-  useEffect(() => {
-    // Active in production as approved
-    if (!shouldShowStagedFeature(false)) return;
-
-    // Do not trigger if already submitted on the page or previously dismissed in this session
-    if (submitted) return;
-    try {
-      if (sessionStorage.getItem("for_business_popup_dismissed") === "true") {
-        return;
-      }
-    } catch {}
-
-    const timer = setTimeout(() => {
-      try {
-        const isDismissed = sessionStorage.getItem("for_business_popup_dismissed") === "true";
-        if (!isDismissed) {
-          setPopupOpen(true);
-        }
-      } catch {
-        setPopupOpen(true);
-      }
-    }, 10000); // exactly 10 seconds
-
-    return () => clearTimeout(timer);
-  }, [submitted]);
-
   const handleClosePopup = () => {
     setPopupOpen(false);
     try {

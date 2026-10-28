@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LiveChat } from "@/components/LiveChat";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -25,6 +25,7 @@ import {
   BookOpen,
   Bot,
 } from "lucide-react";
+import { COACH_WHATSAPP_URL, getCoachContext } from "@/lib/coach-context";
 import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
 import { COURSE_DETAIL_FAQS } from "./courseFaqs";
 
@@ -84,9 +85,9 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
   const reduceMotion = useReducedMotion();
   const [chatOpen, setChatOpen] = useState(false);
   const { data: settings } = useSiteSettings();
-  const rawWhatsApp = settings?.whatsapp_number || "";
-  const whatsappNumber = rawWhatsApp.replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber && !rawWhatsApp.toUpperCase().includes("UPDATE") ? `https://wa.me/${whatsappNumber}` : null;
+  const whatsappUrl = COACH_WHATSAPP_URL;
+  const { pathname } = useLocation();
+  const pageContext = getCoachContext(pathname);
   const subject = courseTitle || "Silicon Edge Consulting";
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [bubbleIndex, setBubbleIndex] = useState(0);
@@ -108,7 +109,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
     return sessionStorage.getItem("dismissed_ai_coach_bubble") === "true";
   });
 
-  const teasers = [
+  const courseTeasers = [
     {
       text: courseTitle ? `Not sure if ${subject} is right for you? Take a 15-sec fit check!` : "Need help choosing a course or checking your enrollment? Ask me!",
       targetView: (courseTitle ? "quiz" : "menu") as CoachView,
@@ -130,6 +131,12 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
       Icon: HelpCircle,
     },
   ];
+
+  const teasers = courseTitle ? courseTeasers : pageContext.suggestions.map(text => ({ text, targetView: "menu" as CoachView, Icon: MessageCircle }));
+
+  useEffect(() => {
+    setView("menu"); setBubbleIndex(0); setCustomQuestion(""); resetQuiz();
+  }, [pathname, courseTitle]);
 
   // Show teaser bubble after short delay & rotate messages periodically
   useEffect(() => {
@@ -281,7 +288,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                     {view === "faqs" && "Course FAQs"}
                   </h4>
                   <p className="text-[10px] text-muted-foreground truncate">
-                    {view === "menu" ? "Online • Personal Learning Advisor" : courseTitle}
+                    {view === "menu" ? "Online • Page-aware AI Coach" : courseTitle}
                   </p>
                 </div>
               </div>
@@ -295,6 +302,9 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
               </Button>
             </div>
 
+            <a href={COACH_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mx-3 mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-xs font-semibold !text-white hover:bg-[#1da851]">
+              <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+            </a>
             {/* Scrollable Body Content */}
             <div className="p-3 overflow-y-auto overscroll-contain space-y-2.5 flex-1 min-h-0">
               {view === "menu" && (
@@ -305,8 +315,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                       <Bot className="h-3.5 w-3.5" />
                     </div>
                     <div>
-                      Hello! I'm your AI Coach for{" "}
-                      <span className="font-semibold text-primary">{subject}</span>. How can I help you today?
+                      {courseTitle ? <>Hello! I'm your AI Coach for <span className="font-semibold text-primary">{subject}</span>. Ask about the skills, prerequisites and projects.</> : pageContext.greeting}
                     </div>
                   </div>
 
@@ -341,12 +350,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                       Instant AI Answers
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "What will I build?",
-                        "Do I need coding experience?",
-                        "4-week study plan",
-                        "Installment options?",
-                      ].map((prompt) => (
+                      {pageContext.suggestions.map((prompt) => (
                         <Button variant="ghost"
                           key={prompt}
                           type="button"
@@ -390,19 +394,19 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
 
                     <Button variant="ghost"
                       type="button"
-                      onClick={() => setView("faqs")}
+                      onClick={() => courseTitle ? setView("faqs") : openChatWithQuestion(pageContext.suggestions[0])}
                       className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <HelpCircle className="h-3.5 w-3.5 text-primary shrink-0" />
-                        Read the course FAQs
+                        {courseTitle ? "Read the course FAQs" : `Help with ${pageContext.label.toLowerCase()}`}
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                     <Button variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs" onClick={() => openChatWithQuestion("I need help from Silicon Edge Support.")}>
                       <span className="flex items-center gap-2"><HelpCircle className="h-3.5 w-3.5" /> Silicon Edge Support</span><ChevronRight className="h-3.5 w-3.5" />
                     </Button>
-                    {whatsappUrl && <Button asChild variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs">
+                    {whatsappUrl && <Button asChild className="w-full justify-between h-auto px-2.5 py-2 text-xs bg-[#25D366] hover:bg-[#1da851] !text-white">
                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><span className="flex items-center gap-2"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span><ChevronRight className="h-3.5 w-3.5" /></a>
                     </Button>}
                   </div>

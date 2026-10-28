@@ -12,7 +12,6 @@ import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { UtmTracker } from "@/components/UtmTracker";
 import { AffiliateTracker } from "@/components/AffiliateTracker";
-import { InfluencerSignupPrompt } from "@/components/InfluencerSignupPrompt";
 import { SignupPromptModal } from "@/components/SignupPromptModal";
 import Index from "./pages/Index";
 // Public routes are code-split to keep the initial JS bundle small and the
@@ -333,7 +332,6 @@ const App = () => (
             <CustomScripts />
             <CookieBanner />
             <GadsLabelsLoader />
-            <InfluencerSignupPrompt />
             <SignupPromptModal />
           </CartProvider>
         </AuthProvider>

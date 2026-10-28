@@ -85,7 +85,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.ai-support]
-verify_jwt = true
+verify_jwt = false
 
 [functions.support-notify]
 verify_jwt = false

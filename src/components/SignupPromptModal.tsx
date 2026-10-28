@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Dialog,
@@ -12,128 +12,30 @@ import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const DISMISSED_KEY = "sec_signup_prompt_dismissed_until";
-const DISMISS_COUNT_KEY = "sec_signup_prompt_dismiss_count";
-const AUTO_TRIGGER_MS = 5_000; // 5 seconds for first prompt
-// Escalating re-prompt schedule after each dismissal. After the array is
-// exhausted, the last interval keeps repeating until the user signs up.
-const REPROMPT_SCHEDULE_MS = [
-  60_000,       // 1 minute after 1st dismissal
-  3 * 60_000,   // 3 minutes
-  5 * 60_000,   // 5 minutes
-  10 * 60_000,  // 10 minutes thereafter
-];
+type Reason = "enroll" | "register" | "bookmark" | "review" | "cart";
 
-const getRepromptDelay = (dismissCount: number) => {
-  if (dismissCount <= 0) return REPROMPT_SCHEDULE_MS[0];
-  const idx = Math.min(dismissCount - 1, REPROMPT_SCHEDULE_MS.length - 1);
-  return REPROMPT_SCHEDULE_MS[idx];
-};
-
-type Reason = "auto" | "enroll" | "register" | "bookmark" | "review" | "cart";
-
-/**
- * Global signup CTA for unauthenticated visitors.
- * - Auto-shows after 60s on the site (24h cooldown after dismissal).
- * - Triggered immediately when any UI dispatches `sec:request-signup` —
- *   e.g. clicking Enroll / Add to cart / Bookmark without an account.
- */
+/** Signup appears only after an explicit account action. */
 export function SignupPromptModal() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState<Reason>("auto");
-  const [recheckTick, setRecheckTick] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const cooldownActive = () => {
-    try {
-      const until = Number(localStorage.getItem(DISMISSED_KEY) || 0);
-      return until > Date.now();
-    } catch { return false; }
-  };
-
+  const [reason, setReason] = useState<Reason>("enroll");
   // Listen for explicit requests (Enroll / Add to cart taps from anon users).
   useEffect(() => {
     const handler = (e: Event) => {
-      if (user) return;
+      if (user || location.pathname === "/for-businesses") return;
       const detail = (e as CustomEvent).detail as { reason?: Reason } | undefined;
+      if (detail?.reason === ("auto" as Reason)) return;
       setReason(detail?.reason ?? "enroll");
       setOpen(true);
     };
     window.addEventListener("sec:request-signup", handler as EventListener);
     return () => window.removeEventListener("sec:request-signup", handler as EventListener);
-  }, [user]);
+  }, [user, location.pathname]);
 
-  // Auto-show after 10s for anon visitors. After dismissal, re-prompt
-  // automatically once the cooldown elapses.
-  useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (loading || user) return;
-    if (location.pathname.startsWith("/sign-in") || location.pathname.startsWith("/sign-up") ||
-        location.pathname.startsWith("/reset-password") || location.pathname.startsWith("/forgot-password") ||
-        location.pathname.startsWith("/r/")) return;
-    if (cooldownActive()) {
-      let until = 0;
-      try { until = Number(localStorage.getItem(DISMISSED_KEY) || 0); } catch {}
-      const wait = Math.max(0, until - Date.now()) + 50;
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        if (!user && !cooldownActive()) {
-          setReason("auto");
-          setOpen(true);
-        } else {
-          setRecheckTick((x) => x + 1);
-        }
-      }, wait);
-    } else {
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        if (!user && !cooldownActive()) {
-          setReason("auto");
-          setOpen(true);
-        }
-      }, AUTO_TRIGGER_MS);
-    }
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [user, loading, location.pathname, recheckTick]);
+  useEffect(() => { setOpen(false); }, [user, location.pathname]);
 
-  // Kill-switch: if user logs in while a timer is pending, immediately
-  // close the modal and cancel any scheduled auto-show.
-  useEffect(() => {
-    if (user) {
-      setOpen(false);
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    }
-  }, [user]);
-
-  const handleClose = (next: boolean) => {
-    setOpen(next);
-    if (!next) {
-      let count = 0;
-      try {
-        count = Number(localStorage.getItem(DISMISS_COUNT_KEY) || 0) + 1;
-        localStorage.setItem(DISMISS_COUNT_KEY, String(count));
-        localStorage.setItem(
-          DISMISSED_KEY,
-          String(Date.now() + getRepromptDelay(count)),
-        );
-      } catch {}
-      // Schedule the next auto re-prompt after the cooldown elapses.
-      setRecheckTick((x) => x + 1);
-    }
-  };
+  const handleClose = (next: boolean) => setOpen(next);
 
   if (user) return null;
 
@@ -141,10 +43,6 @@ export function SignupPromptModal() {
   const qs = `?redirect=${encodeURIComponent(dest)}`;
 
   const copy: Record<Reason, { title: string; desc: string }> = {
-    auto: {
-      title: "Unlock the full Silicon Edge experience",
-      desc: "Create a free account to save your favourite courses, enroll, and earn verifiable certificates.",
-    },
     enroll: {
       title: "Create an account to enroll",
       desc: "Sign up in seconds to enroll in this course, track progress, and earn your certificate.",

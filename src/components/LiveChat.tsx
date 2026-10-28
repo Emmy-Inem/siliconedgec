@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "react-router-dom";
 import { useSupportAssistant } from "@/hooks/useSupportAssistant";
+import { COACH_WHATSAPP_URL, getCoachContext } from "@/lib/coach-context";
 import { MarkdownView } from "@/components/ai/MarkdownView";
 
 interface Message {
@@ -35,6 +36,12 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const assistant = useSupportAssistant();
+  const coach = getCoachContext(location.pathname);
+
+  useEffect(() => {
+    assistant.reset();
+    setDraft("");
+  }, [location.pathname]);
 
   // Hide chat widget on admin routes — it conflicts with the admin
   // sidebar trigger (mobile) and clutters the workspace.
@@ -66,13 +73,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
       onOpenChange?.(true);
       if (customEvent?.detail?.initialQuestion) {
         const q = customEvent.detail.initialQuestion;
-        if (user) {
-          setTimeout(() => {
-            assistant.send(q);
-          }, 150);
-        } else {
-          setDraft(q);
-        }
+        assistant.send(q, Boolean(customEvent.detail.resetToAi));
       }
     };
     const close = () => { setOpen(false); onOpenChange?.(false); };
@@ -261,7 +262,10 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
     if (error) toast({ title: "Send failed", description: error.message, variant: "destructive" });
   };
 
-  const talkToHuman = async () => { await assistant.requestHuman(); };
+  const talkToHuman = async () => {
+    if (!user) { window.open(COACH_WHATSAPP_URL, "_blank", "noopener,noreferrer"); return; }
+    await assistant.requestHuman();
+  };
 
   if (onAdminRoute && !embedded) return null;
 
@@ -281,10 +285,10 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  <><Headphones className="h-4 w-4" /> {embedded ? "AI Coach" : "Silicon Edge Support"}</>
+                  <><Headphones className="h-4 w-4" /> Silicon Edge AI Coach</>
                 </h3>
                 <p className="text-[10px] opacity-80">
-                  {escalated ? "Connected to our team — they reply here and by email" : "Instant answers, 24/7"}
+                  {escalated ? "Connected to our team — they reply here and by email" : coach.label}
                 </p>
               </div>
               <Button variant="ghost" onClick={() => { setOpen(false); onOpenChange?.(false); }} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
@@ -292,21 +296,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
               </Button>
             </div>
 
-            {whatsappUrl && <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border">
-              <span className="text-xs text-muted-foreground">Silicon Edge Support</span>
-              <Button asChild variant="link" size="sm" className="h-7 text-xs"><a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</a></Button>
-            </div>}
-            {!user ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
-                <LifeBuoy className="h-10 w-10 text-muted-foreground/50" />
-                <p className="text-sm font-medium">Sign in to chat with our assistant</p>
-                <p className="text-xs text-muted-foreground">The AI assistant answers questions about courses, payments, cohorts and certificates — and can hand you over to a human any time.</p>
-                <Link to="/sign-in" className="mt-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium" onClick={() => { setOpen(false); onOpenChange?.(false); }}>
-                  Sign in
-                </Link>
-              </div>
-            ) : (
-              <>
+            {(              <>
                 <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
                   <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${escalated ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"}`}>
                     {escalated ? "● Human agent joined" : "● AI assistant"}
@@ -360,10 +350,10 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                     {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
                         <LifeBuoy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">Hi {user.email?.split("@")[0]}! Ask me anything about courses, pricing, access, cohorts or certificates.</p>
+                        <p className="text-sm text-muted-foreground">{coach.greeting}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-                          {["What courses do you offer?", "Can I pay in installments?", "How do I get my certificate?"].map(q => (
-                            <Button variant="ghost" key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
+                          {coach.suggestions.map(q => (
+                            <button key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
                               {q}
                             </Button>
                           ))}
@@ -394,6 +384,9 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                     ))}
                 </div>
 
+                <a href={COACH_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mx-3 my-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold !text-white hover:bg-[#1da851]">
+                  <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+                </a>
                 <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 border-t border-border flex gap-2">
                   <input
                     ref={inputRef}
@@ -416,7 +409,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
         <Button variant="ghost"
           onClick={() => setOpen(o => !o)}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
-          aria-label="Open support chat"
+          aria-label="Open AI Coach"
         >
           {open ? <X className="h-6 w-6 text-primary-foreground" /> : <MessageCircle className="h-6 w-6 text-primary-foreground" />}
         </Button>
