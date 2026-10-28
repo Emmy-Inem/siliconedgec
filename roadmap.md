@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Unify AI Coach, support, and WhatsApp into one right-hand companion on every page; verified public/cart/course/auth/admin availability, smaller-screen panels, and a signed-in AI answer.
+
 - [ ] Audit website analytics accuracy and simplify the overview with date-filtered signups, visitors, logins, top pages, and countries.
 
 - [x] Reduce the globally heavy purple palette without changing layouts, content, or functionality.

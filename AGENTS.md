@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+- Mount one persistent AI Coach in the app shell, with course context from the shared course cache and embedded existing support chat; keep WhatsApp inside it to prevent competing floating launchers.
+
 - Weekly database backups must upload directly to the designated SEC Website Backup folder by its stable Google Drive folder ID, because name-based folder discovery can select the wrong folder.
 - Apply ordinary-copy colour normalization in global CSS with semantic surface tokens and explicit interactive-state exclusions, so pages and portal-rendered dialogs remain consistent without altering layouts or action colours.
 - Keep private-route indexing policy in a shared helper used by the route head guard and SEO component, so admin and learner pages cannot accidentally inherit public metadata.

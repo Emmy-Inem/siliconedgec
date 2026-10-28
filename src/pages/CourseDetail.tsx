@@ -39,7 +39,6 @@ import { CohortAccessButton } from "@/components/CohortAccessButton";
 import { courseLearnHref, courseSectionHref } from "@/lib/course-url";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { CourseDetailHero } from "@/components/courses/CourseDetailHero";
-import { CourseAiCoach } from "@/components/courses/CourseAiCoach";
 import { CourseReviewsSection } from "@/components/courses/CourseReviewsSection";
 import { COURSE_DETAIL_FAQS } from "@/components/courses/courseFaqs";
 
@@ -660,7 +659,6 @@ export default function CourseDetail() {
         }}
       />
       <Header />
-      <CourseAiCoach courseTitle={course.title} courseSlug={courseSlug} />
 
       {/* Admin Preview Banner when course is hidden */}
       {isHidden && isAdmin && (

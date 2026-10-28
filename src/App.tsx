@@ -77,7 +77,7 @@ const InstructorAssignmentGrading = lazy(() => import("./pages/instructor/Instru
 const InstructorQuizzes = lazy(() => import("./pages/instructor/InstructorQuizzes"));
 const AdminDashboards = lazy(() => import("./pages/admin/AdminDashboards"));
 const InstructorAssist = lazy(() => import("./pages/admin/AdminInstructorAssist"));
-import { LiveChat } from "./components/LiveChat";
+import { AiCoach } from "./components/AiCoach";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
@@ -329,7 +329,7 @@ const App = () => (
             </Routes>
             </Suspense>
             </ErrorBoundary>
-            <LiveChat />
+            <AiCoach />
             <CustomScripts />
             <CookieBanner />
             <GadsLabelsLoader />
