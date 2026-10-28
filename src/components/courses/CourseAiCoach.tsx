@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { COACH_WHATSAPP_URL, getCoachContext } from "@/lib/coach-context";
 import { CoachBrandIcon } from "@/components/ai/CoachBrandIcon";
+import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
 import { COURSE_DETAIL_FAQS } from "./courseFaqs";
 
 interface CourseAiCoachProps {
@@ -268,7 +269,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                   </Button>
                 ) : (
                   <div className="relative shrink-0">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary ring-2 ring-primary/40"><CoachBrandIcon className="h-4 w-4" /></span>
+                    <img src={aiCoachAvatar} alt="AI Coach" width={30} height={30} className="h-7 w-7 rounded-full object-cover ring-2 ring-primary/40" />
                     <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
                   </div>
                 )}
@@ -657,8 +658,8 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
           }}
           className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-card border-2 border-primary/50 shadow-xl hover:shadow-primary/25 hover:border-primary overflow-visible transition-colors"
         >
-          <div className="flex h-full w-full items-center justify-center rounded-full overflow-hidden bg-primary">
-            <CoachBrandIcon className="h-8 w-8 sm:h-9 sm:w-9" />
+          <div className="h-full w-full rounded-full overflow-hidden">
+            <img src={aiCoachAvatar} alt="AI Coach" loading="lazy" width={64} height={64} className="h-full w-full object-cover" />
           </div>
 
           {/* Compact branded AI badge */}
