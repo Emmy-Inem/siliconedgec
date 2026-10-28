@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2, Bot } from "lucide-react";
+import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2 } from "lucide-react";
+import { CoachBrandIcon } from "@/components/ai/CoachBrandIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -286,7 +287,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  <><Headphones className="h-4 w-4" /> Silicon Edge AI Coach</>
+                  <><CoachBrandIcon className="h-4 w-4" /> Silicon Edge AI Coach</>
                 </h3>
                 <p className="text-[10px] opacity-80">
                   {escalated ? "Connected to our team — they reply here and by email" : coach.label}
@@ -318,7 +319,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                         className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
                         title="Return to instant AI assistant"
                       >
-                        <Bot className="h-3.5 w-3.5" /> Ask AI Assistant
+                        <span className="flex h-5 w-5 items-center justify-center rounded bg-primary"><CoachBrandIcon className="h-3.5 w-3.5" /></span> Ask AI Assistant
                       </Button>
                       <span className="text-muted-foreground/60 text-xs">•</span>
                       <Link to="/support" className="text-[11px] text-muted-foreground hover:underline" onClick={() => { setOpen(false); onOpenChange?.(false); }}>
@@ -350,7 +351,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                     )}
                     {assistant.messages.length === 0 && messages.length === 0 && !loading && (
                       <div className="text-center pt-6">
-                        <LifeBuoy className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                        <span className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary"><CoachBrandIcon className="h-6 w-6" /></span>
                         <p className="text-sm text-muted-foreground">{coach.greeting}</p>
                         {!user && <p className="mt-2 text-xs text-muted-foreground">Ask two questions free. Create an account or sign in to keep chatting.</p>}
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
@@ -363,7 +364,8 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                       </div>
                     )}
                     {assistant.messages.map((m, i) => (
-                      <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                        {m.role === "assistant" && <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary" aria-label="Silicon Edge AI Coach"><CoachBrandIcon className="h-3.5 w-3.5" /></span>}
                         <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
                           {m.role === "user" ? m.content : <MarkdownView className="text-sm">{m.content}</MarkdownView>}
                         </div>

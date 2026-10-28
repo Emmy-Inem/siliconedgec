@@ -22,10 +22,9 @@ import {
   Target,
   Layers,
   BookOpen,
-  Bot,
 } from "lucide-react";
 import { COACH_WHATSAPP_URL, getCoachContext } from "@/lib/coach-context";
-import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
+import { CoachBrandIcon } from "@/components/ai/CoachBrandIcon";
 import { COURSE_DETAIL_FAQS } from "./courseFaqs";
 
 interface CourseAiCoachProps {
@@ -269,13 +268,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                   </Button>
                 ) : (
                   <div className="relative shrink-0">
-                    <img
-                      src={aiCoachAvatar}
-                      alt="AI Coach"
-                      width={30}
-                      height={30}
-                      className="h-7 w-7 rounded-full object-cover ring-2 ring-primary/40"
-                    />
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary ring-2 ring-primary/40"><CoachBrandIcon className="h-4 w-4" /></span>
                     <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
                   </div>
                 )}
@@ -309,8 +302,8 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                 <>
                   {/* Coach Greeting Bubble */}
                   <div className="flex items-start gap-2 rounded-xl bg-muted/50 border border-border/60 px-3 py-2 text-xs text-foreground leading-relaxed">
-                    <div className="mt-0.5 h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Bot className="h-3.5 w-3.5" />
+                    <div className="mt-0.5 h-5 w-5 rounded-md bg-primary flex items-center justify-center shrink-0">
+                      <CoachBrandIcon className="h-3 w-3" />
                     </div>
                     <div>
                       {courseTitle ? <>Hello! I'm your AI Coach for <span className="font-semibold text-primary">{subject}</span>. Ask about the skills, prerequisites and projects.</> : pageContext.greeting}
@@ -664,24 +657,17 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
           }}
           className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-card border-2 border-primary/50 shadow-xl hover:shadow-primary/25 hover:border-primary overflow-visible transition-colors"
         >
-          <div className="h-full w-full rounded-full overflow-hidden">
-            <img
-              src={aiCoachAvatar}
-              alt="AI Coach"
-              loading="lazy"
-              width={64}
-              height={64}
-              className="h-full w-full object-cover"
-            />
+          <div className="flex h-full w-full items-center justify-center rounded-full overflow-hidden bg-primary">
+            <CoachBrandIcon className="h-8 w-8 sm:h-9 sm:w-9" />
           </div>
 
-          {/* Floating top-left badge with vector Bot icon */}
+          {/* Compact branded AI badge */}
           <motion.span
             animate={{ scale: isHovered ? 1.12 : [1, 1.06, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
             className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold shadow-md flex items-center gap-0.5 pointer-events-none"
           >
-            <Bot className="h-2.5 w-2.5" />
+            <CoachBrandIcon className="h-3 w-3" />
             <span>{isHovered ? "Ask AI" : "AI"}</span>
           </motion.span>
 
