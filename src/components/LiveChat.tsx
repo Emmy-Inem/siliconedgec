@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { MessageCircle, X, Send, MinusCircle, Headphones, LifeBuoy, Loader2, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +18,7 @@ interface Message {
   created_at: string;
 }
 
-export function LiveChat() {
+export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embedded?: boolean; onOpenChange?: (open: boolean) => void; whatsappUrl?: string | null }) {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -62,6 +63,7 @@ export function LiveChat() {
         assistant.reset();
       }
       setOpen(true);
+      onOpenChange?.(true);
       if (customEvent?.detail?.initialQuestion) {
         const q = customEvent.detail.initialQuestion;
         if (user) {
@@ -73,9 +75,14 @@ export function LiveChat() {
         }
       }
     };
+    const close = () => { setOpen(false); onOpenChange?.(false); };
     window.addEventListener("sec:open-live-chat", handler);
-    return () => window.removeEventListener("sec:open-live-chat", handler);
-  }, [assistant, user]);
+    window.addEventListener("sec:close-live-chat", close);
+    return () => {
+      window.removeEventListener("sec:open-live-chat", handler);
+      window.removeEventListener("sec:close-live-chat", close);
+    };
+  }, [assistant, user, onOpenChange]);
 
   // Once the assistant hands over (it could not answer, or the user asked for a
   // person) the SAME thread continues with a human — we just open/attach the
@@ -256,7 +263,7 @@ export function LiveChat() {
 
   const talkToHuman = async () => { await assistant.requestHuman(); };
 
-  if (onAdminRoute) return null;
+  if (onAdminRoute && !embedded) return null;
 
   const busy = escalated ? loading : assistant.loading;
 
@@ -269,28 +276,32 @@ export function LiveChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`fixed ${aiCoachActive ? "bottom-6" : "bottom-24"} right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] h-[540px] max-h-[calc(100vh-8rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
+            className={`${embedded ? "w-[380px] max-w-[calc(100vw-1.5rem)]" : "fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)]"} h-[540px] max-h-[calc(100dvh-7rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
           >
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  <><Headphones className="h-4 w-4" /> Silicon Edge Support</>
+                  <><Headphones className="h-4 w-4" /> {embedded ? "AI Coach" : "Silicon Edge Support"}</>
                 </h3>
                 <p className="text-[10px] opacity-80">
                   {escalated ? "Connected to our team — they reply here and by email" : "Instant answers, 24/7"}
                 </p>
               </div>
-              <button onClick={() => setOpen(false)} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
+              <Button variant="ghost" onClick={() => { setOpen(false); onOpenChange?.(false); }} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
                 <MinusCircle className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
+            {whatsappUrl && <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border">
+              <span className="text-xs text-muted-foreground">Silicon Edge Support</span>
+              <Button asChild variant="link" size="sm" className="h-7 text-xs"><a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</a></Button>
+            </div>}
             {!user ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
                 <LifeBuoy className="h-10 w-10 text-muted-foreground/50" />
                 <p className="text-sm font-medium">Sign in to chat with our assistant</p>
                 <p className="text-xs text-muted-foreground">The AI assistant answers questions about courses, payments, cohorts and certificates — and can hand you over to a human any time.</p>
-                <Link to="/sign-in" className="mt-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium" onClick={() => setOpen(false)}>
+                <Link to="/sign-in" className="mt-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium" onClick={() => { setOpen(false); onOpenChange?.(false); }}>
                   Sign in
                 </Link>
               </div>
@@ -301,25 +312,25 @@ export function LiveChat() {
                     {escalated ? "● Human agent joined" : "● AI assistant"}
                   </span>
                   {!escalated ? (
-                    <button
+                    <Button variant="ghost"
                       onClick={talkToHuman}
                       disabled={assistant.loading}
                       className="ml-auto text-[11px] text-primary hover:underline font-medium disabled:opacity-50"
                     >
                       Talk to a human
-                    </button>
+                    </Button>
                   ) : (
                     <div className="ml-auto flex items-center gap-2">
-                      <button
+                      <Button variant="ghost"
                         type="button"
                         onClick={returnToAi}
                         className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
                         title="Return to instant AI assistant"
                       >
                         <Bot className="h-3.5 w-3.5" /> Ask AI Assistant
-                      </button>
+                      </Button>
                       <span className="text-muted-foreground/60 text-xs">•</span>
-                      <Link to="/support" className="text-[11px] text-muted-foreground hover:underline" onClick={() => setOpen(false)}>
+                      <Link to="/support" className="text-[11px] text-muted-foreground hover:underline" onClick={() => { setOpen(false); onOpenChange?.(false); }}>
                         My tickets
                       </Link>
                     </div>
@@ -333,13 +344,13 @@ export function LiveChat() {
                           <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                             <Headphones className="h-3.5 w-3.5" /> Support Agent Connected
                           </p>
-                          <button
+                          <Button variant="ghost"
                             type="button"
                             onClick={returnToAi}
                             className="text-[11px] font-semibold text-primary hover:underline"
                           >
                             Return to AI
-                          </button>
+                          </Button>
                         </div>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
                           Your request is with our human support team. If your question is resolved or you want instant answers to new questions, switch back to the AI anytime.
@@ -352,9 +363,9 @@ export function LiveChat() {
                         <p className="text-sm text-muted-foreground">Hi {user.email?.split("@")[0]}! Ask me anything about courses, pricing, access, cohorts or certificates.</p>
                         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
                           {["What courses do you offer?", "Can I pay in installments?", "How do I get my certificate?"].map(q => (
-                            <button key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
+                            <Button variant="ghost" key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
                               {q}
-                            </button>
+                            </Button>
                           ))}
                         </div>
                       </div>
@@ -389,11 +400,11 @@ export function LiveChat() {
                     value={draft}
                     onChange={e => setDraft(e.target.value)}
                     placeholder={escalated ? "Message our team…" : "Ask anything…"}
-                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
-                  <button type="submit" disabled={!draft.trim() || busy} className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50">
+                  <Button variant="ghost" type="submit" disabled={!draft.trim() || busy} className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50">
                     <Send className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </form>
               </>
             )}
@@ -401,14 +412,14 @@ export function LiveChat() {
         )}
       </AnimatePresence>
 
-      {!aiCoachActive && (
-        <button
+      {!embedded && !aiCoachActive && (
+        <Button variant="ghost"
           onClick={() => setOpen(o => !o)}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
           aria-label="Open support chat"
         >
           {open ? <X className="h-6 w-6 text-primary-foreground" /> : <MessageCircle className="h-6 w-6 text-primary-foreground" />}
-        </button>
+        </Button>
       )}
     </>
   );

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { LiveChat } from "@/components/LiveChat";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -26,8 +29,8 @@ import aiCoachAvatar from "@/assets/ai-coach-avatar.png";
 import { COURSE_DETAIL_FAQS } from "./courseFaqs";
 
 interface CourseAiCoachProps {
-  courseTitle: string;
-  courseSlug: string;
+  courseTitle?: string;
+  courseSlug?: string;
 }
 
 type CoachView = "menu" | "quiz" | "faqs";
@@ -77,7 +80,13 @@ const GOAL_OPTIONS = [
  * a 2-step "Is this course right for me?" fit quiz, inline FAQs, and
  * direct question handoff to the live AI assistant.
  */
-export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
+export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachProps) {
+  const [chatOpen, setChatOpen] = useState(false);
+  const { data: settings } = useSiteSettings();
+  const rawWhatsApp = settings?.whatsapp_number || "";
+  const whatsappNumber = rawWhatsApp.replace(/\D/g, "");
+  const whatsappUrl = whatsappNumber && !rawWhatsApp.toUpperCase().includes("UPDATE") ? `https://wa.me/${whatsappNumber}` : null;
+  const subject = courseTitle || "Silicon Edge Consulting";
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [bubbleIndex, setBubbleIndex] = useState(0);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -98,24 +107,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
     return sessionStorage.getItem("dismissed_ai_coach_bubble") === "true";
   });
 
-  // Notify global floating buttons (LiveChat / WhatsAppFAB) to hide while AI Coach is present
-  useEffect(() => {
-    document.documentElement.setAttribute("data-ai-coach-active", "true");
-    window.dispatchEvent(
-      new CustomEvent("sec:ai-coach-presence", { detail: { active: true } })
-    );
-    return () => {
-      document.documentElement.removeAttribute("data-ai-coach-active");
-      window.dispatchEvent(
-        new CustomEvent("sec:ai-coach-presence", { detail: { active: false } })
-      );
-    };
-  }, []);
-
   const teasers = [
     {
-      text: `Not sure if ${courseTitle} is right for you? Take a 15-sec fit check!`,
-      targetView: "quiz" as CoachView,
+      text: courseTitle ? `Not sure if ${subject} is right for you? Take a 15-sec fit check!` : "Need help choosing a course or checking your enrollment? Ask me!",
+      targetView: (courseTitle ? "quiz" : "menu") as CoachView,
       Icon: Compass,
     },
     {
@@ -137,18 +132,18 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
 
   // Show teaser bubble after short delay & rotate messages periodically
   useEffect(() => {
-    if (dismissed || panelOpen) return;
+    if (dismissed || panelOpen || chatOpen) return;
     const showTimer = setTimeout(() => setBubbleVisible(true), 2500);
     return () => clearTimeout(showTimer);
-  }, [dismissed, panelOpen]);
+  }, [dismissed, panelOpen, chatOpen]);
 
   useEffect(() => {
-    if (!bubbleVisible || panelOpen) return;
+    if (!bubbleVisible || panelOpen || chatOpen) return;
     const interval = setInterval(() => {
       setBubbleIndex((prev) => (prev + 1) % teasers.length);
     }, 6500);
     return () => clearInterval(interval);
-  }, [bubbleVisible, panelOpen, teasers.length]);
+  }, [bubbleVisible, panelOpen, chatOpen, teasers.length]);
 
   const dismissBubble = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -177,16 +172,16 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
     const trimmed = customQuestion.trim();
     if (!trimmed) return;
     setCustomQuestion("");
-    openChatWithQuestion(`Regarding "${courseTitle}": ${trimmed}`);
+    openChatWithQuestion(courseTitle ? `Regarding "${subject}": ${trimmed}` : trimmed);
   };
 
   const learningPathUrl =
     courseSlug.includes("ai-") ||
-    courseTitle.toLowerCase().includes("ai") ||
-    courseTitle.toLowerCase().includes("llm")
+    subject.toLowerCase().includes("ai") ||
+    subject.toLowerCase().includes("llm")
       ? "/paths/ai-generative-productivity-track"
-      : courseTitle.toLowerCase().includes("cloud") ||
-        courseTitle.toLowerCase().includes("azure")
+      : subject.toLowerCase().includes("cloud") ||
+        subject.toLowerCase().includes("azure")
       ? "/paths/cloud-engineering-accelerator-track"
       : "/paths";
 
@@ -200,10 +195,10 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
   const TeaserIcon = currentTeaser.Icon;
 
   return (
-    <div className="fixed bottom-3 left-3 sm:bottom-5 sm:left-5 z-40 flex flex-col items-start gap-2 print:hidden max-w-[calc(100vw-1.5rem)]">
+    <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-2 print:hidden max-w-[calc(100vw-1.5rem)]">
       {/* Interactive Rotating Curiosity Bubble */}
       <AnimatePresence mode="wait">
-        {(bubbleVisible || (isHovered && !panelOpen)) && !panelOpen && (
+        {(bubbleVisible || (isHovered && !panelOpen && !chatOpen)) && !panelOpen && !chatOpen && (
           <motion.div
             key={bubbleIndex}
             initial={{ opacity: 0, y: 10, scale: 0.92 }}
@@ -215,19 +210,19 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
               setPanelOpen(true);
               setBubbleVisible(false);
             }}
-            className="group relative max-w-[250px] sm:max-w-[270px] cursor-pointer rounded-2xl rounded-bl-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
+            className="group relative max-w-[250px] sm:max-w-[270px] cursor-pointer rounded-2xl rounded-br-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
           >
-            <button
+            <Button variant="ghost"
               type="button"
               onClick={dismissBubble}
               aria-label="Dismiss AI Coach tip"
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shadow-sm"
             >
               <X className="h-3 w-3" />
-            </button>
+            </Button>
             <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary mb-1">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>AI Course Coach</span>
+              <span>AI Coach</span>
             </div>
             <div className="flex items-start gap-2">
               <div className="mt-0.5 h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -258,14 +253,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
             <div className="shrink-0 flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-gradient-to-r from-primary/15 via-primary/5 to-transparent">
               <div className="flex items-center gap-2 min-w-0">
                 {view !== "menu" ? (
-                  <button
+                  <Button variant="ghost"
                     type="button"
                     onClick={() => setView("menu")}
                     className="p-1 -ml-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                     aria-label="Back to menu"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                  </button>
+                  </Button>
                 ) : (
                   <div className="relative shrink-0">
                     <img
@@ -280,7 +275,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                 )}
                 <div className="min-w-0">
                   <h4 className="text-xs sm:text-sm font-heading font-bold text-foreground truncate">
-                    {view === "menu" && "AI Course Coach"}
+                    {view === "menu" && "AI Coach"}
                     {view === "quiz" && "15-Sec Course Fit Check"}
                     {view === "faqs" && "Course FAQs"}
                   </h4>
@@ -289,14 +284,14 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                   </p>
                 </div>
               </div>
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => setPanelOpen(false)}
                 aria-label="Close AI Coach"
                 className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             {/* Scrollable Body Content */}
@@ -310,12 +305,12 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                     </div>
                     <div>
                       Hello! I'm your AI Coach for{" "}
-                      <span className="font-semibold text-primary">{courseTitle}</span>. How can I help you today?
+                      <span className="font-semibold text-primary">{subject}</span>. How can I help you today?
                     </div>
                   </div>
 
                   {/* Highlighted Interactive Fit Check Card */}
-                  <button
+                  {courseTitle && <Button variant="ghost"
                     type="button"
                     onClick={() => {
                       resetQuiz();
@@ -337,7 +332,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       </div>
                       <ChevronRight className="h-4 w-4 text-primary shrink-0 group-hover:translate-x-1 transition-transform" />
                     </div>
-                  </button>
+                  </Button>}
 
                   {/* Quick One-Click Smart Prompts */}
                   <div className="space-y-1.5">
@@ -351,34 +346,34 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         "4-week study plan",
                         "Installment options?",
                       ].map((prompt) => (
-                        <button
+                        <Button variant="ghost"
                           key={prompt}
                           type="button"
                           onClick={() =>
-                            openChatWithQuestion(`For the course "${courseTitle}": ${prompt}`)
+                            openChatWithQuestion(courseTitle ? `For the course "${subject}": ${prompt}` : prompt)
                           }
                           className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
                         >
                           <MessageSquare className="h-3 w-3 text-primary shrink-0" />
                           <span>{prompt}</span>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
 
                   {/* Navigation Actions */}
                   <div className="space-y-0.5 pt-1 border-t border-border/60">
-                    <button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => openChatWithQuestion()}
                       className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <MessageCircle className="h-3.5 w-3.5 text-primary shrink-0" />
-                        Open Live AI Chat Assistant
+                        Chat with AI Coach
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
+                    </Button>
 
                     <Link
                       to={learningPathUrl}
@@ -392,7 +387,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     </Link>
 
-                    <button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => setView("faqs")}
                       className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
@@ -402,7 +397,13 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         Read the course FAQs
                       </span>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs" onClick={() => openChatWithQuestion("I need help from Silicon Edge Support.")}>
+                      <span className="flex items-center gap-2"><HelpCircle className="h-3.5 w-3.5" /> Silicon Edge Support</span><ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                    {whatsappUrl && <Button asChild variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs">
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><span className="flex items-center gap-2"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</span><ChevronRight className="h-3.5 w-3.5" /></a>
+                    </Button>}
                   </div>
                 </>
               )}
@@ -427,7 +428,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         {EXPERIENCE_OPTIONS.map((opt) => {
                           const OptIcon = opt.Icon;
                           return (
-                            <button
+                            <Button variant="ghost"
                               key={opt.id}
                               type="button"
                               onClick={() => {
@@ -443,7 +444,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                                 <div className="text-xs font-semibold text-foreground">{opt.label}</div>
                                 <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
                               </div>
-                            </button>
+                            </Button>
                           );
                         })}
                       </div>
@@ -467,7 +468,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         {GOAL_OPTIONS.map((opt) => {
                           const GoalIcon = opt.Icon;
                           return (
-                            <button
+                            <Button variant="ghost"
                               key={opt.id}
                               type="button"
                               onClick={() => {
@@ -480,7 +481,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                                 <GoalIcon className="h-3.5 w-3.5" />
                               </div>
                               <span>{opt.label}</span>
-                            </button>
+                            </Button>
                           );
                         })}
                       </div>
@@ -513,25 +514,25 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                           : `You'll graduate with a verifiable Silicon Edge certificate and portfolio project.`}
                       </p>
                       <div className="flex flex-col gap-1.5 pt-0.5">
-                        <button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() =>
                             openChatWithQuestion(
-                              `I'm a ${selectedExp} learner looking to ${selectedGoal} with "${courseTitle}". Can you give me a tailored study plan?`
+                              `I'm a ${selectedExp} learner looking to ${selectedGoal} with "${subject}". Can you give me a tailored study plan?`
                             )
                           }
                           className="w-full py-1.5 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
                         >
                           <GraduationCap className="h-3.5 w-3.5" />
                           Get My Custom Study Plan
-                        </button>
-                        <button
+                        </Button>
+                        <Button variant="ghost"
                           type="button"
                           onClick={resetQuiz}
                           className="text-[11px] text-muted-foreground hover:text-foreground text-center py-0.5"
                         >
                           Retake quiz
-                        </button>
+                        </Button>
                       </div>
                     </motion.div>
                   )}
@@ -548,7 +549,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                         key={idx}
                         className="rounded-xl border border-border/70 bg-background overflow-hidden"
                       >
-                        <button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                           className="w-full flex items-center justify-between gap-2 p-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors"
@@ -559,7 +560,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                               isOpen ? "rotate-180" : ""
                             }`}
                           />
-                        </button>
+                        </Button>
                         <AnimatePresence initial={false}>
                           {isOpen && (
                             <motion.div
@@ -578,16 +579,16 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                       </div>
                     );
                   })}
-                  <button
+                  <Button variant="ghost"
                     type="button"
                     onClick={() =>
-                      openChatWithQuestion(`I have a question about "${courseTitle}"`)
+                      openChatWithQuestion(`I have a question about "${subject}"`)
                     }
                     className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     Ask a different question
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -602,20 +603,22 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
                 value={customQuestion}
                 onChange={(e) => setCustomQuestion(e.target.value)}
                 placeholder="Ask AI Coach anything…"
-                className="flex-1 bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="min-w-0 flex-1 bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <button
+              <Button variant="ghost"
                 type="submit"
                 disabled={!customQuestion.trim()}
                 aria-label="Send question to AI Coach"
                 className="h-7 w-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition-colors shrink-0"
               >
                 <Send className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </form>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <LiveChat embedded onOpenChange={setChatOpen} whatsappUrl={whatsappUrl} />
 
       {/* Lively Floating Avatar Button */}
       <div
@@ -630,7 +633,11 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
         <motion.button
           type="button"
           onClick={() => {
-            setPanelOpen((v) => !v);
+            if (chatOpen) {
+              window.dispatchEvent(new CustomEvent("sec:close-live-chat"));
+            } else {
+              setPanelOpen((v) => !v);
+            }
             setBubbleVisible(false);
           }}
           aria-label="Open AI Coach"
@@ -638,7 +645,7 @@ export function CourseAiCoach({ courseTitle, courseSlug }: CourseAiCoachProps) {
           animate={{
             opacity: 1,
             scale: 1,
-            y: panelOpen ? 0 : [0, -5, 0],
+            y: panelOpen || chatOpen ? 0 : [0, -5, 0],
           }}
           whileHover={{
             scale: 1.08,
