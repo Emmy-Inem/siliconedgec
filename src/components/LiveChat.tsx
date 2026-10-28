@@ -276,7 +276,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`${embedded ? "w-[380px] max-w-[calc(100vw-1.5rem)]" : "fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)]"} h-[540px] max-h-[calc(100dvh-7rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
+            className={`${embedded ? "absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-1.5rem)]" : "fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)]"} h-[540px] max-h-[calc(100dvh-7rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
           >
             <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
               <div>

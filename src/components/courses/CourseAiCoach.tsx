@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LiveChat } from "@/components/LiveChat";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
   MessageCircle,
@@ -81,6 +81,7 @@ const GOAL_OPTIONS = [
  * direct question handoff to the live AI assistant.
  */
 export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachProps) {
+  const reduceMotion = useReducedMotion();
   const [chatOpen, setChatOpen] = useState(false);
   const { data: settings } = useSiteSettings();
   const rawWhatsApp = settings?.whatsapp_number || "";
@@ -645,7 +646,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
           animate={{
             opacity: 1,
             scale: 1,
-            y: panelOpen || chatOpen ? 0 : [0, -5, 0],
+            y: panelOpen || chatOpen || reduceMotion ? 0 : [0, -5, 0],
           }}
           whileHover={{
             scale: 1.08,
