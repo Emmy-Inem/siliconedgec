@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Redesign the instructor directory and dedicated profiles; align all five titles and biographies with assigned teaching subjects without unsupported claims. Verified all five profiles, course links, zero-count hiding, desktop and phone layouts; seven instructor tests pass.
+
 - [x] Unify AI Coach, support, and WhatsApp into one right-hand companion on every page; verified public/cart/course/auth/admin availability, smaller-screen panels, and a signed-in AI answer.
 
 - [ ] Audit website analytics accuracy and simplify the overview with date-filtered signups, visitors, logins, top pages, and countries.

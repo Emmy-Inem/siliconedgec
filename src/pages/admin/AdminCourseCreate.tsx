@@ -347,6 +347,8 @@ export default function AdminCourseCreate() {
     onSuccess: (_, statusOverride) => {
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
       qc.invalidateQueries({ queryKey: ["courses"] });
+      qc.invalidateQueries({ queryKey: ["public-instructors"] });
+      qc.invalidateQueries({ queryKey: ["instructor-courses"] });
       toast({ title: statusOverride === "published" ? "Course Published!" : "Course Saved" });
       navigate("/admin/courses");
     },
