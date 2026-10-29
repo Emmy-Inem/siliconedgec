@@ -149,6 +149,7 @@ export default function InstructorDetail() {
                     key={c.id}
                     course={{
                       ...c,
+                      modules: [],
                       instructor: { id: instructor.id, name: instructor.name, bio: instructor.bio, avatar_url: instructor.avatar_url },
                     }}
                   />

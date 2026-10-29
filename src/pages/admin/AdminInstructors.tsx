@@ -85,13 +85,13 @@ export default function AdminInstructors() {
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-instructors"] }); setDialogOpen(false); setEditing(null); setForm(emptyForm); toast({ title: editing ? "Updated" : "Created" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-instructors"] }); qc.invalidateQueries({ queryKey: ["public-instructors"] }); qc.invalidateQueries({ queryKey: ["courses"] }); setDialogOpen(false); setEditing(null); setForm(emptyForm); toast({ title: editing ? "Updated" : "Created" }); },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const del = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("instructors").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-instructors"] }); toast({ title: "Deleted" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-instructors"] }); qc.invalidateQueries({ queryKey: ["public-instructors"] }); qc.invalidateQueries({ queryKey: ["courses"] }); toast({ title: "Deleted" }); },
   });
 
   return (
