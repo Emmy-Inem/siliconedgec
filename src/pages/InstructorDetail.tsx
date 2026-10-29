@@ -149,7 +149,7 @@ export default function InstructorDetail() {
                     key={c.id}
                     course={{
                       ...c,
-                      instructor: { name: instructor.name, avatar_url: instructor.avatar_url },
+                      instructor: { id: instructor.id, name: instructor.name, bio: instructor.bio, avatar_url: instructor.avatar_url },
                     }}
                   />
                 ))}
