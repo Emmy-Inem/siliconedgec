@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { Button } from "@/components/ui/button";
 
 type LegalKey = "terms" | "privacy" | "refund" | "cookie";
 
@@ -100,9 +101,11 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
           <li>Detect fraud, abuse, and security incidents.</li>
         </UL>
         <H>3. Legal bases</H>
+        <P>Optional website journey analytics requires a separate choice. It records page paths, cart and checkout actions, categorized errors, a browser session identifier and, when signed in, your account identifier. It excludes query strings, form contents and payment details. Administrators use these reports to identify where activity stops; Lovable AI receives aggregated counts only to suggest improvements, not individual profiles. These signals cannot establish why someone left or whether they lost trust.</P>
+        <Button variant="outline" onClick={() => window.dispatchEvent(new Event("sec:analytics-settings"))}>Website analytics settings</Button>
         <P>We process data under contract (to deliver courses), legitimate interests (platform security, analytics), consent (marketing, optional cookies), and legal obligation (tax/accounting).</P>
         <H>4. Sharing</H>
-        <P>We share data only with processors who help us run the Services: Supabase (database/auth), Paystack/Stripe (payments), Google (analytics, with consent), and email providers. We do not sell personal data.</P>
+        <P>We share data only with processors who help us run the Services: Lovable Cloud (data storage and accounts), Lovable AI (aggregated website improvement insights), Paystack/Stripe (payments), Google (analytics, with consent), and email providers. We do not sell personal data.</P>
         <H>5. International transfers</H>
         <P>Some processors operate outside Nigeria. We rely on standard contractual clauses and processor-level safeguards.</P>
         <H>6. Retention</H>
@@ -155,7 +158,8 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
         <li><strong>Marketing:</strong> measure ad performance and personalise messages — only set if you accept "All cookies".</li>
       </UL>
       <H>3. Your choices</H>
-      <P>You will see a cookie banner on your first visit. You can accept all cookies or only essential cookies. You can change your choice at any time by clearing the <code>se_cookie_consent</code> key in your browser storage; the banner will reappear.</P>
+      <P>You can accept all, allow optional journey analytics without advertising, or choose essential only. Opening settings does not change your choice; saving essential only immediately stops new journey events across open tabs. Earlier acceptance records remain as evidence of that choice.</P>
+      <Button variant="outline" onClick={() => window.dispatchEvent(new Event("sec:analytics-settings"))}>Website analytics settings</Button>
       <H>4. Third parties</H>
       <P>Cookies may also be set by Paystack/Stripe at checkout (for fraud prevention) and by embedded video players. These are governed by those providers' own policies.</P>
       <H>5. Contact</H>

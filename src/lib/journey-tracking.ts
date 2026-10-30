@@ -2,6 +2,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { shouldSkipPassiveEvent } from "./track-lead";
 
 export const JOURNEY_NOTICE_VERSION = "journey-2026-10-30";
+export async function saveJourneyChoice(accepted: boolean) {
+  const id = crypto.randomUUID();
+  let visitor = localStorage.getItem("sec_journey_visitor");
+  if (!visitor) { visitor = crypto.randomUUID(); localStorage.setItem("sec_journey_visitor", visitor); }
+  // Refusal is immediate, even when the connection is unavailable.
+  localStorage.setItem("sec_journey_consent", JSON.stringify({ id, version: JOURNEY_NOTICE_VERSION, accepted: false }));
+  const { error } = await supabase.rpc("record_journey_choice", { p_id: id, p_visitor: visitor, p_accepted: accepted });
+  if (error) throw error;
+  localStorage.setItem("sec_journey_consent", JSON.stringify({ id, version: JOURNEY_NOTICE_VERSION, accepted, at: new Date().toISOString() }));
+  if (!accepted) sessionStorage.removeItem("sec_journey_session");
+}
 export function journeyAllowed() {
   try {
     const choice = JSON.parse(localStorage.getItem("sec_journey_consent") || "null");
@@ -38,6 +49,7 @@ export async function trackJourney(event: JourneyEvent, reason?: "validation" | 
     await supabase.rpc("record_journey_event", {
       p_event: event, p_path: path, p_session: journeySession(), p_reason: reason || null,
       p_notice: JOURNEY_NOTICE_VERSION,
+      p_consent: JSON.parse(localStorage.getItem("sec_journey_consent") || "null")?.id,
     });
   } catch { /* Optional measurement must never block customer actions. */ }
 }

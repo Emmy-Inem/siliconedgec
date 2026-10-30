@@ -23,6 +23,7 @@ import { trackLead } from "@/lib/track-lead";
 import { downloadReceiptPdf } from "@/lib/receipt-pdf";
 import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
 import { usePublicAccessMode } from "@/hooks/usePublicAccessMode";
+import { trackJourney } from "@/lib/journey-tracking";
 
 export default function Cart() {
   const { items, count, total, removeFromCart, clearCart, loading, refresh } = useCart();
@@ -110,6 +111,7 @@ export default function Cart() {
           return;
         }
         if (!data?.verified) {
+          void trackJourney("checkout_error", "payment_verification");
           toast({ title: "Payment not completed", description: data?.message ?? "Please try again.", variant: "destructive" });
           return;
         }
@@ -189,6 +191,7 @@ export default function Cart() {
         });
         navigate("/dashboard", { replace: true });
       } catch (e: any) {
+        void trackJourney("checkout_error", "payment_verification");
         toast({ title: "Verification failed", description: e?.message ?? "Try again.", variant: "destructive" });
       } finally {
         setProcessing(false);
