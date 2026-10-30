@@ -11,6 +11,7 @@ import { RouteIndexing } from "@/components/RouteIndexing";
 import { CartProvider } from "@/contexts/CartContext";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { UtmTracker } from "@/components/UtmTracker";
+import { JourneyTracker } from "@/components/JourneyTracker";
 import { AffiliateTracker } from "@/components/AffiliateTracker";
 import { SignupPromptModal } from "@/components/SignupPromptModal";
 import Index from "./pages/Index";
@@ -146,6 +147,7 @@ const App = () => (
           <ScrollToTop />
           <RouteIndexing />
           <UtmTracker />
+          <JourneyTracker />
           <AffiliateTracker />
           <CartProvider>
             <MaintenanceBanner />

@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from "@/lib/user-activity";
 import { z } from "zod";
 import logoDark from "@/assets/logo-dark.png";
+import { trackJourney } from "@/lib/journey-tracking";
 
 const signInSchema = z.object({
   email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254),
@@ -43,6 +44,7 @@ export default function SignIn() {
     setFieldErrors({});
     const parsed = signInSchema.safeParse({ email, password });
     if (!parsed.success) {
+      void trackJourney("signin_error", "validation");
       const errs: { email?: string; password?: string } = {};
       for (const issue of parsed.error.issues) {
         const k = issue.path[0] as "email" | "password";
@@ -85,6 +87,7 @@ export default function SignIn() {
     }).catch(() => {});
     setLoading(false);
     if (error) {
+      void trackJourney("signin_error", "authentication");
       const msg = error.message === "Invalid login credentials"
         ? "Invalid email or password. If you signed up with Google, use the Google button below."
         : error.message;

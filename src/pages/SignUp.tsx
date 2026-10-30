@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logUserActivity } from "@/lib/user-activity";
 import { z } from "zod";
 import logoDark from "@/assets/logo-dark.png";
+import { trackJourney } from "@/lib/journey-tracking";
 
 const signUpSchema = z.object({
   name: z.string().trim().min(2, "Please enter your full name").max(80, "Name is too long"),
@@ -53,6 +54,7 @@ export default function SignUp() {
     setFieldErrors({});
     const parsed = signUpSchema.safeParse({ name, email, password });
     if (!parsed.success) {
+      void trackJourney("signup_error", "validation");
       const errs: { name?: string; email?: string; password?: string } = {};
       for (const issue of parsed.error.issues) {
         const k = issue.path[0] as "name" | "email" | "password";
@@ -72,8 +74,10 @@ export default function SignUp() {
     });
     setLoading(false);
     if (error) {
+      void trackJourney("signup_error", "authentication");
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
+      void trackJourney("signup_submitted");
       // Fire welcome email (no-op if RESEND_API_KEY not configured)
       if (data.user?.email) {
         supabase.functions.invoke("send-email", {

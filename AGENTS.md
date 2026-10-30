@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+- Keep optional journey events consent-gated, query-free and allowlisted; aggregate signup cohorts and inactive-session endpoints on the server, and give AI only administrator-authorized counts so inferred motives never masquerade as observed outcomes.
+
 - Mount one persistent AI Coach in the app shell, with course context from the shared course cache and embedded existing support chat; keep WhatsApp inside it to prevent competing floating launchers.
 
 - Weekly database backups must upload directly to the designated SEC Website Backup folder by its stable Google Drive folder ID, because name-based folder discovery can select the wrong folder.

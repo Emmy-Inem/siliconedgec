@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { trackJourney } from "@/lib/journey-tracking";
 
 interface CartItem {
   id: string;
@@ -74,12 +75,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     toast({ title: "Added to cart!" });
+    void trackJourney("cart_added");
     await fetchCart();
   };
 
   const removeFromCart = async (courseId: string) => {
     if (!user) return;
-    await supabase.from("cart_items").delete().eq("user_id", user.id).eq("course_id", courseId);
+    const { error } = await supabase.from("cart_items").delete().eq("user_id", user.id).eq("course_id", courseId);
+    if (!error) void trackJourney("cart_removed");
     await fetchCart();
   };
 
