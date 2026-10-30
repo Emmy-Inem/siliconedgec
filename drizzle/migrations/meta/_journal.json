@@ -36,6 +36,13 @@
       "when": 1793083952464,
       "tag": "0004_simple_audience_analytics",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793340570745,
+      "tag": "0005_journey_analytics",
+      "breakpoints": true
     }
   ]
 }

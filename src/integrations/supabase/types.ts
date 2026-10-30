@@ -2648,6 +2648,74 @@ export type Database = {
         }
         Relationships: []
       }
+      journey_choices: {
+        Row: {
+          accepted: boolean
+          created_at: string
+          id: string
+          notice_text: string
+          notice_version: string
+          visitor_id: string
+        }
+        Insert: {
+          accepted: boolean
+          created_at?: string
+          id: string
+          notice_text: string
+          notice_version: string
+          visitor_id: string
+        }
+        Update: {
+          accepted?: boolean
+          created_at?: string
+          id?: string
+          notice_text?: string
+          notice_version?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      journey_events: {
+        Row: {
+          consent_id: string
+          created_at: string
+          event: string
+          id: string
+          path: string
+          reason: string | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          consent_id: string
+          created_at?: string
+          event: string
+          id?: string
+          path: string
+          reason?: string | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          consent_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          path?: string
+          reason?: string | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_events_consent_id_fkey"
+            columns: ["consent_id"]
+            isOneToOne: false
+            referencedRelation: "journey_choices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kb_articles: {
         Row: {
           body: string
@@ -4436,6 +4504,10 @@ export type Database = {
         Returns: string
       }
       admin_email_queue_overview: { Args: { p_limit?: number }; Returns: Json }
+      admin_journey_analytics: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       admin_record_installment_payment: {
         Args: {
           p_amount: number
@@ -4662,6 +4734,21 @@ export type Database = {
         Returns: undefined
       }
       record_analytics_login: { Args: never; Returns: undefined }
+      record_journey_choice: {
+        Args: { p_accepted: boolean; p_id: string; p_visitor: string }
+        Returns: undefined
+      }
+      record_journey_event: {
+        Args: {
+          p_consent: string
+          p_event: string
+          p_notice: string
+          p_path: string
+          p_reason: string
+          p_session: string
+        }
+        Returns: undefined
+      }
       record_lesson_open: { Args: { _lesson_id: string }; Returns: undefined }
       request_affiliate_payout: {
         Args: never
