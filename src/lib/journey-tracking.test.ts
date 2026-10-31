@@ -15,6 +15,8 @@ describe("optional journey privacy", () => {
   it("removes sensitive query strings and excludes admin routes", () => {
     expect(journeyPath("/courses/example?email=private#token")).toBe("/courses/example");
     expect(journeyPath("/admin/users")).toBeNull();
+    expect(journeyPath("/orders/personal-reference")).toBe("/orders/:id");
+    expect(journeyPath("/unknown/person@example.com")).toBeNull();
   });
   it("starts a fresh session after 30 minutes of inactivity", () => {
     const first = journeySession(0); expect(journeySession(29 * 60_000)).toBe(first);
