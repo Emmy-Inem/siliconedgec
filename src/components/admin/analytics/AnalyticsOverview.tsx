@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { CustomDateRange } from "@/components/admin/CustomDateRange";
 import { analyticsRange, analyticsPreset, AudienceAnalytics } from "@/lib/audience-analytics";
+import JourneyInsights from "./JourneyInsights";
 
 function Breakdown({ title, rows, label = "Page views" }: { title: string; rows: { name: string; views: number }[]; label?: string }) {
   return <section className="min-w-0 space-y-3">
@@ -78,5 +79,6 @@ export default function AnalyticsOverview() {
       </div>
       <p className="text-xs text-muted-foreground">Visitor counts represent recorded browsers or signed-in accounts, not guaranteed individual people. Missing locations remain unavailable.</p>
     </>}
+    {range && <JourneyInsights range={range} />}
   </div>;
 }
