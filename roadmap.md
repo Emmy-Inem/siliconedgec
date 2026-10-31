@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Add privacy-conscious post-signup journeys, last observed pages, friction signals, and administrator-only AI insights; verify tracking and reports before ad preparation.
+- [ ] Finish post-signup journey charts, last observed pages, friction reports and administrator-only AI summaries; verify real reports and AI requests.
+- [ ] Shorten the cookie notice, retain consent choices and link to the privacy policy.
 
 - [x] Redesign the instructor directory and dedicated profiles; align all five titles and biographies with assigned teaching subjects without unsupported claims. Verified all five profiles, course links, zero-count hiding, desktop and phone layouts; seven instructor tests pass.
 

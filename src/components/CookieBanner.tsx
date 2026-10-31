@@ -42,7 +42,7 @@ export function CookieBanner() {
     // stays granted (anonymous, aggregate) either way.
     updateGoogleConsent(value === "all");
     setOpen(false);
-    } catch { setError("Your choice could not be saved. Optional journey tracking remains off; please try again."); }
+    } catch { setError("Could not save your choice. Please try again."); }
     finally { setSaving(false); }
   };
 
@@ -54,22 +54,21 @@ export function CookieBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: "spring", stiffness: 280, damping: 30 }}
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50"
+          className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-md z-50"
           role="dialog"
           aria-label="Cookie consent"
         >
-          <div className="bg-card border border-border shadow-2xl rounded-2xl p-5">
+          <div className="bg-card border border-border shadow-2xl rounded-lg p-4">
             <div className="flex items-start gap-3">
               <Cookie className="h-6 w-6 text-foreground flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">We use cookies</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Essential storage keeps you signed in. Optional journey analytics records pages, cart and checkout actions and categorized errors; signed-in activity links to your account. Administrators see reports and Lovable AI receives only aggregated counts to suggest improvements. We do not record passwords, form contents or payment details. Accept all also enables advertising cookies. Change your choice from our privacy page.{" "}
-                  <Link to="/privacy" className="text-primary hover:underline">Read our privacy policy</Link>.
+                  Your choice. <Link to="/privacy" className="text-primary hover:underline">Privacy policy</Link>
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   <Button disabled={saving} size="sm" onClick={() => accept("all")}>Accept all</Button>
-                  <Button disabled={saving} size="sm" variant="outline" onClick={() => accept("analytics")}>Journey analytics only</Button>
+                  <Button disabled={saving} size="sm" variant="outline" onClick={() => accept("analytics")}>Analytics only</Button>
                   <Button disabled={saving} size="sm" variant="outline" onClick={() => accept("essential")}>Essential only</Button>
                 </div>
                 {error && <p role="alert" className="text-xs text-destructive mt-2">{error}</p>}
