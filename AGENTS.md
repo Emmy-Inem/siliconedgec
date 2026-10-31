@@ -1,6 +1,7 @@
 # Project Architecture Rules
 
 - Keep optional journey events consent-gated, query-free and allowlisted; aggregate signup cohorts and inactive-session endpoints on the server, and give AI only administrator-authorized counts so inferred motives never masquerade as observed outcomes.
+- Generate analytics AI summaries only on explicit administrator request from server-fetched reports; categorize stored paths before AI handoff and stream the result so personal identifiers and fabricated browser counts cannot enter summaries.
 
 - Mount one persistent AI Coach in the app shell, with course context from the shared course cache and embedded existing support chat; keep WhatsApp inside it to prevent competing floating launchers.
 
