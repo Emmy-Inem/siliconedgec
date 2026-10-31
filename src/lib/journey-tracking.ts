@@ -24,9 +24,12 @@ export function journeyAllowed() {
 
 export function journeyPath(path: string) {
   const clean = path.split(/[?#]/)[0];
-  if (/^\/(admin|reset-password|verify-receipt|newsletter)(\/|$)/.test(clean)) return null;
-  if (!clean.startsWith("/") || clean.startsWith("//")) return null;
-  return clean.slice(0, 300);
+  if (/^\/(orders|support|cohorts)\/[^/]+$/.test(clean)) return `/${clean.split("/")[1]}/:id`;
+  if (/^\/verify\/[^/]+$/.test(clean)) return "/verify/:code";
+  if (/^\/quizzes\/[^/]+\/attempts$/.test(clean)) return "/quizzes/:id/attempts";
+  if (clean === "/" || /^\/(courses|cart|for-businesses|certificates|pricing|career|sign-in|sign-up|forgot-password|dashboard|verify|jobs|instructors|paths|help|trust|blog|contact|about|locations|faq|testimonials|bookmarks|account|support|refer|search|cohorts|bootcamp|terms|privacy|refund-policy|cookie-policy)$/.test(clean)) return clean;
+  if (/^\/(courses|instructors|jobs|paths|help|blog|locations|category|p)\/[a-zA-Z0-9_-]+(?:\/(learn|quizzes|assignments|related))?$/.test(clean)) return clean.slice(0, 300);
+  return null;
 }
 
 export type JourneyEvent = "page_view" | "cart_added" | "cart_removed" | "checkout_started" | "checkout_redirected" | "checkout_error" | "signup_error" | "signin_error" | "signup_submitted";
@@ -40,9 +43,9 @@ export function journeySession(now = Date.now()) {
   } catch { fallbackSession ??= crypto.randomUUID(); return fallbackSession; }
 }
 
-export async function trackJourney(event: JourneyEvent, reason?: "validation" | "authentication" | "payment_setup" | "payment_verification") {
+export async function trackJourney(event: JourneyEvent, reason?: "validation" | "authentication" | "payment_setup" | "payment_verification", capturedPath = location.pathname) {
   if (!journeyAllowed()) return;
-  const path = journeyPath(location.pathname);
+  const path = journeyPath(capturedPath);
   if (!path) return;
   // No field contents, email addresses, payment references or query strings.
   try {
