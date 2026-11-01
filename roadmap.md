@@ -1,13 +1,13 @@
 # Roadmap
 
-- [ ] Finish post-signup journey charts, last observed pages, friction reports and administrator-only AI summaries; verify real reports and AI requests.
-- [ ] Shorten the cookie notice, retain consent choices and link to the privacy policy.
+- [x] Finish post-signup journey charts, last observed pages, friction reports and administrator-only AI summaries; verified real administrator reports, streamed AI summaries, date changes, privacy choices and smaller-screen layout. 28 focused tests pass. New optional journey records are currently empty, so historical drop-offs cannot be reconstructed.
+- [x] Shorten the cookie notice, retain consent choices and link to the privacy policy.
 
 - [x] Redesign the instructor directory and dedicated profiles; align all five titles and biographies with assigned teaching subjects without unsupported claims. Verified all five profiles, course links, zero-count hiding, desktop and phone layouts; seven instructor tests pass.
 
 - [x] Unify AI Coach, support, and WhatsApp into one right-hand companion on every page; verified public/cart/course/auth/admin availability, smaller-screen panels, and a signed-in AI answer.
 
-- [ ] Audit website analytics accuracy and simplify the overview with date-filtered signups, visitors, logins, top pages, and countries.
+- [x] Audit website analytics accuracy and simplify the overview with date-filtered signups, visitors, logins, top pages, and countries; verified signed-in real reports without substituted figures.
 
 - [x] Reduce the globally heavy purple palette without changing layouts, content, or functionality.
 - [x] Resolve all current preview typecheck errors and verify the updated site.
