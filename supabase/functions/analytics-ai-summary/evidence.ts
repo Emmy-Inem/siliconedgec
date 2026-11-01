@@ -7,13 +7,18 @@ export function safeEvidence(audience: Record<string, any>, journey: Record<stri
     const root = path.split("/")[1];
     return ["courses", "cart", "pricing", "instructors", "about", "sign-in", "sign-up", "dashboard", "learning", "contact", "business", "blog"].includes(root) ? root : "Other pages";
   };
+  const group = (rows: { page: string; views: number }[]) => {
+    const counts = new Map<string, number>();
+    for (const row of rows) counts.set(row.page, (counts.get(row.page) || 0) + row.views);
+    return [...counts].map(([page, views]) => ({ page, views })).sort((a, b) => b.views - a.views);
+  };
   return {
     signups: count(audience.signups), recordedVisitors: count(audience.visitors), logins: count(audience.loggedInPeople), pageviews: count(audience.pageviews),
     newLearners: count(journey.cohortSize), recordedJourneyPeople: count(journey.observedPeople), unpaidCheckoutAfter24h: count(journey.checkoutWithoutPayment),
     milestones: (journey.stages || []).map((s: any) => ({ stage: ["Signed up", "Recorded activity", "Viewed a course", "Opened cart", "Started checkout", "Paid", "Learning activity"].includes(s.stage) ? s.stage : "Other", people: count(s.people) })),
     lastPages: (journey.endpoints || []).map((s: any) => ({ page: page(s.path), sessions: count(s.sessions) })),
     friction: (journey.friction || []).map((s: any) => ({ page: page(s.path), reason: ["validation", "authentication", "payment_setup", "payment_verification"].includes(s.reason) ? s.reason : "Other error", events: count(s.events) })),
-    topPages: (audience.pages || []).slice(0, 10).map((s: any) => ({ page: page(s.page), views: count(s.views) })),
+    topPages: group((audience.pages || []).slice(0, 10).map((s: any) => ({ page: page(s.page), views: count(s.views) }))),
     trackingStarted: Boolean(journey.trackingSince),
   };
 }

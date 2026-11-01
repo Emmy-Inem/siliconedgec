@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   const evidence = safeEvidence(audience.data, journey.data);
   try {
     const { result } = createResponsesCall(req, { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey: key, model: "openai/gpt-6-astra" },
-      [{ role: "user", content: JSON.stringify({ period: range, evidence }) }],
+      [{ role: "user", content: JSON.stringify({ period: { firstDate: from.toISOString().slice(0, 10), lastDate: new Date(+to - 1).toISOString().slice(0, 10), timezone: "UTC", endExclusive: range.p_to }, evidence }) }],
       "You review website analytics for Silicon Edge Consulting. Give a concise markdown summary with three sections: Observed results, Possible explanations, Recommended checks. Cite supplied counts exactly, never invent numbers, credentials or causes. Counts are independent milestone reach, not a sequential funnel. The cohort consists of new learner accounts, unlike all-account signups. Activity is optional and consent-gated; absence is not evidence of disengagement. New accounts have unequal follow-up. Inactive last pages are not confirmed exits. Unpaid checkout after 24h is not confirmed abandonment. Never claim trust or motive was measured. If tracking has no records, state that journey conclusions are premature and suggest collecting consented activity before judging drop-off. Give up to three practical checks grounded in the evidence. Do not identify individuals.");
     const reader = result.textStream.getReader();
     const first = await reader.read();

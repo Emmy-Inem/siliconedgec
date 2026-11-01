@@ -13,4 +13,7 @@ describe("journey report evidence", () => {
     expect(evidence.lastPages).toEqual([{ page: "Other pages", sessions: 1 }]);
     expect(JSON.stringify(evidence)).not.toMatch(/secret|private-person|person@example/);
   });
+  it("groups safe page categories without duplicate misleading totals", () => {
+    expect(safeEvidence({ pages: [{ page: "/courses/one", views: 2 }, { page: "/courses/two", views: 3 }] }, {}).topPages).toEqual([{ page: "courses", views: 5 }]);
+  });
 });
