@@ -6,7 +6,7 @@ export function installmentSchedule(startDate: string, durationWeeks: number, co
   const deadline = new Date(start.getTime() + (durationWeeks - 1) * 7 * 86400000);
   const available = Math.min(durationWeeks - 1, Math.ceil((deadline.getTime() - now.getTime()) / (7 * 86400000)));
   if (!Number.isInteger(count) || count < 2 || count > available || !Number.isSafeInteger(totalMinor) || totalMinor < count)
-    throw new Error("Choose a weekly plan that finishes before the final week.");
+    throw new Error(available < 2 ? "Not enough time remains for weekly installments. Pay in full or contact support." : `Choose between 2 and ${available} weekly payments, finishing before the final week.`);
   const base = Math.floor(totalMinor / count);
   return {
     deadline: deadline.toISOString(),

@@ -7,10 +7,12 @@ import { installmentRequest } from "@/components/FlexiblePaymentButton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { CheckoutTerms, PAYMENT_TERMS_VERSION } from "@/components/CheckoutTerms";
 import { currencyFactor } from "../../supabase/functions/_shared/currency-config";
 
 export default function FlexiblePayments() {
   const { user } = useAuth(); const [params, setParams] = useSearchParams(); const qc = useQueryClient();
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
   const { data = [], isLoading, error } = useQuery({ queryKey: ["my-weekly-payments", user?.id], enabled: !!user, queryFn: async () => {
     const { data, error } = await (supabase as any).from("course_payment_agreements").select("*, course_payment_installments(*)").eq("user_id", user!.id).order("created_at", { ascending: false });
@@ -31,6 +33,7 @@ export default function FlexiblePayments() {
     {!user && <Button asChild><Link to="/sign-in?redirect=%2Fflexible-payments">Sign in to view payments</Link></Button>}
     {isLoading && <p>Loading payment plans…</p>}{error && <p role="alert">Unable to load payment plans. Please try again shortly.</p>}
     {message && <p role="status">{message}</p>}
+    {data.some((a: any) => Number(a.amount_paid_minor) < Number(a.total_minor)) && <CheckoutTerms accepted={termsAccepted} onChange={setTermsAccepted} />}
     {user && !isLoading && !error && !data.length && <p>You have no flexible payment plans yet. Choose Flexible payment at checkout to review a schedule.</p>}
     {data.map((a: any) => {
       const money = (n: number) => new Intl.NumberFormat(undefined, { style: "currency", currency: a.currency }).format(n / currencyFactor(a.currency));
@@ -42,7 +45,7 @@ export default function FlexiblePayments() {
         <p>Final deadline: {new Date(a.final_deadline).toLocaleString()}</p>
         {!complete && Date.now() >= new Date(a.final_deadline).getTime() && <p className="text-destructive">Balance overdue. Course access is suspended and your certificate is withheld.</p>}
         <ol className="text-sm space-y-2">{a.schedule.map((p: any) => <li key={p.number}>{new Date(p.due_at).toLocaleDateString()} — {money(p.amount_minor)} — {a.course_payment_installments.some((paid: any) => paid.number === p.number && paid.status === "paid") ? "Paid" : "Unpaid"}</li>)}</ol>
-        {next && <Button disabled={busy} onClick={async () => { setBusy(true); setMessage(""); try { const result = await installmentRequest({ action: "pay", agreement_id: a.id }); window.location.assign(result.authorization_url); } catch (e) { setMessage((e as Error).message); setBusy(false); } }}>Pay installment {next.number} ({money(next.amount_minor)})</Button>}
+        {next && <Button disabled={busy || !termsAccepted} onClick={async () => { setBusy(true); setMessage(""); try { const result = await installmentRequest({ action: "pay", agreement_id: a.id, terms_accepted: termsAccepted, terms_version: PAYMENT_TERMS_VERSION }); window.location.assign(result.authorization_url); } catch (e) { setMessage((e as Error).message); setBusy(false); } }}>Pay installment {next.number} ({money(next.amount_minor)})</Button>}
         {a.course_payment_installments.filter((p: any) => p.status === "pending").map((p: any) => <Button key={p.id} variant="outline" disabled={busy} onClick={async () => { setBusy(true); try { const result = await installmentRequest({ action: "verify", payment_id: p.id }); setMessage(result.verified ? "Payment confirmed." : "Payment not yet confirmed."); await qc.invalidateQueries({ queryKey: ["my-weekly-payments"] }); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); } }}>Check payment status</Button>)}
       </section>;
     })}

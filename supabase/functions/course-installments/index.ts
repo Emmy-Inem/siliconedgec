@@ -75,6 +75,7 @@ Deno.serve(async req => {
     if (body.action === "pay") {
       const { data: agreement } = await admin.from("course_payment_agreements").select("*").eq("id", body.agreement_id).eq("user_id", user.id).single();
       if (!agreement || agreement.status === "completed") throw new Error("No outstanding payment found.");
+      await recordCheckoutTerms(admin, user.id, { ...body, course_ids: agreement.course_ids, currency: agreement.currency, payment_option: "installments" });
       const { data: paid } = await admin.from("course_payment_installments").select("number").eq("agreement_id", agreement.id).eq("status", "paid");
       const next = (agreement.schedule as any[]).find(item => !(paid || []).some(p => p.number === item.number));
       if (!next) throw new Error("Your plan is already paid.");

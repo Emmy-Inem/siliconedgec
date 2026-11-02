@@ -16,7 +16,7 @@ describe("weekly course payment schedule", () => {
   });
   it("rejects missing schedules, fractional counts, expired courses and too-small amounts", () => {
     for (const args of [["",4,2,100], ["2026-11-02",4,2.5,100], ["2026-09-01",4,2,100], ["2026-11-02",4,3,2]] as const) {
-      expect(() => installmentSchedule(...args, now)).toThrow();
+      expect(() => installmentSchedule(args[0], args[1], args[2], args[3], now)).toThrow();
     }
   });
 });
