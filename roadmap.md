@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Check scheduled email and class-reminder work while no cohort is active: live job list confirms class reminders and hourly automations are already inactive; no email-processing recurring job is present. Preserve weekly backups and essential account/payment services. No new cost reduction established by this check.
+
 - [x] Finish post-signup journey charts, last observed pages, friction reports and administrator-only AI summaries; verified real administrator reports, streamed AI summaries, date changes, privacy choices and smaller-screen layout. 28 focused tests pass. New optional journey records are currently empty, so historical drop-offs cannot be reconstructed.
 - [x] Shorten the cookie notice, retain consent choices and link to the privacy policy.
 
