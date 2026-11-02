@@ -2,7 +2,7 @@ ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS duration_weeks integer
   CHECK (duration_weeks BETWEEN 1 AND 104);
 
 CREATE TABLE public.course_payment_agreements (
- id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id),
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL ,
  course_ids uuid[] NOT NULL, currency text NOT NULL, total_minor bigint NOT NULL CHECK(total_minor > 0),
  amount_paid_minor bigint NOT NULL DEFAULT 0, schedule jsonb NOT NULL,
  final_deadline timestamptz NOT NULL, terms_version text NOT NULL,
@@ -125,4 +125,4 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.expire_course_installments() FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.expire_course_installments() TO service_role;
-SELECT cron.schedule('expire-course-installments','5 * * * *','SELECT public.expire_course_installments()');
+SELECT cron.schedule('expire-course-installments','5 6 * * *','SELECT public.expire_course_installments()');

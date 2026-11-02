@@ -28,7 +28,7 @@ export function FlexiblePaymentButton({ courseIds, currency, disabled, promoCode
       setOpen(true); setQuote(null); setError(""); setAccepted(false); setScheduleAccepted(false);
     }}>Flexible payment — pay in installments</Button>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Flexible weekly payments</DialogTitle></DialogHeader>
-      <p className="text-sm text-muted-foreground">Choose how many weekly payments you need. Your plan must finish before the final week of every selected course. No automatic charges.</p>
+      <p className="text-sm text-muted-foreground">Choose how many weekly payments you need. Your plan must finish before the final week of every selected course. No automatic charges. If your cart has different course dates, the earliest final-week deadline applies to the combined plan.</p>
       <label className="text-sm">Number of weekly payments
         <input aria-label="Number of weekly payments" className="block w-full rounded border border-border bg-background p-2 mt-1" type="number" min={2} max={103} value={count} onChange={e => { setCount(Number(e.target.value)); setAccepted(false); setScheduleAccepted(false); }} />
       </label>

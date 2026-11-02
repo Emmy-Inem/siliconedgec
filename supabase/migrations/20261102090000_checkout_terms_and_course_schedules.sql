@@ -7,7 +7,7 @@ COMMENT ON COLUMN public.courses.flexible_scheduling IS 'Whether this course off
 
 CREATE TABLE public.checkout_terms_acceptances (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id),
+  user_id uuid NOT NULL ,
   version text NOT NULL,
   course_ids jsonb NOT NULL,
   currency text NOT NULL,
