@@ -1,3 +1,4 @@
+// Checkout terms acceptance is recorded before provider initialization.
 import { recordCheckoutTerms } from "../_shared/checkout-terms.ts";
 import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
 import { checkoutRoutes } from "../_shared/payment-routing.ts";
@@ -6,7 +7,13 @@ import { checkoutRoutes } from "../_shared/payment-routing.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { safeErrorResponse } from "../_shared/errors.ts";
-import { getStripeSecretKey, getNgnExchangeRate, resolveCheckoutCurrency, createStripeCheckoutSession, CheckoutCurrencyError } from "../_shared/stripe.ts";
+import {
+  getStripeSecretKey,
+  getNgnExchangeRate,
+  resolveCheckoutCurrency,
+  createStripeCheckoutSession,
+  CheckoutCurrencyError,
+} from "../_shared/stripe.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -42,9 +49,10 @@ Deno.serve(async (req) => {
     if (!stripeKey) {
       return new Response(
         JSON.stringify({
-          retryable: true, error: "Stripe payments are not configured yet. Please check back shortly or contact support.",
+          retryable: true,
+          error: "Stripe payments are not configured yet. Please check back shortly or contact support.",
         }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -55,7 +63,8 @@ Deno.serve(async (req) => {
     const walletCheckout = body.checkout_ui === "elements";
     if (walletCheckout && checkoutRoutes(currency)[0].gateway === "paystack") {
       return new Response(JSON.stringify({ error: "Please use the local checkout for this currency." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const factor = currencyFactor(currency);
@@ -100,10 +109,10 @@ Deno.serve(async (req) => {
         const inScope = !scoped || (promo as any).course_ids.includes(course_id);
 
         if (!inScope) {
-          return new Response(
-            JSON.stringify({ error: "This promo code is not valid for this course." }),
-            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+          return new Response(JSON.stringify({ error: "This promo code is not valid for this course." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
         }
 
         if (!expired && !usedUp) {
@@ -139,10 +148,9 @@ Deno.serve(async (req) => {
         },
       });
 
-      await supabase.from("enrollments").upsert(
-        { user_id: user.id, course_id, payment_status: "paid" },
-        { onConflict: "user_id,course_id" }
-      );
+      await supabase
+        .from("enrollments")
+        .upsert({ user_id: user.id, course_id, payment_status: "paid" }, { onConflict: "user_id,course_id" });
 
       return new Response(JSON.stringify({ free: true, reference }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -219,12 +227,13 @@ Deno.serve(async (req) => {
         amount: localAmount,
         currency,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     if (err instanceof CheckoutCurrencyError) {
       return new Response(JSON.stringify({ error: err.message, retryable: true }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     return safeErrorResponse(err, 500, corsHeaders, "Failed to initialize Stripe checkout. Please try again.");
