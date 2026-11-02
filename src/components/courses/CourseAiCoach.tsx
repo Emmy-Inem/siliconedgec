@@ -124,7 +124,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
       Icon: Route,
     },
     {
-      text: "Need quick answers on certificates, live classes, or installments?",
+      text: "Prefer weekly installments? See Flexible payment at checkout for eligible courses.",
       targetView: "faqs" as CoachView,
       Icon: HelpCircle,
     },

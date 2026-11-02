@@ -13,7 +13,7 @@ export const COURSE_DETAIL_FAQS = [
   },
   {
     q: "Are installment payment plans available?",
-    a: "Yes. We offer flexible split-payment and installment plans at checkout so you can begin learning immediately while managing tuition comfortably.",
+    a: "Eligible courses offer weekly installments. Choose Flexible payment at checkout to review a plan based on the published start date and programme length. Pay manually and finish before the final week starts. Unpaid balances then suspend access, and certificates require full payment and course completion.",
   },
   {
     q: "What career support is provided after graduation?",
