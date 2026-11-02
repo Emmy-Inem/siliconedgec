@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { initializeWithFallback, type CheckoutResult } from "../../supabase/functions/_shared/payment-routing";
 import { usesLocalPaymentOptions } from "./payment-options";
+import { trackJourney } from "./journey-tracking";
 
 async function invoke(name: string, body: Record<string, unknown>) {
   const { data, error } = await supabase.functions.invoke(name, { body });
@@ -21,6 +22,8 @@ async function invoke(name: string, body: Record<string, unknown>) {
 
 /** Keep checkout working while the new router and provider functions roll out separately. */
 export async function initializeCheckout(body: Record<string, unknown> & { currency: string }) {
+  void trackJourney("checkout_started");
+  try {
   // A stale wallet entry must never bypass the customer's preferred local provider.
   const walletCheckout = body.wallet_checkout === true && !usesLocalPaymentOptions(body.currency);
   body = { ...body, wallet_checkout: walletCheckout };
@@ -33,6 +36,7 @@ export async function initializeCheckout(body: Record<string, unknown> & { curre
   if (walletCheckout) {
     const result = await initializeDirectly();
     if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start wallet checkout.");
+    if (result.data.authorization_url) void trackJourney("checkout_redirected");
     return result.data;
   }
   const routerResult = await invoke("checkout-initialize", body);
@@ -41,5 +45,10 @@ export async function initializeCheckout(body: Record<string, unknown> & { curre
     result = await initializeDirectly();
   }
   if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start checkout.");
+  if (result.data.authorization_url) void trackJourney("checkout_redirected");
   return result.data;
+  } catch (error) {
+    void trackJourney("checkout_error", "payment_setup");
+    throw error;
+  }
 }
