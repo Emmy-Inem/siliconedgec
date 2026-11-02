@@ -1,3 +1,4 @@
+import { settleVerifiedInstallment } from "../_shared/installment-settlement.ts";
 import { stripePaymentState } from "../_shared/payment-routing.ts";
 // Stripe webhook receiver — ensures enrollment is fulfilled even if user closes window before redirect
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -42,6 +43,10 @@ Deno.serve(async (req) => {
           if (updateError) throw updateError;
         }
 
+        if (isPaid && verifiedSession.metadata?.installment_payment_id) {
+          await settleVerifiedInstallment(supabase, verifiedSession.metadata.installment_payment_id, { gateway: "stripe", amount: Number(verifiedSession.amount_total), currency: String(verifiedSession.currency), reference: verifiedSession.client_reference_id || "", userId: verifiedSession.metadata.user_id, providerId: verifiedSession.id });
+          return new Response(JSON.stringify({ received: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
         if (isPaid) {
           const clientRef = verifiedSession.client_reference_id;
           const isCart = verifiedSession.metadata?.cart === "true" || clientRef?.startsWith("SE-CART-");

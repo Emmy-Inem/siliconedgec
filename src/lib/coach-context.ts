@@ -5,7 +5,7 @@ export function getCoachContext(path: string) {
   const sections: [RegExp, string, string, string[]][] = [
     [/^\/for-businesses/, "Team training", "I can help you plan training for your team. Business enquiries do not require an account.", ["How can we arrange training for our team?", "Can you tailor training to our business?", "What should I include in my training enquiry?"]],
     [/^\/cart/, "Your checkout", "Need help with checkout, payment options or a promo code?", ["Which payment options are available in my region?", "How do I apply a promo code?", "What happens after payment?"]],
-    [/^\/courses\/[^/]+/, "This course", "Ask about this course’s skills, prerequisites, projects and next steps.", ["Who is this course suitable for?", "What will I learn on this course?", "How do I enroll in this course?"]],
+    [/^\/courses\/[^/]+/, "This course", "Ask about this course’s skills, prerequisites, projects and next steps.", ["Who is this course suitable for?", "What will I learn on this course?", "Can I pay for this course in weekly installments?"]],
     [/^\/courses/, "Find your course", "Tell me your background and goal, and I’ll help you compare courses.", ["Which course fits my experience?", "Help me compare cloud, AI and data courses", "Where should a beginner start?"]],
     [/^\/(paths|learning-paths)/, "Your learning path", "Let’s work out a practical learning sequence for your goal.", ["Which learning path suits my career goal?", "What should I learn first?", "How do courses in this path fit together?"]],
     [/^\/pricing/, "Tuition and payment", "I can explain published prices and available payment information.", ["What is included in the tuition?", "Are installment plans available?", "How does regional currency pricing work?"]],

@@ -55,6 +55,7 @@ export function useCourseAccess(courseId?: string | null) {
       }
       return {
         rpcAccess: rpc.data === true,
+        rpcResolved: !rpc.error && rpc.data !== null,
         enrollment,
         cohortOnly: !!(course as any)?.cohort_only,
         isCohortMember,
@@ -81,7 +82,7 @@ export function useCourseAccess(courseId?: string | null) {
   // logic if the RPC returns null (network hiccup) so we don't regress.
   const canAccess = isStaff
     ? true
-    : rpcAccess || (cohortOnly ? isCohortMember : hasPaid);
+    : data?.rpcResolved ? rpcAccess : false;
 
   if (import.meta.env.DEV && !!user && !!courseId && !isStaff && !canAccess && !isLoading) {
     // Diagnostic breadcrumbs so denial cases can be triaged without SQL.

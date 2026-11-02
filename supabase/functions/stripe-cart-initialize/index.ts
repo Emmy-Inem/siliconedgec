@@ -1,3 +1,4 @@
+import { recordCheckoutTerms } from "../_shared/checkout-terms.ts";
 import { currencyFactor, roundCurrencyAmount } from "../_shared/currency-config.ts";
 import { checkoutRoutes } from "../_shared/payment-routing.ts";
 // Initializes a single Stripe Checkout session for an entire cart of courses.
@@ -42,7 +43,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency, checkout_ui } = await req.json();
+    const checkoutBody = await req.json();
+    await recordCheckoutTerms(supabase, user.id, checkoutBody);
+    const { course_ids, callback_url, cancel_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency, checkout_ui } = checkoutBody;
     const currency = resolveCheckoutCurrency(requestedCurrency);
     const walletCheckout = checkout_ui === "elements";
     if (walletCheckout && checkoutRoutes(currency)[0].gateway === "paystack") {

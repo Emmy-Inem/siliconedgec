@@ -1,3 +1,5 @@
+import { FlexiblePaymentButton } from "@/components/FlexiblePaymentButton";
+import { CheckoutTerms, PAYMENT_TERMS_VERSION } from "@/components/CheckoutTerms";
 import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
 import { initializeCheckout } from "@/lib/initialize-checkout";
 import { WalletCheckoutButton } from "@/components/WalletCheckoutButton";
@@ -38,6 +40,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
   const { user } = useAuth();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState(false);
   const { format: formatLocalizedPrice, currency, ready } = useLocalizedPrice();
@@ -142,7 +145,10 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
     setPromoError("");
   };
 
+  useEffect(() => { setTermsAccepted(false); }, [open, courseId, finalPrice, currency]);
+
   const handlePay = async (walletCheckout = false) => {
+    if (!termsAccepted) return;
     if (!user) {
       toast({
         title: "Sign in required",
@@ -169,6 +175,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
       
       const data = await initializeCheckout({
           wallet_checkout: walletCheckout,
+          terms_accepted: termsAccepted, terms_version: PAYMENT_TERMS_VERSION,
           course_id: courseId,
           currency,
           promo_code_id: appliedPromo?.id ?? null,
@@ -330,13 +337,15 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                     Available cards, bank payments and wallets appear automatically at checkout where supported.
                   </p>
                 </div>
+                {finalPrice > 0 && <FlexiblePaymentButton courseIds={[courseId]} currency={currency} promoCodeId={appliedPromo?.id} disabled={processing || !ready} />}
+                <CheckoutTerms accepted={termsAccepted} onChange={setTermsAccepted} />
                 {finalPrice > 0 && (
-                  <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={checkingEnrollment || !ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
-                    request={{ currency, course_id: courseId, promo_code_id: appliedPromo?.id ?? null,
+                  <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={!termsAccepted || checkingEnrollment || !ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
+                    request={{ currency, terms_accepted: termsAccepted, terms_version: PAYMENT_TERMS_VERSION, course_id: courseId, promo_code_id: appliedPromo?.id ?? null,
                       affiliate_code: getStoredAffiliateCode(), utm: getStoredUtmParams(),
                       callback_url: `${window.location.origin}/courses/${courseId}?verify=1`, cancel_url: `${window.location.origin}/courses/${courseId}` }} />
                 )}
-                <Button className="w-full gap-2" size="lg" onClick={() => handlePay()} disabled={processing || checkingEnrollment || !ready}>
+                <Button className="w-full gap-2" size="lg" onClick={() => handlePay()} disabled={!termsAccepted || processing || checkingEnrollment || !ready}>
                   {processing || checkingEnrollment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
                   {processing
                     ? "Redirecting..."

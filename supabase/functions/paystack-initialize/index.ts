@@ -1,3 +1,4 @@
+import { recordCheckoutTerms } from "../_shared/checkout-terms.ts";
 import { getNgnExchangeRate, resolveCheckoutCurrency } from "../_shared/stripe-checkout.ts";
 import { roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Paystack payment initialization edge function
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
+    await recordCheckoutTerms(supabase, user.id, body);
     const { course_id, promo_code_id, callback_url, utm, affiliate_code } = body;
     const currency = resolveCheckoutCurrency(body.currency ?? "NGN");
     const fxRate = await getNgnExchangeRate(currency);

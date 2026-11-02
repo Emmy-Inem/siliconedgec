@@ -26,6 +26,9 @@ export interface DbCourse {
   price: number;
   difficulty: string;
   duration_hours: number;
+  start_date?: string | null;
+  duration_weeks?: number | null;
+  flexible_scheduling?: boolean;
   thumbnail_url: string | null;
   rating: number | null;
   students_enrolled: number | null;

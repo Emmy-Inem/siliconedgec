@@ -256,6 +256,7 @@ export default function Dashboard() {
             <div>
               <p className="text-hero-muted text-sm mb-3 uppercase tracking-[0.2em]">Student dashboard</p>
               <h1 className="font-heading text-3xl md:text-5xl font-bold text-hero mb-3 text-balance">Welcome back, {displayName}</h1>
+              <Link to="/flexible-payments" className="inline-flex rounded-lg bg-primary px-4 py-2 text-primary-foreground text-sm mb-3">My flexible payments</Link>
               <p className="text-hero-muted text-lg max-w-2xl">Track your live sessions, continue coursework, review receipts, and keep your learning momentum in one place.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 md:p-6 space-y-4">

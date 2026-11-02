@@ -1,3 +1,5 @@
+import { FlexiblePaymentButton } from "@/components/FlexiblePaymentButton";
+import { CheckoutTerms, PAYMENT_TERMS_VERSION } from "@/components/CheckoutTerms";
 import { useCheckoutRedirect } from "@/hooks/useCheckoutRedirect";
 import { initializeCheckout } from "@/lib/initialize-checkout";
 import { WalletCheckoutButton } from "@/components/WalletCheckoutButton";
@@ -33,6 +35,7 @@ export default function Cart() {
   const { redirect: redirectToCheckout, confirmation: currencyConfirmation } = useCheckoutRedirect();
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
 
   // Promo code state
@@ -197,14 +200,17 @@ export default function Cart() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  useEffect(() => { setTermsAccepted(false); }, [finalTotal, currency, items.map(item => item.course_id).join(",")]);
+
   const handleCheckout = (walletCheckout = false) => {
+    if (!termsAccepted) return;
     if (!user && !publicAccess) { navigate("/sign-in"); return; }
     if (!user && publicAccess) {
       toast({ title: "Sign in to checkout", description: "Public access lets you browse — sign in to complete a purchase." });
       navigate("/sign-in");
       return;
     }
-    if (finalTotal === 0) { handleFreeEnroll(); return; }
+
     handlePaidCheckout(walletCheckout);
   };
 
@@ -236,6 +242,7 @@ export default function Cart() {
 
       const data = await initializeCheckout({
           wallet_checkout: walletCheckout,
+          terms_accepted: termsAccepted, terms_version: PAYMENT_TERMS_VERSION,
           course_ids: items.map((i) => i.course_id),
           currency,
           callback_url: `${window.location.origin}/cart`,
@@ -472,9 +479,11 @@ export default function Cart() {
                   </div>
 
 
+                  {finalTotal > 0 && <FlexiblePaymentButton courseIds={items.map(item => item.course_id)} currency={currency} promoCodeId={appliedPromo?.id} disabled={processing || !ready} />}
+                  <CheckoutTerms accepted={termsAccepted} onChange={setTermsAccepted} />
                   {finalTotal > 0 && (
-                    <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={!ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
-                      request={{ currency, course_ids: items.map(item => item.course_id), promo_code_id: appliedPromo?.id ?? null,
+                    <WalletCheckoutButton currency={currency} ready={ready} userId={user?.id} disabled={!termsAccepted || !ready || promoLoading} processing={processing} onProcessingChange={setProcessing}
+                      request={{ currency, terms_accepted: termsAccepted, terms_version: PAYMENT_TERMS_VERSION, course_ids: items.map(item => item.course_id), promo_code_id: appliedPromo?.id ?? null,
                         affiliate_code: getStoredAffiliateCode(), utm: getStoredUtmParams(),
                         callback_url: `${window.location.origin}/cart`, cancel_url: `${window.location.origin}/cart` }} />
                   )}
@@ -482,7 +491,7 @@ export default function Cart() {
                     size="lg"
                     className="w-full gap-2"
                     onClick={() => handleCheckout()}
-                    disabled={processing || !ready}
+                    disabled={!termsAccepted || processing || !ready}
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
                     {processing

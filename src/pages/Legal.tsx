@@ -57,7 +57,9 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
         <H>2. Course access & licence</H>
         <P>On purchase or free enrollment, we grant you a non-exclusive, non-transferable, revocable licence to access course content for personal, non-commercial learning. You may not redistribute, resell, scrape, mirror, or share course materials, recordings, or assets.</P>
         <H>3. Payments</H>
-        <P>Prices are listed in Nigerian Naira (₦) unless stated otherwise. Payments are processed by Paystack and/or Stripe. By paying you authorise us and our processors to charge the applicable amount, taxes, and fees.</P>
+        <P>Review the amount and currency displayed at checkout before paying. Available payment methods depend on your region and provider eligibility. You must acknowledge these terms and our refund policy before completing payment.</P>
+        <H>Flexible weekly payment plans</H>
+        <P>Eligible courses offer weekly installments based on the published programme length and start date. You choose and acknowledge your payment schedule before starting a plan. Each payment is initiated by you; we do not automatically charge your card or withdraw outstanding balances. The full balance must be paid before the programme’s final week starts, by the exact deadline shown in your plan. If the balance remains unpaid at that deadline, course access is suspended. Certificates are withheld until full payment and all course-completion requirements are met. A confirmed final payment restores payment eligibility; completion requirements still apply. Your existing plan retains the deadline and currency you accepted. Our published refund policy continues to apply.</P>
         <H>4. Cohorts, live classes & schedule changes</H>
         <P>Live sessions may be rescheduled. We will give reasonable notice and provide recordings where feasible.</P>
         <H>5. Acceptable use</H>

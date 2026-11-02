@@ -24,6 +24,7 @@ const Certificates = lazy(() => import("./pages/Certificates"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Affiliates = lazy(() => import("./pages/Affiliates"));
 const AffiliateDashboard = lazy(() => import("./pages/affiliate/AffiliateDashboard"));
+const FlexiblePayments = lazy(() => import("./pages/FlexiblePayments"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -164,6 +165,7 @@ const App = () => (
               <Route path="/affiliates" element={<Navigate to="/career" replace />} />
               <Route path="/career/dashboard" element={<AffiliateDashboard />} />
               <Route path="/affiliate" element={<Navigate to="/career/dashboard" replace />} />
+              <Route path="/flexible-payments" element={<FlexiblePayments />} />
               <Route path="/sign-in" element={<SignIn />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/reset-password" element={<ResetPassword />} />

@@ -50,6 +50,9 @@ export default function AdminCourseCreate() {
     category_id: null as string | null,
     difficulty: "Beginner",
     duration_hours: 10,
+    start_date: "",
+    duration_weeks: null as number | null,
+    flexible_scheduling: false,
     learning_outcomes: "",
     whats_included: "",
     // Step 2
@@ -158,6 +161,9 @@ export default function AdminCourseCreate() {
         category_id: existingCourse.category_id ?? null,
         difficulty: existingCourse.difficulty,
         duration_hours: Number(existingCourse.duration_hours),
+        start_date: (existingCourse as any).start_date ?? "",
+        duration_weeks: (existingCourse as any).duration_weeks ?? null,
+        flexible_scheduling: (existingCourse as any).flexible_scheduling === true,
         learning_outcomes: (existingCourse.learning_outcomes ?? []).join("\n"),
         whats_included: ((existingCourse as any).whats_included ?? []).join("\n"),
         thumbnail_url: existingCourse.thumbnail_url ?? null,
@@ -260,6 +266,9 @@ export default function AdminCourseCreate() {
     category_id: form.category_id,
     difficulty: form.difficulty,
     duration_hours: form.duration_hours,
+    start_date: form.start_date || null,
+    duration_weeks: form.duration_weeks,
+    flexible_scheduling: form.flexible_scheduling,
     learning_outcomes: form.learning_outcomes.split("\n").map(s => s.trim()).filter(Boolean),
     whats_included: form.whats_included.split("\n").map(s => s.trim()).filter(Boolean),
     thumbnail_url: form.thumbnail_url,
@@ -758,6 +767,16 @@ export default function AdminCourseCreate() {
                 <div>
                   <label className="text-sm font-medium block mb-1">Total Course Duration (hours)</label>
                   <input type="number" step="0.5" value={form.duration_hours} onChange={e => setForm({ ...form, duration_hours: Number(e.target.value) })} className={inputClass} />
+                  <label className="block text-sm mt-3">Programme length (weeks)
+                    <input type="number" min="1" max="104" step="1" value={form.duration_weeks ?? ""} onChange={e => setForm({ ...form, duration_weeks: e.target.value ? Number(e.target.value) : null })} className={inputClass} />
+                    <span className="text-xs text-muted-foreground">Used for weekly payment deadlines; teaching hours are separate.</span>
+                  </label>
+                  <label className="block text-sm mt-3">Course start date
+                    <input type="date" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} className={inputClass} />
+                  </label>
+                  <label className="flex items-center gap-2 text-sm mt-3">
+                    <input type="checkbox" checked={form.flexible_scheduling} onChange={e => setForm({ ...form, flexible_scheduling: e.target.checked })} /> Flexible scheduling available
+                  </label>
                 </div>
 
                 <div>

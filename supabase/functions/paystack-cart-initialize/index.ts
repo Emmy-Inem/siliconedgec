@@ -1,3 +1,4 @@
+import { recordCheckoutTerms } from "../_shared/checkout-terms.ts";
 import { getNgnExchangeRate, resolveCheckoutCurrency } from "../_shared/stripe-checkout.ts";
 import { roundCurrencyAmount } from "../_shared/currency-config.ts";
 // Initializes a single Paystack transaction for an entire cart of courses.
@@ -41,7 +42,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { course_ids, callback_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency } = await req.json();
+    const checkoutBody = await req.json();
+    await recordCheckoutTerms(supabase, user.id, checkoutBody);
+    const { course_ids, callback_url, utm, promo_code_id, affiliate_code, currency: requestedCurrency } = checkoutBody;
     const currency = resolveCheckoutCurrency(requestedCurrency ?? "NGN");
     const fxRate = await getNgnExchangeRate(currency);
     if (!Array.isArray(course_ids) || course_ids.length === 0) {

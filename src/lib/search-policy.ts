@@ -1,6 +1,6 @@
 /** Private, personal and transactional routes are not search landing pages. */
 export function isPrivateSearchPage(pathname: string): boolean {
-  return /^\/(admin|instructor|dashboard|account|orders|cart|sign-in|sign-up|forgot-password|reset-password|verify-receipt|bookmarks|wishlist|refer|newsletter|cohorts|bootcamp|support|quizzes|r|search|error|500)(\/|$)/.test(pathname)
+  return /^\/(admin|instructor|dashboard|account|orders|cart|sign-in|sign-up|forgot-password|reset-password|verify-receipt|bookmarks|wishlist|refer|newsletter|cohorts|bootcamp|flexible-payments|support|quizzes|r|search|error|500)(\/|$)/.test(pathname)
     || /^\/career\/dashboard(\/|$)/.test(pathname)
     || /^\/verify\/.+/.test(pathname)
     || /^\/courses\/[^/]+\/(learn|quizzes|assignments)(\/|$)/.test(pathname);

@@ -1,3 +1,4 @@
+import { settleVerifiedInstallment } from "../_shared/installment-settlement.ts";
 // Paystack webhook receiver — verifies signature and updates enrollment
 // reliably even if the user closes the browser before paystack-verify runs.
 // Signed via HMAC SHA-512 with PAYSTACK_SECRET_KEY in `x-paystack-signature`.
@@ -48,6 +49,15 @@ Deno.serve(async (req) => {
     status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+  if (evt.event === "charge.success" && evt.data?.metadata?.installment_payment_id) {
+    try {
+      const result = await fetch("https://api.paystack.co/transaction/verify/" + encodeURIComponent(evt.data.reference), { headers: { Authorization: "Bearer " + PAYSTACK_SECRET_KEY } });
+      const verified = await result.json();
+      if (!result.ok || !verified.status || verified.data?.status !== "success") return retry("Payment not verified");
+      await settleVerifiedInstallment(supabase, verified.data.metadata.installment_payment_id, { gateway: "paystack", amount: Number(verified.data.amount), currency: verified.data.currency, reference: verified.data.reference, userId: verified.data.metadata.user_id });
+      return ok();
+    } catch { return retry("Installment settlement failed"); }
+  }
   const reference: string | undefined = evt?.data?.reference;
   const eventId: string | null =
     evt?.id?.toString?.() ??

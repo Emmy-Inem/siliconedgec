@@ -4,6 +4,8 @@ import { readFunctionError } from "./function-error";
 import type { UtmParams } from "@/hooks/useUtmTracking";
 
 export interface WalletCheckoutRequest {
+  terms_accepted?: boolean;
+  terms_version?: string;
   currency: string;
   course_id?: string;
   course_ids?: string[];

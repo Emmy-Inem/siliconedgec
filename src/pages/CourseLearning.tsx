@@ -244,7 +244,7 @@ export default function CourseLearning() {
     !!enrollment &&
     (PAID_STATUSES.includes(String(enrollment.payment_status ?? "").toLowerCase()) ||
       GRANTED_SOURCES.includes(String((enrollment as any)?.access_source ?? "").toLowerCase()));
-  const hasPaidEnrollment = rpcAccess === true || enrollmentGrantsAccess;
+  const hasPaidEnrollment = rpcAccess === true;
 
   const unlockCtx = {
     lessons: allLessons as { id: string }[],

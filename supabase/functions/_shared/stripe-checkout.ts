@@ -34,6 +34,7 @@ export interface StripeLineItem {
 }
 
 export interface CreateStripeSessionInput {
+  idempotencyKey?: string;
   secretKey: string;
   currency: string;
   customerEmail: string;
@@ -91,6 +92,7 @@ export async function createStripeCheckoutSession(input: CreateStripeSessionInpu
     method: "POST",
     headers: {
       Authorization: `Bearer ${input.secretKey}`,
+      ...(input.idempotencyKey ? { "Idempotency-Key": input.idempotencyKey } : {}),
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: params.toString(),
