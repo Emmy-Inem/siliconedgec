@@ -1165,6 +1165,36 @@ export type Database = {
           },
         ]
       }
+      checkout_terms_acceptances: {
+        Row: {
+          accepted_at: string
+          course_ids: Json
+          currency: string
+          id: string
+          payment_option: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          accepted_at?: string
+          course_ids: Json
+          currency: string
+          id?: string
+          payment_option: string
+          user_id: string
+          version: string
+        }
+        Update: {
+          accepted_at?: string
+          course_ids?: Json
+          currency?: string
+          id?: string
+          payment_option?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       cms_pages: {
         Row: {
           content: string | null
@@ -1611,6 +1641,104 @@ export type Database = {
           },
         ]
       }
+      course_payment_agreements: {
+        Row: {
+          accepted_at: string
+          amount_paid_minor: number
+          course_ids: string[]
+          created_at: string
+          currency: string
+          final_deadline: string
+          id: string
+          schedule: Json
+          status: string
+          terms_version: string
+          total_minor: number
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          amount_paid_minor?: number
+          course_ids: string[]
+          created_at?: string
+          currency: string
+          final_deadline: string
+          id?: string
+          schedule: Json
+          status?: string
+          terms_version: string
+          total_minor: number
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          amount_paid_minor?: number
+          course_ids?: string[]
+          created_at?: string
+          currency?: string
+          final_deadline?: string
+          id?: string
+          schedule?: Json
+          status?: string
+          terms_version?: string
+          total_minor?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      course_payment_installments: {
+        Row: {
+          agreement_id: string
+          amount_minor: number
+          authorization_url: string | null
+          created_at: string
+          due_at: string
+          gateway: string
+          id: string
+          number: number
+          paid_at: string | null
+          provider_id: string | null
+          reference: string
+          status: string
+        }
+        Insert: {
+          agreement_id: string
+          amount_minor: number
+          authorization_url?: string | null
+          created_at?: string
+          due_at: string
+          gateway: string
+          id?: string
+          number: number
+          paid_at?: string | null
+          provider_id?: string | null
+          reference?: string
+          status?: string
+        }
+        Update: {
+          agreement_id?: string
+          amount_minor?: number
+          authorization_url?: string | null
+          created_at?: string
+          due_at?: string
+          gateway?: string
+          id?: string
+          number?: number
+          paid_at?: string | null
+          provider_id?: string | null
+          reference?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_payment_installments_agreement_id_fkey"
+            columns: ["agreement_id"]
+            isOneToOne: false
+            referencedRelation: "course_payment_agreements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_qna: {
         Row: {
           course_id: string
@@ -1771,10 +1899,12 @@ export type Database = {
           discount_price: number | null
           discount_start: string | null
           duration_hours: number
+          duration_weeks: number | null
           early_bird_price: number | null
           enable_reviews: boolean | null
           enrollment_end: string | null
           enrollment_start: string | null
+          flexible_scheduling: boolean
           id: string
           instructor_id: string | null
           intro_video_url: string | null
@@ -1786,6 +1916,7 @@ export type Database = {
           purchase_note: string | null
           rating: number | null
           slug: string | null
+          start_date: string | null
           status: string | null
           students_enrolled: number | null
           thumbnail_url: string | null
@@ -1808,10 +1939,12 @@ export type Database = {
           discount_price?: number | null
           discount_start?: string | null
           duration_hours: number
+          duration_weeks?: number | null
           early_bird_price?: number | null
           enable_reviews?: boolean | null
           enrollment_end?: string | null
           enrollment_start?: string | null
+          flexible_scheduling?: boolean
           id?: string
           instructor_id?: string | null
           intro_video_url?: string | null
@@ -1823,6 +1956,7 @@ export type Database = {
           purchase_note?: string | null
           rating?: number | null
           slug?: string | null
+          start_date?: string | null
           status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
@@ -1845,10 +1979,12 @@ export type Database = {
           discount_price?: number | null
           discount_start?: string | null
           duration_hours?: number
+          duration_weeks?: number | null
           early_bird_price?: number | null
           enable_reviews?: boolean | null
           enrollment_end?: string | null
           enrollment_start?: string | null
+          flexible_scheduling?: boolean
           id?: string
           instructor_id?: string | null
           intro_video_url?: string | null
@@ -1860,6 +1996,7 @@ export type Database = {
           purchase_note?: string | null
           rating?: number | null
           slug?: string | null
+          start_date?: string | null
           status?: string | null
           students_enrolled?: number | null
           thumbnail_url?: string | null
@@ -4539,6 +4676,18 @@ export type Database = {
       }
       claim_bootcamp_enrollment: { Args: never; Returns: number }
       clear_login_lockout: { Args: { _key: string }; Returns: number }
+      create_course_payment_agreement: {
+        Args: {
+          p_course_ids: string[]
+          p_currency: string
+          p_deadline: string
+          p_schedule: Json
+          p_terms_version: string
+          p_total_minor: number
+          p_user_id: string
+        }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -4548,6 +4697,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_course_installments: { Args: never; Returns: undefined }
       expire_overdue_installments: { Args: never; Returns: number }
       get_cohort_leaderboard: {
         Args: { p_cohort_id: string }
@@ -4813,6 +4963,10 @@ export type Database = {
       }
       seed_first_lesson_unlock: {
         Args: { _course_id: string; _user_id: string }
+        Returns: undefined
+      }
+      settle_course_installment: {
+        Args: { p_payment_id: string }
         Returns: undefined
       }
       slugify: { Args: { _text: string }; Returns: string }
