@@ -11,6 +11,8 @@ interface CartItem {
     id: string;
     title: string;
     price: number;
+    discount_price?: number | null;
+    is_published?: boolean;
     thumbnail_url: string | null;
     instructor: { name: string } | null;
   };
@@ -41,13 +43,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("cart_items")
-      .select("id, course_id, course:courses(id, title, price, thumbnail_url, instructor:instructors(name))")
+      .select("id, course_id, course:courses(id, title, price, discount_price, is_published, thumbnail_url, instructor:instructors(name))")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
+      // Courses that are no longer on sale cannot be charged, so drop them from the cart.
+      const unavailable = data.filter((item: any) => {
+        const c = Array.isArray(item.course) ? item.course[0] : item.course;
+        return !c || c.is_published === false;
+      });
+      if (unavailable.length > 0) {
+        await supabase.from("cart_items").delete().in("id", unavailable.map((i: any) => i.id));
+        toast({ title: "Cart updated", description: `${unavailable.length} course${unavailable.length > 1 ? "s are" : " is"} no longer available and ${unavailable.length > 1 ? "were" : "was"} removed.` });
+      }
+      const available = data.filter((item: any) => !unavailable.includes(item));
       setItems(
-        data.map((item: any) => ({
+        available.map((item: any) => ({
           ...item,
           course: {
             ...( Array.isArray(item.course) ? item.course[0] : item.course ),
@@ -59,7 +71,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
     }
     setLoading(false);
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
@@ -99,7 +111,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         count: items.length,
-        total: items.reduce((s, i) => s + (i.course?.price ?? 0), 0),
+        total: items.reduce((s, i) => s + Number(i.course?.discount_price ?? i.course?.price ?? 0), 0),
         loading,
         addToCart,
         removeFromCart,

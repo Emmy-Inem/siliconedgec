@@ -64,6 +64,16 @@ Deno.serve(async (req) => {
     }
 
     const valid = courses.filter((c) => c.is_published);
+    // Never charge for fewer courses than the learner chose: refuse rather than silently drop items.
+    const requested = new Set(course_ids.map(String));
+    const unavailable = [...requested].filter((id) => !valid.some((c) => c.id === id));
+    if (unavailable.length > 0) {
+      const titles = courses.filter((c) => unavailable.includes(c.id)).map((c) => c.title);
+      return new Response(JSON.stringify({
+        error: `${titles.length ? titles.join(", ") : "Some courses"} ${titles.length === 1 ? "is" : "are"} no longer available. Please remove ${titles.length === 1 ? "it" : "them"} from your cart and try again.`,
+        unavailable_course_ids: unavailable,
+      }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const subtotal = valid.reduce((s, c) => s + Number(c.discount_price ?? c.price), 0);
 
     // Apply promo if provided
