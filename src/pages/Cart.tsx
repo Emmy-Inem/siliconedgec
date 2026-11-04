@@ -409,7 +409,7 @@ export default function Cart() {
                         {item.course?.instructor?.name ?? "Instructor"}
                       </p>
                       <p className="font-heading font-bold text-primary mt-2 text-sm">
-                        {formatPrice(item.course?.price ?? 0)}
+                        {formatPrice(Number(item.course?.discount_price ?? item.course?.price ?? 0))}
                       </p>
                     </div>
                     <button
