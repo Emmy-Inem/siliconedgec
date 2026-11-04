@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Update all five instructor titles and two-paragraph biographies using the user-confirmed backgrounds; verify directory summaries and dedicated profiles.
+- [x] Update all five instructor titles and two-paragraph biographies using the user-confirmed backgrounds; verify directory summaries and dedicated profiles.
 
 - [x] Check scheduled email and class-reminder work while no cohort is active: live job list confirms class reminders and hourly automations are already inactive; no email-processing recurring job is present. Preserve weekly backups and essential account/payment services. No new cost reduction established by this check.
 
