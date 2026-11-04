@@ -5,7 +5,8 @@ SET
   updated_at = now()
 WHERE discount_price IS NOT NULL;
 
--- 2. Set start_date = 2026-11-28 for all courses except the Data Engineering course, which remains undecided (NULL).
+-- 2. Set start_date = 2026-11-28 for all courses except the Data Engineering course (NULL),
+--    and set duration_weeks = 4 for all courses so flexible installment schedules work out of the box.
 UPDATE public.courses
 SET
   start_date = CASE
@@ -16,6 +17,7 @@ SET
     THEN NULL
     ELSE DATE '2026-11-28'
   END,
+  duration_weeks = COALESCE(NULLIF(duration_weeks, 0), 4),
   updated_at = now();
 
 -- 3. Ensure any CMS-stored Terms of Service entry also reflects United Kingdom governing law.

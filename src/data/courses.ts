@@ -12,6 +12,7 @@ export interface Course {
   difficulty: "Beginner" | "Intermediate" | "Expert";
   durationHours: number;
   startDate?: string | null;
+  durationWeeks?: number | null;
   thumbnailUrl: string;
   instructorName: string | null;
   instructorAvatar: string;
@@ -53,6 +54,7 @@ export const courses: Course[] = [
     category: "Artificial Intelligence & Machine Learning",
     price: 500000,
     startDate: "2026-11-28",
+    durationWeeks: 4,
     difficulty: "Beginner",
     durationHours: 24,
     thumbnailUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",

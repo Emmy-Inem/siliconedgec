@@ -30,6 +30,7 @@ export function FlexiblePaymentButton({ courseIds, currency, disabled, promoCode
     <Button variant="outline" className="w-full" disabled={disabled} onClick={() => {
       if (!user) { navigate(`/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`); return; }
       setOpen(true); setQuote(null); setError(""); setAccepted(false); setScheduleAccepted(false);
+      void ensureAuthoritativeCoursePricing(courseIds);
     }}>Flexible payment — pay in installments</Button>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Flexible weekly payments</DialogTitle></DialogHeader>
       <p className="text-sm text-muted-foreground">Choose how many weekly payments you need. Your plan must finish before the final week of every selected course. No automatic charges. If your cart has different course dates, the earliest final-week deadline applies to the combined plan.</p>

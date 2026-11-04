@@ -32,7 +32,7 @@ import {
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
 import { courses as staticCourses } from "@/data/courses";
-import { ensureAuthoritativeCoursePricing, resolveCourseStartDate } from "@/hooks/useCourses";
+import { ensureAuthoritativeCoursePricing, resolveCourseDurationWeeks, resolveCourseStartDate } from "@/hooks/useCourses";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Course = Tables<"courses">;
@@ -134,7 +134,7 @@ export default function AdminCourses() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         cohort_only: false,
-        duration_weeks: null,
+        duration_weeks: resolveCourseDurationWeeks({ duration_weeks: sc.durationWeeks ?? null }),
         flexible_scheduling: false,
         start_date: resolveCourseStartDate({ id: sc.id, slug: sc.slug || sc.id, title: sc.title, category: sc.category, start_date: sc.startDate ?? null }),
         course_type: "virtual",
@@ -155,7 +155,7 @@ export default function AdminCourses() {
       (c) => !dismissedSet.has(c.id.toLowerCase()) && !dismissedSet.has((c.slug || "").toLowerCase())
     );
 
-    return [...filteredDb.map((c) => ({ ...c, start_date: resolveCourseStartDate(c) })), ...extra];
+    return [...filteredDb.map((c) => ({ ...c, start_date: resolveCourseStartDate(c), duration_weeks: resolveCourseDurationWeeks(c) })), ...extra];
   }, [dbCourses, dismissedIds]);
 
   const toggleVisibility = useMutation({

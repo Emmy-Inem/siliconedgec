@@ -48,6 +48,7 @@ export interface DbCourse {
 }
 
 export const DEFAULT_COURSE_START_DATE = "2026-11-28";
+export const DEFAULT_COURSE_DURATION_WEEKS = 4;
 
 export function isDataEngineeringCourse(course: {
   id?: string | null;
@@ -80,12 +81,20 @@ export function resolveCourseStartDate(course: {
   return course.start_date || DEFAULT_COURSE_START_DATE;
 }
 
+export function resolveCourseDurationWeeks(course: {
+  duration_weeks?: number | null;
+}): number {
+  return course.duration_weeks && course.duration_weeks > 0
+    ? course.duration_weeks
+    : DEFAULT_COURSE_DURATION_WEEKS;
+}
+
 export async function ensureAuthoritativeCoursePricing(courseIds?: string[]): Promise<void> {
   try {
     if (!supabase || typeof supabase.from !== "function") return;
     const table = supabase.from("courses");
     if (!table || typeof table.select !== "function") return;
-    let query: any = table.select("id, slug, title, category, price, discount_price, start_date");
+    let query: any = table.select("id, slug, title, category, price, discount_price, start_date, duration_weeks");
     if (courseIds && courseIds.length > 0 && typeof query?.in === "function") {
       query = query.in("id", courseIds);
     }
@@ -96,9 +105,11 @@ export async function ensureAuthoritativeCoursePricing(courseIds?: string[]): Pr
     await Promise.all(
       rows.map(async (row: any) => {
         const expectedStartDate = resolveCourseStartDate(row);
+        const expectedDurationWeeks = resolveCourseDurationWeeks(row);
         const hasStaleDiscountPrice = row.discount_price !== null && row.discount_price !== undefined;
         const hasStaleStartDate = (row.start_date ?? null) !== expectedStartDate;
-        if (!hasStaleDiscountPrice && !hasStaleStartDate) return;
+        const hasStaleDurationWeeks = (row.duration_weeks ?? null) !== expectedDurationWeeks;
+        if (!hasStaleDiscountPrice && !hasStaleStartDate && !hasStaleDurationWeeks) return;
 
         const updateTable = supabase.from("courses");
         if (!updateTable || typeof updateTable.update !== "function") return;
@@ -106,6 +117,7 @@ export async function ensureAuthoritativeCoursePricing(courseIds?: string[]): Pr
           .update({
             discount_price: null,
             start_date: expectedStartDate,
+            duration_weeks: expectedDurationWeeks,
           })
           .eq("id", row.id);
       })
@@ -133,6 +145,7 @@ function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
       category: c.category,
       start_date: c.startDate ?? null,
     }),
+    duration_weeks: resolveCourseDurationWeeks({ duration_weeks: c.durationWeeks ?? null }),
     thumbnail_url: c.thumbnailUrl || null,
     rating: c.rating,
     students_enrolled: c.studentsEnrolled,
@@ -205,6 +218,7 @@ async function fetchCourses(): Promise<DbCourse[]> {
     return {
       ...c,
       start_date: resolveCourseStartDate(c),
+      duration_weeks: resolveCourseDurationWeeks(c),
       instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
       modules: [],
     };
@@ -346,6 +360,7 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
   return {
     ...course,
     start_date: resolveCourseStartDate(course as any),
+    duration_weeks: resolveCourseDurationWeeks(course as any),
     description,
     learning_outcomes: learningOutcomes,
     whats_included: whatsIncluded,

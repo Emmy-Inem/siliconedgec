@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_COURSE_DURATION_WEEKS,
   DEFAULT_COURSE_START_DATE,
   isDataEngineeringCourse,
+  resolveCourseDurationWeeks,
   resolveCourseStartDate,
 } from "@/hooks/useCourses";
 import { courses as staticCourses } from "@/data/courses";
 
-describe("course start dates and pricing consistency", () => {
-  it("sets 28th November 2026 as the start date for all courses except Data Engineering", () => {
+describe("course start dates, programme length, and pricing consistency", () => {
+  it("sets 28th November 2026 as the start date for all courses except Data Engineering and 4 weeks programme length for all active courses", () => {
     expect(DEFAULT_COURSE_START_DATE).toBe("2026-11-28");
+    expect(DEFAULT_COURSE_DURATION_WEEKS).toBe(4);
+    expect(resolveCourseDurationWeeks({ duration_weeks: null })).toBe(4);
+    expect(resolveCourseDurationWeeks({ duration_weeks: 0 })).toBe(4);
 
     expect(
       resolveCourseStartDate({
@@ -64,11 +69,12 @@ describe("course start dates and pricing consistency", () => {
     expect(resolveCourseStartDate(dataEngCourse)).toBeNull();
   });
 
-  it("uses 500,000 NGN selling price and 2026-11-28 start date on Generative AI static course without stale 75,000 discount_price", () => {
+  it("uses 500,000 NGN selling price, 2026-11-28 start date, and 4 weeks duration on Generative AI static course without stale 75,000 discount_price", () => {
     const genAi = staticCourses.find((c) => c.slug === "ai-beginners-llm-productivity");
     expect(genAi).toBeDefined();
     expect(genAi?.price).toBe(500000);
     expect(genAi?.discountPrice).toBeUndefined();
     expect(genAi?.startDate).toBe("2026-11-28");
+    expect(genAi?.durationWeeks).toBe(4);
   });
 });

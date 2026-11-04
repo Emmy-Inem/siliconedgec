@@ -47,8 +47,13 @@ Deno.serve(async req => {
     if (body.action === "quote" || body.action === "start") {
       const ids = [...new Set<string>(body.course_ids || [])];
       if (!ids.length || ids.length > 20) throw new Error("Choose your courses.");
-      const { data: courses, error } = await admin.from("courses").select("id,title,price,discount_price,start_date,duration_weeks,is_published").in("id", ids);
-      if (error || courses?.length !== ids.length || courses.some(c => !c.is_published || !c.start_date || !c.duration_weeks)) throw new Error("Flexible payments require a published start date and course length for every selected course. Contact us for help.");
+      const { data: courses, error } = await admin.from("courses").select("id,slug,title,category,price,discount_price,start_date,duration_weeks,is_published").in("id", ids);
+      const normalizedCourses = (courses ?? []).map((c: any) => ({
+        ...c,
+        start_date: c.start_date || (/data[- ]engineering/i.test(`${c.slug ?? ""} ${c.title ?? ""} ${c.category ?? ""}`) || c.id === "20360c5a-2279-4a64-a373-3514f81cb600" ? null : "2026-11-28"),
+        duration_weeks: c.duration_weeks && c.duration_weeks > 0 ? c.duration_weeks : 4,
+      }));
+      if (error || normalizedCourses.length !== ids.length || normalizedCourses.some(c => !c.is_published || !c.start_date || !c.duration_weeks)) throw new Error("Flexible payments require a published start date and course length for every selected course. Contact us for help.");
       const { data: enrolled } = await admin.from("enrollments").select("course_id").eq("user_id", user.id).in("course_id", ids).in("payment_status", ["paid", "confirmed", "granted", "completed", "success"]);
       if (enrolled?.length) throw new Error("One or more courses already have enrollment. View your existing payment plan or remove them from your cart.");
       if (body.promo_code_id) throw new Error("Remove the promo code before choosing flexible payments, or pay in full with your discount.");
@@ -56,7 +61,7 @@ Deno.serve(async req => {
       const rate = await getNgnExchangeRate(currency);
       const totalMinor = Math.round(courses.reduce((sum, c) => sum + Number(c.price), 0) * rate * currencyFactor(currency));
       const count = Number(body.count);
-      const schedules = courses.map(c => installmentSchedule(c.start_date, c.duration_weeks, count, totalMinor));
+      const schedules = normalizedCourses.map(c => installmentSchedule(c.start_date, c.duration_weeks, count, totalMinor));
       const deadline = schedules.map(s => s.deadline).sort()[0];
       const quote = { currency, total_minor: totalMinor, factor: currencyFactor(currency), schedule: schedules[0].payments, deadline };
       if (body.action === "quote") return new Response(JSON.stringify(quote), { headers });
