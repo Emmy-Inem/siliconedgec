@@ -11,6 +11,7 @@ export interface Course {
   discountPrice?: number;
   difficulty: "Beginner" | "Intermediate" | "Expert";
   durationHours: number;
+  startDate?: string | null;
   thumbnailUrl: string;
   instructorName: string | null;
   instructorAvatar: string;
@@ -50,8 +51,8 @@ export const courses: Course[] = [
     description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build practical workflows for daily work, research, synthesis, writing, and spreadsheet tasks.",
     longDescription: "Explore generative AI and Large Language Models in a beginner-friendly, hands-on course without complicated mathematics or programming jargon. Learn how ChatGPT, Claude, Gemini, and DeepSeek work, practise prompt engineering, and build workflows for writing, document synthesis, and custom AI assistants for your job.",
     category: "Artificial Intelligence & Machine Learning",
-    price: 45000,
-    discountPrice: 75000,
+    price: 500000,
+    startDate: "2026-11-28",
     difficulty: "Beginner",
     durationHours: 24,
     thumbnailUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",

@@ -77,7 +77,7 @@ export function CoursesHeroBanner() {
   if (!course) return null;
 
   const courseUrl = course.slug ? `/courses/${course.slug}` : `/courses/${course.id}`;
-  const effectivePrice = course.discount_price ?? course.price ?? 500000;
+  const effectivePrice = course.price ?? 500000;
   const badgeLabel = config?.badgeText || "4-Week Intensive Bootcamp";
 
   return (
@@ -135,9 +135,9 @@ export function CoursesHeroBanner() {
               <span className="text-xl md:text-2xl font-bold text-foreground font-heading">
                 {formatPrice(Number(effectivePrice))}
               </span>
-              {course.discount_price && course.price && (
+              {course.discount_price && course.discount_price > effectivePrice && (
                 <span className="text-xs text-muted-foreground line-through">
-                  {formatPrice(Number(course.price))}
+                  {formatPrice(Number(course.discount_price))}
                 </span>
               )}
             </div>

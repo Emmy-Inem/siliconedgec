@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const basePrice = Number(course.discount_price ?? course.price);
+    const basePrice = Number(course.price);
     let discount = 0;
 
     // Apply promo if provided

@@ -125,7 +125,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
         category: c.category,
         slug: c.slug || c.id,
         url: `/courses/${c.slug || c.id}`,
-        price: c.discount_price ?? c.price ?? 500000,
+        price: c.price ?? 500000,
         hours: c.duration_hours ?? 32,
         thumbnail: c.thumbnail_url || "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
       };

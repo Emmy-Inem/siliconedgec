@@ -54,7 +54,7 @@ Deno.serve(async req => {
       if (body.promo_code_id) throw new Error("Remove the promo code before choosing flexible payments, or pay in full with your discount.");
       const currency = String(body.currency || "").toUpperCase(); if (!/^[A-Z]{3}$/.test(currency)) throw new Error("Invalid currency.");
       const rate = await getNgnExchangeRate(currency);
-      const totalMinor = Math.round(courses.reduce((sum, c) => sum + Number(c.discount_price ?? c.price), 0) * rate * currencyFactor(currency));
+      const totalMinor = Math.round(courses.reduce((sum, c) => sum + Number(c.price), 0) * rate * currencyFactor(currency));
       const count = Number(body.count);
       const schedules = courses.map(c => installmentSchedule(c.start_date, c.duration_weeks, count, totalMinor));
       const deadline = schedules.map(s => s.deadline).sort()[0];

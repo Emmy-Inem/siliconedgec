@@ -12,6 +12,7 @@ import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
 import { CurriculumBuilder } from "@/components/admin/CurriculumBuilder";
 import { courses as staticCourses } from "@/data/courses";
+import { resolveCourseStartDate } from "@/hooks/useCourses";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -161,7 +162,7 @@ export default function AdminCourseCreate() {
         category_id: existingCourse.category_id ?? null,
         difficulty: existingCourse.difficulty,
         duration_hours: Number(existingCourse.duration_hours),
-        start_date: (existingCourse as any).start_date ?? "",
+        start_date: resolveCourseStartDate(existingCourse as any) ?? "",
         duration_weeks: (existingCourse as any).duration_weeks ?? null,
         flexible_scheduling: (existingCourse as any).flexible_scheduling === true,
         learning_outcomes: (existingCourse.learning_outcomes ?? []).join("\n"),

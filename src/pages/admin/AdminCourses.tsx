@@ -32,6 +32,7 @@ import {
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
 import { courses as staticCourses } from "@/data/courses";
+import { resolveCourseStartDate } from "@/hooks/useCourses";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Course = Tables<"courses">;
@@ -134,7 +135,7 @@ export default function AdminCourses() {
         cohort_only: false,
         duration_weeks: null,
         flexible_scheduling: false,
-        start_date: null,
+        start_date: resolveCourseStartDate({ id: sc.id, slug: sc.slug || sc.id, title: sc.title, category: sc.category, start_date: sc.startDate ?? null }),
         course_type: "virtual",
         product_type: "simple",
         discount_start: null,
@@ -153,7 +154,7 @@ export default function AdminCourses() {
       (c) => !dismissedSet.has(c.id.toLowerCase()) && !dismissedSet.has((c.slug || "").toLowerCase())
     );
 
-    return [...filteredDb, ...extra];
+    return [...filteredDb.map((c) => ({ ...c, start_date: resolveCourseStartDate(c) })), ...extra];
   }, [dbCourses, dismissedIds]);
 
   const toggleVisibility = useMutation({
@@ -362,7 +363,7 @@ export default function AdminCourses() {
   const handleOpenPriceModal = (course: Course) => {
     setPriceModalCourse(course);
     setPriceInput(course.price != null ? String(course.price) : "0");
-    setDiscountPriceInput(course.discount_price != null ? String(course.discount_price) : "");
+    setDiscountPriceInput(course.discount_price != null && course.discount_price > (course.price ?? 0) ? String(course.discount_price) : "");
   };
 
   const handleSavePrice = (e?: React.FormEvent) => {
@@ -395,7 +396,7 @@ export default function AdminCourses() {
     updatePriceMutation.mutate({
       course: priceModalCourse,
       price: parsedPrice,
-      discountPrice: parsedDiscountPrice,
+      discountPrice: parsedDiscountPrice !== null && parsedDiscountPrice > parsedPrice ? parsedDiscountPrice : null,
     });
   };
 

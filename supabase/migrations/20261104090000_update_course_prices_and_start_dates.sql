@@ -1,0 +1,35 @@
+-- 1. Clear stale strikethrough prices (discount_price) that are less than or equal to the selling price (price).
+UPDATE public.courses
+SET
+  discount_price = NULL,
+  updated_at = now()
+WHERE discount_price IS NOT NULL
+  AND discount_price <= price;
+
+-- 2. Set start_date = 2026-11-28 for all courses except the Data Engineering course, which remains undecided (NULL).
+UPDATE public.courses
+SET
+  start_date = CASE
+    WHEN id = '20360c5a-2279-4a64-a373-3514f81cb600'
+      OR slug = 'data-engineering-sql-etl-warehousing'
+      OR title ILIKE '%Data Engineering%'
+      OR category ILIKE '%Data Engineering%'
+    THEN NULL
+    ELSE DATE '2026-11-28'
+  END,
+  updated_at = now();
+
+-- 3. Ensure any CMS-stored Terms of Service entry also reflects United Kingdom governing law.
+UPDATE public.cms_pages
+SET
+  content = REPLACE(
+    REPLACE(
+      content,
+      'laws of the Federal Republic of Nigeria',
+      'laws of the United Kingdom'
+    ),
+    'laws of England and Wales',
+    'laws of the United Kingdom'
+  ),
+  updated_at = now()
+WHERE slug = 'terms';

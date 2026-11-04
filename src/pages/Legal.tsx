@@ -78,7 +78,7 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
         <H>9. Disclaimers & liability</H>
         <P>The Services are provided "as is". To the maximum extent permitted by law, {brand} disclaims all implied warranties and is not liable for indirect or consequential losses. Our aggregate liability is limited to the amount you paid us in the 12 months before the event.</P>
         <H>10. Governing law</H>
-        <P>These Terms are governed by the laws of the Federal Republic of Nigeria, without regard to conflict-of-law principles.</P>
+        <P>These Terms are governed by the laws of the United Kingdom, without regard to conflict-of-law principles.</P>
         <H>11. Contact</H>
         <P>Questions about these Terms? Email <a href={`mailto:${email}`} className="text-primary hover:underline">{email}</a>.</P>
       </>

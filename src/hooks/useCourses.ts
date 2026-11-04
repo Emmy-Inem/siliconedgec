@@ -47,6 +47,39 @@ export interface DbCourse {
   modules: DbModule[];
 }
 
+export const DEFAULT_COURSE_START_DATE = "2026-11-28";
+
+export function isDataEngineeringCourse(course: {
+  id?: string | null;
+  slug?: string | null;
+  title?: string | null;
+  category?: string | null;
+}): boolean {
+  const id = (course.id ?? "").toLowerCase();
+  const slug = (course.slug ?? "").toLowerCase();
+  const title = (course.title ?? "").toLowerCase();
+  const category = (course.category ?? "").toLowerCase();
+  return (
+    id === "20360c5a-2279-4a64-a373-3514f81cb600" ||
+    slug.includes("data-engineering") ||
+    title.includes("data engineering") ||
+    category === "data engineering"
+  );
+}
+
+export function resolveCourseStartDate(course: {
+  id?: string | null;
+  slug?: string | null;
+  title?: string | null;
+  category?: string | null;
+  start_date?: string | null;
+}): string | null {
+  if (isDataEngineeringCourse(course)) {
+    return course.start_date ?? null;
+  }
+  return course.start_date || DEFAULT_COURSE_START_DATE;
+}
+
 function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
   const slug = c.slug || c.id;
   return {
@@ -58,6 +91,13 @@ function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
     price: c.price,
     difficulty: c.difficulty,
     duration_hours: c.durationHours,
+    start_date: resolveCourseStartDate({
+      id: c.id,
+      slug,
+      title: c.title,
+      category: c.category,
+      start_date: c.startDate ?? null,
+    }),
     thumbnail_url: c.thumbnailUrl || null,
     rating: c.rating,
     students_enrolled: c.studentsEnrolled,
@@ -129,6 +169,7 @@ async function fetchCourses(): Promise<DbCourse[]> {
     if (c.id) existingKeys.add(c.id.toLowerCase());
     return {
       ...c,
+      start_date: resolveCourseStartDate(c),
       instructor: Array.isArray(c.instructor) ? c.instructor[0] ?? null : c.instructor,
       modules: [],
     };
@@ -265,6 +306,7 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
 
   return {
     ...course,
+    start_date: resolveCourseStartDate(course as any),
     description,
     learning_outcomes: learningOutcomes,
     whats_included: whatsIncluded,

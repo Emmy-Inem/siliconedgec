@@ -126,7 +126,7 @@ export default function Cart() {
           title: c.title,
           amount: lineAmounts[c.id] !== undefined
             ? Number(lineAmounts[c.id])
-            : Number(c.discount_price ?? c.price),
+            : Number(c.price),
         }));
         const resolvedCurrency = data.currency || (isStripe ? "USD" : "NGN");
         const receiptTotal = Number(data.total ?? lines.reduce((s, l) => s + l.amount, 0));
@@ -409,7 +409,7 @@ export default function Cart() {
                         {item.course?.instructor?.name ?? "Instructor"}
                       </p>
                       <p className="font-heading font-bold text-primary mt-2 text-sm">
-                        {formatPrice(Number(item.course?.discount_price ?? item.course?.price ?? 0))}
+                        {formatPrice(Number(item.course?.price ?? 0))}
                       </p>
                     </div>
                     <button

@@ -436,7 +436,7 @@ export default function CourseDetail() {
         content_id: courseId,
         content_name: course?.title,
         content_type: "product",
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
       });
       // Meta Pixel: same conversion, mapped to the canonical event name.
@@ -444,7 +444,7 @@ export default function CourseDetail() {
         content_ids: [courseId],
         content_name: course?.title,
         content_type: "product",
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
       });
       // Google Ads: free enrollment counts as a sign_up / registration.
@@ -456,7 +456,7 @@ export default function CourseDetail() {
         phone: (user?.user_metadata as any)?.phone ?? null,
       });
       googleAdsConversion("CompleteRegistration", {
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
         items: [{ id: courseId, name: course?.title }],
       });
@@ -522,18 +522,18 @@ export default function CourseDetail() {
         content_id: courseId,
         content_name: course?.title,
         content_type: "product",
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
       });
       metaEvent("AddToCart", {
         content_ids: [courseId],
         content_name: course?.title,
         content_type: "product",
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
       });
       googleAdsConversion("AddToCart", {
-        value: Number((course as any)?.discount_price ?? course?.price ?? 0),
+        value: Number(course?.price ?? 0),
         currency: "NGN",
         items: [{ id: courseId, name: course?.title }],
       });
@@ -633,7 +633,7 @@ export default function CourseDetail() {
           provider: { "@type": "Organization", name: "Silicon Edge Consulting" },
           offers: {
             "@type": "Offer",
-            price: (course as any).discount_price ?? course.price,
+            price: course.price,
             priceCurrency: (course as any).currency ?? "NGN",
             availability: "https://schema.org/InStock",
           },

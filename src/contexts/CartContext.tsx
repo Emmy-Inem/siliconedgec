@@ -111,7 +111,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         count: items.length,
-        total: items.reduce((s, i) => s + Number(i.course?.discount_price ?? i.course?.price ?? 0), 0),
+        total: items.reduce((s, i) => s + Number(i.course?.price ?? 0), 0),
         loading,
         addToCart,
         removeFromCart,

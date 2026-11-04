@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         unavailable_course_ids: unavailable,
       }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const subtotal = valid.reduce((s, c) => s + Number(c.discount_price ?? c.price), 0);
+    const subtotal = valid.reduce((s, c) => s + Number(c.price), 0);
 
     // Apply promo if provided
     let discount = 0;
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     // Distribute the discount proportionally across line items
     for (const c of valid) {
       const lineRef = `${reference}--${c.id.slice(0, 8)}`;
-      const lineSubtotal = Number(c.discount_price ?? c.price);
+      const lineSubtotal = Number(c.price);
       const lineDiscount = subtotal > 0 ? Math.round((lineSubtotal / subtotal) * discount * 100) / 100 : 0;
       const lineAmount = roundCurrencyAmount(Math.max(0, lineSubtotal - lineDiscount) * fxRate, currency);
       total += lineAmount;
