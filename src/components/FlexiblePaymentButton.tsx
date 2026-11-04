@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckoutTerms, PAYMENT_TERMS_VERSION } from "./CheckoutTerms";
 import { readFunctionError } from "@/lib/function-error";
+import { ensureAuthoritativeCoursePricing } from "@/hooks/useCourses";
 
 export async function installmentRequest(body: Record<string, unknown>) {
+  if (Array.isArray(body.course_ids) && body.course_ids.length > 0) {
+    await ensureAuthoritativeCoursePricing(body.course_ids as string[]);
+  }
   const { data, error } = await supabase.functions.invoke("course-installments", { body });
   if (error) throw await readFunctionError(error);
   if (data?.error) throw new Error(data.error);

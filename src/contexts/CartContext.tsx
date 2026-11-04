@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { trackJourney } from "@/lib/journey-tracking";
+import { ensureAuthoritativeCoursePricing } from "@/hooks/useCourses";
 
 interface CartItem {
   id: string;
@@ -58,6 +59,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         toast({ title: "Cart updated", description: `${unavailable.length} course${unavailable.length > 1 ? "s are" : " is"} no longer available and ${unavailable.length > 1 ? "were" : "was"} removed.` });
       }
       const available = data.filter((item: any) => !unavailable.includes(item));
+      const staleIds = available
+        .filter((item: any) => {
+          const c = Array.isArray(item.course) ? item.course[0] : item.course;
+          return c && c.discount_price !== null && c.discount_price !== undefined;
+        })
+        .map((item: any) => item.course_id);
+      if (staleIds.length > 0) {
+        void ensureAuthoritativeCoursePricing(staleIds);
+      }
       setItems(
         available.map((item: any) => ({
           ...item,

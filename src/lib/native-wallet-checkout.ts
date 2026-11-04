@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { usesLocalPaymentOptions } from "./payment-options";
 import { readFunctionError } from "./function-error";
+import { ensureAuthoritativeCoursePricing } from "@/hooks/useCourses";
 import type { UtmParams } from "@/hooks/useUtmTracking";
 
 export interface WalletCheckoutRequest {
@@ -26,6 +27,12 @@ export interface NativeWalletSession {
 
 export async function initializeNativeWalletCheckout(body: WalletCheckoutRequest): Promise<NativeWalletSession> {
   if (usesLocalPaymentOptions(body.currency)) throw new Error("This currency is not supported for wallet checkout.");
+  const targetIds = Array.isArray(body.course_ids)
+    ? body.course_ids
+    : typeof body.course_id === "string"
+      ? [body.course_id]
+      : undefined;
+  await ensureAuthoritativeCoursePricing(targetIds);
   const currencies = body.currency === "USD" ? ["USD"] : [body.currency, "USD"];
   for (const currency of currencies) {
     const { data, error } = await supabase.functions.invoke(

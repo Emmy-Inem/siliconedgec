@@ -32,7 +32,7 @@ import {
 import { formatNaira } from "@/lib/format-currency";
 import { logAdminActivity } from "@/lib/admin-logger";
 import { courses as staticCourses } from "@/data/courses";
-import { resolveCourseStartDate } from "@/hooks/useCourses";
+import { ensureAuthoritativeCoursePricing, resolveCourseStartDate } from "@/hooks/useCourses";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Course = Tables<"courses">;
@@ -89,6 +89,7 @@ export default function AdminCourses() {
       if (error) {
         console.warn("Error fetching admin courses from DB:", error);
       }
+      void ensureAuthoritativeCoursePricing();
       return data ?? [];
     },
   });

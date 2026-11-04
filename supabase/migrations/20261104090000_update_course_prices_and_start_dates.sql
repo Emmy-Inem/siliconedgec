@@ -1,10 +1,9 @@
--- 1. Clear stale strikethrough prices (discount_price) that are less than or equal to the selling price (price).
+-- 1. Clear discount_price on public.courses so server-side Paystack and Stripe checkout functions always charge course.price.
 UPDATE public.courses
 SET
   discount_price = NULL,
   updated_at = now()
-WHERE discount_price IS NOT NULL
-  AND discount_price <= price;
+WHERE discount_price IS NOT NULL;
 
 -- 2. Set start_date = 2026-11-28 for all courses except the Data Engineering course, which remains undecided (NULL).
 UPDATE public.courses

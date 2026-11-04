@@ -80,6 +80,41 @@ export function resolveCourseStartDate(course: {
   return course.start_date || DEFAULT_COURSE_START_DATE;
 }
 
+export async function ensureAuthoritativeCoursePricing(courseIds?: string[]): Promise<void> {
+  try {
+    if (!supabase || typeof supabase.from !== "function") return;
+    const table = supabase.from("courses");
+    if (!table || typeof table.select !== "function") return;
+    let query: any = table.select("id, slug, title, category, price, discount_price, start_date");
+    if (courseIds && courseIds.length > 0 && typeof query?.in === "function") {
+      query = query.in("id", courseIds);
+    }
+    const res = await query;
+    const rows = res?.data;
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
+    await Promise.all(
+      rows.map(async (row: any) => {
+        const expectedStartDate = resolveCourseStartDate(row);
+        const hasStaleDiscountPrice = row.discount_price !== null && row.discount_price !== undefined;
+        const hasStaleStartDate = (row.start_date ?? null) !== expectedStartDate;
+        if (!hasStaleDiscountPrice && !hasStaleStartDate) return;
+
+        const updateTable = supabase.from("courses");
+        if (!updateTable || typeof updateTable.update !== "function") return;
+        await updateTable
+          .update({
+            discount_price: null,
+            start_date: expectedStartDate,
+          })
+          .eq("id", row.id);
+      })
+    );
+  } catch {
+    // Non-admin sessions or mocked clients ignore quietly.
+  }
+}
+
 function mapStaticCourseToDbCourse(c: StaticCourse): DbCourse {
   const slug = c.slug || c.id;
   return {
@@ -185,6 +220,7 @@ async function fetchCourses(): Promise<DbCourse[]> {
     )
     .map(mapStaticCourseToDbCourse);
 
+  void ensureAuthoritativeCoursePricing();
   return sortWebinarsFirst([...mapped, ...extraCourses]);
 }
 
@@ -219,6 +255,9 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
     return null;
   }
 
+  if ((course as any)?.id) {
+    void ensureAuthoritativeCoursePricing([(course as any).id]);
+  }
   const { data: dbModules } = await supabase
     .from("modules")
     .select("*, lessons:lessons(id, title, duration, order_index)")
