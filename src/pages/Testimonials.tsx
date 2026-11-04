@@ -5,6 +5,8 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Loader2, Star, Quote, Play } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { normalizeTestimonials, syncAuthoritativeTestimonials } from "@/lib/testimonials";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Testimonial {
   id: string;
@@ -32,9 +34,16 @@ function isFileVideo(url: string) {
 }
 
 export default function Testimonials() {
+  const { isAdmin } = useAuth();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<Testimonial | null>(null);
+
+  useEffect(() => {
+    if (isAdmin) {
+      void syncAuthoritativeTestimonials();
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     (async () => {
@@ -43,7 +52,8 @@ export default function Testimonials() {
         .select("id,name,role,quote,rating,avatar_url,media_type,video_url,thumbnail_url")
         .or("is_published.is.null,is_published.eq.true")
         .order("order_index", { ascending: true, nullsFirst: false });
-      setItems((data as Testimonial[]) ?? []);
+      const normalized = normalizeTestimonials((data as Testimonial[]) ?? [], true);
+      setItems(normalized);
       setLoading(false);
     })();
   }, []);
@@ -67,34 +77,36 @@ export default function Testimonials() {
             {items.map((t) => {
               const isVideo = t.media_type === "video" && !!t.video_url;
               return (
-              <article key={t.id} className="rounded-2xl border border-border bg-card p-6">
-                {isVideo ? (
-                  <button
-                    type="button"
-                    onClick={() => setActive(t)}
-                    aria-label={`Play video testimonial from ${t.name}`}
-                    className="group relative w-full aspect-video rounded-xl overflow-hidden mb-4 bg-muted"
-                  >
-                    {t.thumbnail_url ? (
-                      <img src={t.thumbnail_url} alt={`${t.name} video testimonial`} loading="lazy" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary/25 to-primary/5" />
-                    )}
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="h-14 w-14 rounded-full bg-background/85 backdrop-blur flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
-                        <Play className="h-6 w-6 text-foreground fill-current ml-0.5" />
+              <article key={t.id} className="rounded-2xl border border-border bg-card p-6 flex flex-col justify-between">
+                <div>
+                  {isVideo ? (
+                    <button
+                      type="button"
+                      onClick={() => setActive(t)}
+                      aria-label={`Play video testimonial from ${t.name}`}
+                      className="group relative w-full aspect-video rounded-xl overflow-hidden mb-4 bg-muted"
+                    >
+                      {t.thumbnail_url ? (
+                        <img src={t.thumbnail_url} alt={`${t.name} video testimonial`} loading="lazy" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/25 to-primary/5" />
+                      )}
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="h-14 w-14 rounded-full bg-background/85 backdrop-blur flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                          <Play className="h-6 w-6 text-foreground fill-current ml-0.5" />
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                ) : (
-                  <Quote className="h-6 w-6 text-foreground/20 mb-3" />
-                )}
-                {t.quote && <p className="text-sm leading-relaxed mb-5">{t.quote}</p>}
-                <div className="flex items-center gap-3">
-                  {t.avatar_url ? (
-                    <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-10 h-10 rounded-full object-cover" />
+                    </button>
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-medium text-foreground">{t.name.charAt(0)}</div>
+                    <Quote className="h-6 w-6 text-foreground/20 mb-3" />
+                  )}
+                  {t.quote && <p className="text-sm leading-relaxed mb-5">"{t.quote}"</p>}
+                </div>
+                <div className="flex items-center gap-3 pt-3 border-t border-border/50">
+                  {t.avatar_url ? (
+                    <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-medium text-foreground shrink-0">{t.name.charAt(0)}</div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{t.name}</p>

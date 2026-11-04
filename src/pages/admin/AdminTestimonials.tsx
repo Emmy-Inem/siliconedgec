@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { normalizeTestimonials, syncAuthoritativeTestimonials } from "@/lib/testimonials";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminCrudTable, Column } from "@/components/admin/AdminCrudTable";
@@ -79,12 +80,13 @@ export default function AdminTestimonials() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
+  useEffect(() => { void syncAuthoritativeTestimonials(); }, []);
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-testimonials"],
     queryFn: async () => {
       const { data, error } = await supabase.from("testimonials").select("*").order("order_index");
       if (error) throw error;
-      return data;
+      return normalizeTestimonials(data, false);
     },
   });
 

@@ -14,6 +14,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
+import { AUTHORITATIVE_STUDENT_TESTIMONIALS, normalizeTestimonials, syncAuthoritativeTestimonials } from "@/lib/testimonials";
 import instructor1 from "@/assets/stock/instructor-1.jpg";
 import instructor2 from "@/assets/stock/instructor-2.jpg";
 import instructor3 from "@/assets/stock/instructor-3.jpg";
@@ -171,7 +172,7 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 type FallbackTestimonial = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
 /* No invented testimonials — only real entries from the database are shown. */
-const fallbackTestimonials: FallbackTestimonial[] = [];
+const fallbackTestimonials: FallbackTestimonial[] = AUTHORITATIVE_STUDENT_TESTIMONIALS;
 
 /* ----------------------------- main ----------------------------- */
 
@@ -254,8 +255,8 @@ export default function Index() {
   });
 
   const stockAvatars = [testimonial1, testimonial2, testimonial3, testimonial4, testimonial5, testimonial6];
-  const testimonials = (dbTestimonials && dbTestimonials.length > 0)
-    ? dbTestimonials.map((t, i) => ({
+  useEffect(() => { if (isAdmin) void syncAuthoritativeTestimonials(); }, [isAdmin]); const normalizedDbTestimonials = normalizeTestimonials(dbTestimonials, true); const testimonials = (normalizedDbTestimonials && normalizedDbTestimonials.length > 0)
+    ? normalizedDbTestimonials.map((t, i) => ({
         id: t.id,
         name: t.name,
         role: t.role ?? "Student",

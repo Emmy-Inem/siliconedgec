@@ -34,7 +34,7 @@ const videoTestimonials: VideoTestimonial[] = [
     name: "Doreez",
     role: "@techtokwithdee · Cloud Engineering Learner",
     title: "From Confused to Hired: My Cloud Roadmap",
-    quote: "Sometime ago, I was stuck watching tutorials with zero direction. What I needed was a clear roadmap. That's how I found Cloud Engineering—a high income skill that made everything click.",
+    quote: "I spent months jumping from one random YouTube tutorial to another with zero direction—my browser bookmarks were a graveyard. Getting an actual Cloud Engineering roadmap here was the first time the pieces finally clicked together.",
     thumbnail: videoTestimonialDoreez,
     videoUrl: "https://www.instagram.com/reel/DX1DD1qM9fd/?stkn=MXQ4djBiMnBlaG1xNQ==",
     tag: "Student Story",
@@ -43,8 +43,8 @@ const videoTestimonials: VideoTestimonial[] = [
     id: "video-simeon",
     name: "Simeon Onu",
     role: "Cloud Engineering Alum",
-    title: "Transformational Bootcamp for Cloud Engineering",
-    quote: "This bootcamp is highly transformational. It has given me a solid foundation for my cloud engineering career.",
+    title: "Skipping the Fluff for Real Cloud Labs",
+    quote: "I came in wanting more than just theory slides, and honestly the live labs delivered. Breaking down real cloud architecture step-by-step gave me a foundation I actually use instead of just memorizing buzzwords.",
     thumbnail: videoTestimonialSimeon,
     videoUrl: "https://www.instagram.com/reel/Dauih0ds_Zw/?stkn=MTU5ejFod2Q3ajFnNw==",
     tag: "Bootcamp Review",
@@ -54,7 +54,7 @@ const videoTestimonials: VideoTestimonial[] = [
     name: "Michael Olagoke",
     role: "Cloud Engineering Bootcamp Graduate",
     title: "From Zero to Cloud Confidence in 4 Weeks",
-    quote: "Joined with zero knowledge and gained hands-on practical experience with Microsoft Azure, from tenant subscriptions and resource groups to real-world cloud fundamentals.",
+    quote: "Walked into week one knowing literally nothing about Azure—I didn't even know what a tenant subscription was. Four weeks later I was spinning up resource groups, virtual networks, and policies with my own hands.",
     thumbnail: videoTestimonialMichael,
     videoUrl: "https://www.instagram.com/reel/Db-luPzsA-g/?stkn=MTNuZ3dmeW80cWdmNg==",
     tag: "Alumni Journey",
@@ -63,27 +63,29 @@ const videoTestimonials: VideoTestimonial[] = [
 
 function TestimonialCard({ t }: { t: TestimonialItem }) {
   return (
-    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative w-[300px] sm:w-[340px] shrink-0">
-      <Quote className="absolute top-3 right-3 h-5 w-5 text-foreground/10" />
-      <div className="flex gap-0.5 mb-2.5">
-        {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
-          <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
-        ))}
+    <div className="glass-card rounded-2xl border border-border/60 p-5 hover:border-primary/30 transition-colors relative w-[310px] sm:w-[360px] shrink-0 flex flex-col justify-between">
+      <div>
+        <Quote className="absolute top-3 right-3 h-5 w-5 text-foreground/10" />
+        <div className="flex gap-0.5 mb-2.5">
+          {Array.from({ length: t.rating ?? 5 }).map((_, j) => (
+            <Star key={j} className="h-3.5 w-3.5 fill-gold text-gold" />
+          ))}
+        </div>
+        <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
       </div>
-      <p className="text-sm leading-relaxed text-foreground/90 mb-4">"{t.quote}"</p>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pt-2 border-t border-border/40">
         {t.avatar_url ? (
-          <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-9 h-9 rounded-full object-cover" />
+          <img src={t.avatar_url} alt={t.name} loading="lazy" className="w-9 h-9 rounded-full object-cover shrink-0" />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
             <span className="font-heading font-bold text-foreground text-xs">
               {t.name.split(" ").map((n) => n[0]).join("")}
             </span>
           </div>
         )}
-        <div>
-          <p className="font-heading font-semibold text-sm">{t.name}</p>
-          <p className="text-[11px] text-muted-foreground">{t.role}</p>
+        <div className="min-w-0">
+          <p className="font-heading font-semibold text-sm truncate">{t.name}</p>
+          <p className="text-[11px] text-muted-foreground truncate">{t.role}</p>
         </div>
       </div>
     </div>
@@ -100,7 +102,7 @@ function VerticalTestimonialMarquee({ testimonials, speed = "normal" }: { testim
   return (
     <div className="relative overflow-hidden mask-fade-x marquee-pause">
       <div
-        className="marquee-track flex gap-5 w-max"
+        className="marquee-track flex items-stretch gap-5 w-max"
         style={{
           animation: `marquee ${duration}s linear infinite`,
           willChange: "transform",
