@@ -218,11 +218,12 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
             }}
             className="group relative max-w-[250px] sm:max-w-[270px] cursor-pointer rounded-2xl rounded-br-sm border border-primary/25 bg-card/95 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-primary/50 px-3.5 py-2.5 transition-all"
           >
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               type="button"
               onClick={dismissBubble}
               aria-label="Dismiss AI Coach tip"
-              className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shadow-sm"
+              className="absolute -top-2 -right-2 h-5 w-5 p-0 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shadow-sm"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -253,16 +254,17 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            className="w-[calc(100vw-1.5rem)] max-w-[320px] sm:w-[340px] sm:max-w-[340px] max-h-[calc(100dvh-9.5rem)] sm:max-h-[min(460px,calc(100dvh-10.5rem))] rounded-2xl border border-primary/25 bg-card shadow-2xl overflow-hidden flex flex-col"
+            className="w-[calc(100vw-1.5rem)] max-w-[340px] sm:w-[360px] sm:max-w-[360px] max-h-[calc(100dvh-7.5rem)] sm:max-h-[min(560px,calc(100dvh-8rem))] rounded-2xl border border-primary/25 bg-card shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-gradient-to-r from-primary/15 via-primary/5 to-transparent">
               <div className="flex items-center gap-2 min-w-0">
                 {view !== "menu" ? (
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={() => setView("menu")}
-                    className="p-1 -ml-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="h-7 w-7 p-0 -ml-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
                     aria-label="Back to menu"
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -284,92 +286,108 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                   </p>
                 </div>
               </div>
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setPanelOpen(false)}
                 aria-label="Close AI Coach"
-                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
 
-            <a href={COACH_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mx-3 mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-xs font-semibold !text-white hover:bg-[#1da851]">
-              <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+            <a
+              href={COACH_WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 mx-3 mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 py-2 text-xs font-semibold !text-white hover:bg-[#1da851] shadow-sm transition-colors"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" /> Chat on WhatsApp
             </a>
+
             {/* Scrollable Body Content */}
             <div className="p-3 overflow-y-auto overscroll-contain space-y-2.5 flex-1 min-h-0">
               {view === "menu" && (
                 <>
                   {/* Coach Greeting Bubble */}
-                  <div className="flex items-start gap-2 rounded-xl bg-muted/50 border border-border/60 px-3 py-2 text-xs text-foreground leading-relaxed">
+                  <div className="flex items-start gap-2.5 rounded-xl bg-muted/50 border border-border/60 px-3 py-2.5 text-xs text-foreground leading-relaxed">
                     <div className="mt-0.5 h-5 w-5 rounded-md bg-primary flex items-center justify-center shrink-0">
                       <CoachBrandIcon className="h-3 w-3" />
                     </div>
-                    <div>
-                      {courseTitle ? <>Hello! I'm your AI Coach for <span className="font-semibold text-primary">{subject}</span>. Ask about the skills, prerequisites and projects.</> : pageContext.greeting}
+                    <div className="min-w-0 flex-1">
+                      {courseTitle ? (
+                        <>
+                          Hello! I'm your AI Coach for <span className="font-semibold text-primary">{subject}</span>. Ask about the skills, prerequisites and projects.
+                        </>
+                      ) : (
+                        pageContext.greeting
+                      )}
                     </div>
                   </div>
 
                   {/* Highlighted Interactive Fit Check Card */}
-                  {courseTitle && <Button variant="ghost"
-                    type="button"
-                    onClick={() => {
-                      resetQuiz();
-                      setView("quiz");
-                    }}
-                    className="w-full group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-3 py-2.5 text-left hover:border-primary/60 transition-all shadow-sm"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="space-y-0.5">
+                  {courseTitle && (
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => {
+                        resetQuiz();
+                        setView("quiz");
+                      }}
+                      className="w-full h-auto whitespace-normal justify-between items-center group relative rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-3 py-2.5 text-left hover:border-primary/60 hover:bg-primary/10 transition-all shadow-sm"
+                    >
+                      <div className="flex-1 min-w-0 space-y-0.5 pr-2">
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                          <Zap className="h-3 w-3" /> Interactive Quiz
+                          <Zap className="h-3 w-3 shrink-0" /> Interactive Quiz
                         </span>
-                        <p className="text-xs font-semibold text-foreground">
+                        <p className="text-xs font-semibold text-foreground leading-snug">
                           Is this course right for me?
                         </p>
-                        <p className="text-[11px] text-muted-foreground leading-tight">
+                        <p className="text-[11px] text-muted-foreground leading-snug font-normal">
                           Answer 2 quick questions for a personalized match.
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-primary shrink-0 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </Button>}
+                      <ChevronRight className="h-4 w-4 text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                    </Button>
+                  )}
 
                   {/* Quick One-Click Smart Prompts */}
                   <div className="space-y-1.5">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-0.5">
                       Instant AI Answers
                     </p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-col gap-1.5">
                       {pageContext.suggestions.map((prompt) => (
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           key={prompt}
                           type="button"
                           onClick={() =>
                             openChatWithQuestion(courseTitle ? `For the course "${subject}": ${prompt}` : prompt)
                           }
-                          className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
+                          className="w-full h-auto whitespace-normal justify-start items-center gap-2 text-[11px] font-medium leading-snug px-3 py-2 rounded-xl border border-border bg-background hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors text-left"
                         >
-                          <MessageSquare className="h-3 w-3 text-primary shrink-0" />
-                          <span>{prompt}</span>
+                          <MessageSquare className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <span className="min-w-0 flex-1">{prompt}</span>
                         </Button>
                       ))}
                     </div>
                   </div>
 
                   {/* Navigation Actions */}
-                  <div className="space-y-0.5 pt-1 border-t border-border/60">
-                    <Button variant="ghost"
+                  <div className="space-y-0.5 pt-1.5 border-t border-border/60">
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => openChatWithQuestion()}
-                      className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="w-full h-auto flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 min-w-0">
                         <MessageCircle className="h-3.5 w-3.5 text-primary shrink-0" />
-                        Chat with AI Coach
+                        <span className="truncate">Chat with AI Coach</span>
                       </span>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     </Button>
 
                     <Link
@@ -377,26 +395,39 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                       onClick={() => setPanelOpen(false)}
                       className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 min-w-0">
                         <Route className="h-3.5 w-3.5 text-primary shrink-0" />
-                        See the full learning path
+                        <span className="truncate">See the full learning path</span>
                       </span>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     </Link>
 
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => courseTitle ? setView("faqs") : openChatWithQuestion(pageContext.suggestions[0])}
-                      className="w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="w-full h-auto flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 min-w-0">
                         <HelpCircle className="h-3.5 w-3.5 text-primary shrink-0" />
-                        {courseTitle ? "Read the course FAQs" : `Help with ${pageContext.label.toLowerCase()}`}
+                        <span className="truncate">
+                          {courseTitle ? "Read the course FAQs" : `Help with ${pageContext.label.toLowerCase()}`}
+                        </span>
                       </span>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     </Button>
-                    <Button variant="ghost" className="w-full justify-between h-auto px-2.5 py-1.5 text-xs" onClick={() => openChatWithQuestion("I need help from Silicon Edge Support.")}>
-                      <span className="flex items-center gap-2"><HelpCircle className="h-3.5 w-3.5" /> Silicon Edge Support</span><ChevronRight className="h-3.5 w-3.5" />
+
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      className="w-full h-auto flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      onClick={() => openChatWithQuestion("I need help from Silicon Edge Support.")}
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <HelpCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="truncate">Silicon Edge Support</span>
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     </Button>
                   </div>
                 </>
@@ -422,21 +453,22 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                         {EXPERIENCE_OPTIONS.map((opt) => {
                           const OptIcon = opt.Icon;
                           return (
-                            <Button variant="ghost"
+                            <Button
+                              variant="ghost"
                               key={opt.id}
                               type="button"
                               onClick={() => {
                                 setSelectedExp(opt.id);
                                 setQuizStep(2);
                               }}
-                              className="w-full flex items-start gap-2.5 text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
+                              className="w-full h-auto whitespace-normal justify-start items-start gap-2.5 text-left p-2.5 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
                             >
                               <div className="mt-0.5 h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                                 <OptIcon className="h-3.5 w-3.5" />
                               </div>
-                              <div>
-                                <div className="text-xs font-semibold text-foreground">{opt.label}</div>
-                                <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-semibold text-foreground leading-snug">{opt.label}</div>
+                                <div className="text-[11px] text-muted-foreground font-normal leading-snug mt-0.5">{opt.desc}</div>
                               </div>
                             </Button>
                           );
@@ -462,19 +494,20 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                         {GOAL_OPTIONS.map((opt) => {
                           const GoalIcon = opt.Icon;
                           return (
-                            <Button variant="ghost"
+                            <Button
+                              variant="ghost"
                               key={opt.id}
                               type="button"
                               onClick={() => {
                                 setSelectedGoal(opt.id);
                                 setQuizStep(3);
                               }}
-                              className="w-full flex items-center gap-2.5 text-left p-2 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
+                              className="w-full h-auto whitespace-normal justify-start items-center gap-2.5 text-left p-2.5 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground"
                             >
                               <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                                 <GoalIcon className="h-3.5 w-3.5" />
                               </div>
-                              <span>{opt.label}</span>
+                              <span className="min-w-0 flex-1 leading-snug">{opt.label}</span>
                             </Button>
                           );
                         })}
@@ -508,22 +541,24 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                           : `You'll graduate with a verifiable Silicon Edge certificate and portfolio project.`}
                       </p>
                       <div className="flex flex-col gap-1.5 pt-0.5">
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={() =>
                             openChatWithQuestion(
                               `I'm a ${selectedExp} learner looking to ${selectedGoal} with "${subject}". Can you give me a tailored study plan?`
                             )
                           }
-                          className="w-full py-1.5 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full h-auto py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 hover:text-primary-foreground transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <GraduationCap className="h-3.5 w-3.5" />
+                          <GraduationCap className="h-3.5 w-3.5 shrink-0" />
                           Get My Custom Study Plan
                         </Button>
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={resetQuiz}
-                          className="text-[11px] text-muted-foreground hover:text-foreground text-center py-0.5"
+                          className="h-auto text-[11px] text-muted-foreground hover:text-foreground text-center py-1 px-2"
                         >
                           Retake quiz
                         </Button>
@@ -543,12 +578,13 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                         key={idx}
                         className="rounded-xl border border-border/70 bg-background overflow-hidden"
                       >
-                        <Button variant="ghost"
+                        <Button
+                          variant="ghost"
                           type="button"
                           onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between gap-2 p-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors"
+                          className="w-full h-auto whitespace-normal flex items-center justify-between gap-2 p-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors"
                         >
-                          <span>{faq.q}</span>
+                          <span className="min-w-0 flex-1 leading-snug">{faq.q}</span>
                           <ChevronDown
                             className={`h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform ${
                               isOpen ? "rotate-180" : ""
@@ -573,14 +609,15 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                       </div>
                     );
                   })}
-                  <Button variant="ghost"
+                  <Button
+                    variant="ghost"
                     type="button"
                     onClick={() =>
                       openChatWithQuestion(`I have a question about "${subject}"`)
                     }
-                    className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full h-auto mt-1.5 py-2 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <MessageCircle className="h-3.5 w-3.5" />
+                    <MessageCircle className="h-3.5 w-3.5 shrink-0" />
                     Ask a different question
                   </Button>
                 </div>
@@ -590,7 +627,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
             {/* Direct Mini-Input Footer */}
             <form
               onSubmit={handleMiniSubmit}
-              className="shrink-0 p-2 border-t border-border bg-muted/20 flex items-center gap-1.5"
+              className="shrink-0 p-2.5 border-t border-border bg-muted/20 flex items-center gap-1.5"
             >
               <input
                 type="text"
@@ -599,11 +636,12 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
                 placeholder="Ask AI Coach anything…"
                 className="min-w-0 flex-1 bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
-              <Button variant="ghost"
+              <Button
+                variant="ghost"
                 type="submit"
                 disabled={!customQuestion.trim()}
                 aria-label="Send question to AI Coach"
-                className="h-7 w-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition-colors shrink-0"
+                className="h-8 w-8 p-0 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 hover:text-primary-foreground transition-colors shrink-0"
               >
                 <Send className="h-3.5 w-3.5" />
               </Button>

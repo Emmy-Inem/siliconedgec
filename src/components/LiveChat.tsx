@@ -284,39 +284,47 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
             transition={{ duration: 0.2 }}
             className={`${embedded ? "absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-1.5rem)]" : "fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)]"} h-[540px] max-h-[calc(100dvh-7rem)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}
           >
-            <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
-              <div>
+            <div className="shrink-0 bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between">
+              <div className="min-w-0">
                 <h3 className="font-heading font-semibold text-sm flex items-center gap-1.5">
-                  <><CoachBrandIcon className="h-4 w-4" /> Silicon Edge AI Coach</>
+                  <CoachBrandIcon className="h-4 w-4 shrink-0" /> Silicon Edge AI Coach
                 </h3>
-                <p className="text-[10px] opacity-80">
+                <p className="text-[10px] opacity-80 truncate">
                   {escalated ? "Connected to our team — they reply here and by email" : coach.label}
                 </p>
               </div>
-              <Button variant="ghost" onClick={() => { setOpen(false); onOpenChange?.(false); }} className="hover:bg-primary-foreground/10 rounded p-1" aria-label="Minimise chat">
+              <Button
+                variant="ghost"
+                onClick={() => { setOpen(false); onOpenChange?.(false); }}
+                className="h-7 w-7 p-0 hover:bg-primary-foreground/10 text-primary-foreground hover:text-primary-foreground rounded shrink-0"
+                aria-label="Minimise chat"
+              >
                 <MinusCircle className="h-4 w-4" />
               </Button>
             </div>
 
-            {(              <>
-                <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+            {(
+              <>
+                <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
                   <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${escalated ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"}`}>
                     {escalated ? "● Human agent joined" : "● AI assistant"}
                   </span>
                   {!escalated ? (
-                    <Button variant="ghost"
+                    <Button
+                      variant="ghost"
                       onClick={talkToHuman}
                       disabled={assistant.loading}
-                      className="ml-auto text-[11px] text-primary hover:underline font-medium disabled:opacity-50"
+                      className="h-auto py-0.5 px-1.5 ml-auto text-[11px] text-primary hover:underline font-medium disabled:opacity-50"
                     >
                       Talk to a human
                     </Button>
                   ) : (
                     <div className="ml-auto flex items-center gap-2">
-                      <Button variant="ghost"
+                      <Button
+                        variant="ghost"
                         type="button"
                         onClick={returnToAi}
-                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+                        className="h-auto py-0.5 px-1.5 text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
                         title="Return to instant AI assistant"
                       >
                         <span className="flex h-5 w-5 items-center justify-center rounded bg-primary"><CoachBrandIcon className="h-3.5 w-3.5" /></span> Ask AI Assistant
@@ -329,69 +337,80 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                   )}
                 </div>
 
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
-                    {escalated && (
-                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-foreground/90 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                            <Headphones className="h-3.5 w-3.5" /> Support Agent Connected
-                          </p>
-                          <Button variant="ghost"
-                            type="button"
-                            onClick={returnToAi}
-                            className="text-[11px] font-semibold text-primary hover:underline"
-                          >
-                            Return to AI
-                          </Button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          Your request is with our human support team. If your question is resolved or you want instant answers to new questions, switch back to the AI anytime.
+                <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 bg-background/50">
+                  {escalated && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-foreground/90 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                          <Headphones className="h-3.5 w-3.5" /> Support Agent Connected
                         </p>
+                        <Button
+                          variant="ghost"
+                          type="button"
+                          onClick={returnToAi}
+                          className="h-auto py-0.5 px-1.5 text-[11px] font-semibold text-primary hover:underline"
+                        >
+                          Return to AI
+                        </Button>
                       </div>
-                    )}
-                    {assistant.messages.length === 0 && messages.length === 0 && !loading && (
-                      <div className="text-center pt-6">
-                        <span className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary"><CoachBrandIcon className="h-6 w-6" /></span>
-                        <p className="text-sm text-muted-foreground">{coach.greeting}</p>
-                        {!user && <p className="mt-2 text-xs text-muted-foreground">Ask two questions free. Create an account or sign in to keep chatting.</p>}
-                        <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
-                          {coach.suggestions.map(q => (
-                            <Button variant="ghost" key={q} onClick={() => assistant.send(q)} className="text-[11px] px-2 py-1 rounded-full border border-border hover:bg-muted">
-                              {q}
-                            </Button>
-                          ))}
-                        </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Your request is with our human support team. If your question is resolved or you want instant answers to new questions, switch back to the AI anytime.
+                      </p>
+                    </div>
+                  )}
+                  {assistant.messages.length === 0 && messages.length === 0 && !loading && (
+                    <div className="text-center pt-4">
+                      <span className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary"><CoachBrandIcon className="h-6 w-6" /></span>
+                      <p className="text-sm text-muted-foreground">{coach.greeting}</p>
+                      {!user && <p className="mt-2 text-xs text-muted-foreground">Ask two questions free. Create an account or sign in to keep chatting.</p>}
+                      <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                        {coach.suggestions.map(q => (
+                          <Button
+                            variant="ghost"
+                            key={q}
+                            onClick={() => assistant.send(q)}
+                            className="h-auto whitespace-normal text-left text-[11px] leading-snug px-3 py-1.5 rounded-full border border-border hover:bg-muted"
+                          >
+                            {q}
+                          </Button>
+                        ))}
                       </div>
-                    )}
-                    {assistant.messages.map((m, i) => (
-                      <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                        {m.role === "assistant" && <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary" aria-label="Silicon Edge AI Coach"><CoachBrandIcon className="h-3.5 w-3.5" /></span>}
-                        <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
-                          {m.role === "user" ? m.content : <MarkdownView className="text-sm">{m.content}</MarkdownView>}
-                        </div>
+                    </div>
+                  )}
+                  {assistant.messages.map((m, i) => (
+                    <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                      {m.role === "assistant" && <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary" aria-label="Silicon Edge AI Coach"><CoachBrandIcon className="h-3.5 w-3.5" /></span>}
+                      <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
+                        {m.role === "user" ? m.content : <MarkdownView className="text-sm">{m.content}</MarkdownView>}
                       </div>
-                    ))}
-                    {assistant.loading && (
-                      <div className="flex justify-start">
-                        <div className="bg-muted rounded-2xl rounded-bl-sm px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
-                        </div>
+                    </div>
+                  ))}
+                  {assistant.loading && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted rounded-2xl rounded-bl-sm px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
                       </div>
-                    )}
-                    {messages.map(m => (
-                      <div key={m.id} className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.sender_role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
-                          {m.sender_role !== "user" && <span className="block text-[10px] font-medium text-primary mb-0.5">Support team</span>}
-                          {m.content}
-                        </div>
+                    </div>
+                  )}
+                  {messages.map(m => (
+                    <div key={m.id} className={`flex ${m.sender_role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.sender_role === "user" ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
+                        {m.sender_role !== "user" && <span className="block text-[10px] font-medium text-primary mb-0.5">Support team</span>}
+                        {m.content}
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
 
-                <a href={COACH_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mx-3 my-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold !text-white hover:bg-[#1da851]">
-                  <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+                <a
+                  href={COACH_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 mx-3 my-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold !text-white hover:bg-[#1da851]"
+                >
+                  <MessageCircle className="h-4 w-4 shrink-0" /> Chat on WhatsApp
                 </a>
-                <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 border-t border-border flex gap-2">
+                <form onSubmit={(e) => { e.preventDefault(); send(); }} className="shrink-0 p-3 border-t border-border flex gap-2">
                   <input
                     ref={inputRef}
                     value={draft}
@@ -399,7 +418,12 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                     placeholder={escalated ? "Message our team…" : "Ask anything…"}
                     className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
-                  <Button variant="ghost" type="submit" disabled={!draft.trim() || busy} className="w-10 h-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50">
+                  <Button
+                    variant="ghost"
+                    type="submit"
+                    disabled={!draft.trim() || busy}
+                    className="w-10 h-10 p-0 shrink-0 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground flex items-center justify-center disabled:opacity-50"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
@@ -410,9 +434,10 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
       </AnimatePresence>
 
       {!embedded && !aiCoachActive && (
-        <Button variant="ghost"
+        <Button
+          variant="ghost"
           onClick={() => setOpen(o => !o)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 p-0 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-110"
           aria-label="Open AI Coach"
         >
           {open ? <X className="h-6 w-6 text-primary-foreground" /> : <MessageCircle className="h-6 w-6 text-primary-foreground" />}
