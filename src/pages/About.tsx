@@ -17,16 +17,16 @@ import mentorStock from "@/assets/stock/mentor.jpg";
 
 const values = [
   { icon: Target, title: "Job-Ready Outcomes", body: "Every program is engineered to land roles, not just hand out certificates. Curricula are mapped to real job descriptions and assessed through portfolio projects." },
-  { icon: Users, title: "Live, Mentor-Led", body: "Learn from senior engineers in interactive cohorts — live classes, code reviews, and 1:1 mentorship instead of passive, pre-recorded silos." },
+  { icon: Users, title: "Live, Mentor-Led", body: "Learn from senior engineers in interactive cohorts with live classes, code reviews, and 1:1 mentorship instead of passive, pre-recorded silos." },
   { icon: Award, title: "Industry-Aligned", body: "Content is aligned with AWS, Microsoft Azure, Google Cloud and modern DevOps certifications, so your learning compounds toward recognized credentials." },
   { icon: LifeBuoy, title: "Career Support", body: "Resume reviews, mock interviews, salary negotiation coaching, and warm introductions to hiring partners across Africa and beyond." },
 ];
 
 const approach = [
-  { title: "Learn by building", body: "Every course is anchored in hands-on labs and real infrastructure — you deploy, break, and fix production-grade systems." },
+  { title: "Learn by building", body: "Every course is anchored in hands-on labs and real infrastructure where you deploy, break, and fix production-grade systems." },
   { title: "Cohort accountability", body: "Structured schedules, peer groups, and live check-ins keep completion rates high and learning momentum strong." },
   { title: "Portfolio over theory", body: "You graduate with shipped projects, verifiable certificates, and GitHub-ready work that speaks for you in interviews." },
-  { title: "Careers as the KPI", body: "We measure success by placements, promotions, and salary growth — not enrollment counts." },
+  { title: "Careers as the KPI", body: "We measure success by placements, promotions, and salary growth, not enrollment counts." },
 ];
 
 const stats = [
@@ -59,7 +59,7 @@ export default function About() {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="About Silicon Edge Consulting | Global IT Training"
-        description="Learn how Silicon Edge Consulting provides practical, project-driven IT training to learners worldwide — live cohorts, mentorship, and career support."
+        description="Learn how Silicon Edge Consulting provides practical, project-driven IT training to learners worldwide with live cohorts, mentorship, and career support."
         canonical="https://siliconedgec.com/about"
         jsonLd={jsonLd}
       />
@@ -79,7 +79,7 @@ export default function About() {
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               We exist to close the gap between learning and employment. {brand} combines live instruction,
-              real-world projects, and dedicated career services so every learner graduates ready to ship —
+              real-world projects, and dedicated career services so every learner graduates ready to ship
               and ready to get hired.
             </p>
           </div>

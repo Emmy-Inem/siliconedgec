@@ -91,7 +91,7 @@ function CityPage({ loc }: { loc: CityLocation }) {
               <h2 className="font-display text-2xl font-semibold text-foreground">How training works for {loc.city} learners</h2>
               <ul className="mt-4 space-y-2 text-muted-foreground">
                 {[
-                  loc.hasOffice ? "Live classes led by our London team, delivered online so you can join from anywhere in the city" : `Live online classes — no office visit needed in ${loc.city}`,
+                  loc.hasOffice ? "Live classes led by our London team, delivered online so you can join from anywhere in the city" : `Live online classes with no office visit needed in ${loc.city}`,
                   `Sessions scheduled for ${loc.timezone}, with recordings of every class`,
                   "Hands-on labs and portfolio projects reviewed by mentors",
                   "Verified certificate on completion, plus guidance for vendor exams",

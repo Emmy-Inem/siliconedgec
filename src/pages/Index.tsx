@@ -541,7 +541,7 @@ export default function Index() {
                   <div className="w-11 h-11 rounded-2xl bg-muted ring-1 ring-border/60 flex items-center justify-center"><MessagesSquare className="h-5 w-5 text-foreground" /></div>
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">Cohort space</span>
                 </div>
-                <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes — not a pre-recorded slog.</h3>
+                <h3 className="font-heading text-xl md:text-2xl font-semibold mb-1">Live, instructor-led classes, not a pre-recorded slog.</h3>
                 <p className="text-sm text-muted-foreground">Ask, build, and ship in real time with mentors who reply in minutes.</p>
                 <ChatBubbleTile />
               </Link>
@@ -810,13 +810,13 @@ export default function Index() {
                 {home?.mentors_title ?? "Guidance from people who've already done it."}
               </h2>
               <p className="text-hero-muted leading-relaxed mb-8 max-w-lg">
-                {home?.mentors_description ?? "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth."}
+                {home?.mentors_description ?? "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers, and they tell you the truth."}
               </p>
               <div className="space-y-5">
                 {[
                   { icon: ShieldCheck, title: "Industry veterans", desc: "Seasoned professionals sharing current insights and best practices." },
                   { icon: Handshake, title: "Dedicated support", desc: "Personalized guidance, fast answers, and constructive feedback." },
-                  { icon: CheckCircle2, title: "Practical-first", desc: "Hands-on projects and real-world scenarios — no theory dumps." },
+                  { icon: CheckCircle2, title: "Practical-first", desc: "Hands-on projects and real-world scenarios with no theory dumps." },
                 ].map((item, i) => (
                   <motion.div
                     key={item.title}
@@ -870,7 +870,7 @@ export default function Index() {
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Project graded</p>
-                  <p className="text-xs font-semibold">A+ — Cloud Lab 04</p>
+                  <p className="text-xs font-semibold">A+ · Cloud Lab 04</p>
                 </div>
               </motion.div>
               <motion.div

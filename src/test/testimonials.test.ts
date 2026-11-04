@@ -59,6 +59,8 @@ describe("normalizeTestimonials", () => {
     expect(uniqueQuotes.size).toBe(result.length);
     expect(uniqueRoles.size).toBe(result.length);
     expect(result.some((r) => r.quote.includes("stage zero"))).toBe(false);
+    expect(result.some((r) => r.quote.includes("—"))).toBe(false);
+    expect(result.some((r) => (r.role ?? "").includes("—"))).toBe(false);
   });
 
   it("preserves custom non-boilerplate reviews added by admins", () => {

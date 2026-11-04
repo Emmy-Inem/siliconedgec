@@ -144,7 +144,7 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
         <H>6. How to request a refund</H>
         <P>Email <a href={`mailto:${email}`} className="text-primary hover:underline">{email}</a> with your order reference. Approved refunds are returned to the original payment method within 5–10 business days.</P>
         <H>7. Chargebacks</H>
-        <P>Please contact us before initiating a chargeback — most disputes can be resolved within 48 hours.</P>
+        <P>Please contact us before initiating a chargeback, as most disputes can be resolved within 48 hours.</P>
       </>
     );
   }
@@ -157,7 +157,7 @@ function Body({ k, brand, email }: { k: LegalKey; brand: string; email: string }
       <UL>
         <li><strong>Essential:</strong> required for sign-in, cart, security, and saving your consent choice. Cannot be disabled.</li>
         <li><strong>Analytics:</strong> aggregate measurement via Google Analytics 4 to improve the platform.</li>
-        <li><strong>Marketing:</strong> measure ad performance and personalise messages — only set if you accept "All cookies".</li>
+        <li><strong>Marketing:</strong> measure ad performance and personalise messages (only set if you accept "All cookies").</li>
       </UL>
       <H>3. Your choices</H>
       <P>You can accept all, allow optional journey analytics without advertising, or choose essential only. Opening settings does not change your choice; saving essential only immediately stops new journey events across open tabs. Earlier acceptance records remain as evidence of that choice.</P>

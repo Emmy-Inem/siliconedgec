@@ -87,7 +87,7 @@ export default function Trust() {
         "@id": `${origin}/trust`,
         url: `${origin}/trust`,
         name: `Trust, Security & Privacy | ${brand}`,
-        description: `How ${brand} protects your account, learning data, and payments — authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`,
+        description: `How ${brand} protects your account, learning data, and payments, covering authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`,
         isPartOf: { "@id": `${origin}/#organization` },
       },
       {
@@ -105,7 +105,7 @@ export default function Trust() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Trust, Security & Privacy"
-        description={`How ${brand} protects your account, learning data, and payments — authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`}
+        description={`How ${brand} protects your account, learning data, and payments, covering authentication, hosting, data handling, cookies, and how to contact us about security or privacy.`}
         jsonLd={jsonLd}
       />
 
@@ -146,7 +146,7 @@ export default function Trust() {
 
           <Section icon={Database} title="Data we collect &amp; how it is used">
             <p>
-              We collect the information you provide when you create an account, enroll in a course, submit a business or job-application form, or contact support — typically your name, email, phone number (when given), and the courses and progress associated with your account.
+              We collect the information you provide when you create an account, enroll in a course, submit a business or job-application form, or contact support, typically your name, email, phone number (when given), and the courses and progress associated with your account.
             </p>
             <p>
               We use this information to deliver the courses you signed up for, issue certificates, respond to your requests, send service and marketing communications you have opted into, and improve the platform. We do not sell your personal data.
@@ -182,7 +182,7 @@ export default function Trust() {
               We retain your account data while your account is active and for a reasonable period afterwards so we can answer questions about your enrollments and certificates. You can ask us to update or delete your account by emailing the address below.
             </p>
             <p>
-              Where local law gives you additional rights — such as access, correction, portability, or objection — we will honour valid requests after verifying your identity.
+              Where local law gives you additional rights, such as access, correction, portability, or objection, we will honour valid requests after verifying your identity.
             </p>
           </Section>
 

@@ -30,7 +30,7 @@ export default function Jobs() {
               Career opportunities
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold mt-4">Land your next tech role<span className="text-gold">.</span></h1>
-            <p className="text-muted-foreground mt-4 text-lg">Curated jobs from our hiring partners — exclusively for the Silicon Edge community.</p>
+            <p className="text-muted-foreground mt-4 text-lg">Curated jobs from our hiring partners, exclusively for the Silicon Edge community.</p>
           </motion.div>
         </div>
       </section>

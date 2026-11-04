@@ -87,7 +87,7 @@ export default function Contact() {
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary mb-4">
                   <MessageSquare className="h-6 w-6" />
                 </div>
-                <h2 className="font-heading text-xl font-semibold mb-2">Thanks — we got it.</h2>
+                <h2 className="font-heading text-xl font-semibold mb-2">Thanks, we got it.</h2>
                 <p className="text-muted-foreground text-sm mb-6">A member of the team will be in touch shortly.</p>
                 <Button variant="outline" onClick={() => setSent(false)}>Send another message</Button>
               </div>

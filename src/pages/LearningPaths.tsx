@@ -117,7 +117,7 @@ export default function LearningPaths() {
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground">
               Follow a guided sequence of courses designed by our instructors. Each path builds skills progressively
-              toward a specific career outcome — from your first cloud console to a job-ready portfolio.
+              toward a specific career outcome, from your first cloud console to a job-ready portfolio.
             </p>
           </div>
         </div>

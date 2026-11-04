@@ -102,7 +102,7 @@ export default function Certificates() {
                 Certificates that <span className="text-gradient">open doors</span><span className="text-gold">.</span>
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-xl leading-relaxed">
-                Earn industry-recognized completion certificates with a unique verification ID employers can validate online — instantly downloadable as PDF.
+                Earn industry-recognized completion certificates with a unique verification ID employers can validate online, instantly downloadable as PDF.
               </p>
               <div className="flex flex-wrap gap-3 mt-7">
                 <Button size="lg" asChild className="hover-scale">
@@ -220,7 +220,7 @@ export default function Certificates() {
               {user && certificates && certificates.length > 0 ? "Certificate Preview" : "Sample Certificate"}
             </h2>
             <p className="text-muted-foreground text-xs sm:text-sm text-center mb-6 sm:mb-8 max-w-xl mx-auto px-2">
-              Below is what your certificate will look like — fully branded, with a unique ID and verification link.
+              Below is what your certificate will look like, fully branded with a unique ID and verification link.
               {(!user || certificates.length === 0) && (
                 <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
               )}
@@ -243,7 +243,7 @@ export default function Certificates() {
           <motion.div {...fadeUp} className="mt-20 max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl border border-primary/15 p-10">
             <Award className="h-10 w-10 text-foreground mx-auto mb-4" />
             <h3 className="font-heading text-2xl font-bold mb-2">Ready to earn yours?</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">Browse our catalog of cloud, AI, and DevOps courses — each one ends with a verifiable certificate.</p>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">Browse our catalog of cloud, AI, and DevOps courses. Each one ends with a verifiable certificate.</p>
             <Button size="lg" asChild className="hover-scale">
               <Link to="/courses">Browse Courses</Link>
             </Button>

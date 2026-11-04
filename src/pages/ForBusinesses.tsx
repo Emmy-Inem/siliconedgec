@@ -87,7 +87,7 @@ const faqs = [
   },
   {
     q: "Do learners receive certificates?",
-    a: "Yes — every learner who completes a track receives a verifiable Silicon Edge certificate with a unique verification code.",
+    a: "Yes. Every learner who completes a track receives a verifiable Silicon Edge certificate with a unique verification code.",
   },
 ];
 

@@ -47,7 +47,7 @@ export default function Cohorts() {
       <Helmet><title>Cohorts | Silicon Edge</title></Helmet>
       <SEO
         title="Learning Cohorts"
-        description="Join private Silicon Edge learning cohorts — live sessions, peer discussions, leaderboards and shared materials with instructors."
+        description="Join private Silicon Edge learning cohorts with live sessions, peer discussions, leaderboards and shared materials with instructors."
       />
       <Header />
       <main className="flex-1 container mx-auto px-4 pt-header pb-16 text-center">
@@ -63,7 +63,7 @@ export default function Cohorts() {
       <Helmet><title>My Cohorts | Silicon Edge</title></Helmet>
       <SEO
         title="My Cohorts"
-        description="Your private Silicon Edge learning cohorts — discussions, live sessions, leaderboards and shared materials with your peers and instructors."
+        description="Your private Silicon Edge learning cohorts featuring discussions, live sessions, leaderboards and shared materials with your peers and instructors."
       />
       <Header />
       <main className="flex-1 container mx-auto px-4 pt-header pb-10">

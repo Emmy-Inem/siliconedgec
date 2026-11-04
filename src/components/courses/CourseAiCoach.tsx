@@ -39,7 +39,7 @@ const EXPERIENCE_OPTIONS = [
   {
     id: "beginner",
     label: "Complete Beginner",
-    desc: "Brand new — no prior technical background",
+    desc: "Brand new, with no prior technical background",
     Icon: Compass,
   },
   {

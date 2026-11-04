@@ -30,7 +30,7 @@ export default function Instructors() {
               Meet your instructors.
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Get to know the people teaching your next course — their subjects, their approach, and where they can help you build your understanding.
+              Get to know the people teaching your next course, their subjects, their approach, and where they can help you build your understanding.
             </p>
           </div>
         </div>

@@ -9,7 +9,7 @@ const FAQS = [
   { q: "What payment methods do you accept?", a: "We accept card payments via Paystack in Naira. Invoices are available for corporate enrollments." },
   { q: "Can I get a refund?", a: "Yes, within 7 days of your first session if you have not completed more than 20% of the curriculum." },
   { q: "Is there job placement support?", a: "Every paid program includes resume reviews, mock interviews, and introductions to our hiring partners." },
-  { q: "Do you train teams?", a: "Yes — visit our For Businesses page for cohort pricing and a custom curriculum." },
+  { q: "Do you train teams?", a: "Yes. Visit our For Businesses page for cohort pricing and a custom curriculum." },
   { q: "What if I miss a class?", a: "Sessions are recorded and posted within 24 hours. You can also attend the same lesson in the next cohort." },
   { q: "Are there prerequisites?", a: "Most beginner tracks have none. Advanced tracks list prerequisites on the course page." },
 ];

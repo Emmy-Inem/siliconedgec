@@ -23,14 +23,14 @@ import communityImg from "@/assets/career-earnings.jpg";
 import payoutImg from "@/assets/career-mobile-tracking.jpg";
 
 const BENEFITS = [
-  { icon: Coins, title: "Up to 20% commission", body: "Earn on every learner who enrols through your referral link — paid out monthly, worldwide." },
+  { icon: Coins, title: "Up to 20% commission", body: "Earn on every learner who enrols through your referral link, paid out monthly worldwide." },
   { icon: LineChart, title: "Private performance dashboard", body: "Track clicks, sign-ups, conversions and payouts. You only ever see your own numbers." },
   { icon: Users, title: "Marketing support", body: "Get creatives, course briefs and discount codes tailored to your audience." },
 ];
 
 const STEPS = [
   { icon: ClipboardList, title: "Apply", body: "Tell us about your audience and where you'll promote. Approval usually takes 48 hours." },
-  { icon: CheckCircle2, title: "Pick your courses", body: "Choose the courses you genuinely believe in — you get a link for each approved course." },
+  { icon: CheckCircle2, title: "Pick your courses", body: "Choose the courses you genuinely believe in and get a link for each approved course." },
   { icon: Share2, title: "Share your link", body: "Post it anywhere: WhatsApp, X, LinkedIn, newsletters, communities, YouTube descriptions." },
   { icon: Wallet, title: "Get paid", body: "Commission is confirmed once a learner pays, and settled to your bank every month." },
 ];
@@ -39,7 +39,7 @@ const AUDIENCES = [
   { title: "Content creators", body: "Tech YouTubers, newsletter writers and X/LinkedIn creators with an audience learning cloud, AI or DevOps." },
   { title: "Community leads", body: "Admins of WhatsApp, Telegram, Slack or Discord communities of aspiring tech professionals." },
   { title: "Corporate trainers", body: "Consultants and L&D partners placing teams into structured, job-ready training." },
-  { title: "Alumni & mentors", body: "Past learners who already recommend Silicon Edge — now get rewarded for it." },
+  { title: "Alumni & mentors", body: "Past learners who already recommend Silicon Edge can now get rewarded for it." },
 ];
 
 const TIERS = [
@@ -52,7 +52,7 @@ const FAQS = [
   { q: "How much can I earn?", a: "Commission starts at 10% of the amount a learner pays and rises to 20% as your volume grows." },
   { q: "How long does my referral link track for?", a: "Your referral is stored on the visitor's device for 30 days, so you're still credited if they come back later to enrol." },
   { q: "When do I get paid?", a: "Commission is confirmed when the learner's payment clears. Payouts run monthly, once your confirmed balance passes the minimum threshold shown in your dashboard." },
-  { q: "Do I need to be a past student?", a: "No. Anyone with a relevant audience can apply — creators, community leads, trainers and alumni are all welcome." },
+  { q: "Do I need to be a past student?", a: "No. Anyone with a relevant audience can apply. Creators, community leads, trainers and alumni are all welcome." },
   { q: "Can I promote more than one course?", a: "Yes. Select as many published courses as you like; each approved course gets its own trackable link and its own performance stats." },
   { q: "Can I choose where my link sends people?", a: "Yes. In your partner dashboard you can point each link at the course page, the checkout, the pricing page or the homepage." },
 ];

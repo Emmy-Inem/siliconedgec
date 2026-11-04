@@ -10,7 +10,7 @@ WHERE id = 'a4516d96-9ad9-4bd7-8260-324e055a663f' OR lower(name) = 'linda shenoy
 UPDATE public.testimonials
 SET
   role = 'Cloud & Platform Architect, Lagos',
-  quote = 'Humble pie tastes terrible, by the way. I joined thinking I already knew cloud architecture—then our instructor reviewed my IAM policies on day three and gently asked if I wanted to donate my entire database to the internet. Best career wake-up call I’ve ever paid for.'
+  quote = 'Humble pie tastes terrible, by the way. I joined thinking I already knew cloud architecture, until our instructor reviewed my IAM policies on day three and gently asked if I wanted to donate my entire database to the internet. Best career wake-up call I’ve ever paid for.'
 WHERE id = 'c5369e2b-10d6-4171-ab51-0bb725c9a5f1' OR lower(name) = 'jean adebayo';
 
 UPDATE public.testimonials
@@ -22,7 +22,7 @@ WHERE id = '5be72751-111b-4de3-bca0-0224fd6330ca' OR lower(name) = 'jekan maurya
 UPDATE public.testimonials
 SET
   role = 'AI Workflow & Operations Lead, Birmingham',
-  quote = 'My boss thinks I suddenly became a productivity machine. Truth is, after the Generative AI cohort I automated the Monday reporting workflow that used to eat my entire Sunday evening. I haven’t told him yet—I’m just enjoying having my weekends back.'
+  quote = 'My boss thinks I suddenly became a productivity machine. Truth is, after the Generative AI cohort I automated the Monday reporting workflow that used to eat my entire Sunday evening. I haven’t told him yet because I’m too busy enjoying having my weekends back.'
 WHERE id = '96f0e90b-f78e-4231-9a21-45c635b8db1a' OR lower(name) = 'rubik nanda';
 
 UPDATE public.testimonials

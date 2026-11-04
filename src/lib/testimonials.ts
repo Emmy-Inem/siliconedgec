@@ -36,7 +36,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     name: "Jean Adebayo",
     role: "Cloud & Platform Architect, Lagos",
     quote:
-      "Humble pie tastes terrible, by the way. I joined thinking I already knew cloud architecture—then our instructor reviewed my IAM policies on day three and gently asked if I wanted to donate my entire database to the internet. Best career wake-up call I’ve ever paid for.",
+      "Humble pie tastes terrible, by the way. I joined thinking I already knew cloud architecture, until our instructor reviewed my IAM policies on day three and gently asked if I wanted to donate my entire database to the internet. Best career wake-up call I’ve ever paid for.",
     avatar_url:
       "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905739307-o4rcip.jpg",
     rating: 5,
@@ -58,7 +58,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     name: "Rubik Nanda",
     role: "AI Workflow & Operations Lead, Birmingham",
     quote:
-      "My boss thinks I suddenly became a productivity machine. Truth is, after the Generative AI cohort I automated the Monday reporting workflow that used to eat my entire Sunday evening. I haven’t told him yet—I’m just enjoying having my weekends back.",
+      "My boss thinks I suddenly became a productivity machine. Truth is, after the Generative AI cohort I automated the Monday reporting workflow that used to eat my entire Sunday evening. I haven’t told him yet because I’m too busy enjoying having my weekends back.",
     avatar_url:
       "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905772196-a738pp.jpg",
     rating: 5,
@@ -80,7 +80,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     name: "Amara Okafor",
     role: "Data & Analytics Specialist, Abuja",
     quote:
-      "My old Excel workbook had 19 VLOOKUPs holding our department together like duct tape and vibes. Building proper SQL and Python workflows here felt like trading a bicycle for a jet engine—and my laptop fan has finally stopped screaming at me.",
+      "My old Excel workbook had 19 VLOOKUPs holding our department together like duct tape and vibes. Building proper SQL and Python workflows here felt like trading a bicycle for a jet engine, and my laptop fan has finally stopped screaming at me.",
     avatar_url: testimonial1,
     rating: 5,
     order_index: 6,
@@ -90,7 +90,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     name: "Tobi Adeyemi",
     role: "SOC & Cybersecurity Analyst, London",
     quote:
-      "Side effect nobody warns you about: after week two of the cybersecurity labs, you will immediately force your entire family to change their Netflix passwords and turn on MFA. Worth every penny though—the firewall and incident labs were literally what came up in my interview.",
+      "Side effect nobody warns you about: after week two of the cybersecurity labs, you will immediately force your entire family to change their Netflix passwords and turn on MFA. Worth every penny though, because the firewall and incident labs were literally what came up in my interview.",
     avatar_url: testimonial2,
     rating: 5,
     order_index: 7,
@@ -122,7 +122,8 @@ function isBoilerplateQuote(quote?: string | null): boolean {
   return (
     normalized.length === 0 ||
     normalized.includes("i started at stage zero") ||
-    normalized.includes("build up enough knowledge and skills to transition into a well-paying career")
+    normalized.includes("build up enough knowledge and skills to transition into a well-paying career") ||
+    quote.includes("—")
   );
 }
 
@@ -177,10 +178,10 @@ export function normalizeTestimonials<
     const isDuplicateOrBoilerplate =
       isBoilerplateQuote(row.quote) || (rawQuoteKey.length > 0 && seenQuotes.has(rawQuoteKey));
 
-    const finalQuote = isDuplicateOrBoilerplate ? seed.quote : row.quote;
+    const finalQuote = (isDuplicateOrBoilerplate ? seed.quote : row.quote).replace(/\s*—\s*/g, ", ");
     seenQuotes.add(finalQuote.trim().toLowerCase());
 
-    const finalRole = isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role);
+    const finalRole = (isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role)).replace(/\s*—\s*/g, " - ");
     const finalAvatar =
       row.avatar_url && row.avatar_url.trim().length > 0
         ? row.avatar_url
@@ -245,8 +246,8 @@ export function syncAuthoritativeTestimonials(): Promise<void> {
           return supabase
             .from("testimonials")
             .update({
-              quote: isBoilerplateQuote(row.quote) ? seed.quote : row.quote,
-              role: isBoilerplateRole(row.role) ? seed.role : row.role,
+              quote: isBoilerplateQuote(row.quote) ? seed.quote : row.quote.replace(/\s*—\s*/g, ", "),
+              role: isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role).replace(/\s*—\s*/g, " - "),
             })
             .eq("id", row.id);
         })

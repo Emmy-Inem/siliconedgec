@@ -74,7 +74,7 @@ export default function Blog() {
             The Silicon Edge Blog
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mb-6">
-            Practical cloud, Azure and DevOps guides for UK learners and global teams — from choosing a course to building a project portfolio.
+            Practical cloud, Azure and DevOps guides for UK learners and global teams, from choosing a course to building a project portfolio.
           </p>
           {categories.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">

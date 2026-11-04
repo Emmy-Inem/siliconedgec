@@ -110,7 +110,7 @@ export default function Support() {
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : tickets.length === 0 ? (
         <div className="border border-dashed border-border rounded-xl p-10 text-center">
-          <p className="text-sm text-muted-foreground">No tickets yet. Ask the assistant in the chat bubble — it opens a ticket automatically if it can't help.</p>
+          <p className="text-sm text-muted-foreground">No tickets yet. Ask the assistant in the chat bubble and it will open a ticket automatically if it can't help.</p>
         </div>
       ) : (
         <div className="space-y-2">

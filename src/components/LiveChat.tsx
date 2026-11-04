@@ -290,7 +290,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
                   <CoachBrandIcon className="h-4 w-4 shrink-0" /> Silicon Edge AI Coach
                 </h3>
                 <p className="text-[10px] opacity-80 truncate">
-                  {escalated ? "Connected to our team — they reply here and by email" : coach.label}
+                  {escalated ? "Connected to our team. They reply here and by email" : coach.label}
                 </p>
               </div>
               <Button

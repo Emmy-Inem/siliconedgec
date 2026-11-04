@@ -110,13 +110,13 @@ const DEFAULTS: HomeContent = {
   mentors_eyebrow: "Meet your mentors",
   mentors_title: "Guidance from people who've already done it.",
   mentors_description:
-    "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers — and they tell you the truth.",
+    "Our mentors are senior engineers and managers from the companies you want to work at. They review your code, your CV, and your interview answers, and they tell you the truth.",
   testimonials_eyebrow: "Loved by ambitious learners",
   testimonials_title: "Don't take our word for it.",
   testimonial_speed: "normal",
   faq_eyebrow: "Frequently asked",
   faq_title: "Everything you need to know.",
-  faq_subtitle: "Still curious? Reach out — real humans reply.",
+  faq_subtitle: "Still curious? Reach out and real humans will reply.",
   cta_eyebrow: "Your edge starts now",
   cta_title: "Stop scrolling. Start learning.",
   cta_subtitle:
