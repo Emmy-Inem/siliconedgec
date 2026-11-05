@@ -294,8 +294,13 @@ export default function Index() {
   const { scrollYProgress: timelineProgress } = useScroll({ target: timelineRef, offset: ["start 80%", "end 20%"] });
   const lineScale = useSpring(timelineProgress, { stiffness: 80, damping: 20 });
 
-  const categories = ["All Categories", ...Array.from(new Set(courses.map((c) => c.category))).sort()];
+  const categories = useMemo(() => {
+    const unique = Array.from(new Set(courses.map((c) => c.category))).sort();
+    return ["All Categories", ...unique];
+  }, [courses]);
   const filteredCourses = activeCategory === "All Categories" ? courses : courses.filter((c) => c.category === activeCategory);
+  const countForCategory = (cat: string) =>
+    cat === "All Categories" ? courses.length : courses.filter((c) => c.category === cat).length;
 
   const scrollCourses = (dir: "left" | "right") => {
     if (scrollRef.current) {
@@ -303,6 +308,11 @@ export default function Index() {
       scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
     }
   };
+
+  /* Always start a freshly filtered rail from its first card */
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ left: 0, behavior: "auto" });
+  }, [activeCategory]);
 
   const heroAvatars = (instructors.length > 0 ? instructors.map((i) => i.image) : fallbackInstructorImages).slice(0, 5);
 
