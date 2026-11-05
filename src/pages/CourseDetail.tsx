@@ -701,7 +701,6 @@ export default function CourseDetail() {
           <div><dt className="text-muted-foreground">Start date</dt><dd>{course.start_date ? new Date(course.start_date + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "To be announced"}</dd></div>
           {course.duration_weeks && <div><dt className="text-muted-foreground">Programme length</dt><dd>{course.duration_weeks} weeks</dd></div>}
           <div><dt className="text-muted-foreground">Total hours</dt><dd>{course.duration_hours} hours</dd></div>
-          <div><dt className="text-muted-foreground">Scheduling</dt><dd>{course.flexible_scheduling ? "Flexible scheduling available" : "Contact us for the class timetable"}</dd></div>
         </dl>
       </div>
       {/* Main Content */}
