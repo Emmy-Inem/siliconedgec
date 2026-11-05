@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, AnimatePresence } from "framer-motion";
 import { ArrowRight, BookOpen, BadgeCheck, BriefcaseBusiness, ChevronRight, ChevronLeft, Star, ShieldCheck, GraduationCap, CheckCircle2, Zap, Clock4, Rocket, Trophy, Lock, PlayCircle, Play, ArrowUpRight, Users, Globe2, MessagesSquare, Quote, Target, Handshake, PartyPopper } from "lucide-react";
 import { Link } from "react-router-dom";
