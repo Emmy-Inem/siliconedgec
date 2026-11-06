@@ -1,6 +1,6 @@
 # Temporary Lovable services with an owned Supabase database
 
-User choice: retain Lovable email and AI while migrating the database. This still consumes Lovable runtime credits. The connection below is prepared in source code, not activated or verified with real provider requests yet.
+Historical temporary option, superseded by the direct Gemini/Resend preparation in [owned-providers.md](owned-providers.md). The user later chose to leave Gemini inactive and pause Resend. Neither direct providers nor this relay are active at the destination. This relay option still consumes Lovable runtime credits and is not independent failover.
 
 ## Flow
 

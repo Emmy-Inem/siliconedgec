@@ -1,4 +1,4 @@
-import { lovableConnection } from "../_shared/lovable-connection.ts";
+import { lovableConnection, aiModel } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: aiModel("google/gemini-3-flash-preview", name => Deno.env.get(name)),
           messages: [
             { role: "system", content: "You write fair, practical multiple-choice quizzes for IT students." },
             { role: "user", content: `Generate 5 multiple-choice questions for: ${title}${category ? ` (${category}, ${difficulty})` : ""}. Mix of recall and applied scenario questions.` },

@@ -1,4 +1,4 @@
-import { lovableConnection } from "../_shared/lovable-connection.ts";
+import { lovableConnection, aiModel } from "../_shared/lovable-connection.ts";
 // Site-wide AI support assistant powering the floating chat widget.
 // Streams answers grounded in course/help content and escalates to a human
 // (support ticket + admin email) when it cannot answer or the user asks.
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+    if (!LOVABLE_API_KEY) throw new Error("AI provider credential missing");
 
     const context = await buildContext(userId, messages.filter(m => m.role === "user").at(-1)?.content ?? "", pageContext ?? {});
 
@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3.6-flash",
+        model: aiModel("google/gemini-3.6-flash", name => Deno.env.get(name)),
         stream: true,
         messages: [{ role: "system", content: SYSTEM_PROMPT + context }, ...messages.slice(-16)],
       }),

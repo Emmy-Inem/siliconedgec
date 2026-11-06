@@ -1,5 +1,5 @@
 import { sendLovableEmailViaRelay as sendLovableEmail } from "../_shared/lovable-email.ts";
-import { lovableConnection } from "../_shared/lovable-connection.ts";
+import { emailConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const MAX_RETRIES = 5
@@ -98,7 +98,7 @@ async function moveToDlq(
 }
 
 Deno.serve(async (req) => {
-  const apiKey = lovableConnection(name => Deno.env.get(name)).key
+  const apiKey = emailConnection(name => Deno.env.get(name)).key
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 

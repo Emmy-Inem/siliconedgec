@@ -1,12 +1,16 @@
 import { sendLovableEmail } from "npm:@lovable.dev/email-js";
-import { lovableConnection } from "./lovable-connection.ts";
+import { emailConnection } from "./lovable-connection.ts";
+import { sendResendEmail } from "./resend.ts";
 
 // Same provider call contract, keeping queue retry/idempotency handling unchanged.
 export async function sendLovableEmailViaRelay(
   payload: Parameters<typeof sendLovableEmail>[0],
   options: Parameters<typeof sendLovableEmail>[1],
 ) {
-  const connection = lovableConnection(name => Deno.env.get(name));
+  const connection = emailConnection(name => Deno.env.get(name));
+  if (connection.provider === "resend") {
+    return sendResendEmail(payload, connection.key, Deno.env.get("RESEND_FROM"));
+  }
   if (!connection.emailUrl) return sendLovableEmail(payload, options);
   const response = await fetch(connection.emailUrl, {
     method: "POST", headers: { Authorization: `Bearer ${connection.key}`, "Content-Type": "application/json" },

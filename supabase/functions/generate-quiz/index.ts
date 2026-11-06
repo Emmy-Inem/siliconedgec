@@ -1,4 +1,4 @@
-import { lovableConnection } from "../_shared/lovable-connection.ts";
+import { lovableConnection, aiModel } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: aiModel("google/gemini-2.5-flash", name => Deno.env.get(name)),
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Source material:\n\n${sourceText}` },

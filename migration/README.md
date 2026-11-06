@@ -7,7 +7,7 @@ Destination: owned Supabase project `jhrytvbpxftwpasqdybk`.
 
 The destination was observed healthy in Opera. The supplied export is `C:/Users/ADMIN/Downloads/siliconedgec_261106.backup` (6,505,738 bytes), identified by its `PGDMP` header as a PostgreSQL custom archive. SHA-256: `50b0f7c80ff1a692435a8837a7ed2548b9e767f61e238769b4842df52de569e4`. Keep the private backup outside this repository.
 
-The Supabase CLI now has access to destination project `jhrytvbpxftwpasqdybk`. The isolated destination restore has completed. The live frontend still uses the original Lovable-managed backend; no production switch or source deletion has occurred.
+The Supabase CLI now has access to destination project `jhrytvbpxftwpasqdybk`. The isolated destination restore has completed. The live frontend still uses the original Lovable-managed backend; no production switch or source deletion has occurred. Direct Gemini and Resend credentials are saved, with both providers explicitly inactive at the user's request; see [owned-providers.md](owned-providers.md) for readiness and activation requirements.
 
 The custom archive was successfully read locally using `pg_restore` 17.11, including data decompression. Its table-of-contents lists 107 public table-data entries and authentication, storage metadata, cron and encrypted Vault data. Streaming data inspection counted 354 users, 357 identities, 35 courses, 409 enrollments, 54 orders, 7 storage buckets and 39 storage object metadata rows. These are export counts, not destination counts. Storage metadata does not include the actual uploaded files. Existing cron and Vault records require review rather than blind restoration.
 
