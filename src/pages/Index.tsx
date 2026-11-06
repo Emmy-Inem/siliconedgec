@@ -299,8 +299,6 @@ export default function Index() {
     return ["All Categories", ...unique];
   }, [courses]);
   const filteredCourses = activeCategory === "All Categories" ? courses : courses.filter((c) => c.category === activeCategory);
-  const countForCategory = (cat: string) =>
-    cat === "All Categories" ? courses.length : courses.filter((c) => c.category === cat).length;
 
   const scrollCourses = (dir: "left" | "right") => {
     if (scrollRef.current) {
@@ -628,7 +626,12 @@ export default function Index() {
             </div>
           </motion.div>
 
-          <div className="flex flex-wrap gap-2 mb-5" role="group" aria-label="Filter courses by category">
+          <div
+            className="flex gap-1 overflow-x-auto pb-1 mb-5 scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            role="group"
+            aria-label="Filter courses by category"
+          >
             {categories.map((cat) => {
               const isActive = activeCategory === cat;
               return (
@@ -638,13 +641,12 @@ export default function Index() {
                   aria-pressed={isActive}
                   aria-controls="home-course-results"
                   onClick={() => setActiveCategory(cat)}
-                  className={`relative h-auto min-h-10 max-w-full gap-2 rounded-none bg-transparent px-2 pb-2 pt-2 text-sm font-semibold whitespace-normal text-left hover:bg-transparent ${isActive ? "text-primary hover:text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`relative h-auto min-h-10 shrink-0 gap-2 rounded-none bg-transparent px-2 pb-2 pt-2 text-sm font-semibold whitespace-nowrap text-left hover:bg-transparent ${isActive ? "text-primary hover:text-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {isActive && (
-                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary" transition={{ duration: reduce ? 0 : 0.22, ease: "easeOut" }} />
+                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 bottom-0 h-[2px] bg-primary" transition={{ duration: reduce ? 0 : 0.22, ease: "easeOut" }} />
                   )}
                   <span>{cat}</span>
-                  <span className="shrink-0 text-xs tabular-nums opacity-75">{countForCategory(cat)}</span>
                 </Button>
               );
             })}
