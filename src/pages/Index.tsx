@@ -634,12 +634,15 @@ export default function Index() {
               return (
                 <Button
                   key={cat}
-                  variant={isActive ? "default" : "outline"}
+                  variant="ghost"
                   aria-pressed={isActive}
                   aria-controls="home-course-results"
                   onClick={() => setActiveCategory(cat)}
-                  className="h-auto min-h-10 max-w-full gap-2 rounded-full px-4 py-2 text-sm whitespace-normal text-left"
+                  className={`relative h-auto min-h-10 max-w-full gap-2 rounded-none bg-transparent px-2 pb-2 pt-2 text-sm font-semibold whitespace-normal text-left hover:bg-transparent ${isActive ? "text-primary hover:text-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
+                  {isActive && (
+                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary" transition={{ duration: reduce ? 0 : 0.22, ease: "easeOut" }} />
+                  )}
                   <span>{cat}</span>
                   <span className="shrink-0 text-xs tabular-nums opacity-75">{countForCategory(cat)}</span>
                 </Button>
