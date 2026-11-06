@@ -278,7 +278,7 @@ export default function Index() {
   const [activeCategory, setActiveCategory] = useState("All Categories");
   const scrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { data: courses = [] } = useCourses();
+  const { data: courses = [], isLoading: coursesLoading, isError: coursesError } = useCourses();
 
   /* page scroll progress */
   const { scrollYProgress: pageProgress } = useScroll();
@@ -628,39 +628,53 @@ export default function Index() {
             </div>
           </motion.div>
 
-          {/* category pills with layoutId underline */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex flex-wrap gap-2 mb-5" role="group" aria-label="Filter courses by category">
             {categories.map((cat) => {
               const isActive = activeCategory === cat;
               return (
-                <button
+                <Button
                   key={cat}
+                  variant={isActive ? "default" : "outline"}
+                  aria-pressed={isActive}
+                  aria-controls="home-course-results"
                   onClick={() => setActiveCategory(cat)}
-                  className={`relative px-2 pb-2 text-sm font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  className="h-auto min-h-10 max-w-full gap-2 rounded-full px-4 py-2 text-sm whitespace-normal text-left"
                 >
-                  {isActive && (
-                    <motion.span layoutId="cat-underline" className="absolute left-0 right-0 -bottom-px h-[2px] bg-primary rounded-full" transition={{ duration: 0.22, ease: "easeOut" }} />
-                  )}
-                  <span className="relative">{cat}</span>
-                </button>
+                  <span>{cat}</span>
+                  <span className="shrink-0 text-xs tabular-nums opacity-75">{countForCategory(cat)}</span>
+                </Button>
               );
             })}
           </div>
 
-          <div className="relative group/rail">
-            <button onClick={() => scrollCourses("left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -ml-3 opacity-0 group-hover/rail:opacity-100">
+          <p role="status" className="mb-4 text-sm text-muted-foreground">
+            {coursesLoading ? "Loading courses…" : coursesError ? "Courses could not be loaded." : `${filteredCourses.length} ${filteredCourses.length === 1 ? "course" : "courses"}${activeCategory === "All Categories" ? "" : ` in ${activeCategory}`}`}
+          </p>
+          <div className="relative group/rail" id="home-course-results" aria-busy={coursesLoading}>
+            {filteredCourses.length > 1 && <>
+            <Button variant="outline" size="icon" aria-label="Previous courses" title="Previous courses" onClick={() => scrollCourses("left")} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card shadow-md hover:bg-primary hover:text-primary-foreground transition-all -ml-3 md:opacity-0 md:group-hover/rail:opacity-100 focus-visible:opacity-100">
               <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button onClick={() => scrollCourses("right")} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all -mr-3 opacity-0 group-hover/rail:opacity-100">
+            </Button>
+            <Button variant="outline" size="icon" aria-label="Next courses" title="Next courses" onClick={() => scrollCourses("right")} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-card shadow-md hover:bg-primary hover:text-primary-foreground transition-all -mr-3 md:opacity-0 md:group-hover/rail:opacity-100 focus-visible:opacity-100">
               <ChevronRight className="h-5 w-5" />
-            </button>
+            </Button>
+            </>}
 
             <div ref={scrollRef} className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory mask-fade-x" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              <motion.div key={activeCategory} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="flex w-full gap-6">
               {filteredCourses.map((course, i) => (
-                <div key={course.id} className="min-w-[300px] max-w-[320px] snap-start flex-shrink-0">
+                <div key={course.id} className="w-[300px] max-w-full snap-start flex-shrink-0 sm:w-[320px]">
                   <CourseCard course={course} index={i} />
                 </div>
               ))}
+              {!coursesLoading && !coursesError && filteredCourses.length === 0 && (
+                <div className="w-full py-12 text-center text-muted-foreground">
+                  <BookOpen className="mx-auto mb-3 h-8 w-8" aria-hidden="true" />
+                  <p>No courses available in this category yet.</p>
+                  {activeCategory !== "All Categories" && <Button variant="link" onClick={() => setActiveCategory("All Categories")}>All Categories</Button>}
+                </div>
+              )}
+              </motion.div>
             </div>
           </div>
         </div>
