@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
@@ -41,7 +42,7 @@ Deno.serve(async (req) => {
     }
     const isEmail = kind === "email";
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
     const sys = isEmail
@@ -52,7 +53,7 @@ Return ONLY JSON: {"subject": string (max 70 chars, no emojis), "body": string (
 Tone: ${tone}.
 Return ONLY JSON: {"title": string (max 70 chars), "content": string (markdown, 60-150 words, action-oriented)}.`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const resp = await fetch(`${lovableConnection(name => Deno.env.get(name)).aiBase}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

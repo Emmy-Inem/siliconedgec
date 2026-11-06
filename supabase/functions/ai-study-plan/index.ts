@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
@@ -35,8 +36,8 @@ Deno.serve(async (req) => {
     const { data: lessons } = modIds.length ? await admin.from("lessons").select("title, module_id, order_index").in("module_id", modIds).order("order_index") : { data: [] };
     const outline = (modules ?? []).map((m) => ({ module: m.title, lessons: (lessons ?? []).filter((l: any) => l.module_id === m.id).map((l: any) => l.title) }));
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
+    const res = await fetch(`${lovableConnection(name => Deno.env.get(name)).aiBase}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

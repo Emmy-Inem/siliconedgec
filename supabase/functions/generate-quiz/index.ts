@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -17,7 +18,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
 
     const systemPrompt = `You are an expert quiz creator. Generate ${num} multiple-choice questions about ${topic} at ${difficulty} difficulty. Each question must have exactly 4 distinct options and one correct answer that exactly matches one of the options. Base questions strictly on the provided source material.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch(`${lovableConnection(name => Deno.env.get(name)).aiBase}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,

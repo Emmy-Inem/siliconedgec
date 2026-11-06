@@ -1,5 +1,9 @@
 project_id = "sdddxnjlgjjaoayyraxn"
 
+# Source-only relay uses its own server credential; no user JWTs are accepted.
+[functions.lovable-service-relay]
+verify_jwt = false
+
 [functions.checkout-initialize]
 verify_jwt = true
 

@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createResponsesCall } from "./responses.ts";
@@ -10,7 +11,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json("Method not allowed", 405);
   const authorization = req.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) return json("Please sign in.", 401);
-  const url = Deno.env.get("SUPABASE_URL"); const anon = Deno.env.get("SUPABASE_ANON_KEY"); const key = Deno.env.get("LOVABLE_API_KEY");
+  const url = Deno.env.get("SUPABASE_URL"); const anon = Deno.env.get("SUPABASE_ANON_KEY"); const key = lovableConnection(name => Deno.env.get(name)).key;
   if (!url || !anon || !key) return json("AI summary configuration is incomplete.", 401);
   const client = createClient(url, anon, { global: { headers: { Authorization: authorization } } });
   const { data: claims, error: authError } = await client.auth.getClaims(authorization.slice(7));
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
   if (audience.error || journey.error) return json("The analytics report could not be loaded. No summary was generated.", 500);
   const evidence = safeEvidence(audience.data, journey.data);
   try {
-    const { result } = createResponsesCall(req, { baseURL: "https://ai.gateway.lovable.dev/v1", apiKey: key, model: "openai/gpt-6-astra" },
+    const { result } = createResponsesCall(req, { baseURL: lovableConnection(name => Deno.env.get(name)).aiBase, apiKey: key, model: "openai/gpt-6-astra" },
       [{ role: "user", content: JSON.stringify({ period: { firstDate: from.toISOString().slice(0, 10), lastDate: new Date(+to - 1).toISOString().slice(0, 10), timezone: "UTC", endExclusive: range.p_to }, evidence }) }],
       "You review website analytics for Silicon Edge Consulting. Give a concise markdown summary with three sections: Observed results, Possible explanations, Recommended checks. Cite supplied counts exactly, never invent numbers, credentials or causes. Counts are independent milestone reach, not a sequential funnel. The cohort consists of new learner accounts, unlike all-account signups. Activity is optional and consent-gated; absence is not evidence of disengagement. New accounts have unequal follow-up. Inactive last pages are not confirmed exits. Unpaid checkout after 24h is not confirmed abandonment. Never claim trust or motive was measured. If tracking has no records, state that journey conclusions are premature and suggest collecting consented activity before judging drop-off. Give up to three practical checks grounded in the evidence. Do not identify individuals.");
     const reader = result.textStream.getReader();

@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 // Site-wide AI support assistant powering the floating chat widget.
 // Streams answers grounded in course/help content and escalates to a human
 // (support ticket + admin email) when it cannot answer or the user asks.
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "messages required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
     const context = await buildContext(userId, messages.filter(m => m.role === "user").at(-1)?.content ?? "", pageContext ?? {});
@@ -159,7 +160,7 @@ Deno.serve(async (req) => {
       guestReservation = { visitorId: guestId!, requestId: requestId! };
     }
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch(`${lovableConnection(name => Deno.env.get(name)).aiBase}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

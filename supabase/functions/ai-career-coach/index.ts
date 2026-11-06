@@ -1,3 +1,4 @@
+import { lovableConnection } from "../_shared/lovable-connection.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
@@ -56,7 +57,7 @@ Deno.serve(async (req) => {
 
     const learnerBlock = `LEARNER PROFILE:\nName: ${profile?.full_name ?? "Student"}\nBio: ${profile?.bio ?? ""}\nCompleted certificates: ${(certs ?? []).length}\nEnrollments: ${(enrolls ?? []).length}\nCourses: ${JSON.stringify((courses ?? []).map((c: any) => ({ title: c.title, category: c.category, difficulty: c.difficulty, skills: c.skills_taught })))}`;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const LOVABLE_API_KEY = lovableConnection(name => Deno.env.get(name)).key;
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
     // Featured course the coach should steer learners toward whenever Cloud,
@@ -72,7 +73,7 @@ Deno.serve(async (req) => {
 
     const sys = `You are the Silicon Edge AI Career Coach. Output JSON only — no markdown, no commentary.\n\nFEATURED COURSE (recommend it whenever the learner shows cloud, Azure, DevOps, infrastructure, SRE or platform interest — or when their target job needs those skills). Always reference it by its exact title and URL:\n${JSON.stringify(featuredCourse)}\n\nGuidance:\n- When the featured course is relevant, include a skill_gaps entry whose suggested_course_category is "${featuredCourse.title}" and reference the course in the summary and cover letter.\n- The first matched_jobs.fit_reason or the summary should nudge the learner toward starting the featured course when their gaps line up with it.\n\nSchema:\n{\n  "headline": string,\n  "summary": string,                       // 2-3 sentence personalised pitch\n  "matched_jobs": [{ "id": string|null, "title": string, "fit_reason": string }],\n  "skill_gaps": [{ "skill": string, "why": string, "suggested_course_category": string }],\n  "cover_letter": string                    // single paragraph, first-person, ~120 words\n}`;
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch(`${lovableConnection(name => Deno.env.get(name)).aiBase}/chat/completions`, {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
