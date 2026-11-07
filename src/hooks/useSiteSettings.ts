@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { readPublicContent, writePublicContent } from "@/lib/public-content-cache";
 
 export interface SiteSettings {
   site_name: string;
@@ -40,13 +41,17 @@ const DEFAULTS: SiteSettings = {
 };
 
 export function useSiteSettings() {
+  const cached = readPublicContent<SiteSettings>("settings");
   return useQuery({
     queryKey: ["site-settings"],
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.updatedAt,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("site_content")
         .select("key, value")
         .eq("content_type", "setting");
+      if (error) throw error;
 
       const settings = { ...DEFAULTS };
       (data ?? []).forEach((row) => {
@@ -54,6 +59,7 @@ export function useSiteSettings() {
           (settings as Record<string, string>)[row.key] = row.value;
         }
       });
+      writePublicContent("settings", settings);
       return settings;
     },
     staleTime: 30 * 60 * 1000,

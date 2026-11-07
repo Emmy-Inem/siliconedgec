@@ -1,16 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { shouldSkipPassiveEvent, trackLead } from "./track-lead";
 
-const { getUser } = vi.hoisted(() => ({
+const { getUser, getSession } = vi.hoisted(() => ({
   getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+  getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
 }));
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { getUser } },
+  supabase: { auth: { getUser, getSession } },
 }));
 
 const UA = "Mozilla/5.0 (Windows NT 10.0) Chrome/120";
 
 describe("shouldSkipPassiveEvent", () => {
+  it("skips automated passive views even with a normal browser signature", () => {
+    expect(shouldSkipPassiveEvent("pageview", "siliconedgec.com", UA, true)).toBe(true);
+  });
+  it("does not block genuine visitors by Chrome version", () => {
+    expect(shouldSkipPassiveEvent("pageview", "siliconedgec.com", "Chrome/152.0.0.0", false)).toBe(false);
+  });
+  it("preserves genuine submissions in automated browser tests", () => {
+    expect(shouldSkipPassiveEvent("business_lead", "siliconedgec.com", UA, true)).toBe(false);
+  });
   it("skips pageviews on the preview host", () => {
     expect(shouldSkipPassiveEvent("pageview", "id-preview--abc.lovable.app", UA)).toBe(true);
   });
@@ -44,5 +54,6 @@ describe("passive tracking early exit", () => {
   it("does not request authentication for a suppressed preview pageview", async () => {
     await trackLead({ formType: "pageview" });
     expect(getUser).not.toHaveBeenCalled();
+    expect(getSession).not.toHaveBeenCalled();
   });
 });

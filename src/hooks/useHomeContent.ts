@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { readPublicContent, writePublicContent } from "@/lib/public-content-cache";
 
 export interface HomeContent {
   hero_eyebrow: string;
@@ -181,16 +182,20 @@ export const HOME_CONTENT_KEYS = [
 ] as const;
 
 export function useHomeContent() {
+  const cached = readPublicContent<HomeContent>("home");
   return useQuery({
     queryKey: ["home-content"],
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.updatedAt,
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<HomeContent> => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("site_content")
         .select("key, value")
         .like("key", "home_%");
+      if (error) throw error;
       const map = new Map<string, string>(
         (data ?? []).map((r: any) => [r.key, r.value ?? ""]),
       );
@@ -202,7 +207,7 @@ export function useHomeContent() {
         .split(",")
         .map((w) => w.trim())
         .filter(Boolean);
-      return {
+      const content: HomeContent = {
         hero_eyebrow: get("home_hero_eyebrow", DEFAULTS.hero_eyebrow),
         hero_title_pre: get("home_hero_title_pre", DEFAULTS.hero_title_pre),
         hero_title_post: get("home_hero_title_post", DEFAULTS.hero_title_post),
@@ -268,6 +273,8 @@ export function useHomeContent() {
         cta_primary: get("home_cta_primary", DEFAULTS.cta_primary),
         cta_secondary: get("home_cta_secondary", DEFAULTS.cta_secondary),
       };
+      writePublicContent("home", content);
+      return content;
     },
   });
 }

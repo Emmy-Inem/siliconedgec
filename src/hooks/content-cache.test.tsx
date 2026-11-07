@@ -10,6 +10,7 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: { from } }));
 
 describe("public content caching", () => {
   beforeEach(() => {
+    localStorage.clear();
     from.mockReset();
     from.mockImplementation(() => ({
       select: () => ({
@@ -40,7 +41,18 @@ describe("public content caching", () => {
     expect(options?.staleTime).toBe(30 * 60 * 1000);
     expect(options?.gcTime).toBe(60 * 60 * 1000);
     expect(options?.refetchOnWindowFocus).toBe(false);
+    await client.invalidateQueries({ queryKey: [key] });
+    expect(from).toHaveBeenCalledTimes(2);
     second.unmount();
     client.clear();
+    const reloadedClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const reloadedWrapper = ({ children }: PropsWithChildren) =>
+      createElement(QueryClientProvider, { client: reloadedClient }, children);
+    const reloaded = renderHook(useContent, { wrapper: reloadedWrapper });
+    await waitFor(() => expect(reloaded.result.current.isSuccess).toBe(true));
+    expect(from).toHaveBeenCalledTimes(2);
+    expect(reloaded.result.current.data).toHaveProperty(field, value);
+    reloaded.unmount();
+    reloadedClient.clear();
   });
 });

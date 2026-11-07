@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Reduce unnecessary automated analytics and repeat public-content reads: suppress webdriver passive events, use session attribution without per-view auth requests, persist public presentation content for the existing 30-minute window, and remove course hydration writes. 65 tests pass; browser verified cached settings/home content reload with no course writes or passive preview records. Daily credits remain unmeasured after these changes.
+- [ ] Publish cost optimizations and compare equivalent full-day database active hours after billing ingestion (blocker: frontend publication and a later observation window). Do not claim daily savings from fewer queries alone.
+
 - [x] Finish the homepage category filter with selected chips, live course counts, scroll reset, empty/loading states and reduced-motion-aware result transitions; verify category switching on desktop and mobile.
 
 - [x] Update all five instructor titles and two-paragraph biographies using the user-confirmed backgrounds; verify directory summaries and dedicated profiles.

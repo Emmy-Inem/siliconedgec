@@ -60,7 +60,7 @@ const BOT_UA_RE = /bot|crawler|spider|crawling|headless|lighthouse|slurp|preview
  * Passive pageview-style events are skipped on preview/local hosts and for
  * crawlers so they don't keep the database awake. Real leads always record.
  */
-export function shouldSkipPassiveEvent(formType: string, hostname: string, userAgent: string): boolean {
+export function shouldSkipPassiveEvent(formType: string, hostname: string, userAgent: string, automated = typeof navigator !== "undefined" && navigator.webdriver === true): boolean {
   if (!PASSIVE_FORM_TYPES.has(formType)) return false;
   const host = hostname.toLowerCase();
   const isPreviewHost =
@@ -69,7 +69,7 @@ export function shouldSkipPassiveEvent(formType: string, hostname: string, userA
     host.startsWith("id-preview--") ||
     host.endsWith(".lovableproject.com") ||
     host.includes("preview");
-  return isPreviewHost || BOT_UA_RE.test(userAgent);
+  return isPreviewHost || automated || BOT_UA_RE.test(userAgent);
 }
 
 export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
@@ -80,7 +80,9 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
     return;
   }
   const utm = getStoredUtmParams();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Attribution is not authorization: use the hydrated session and let RLS
+  // validate the token on insert, rather than making an auth request per view.
+  const { data: { session } } = await supabase.auth.getSession();
 
   // Allow the shared first-visit geo lookup a bounded window. Never block UI.
   let geo = getCachedVisitorGeo();
@@ -122,7 +124,7 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
   }
 
   const candidate = {
-    user_id: user?.id ?? null,
+    user_id: session?.user?.id ?? null,
     utm_source: clampString(utm.utm_source, 255),
     utm_medium: clampString(utm.utm_medium, 255),
     utm_campaign: clampString(utm.utm_campaign, 255),

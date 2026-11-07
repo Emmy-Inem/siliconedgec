@@ -16,6 +16,36 @@ function wrapper() {
 }
 
 describe("course authenticity", () => {
+  it("loads a public list with one read and no normalization writes", async () => {
+    from.mockClear();
+    const update = vi.fn();
+    from.mockImplementation(() => ({
+      update,
+      select: () => ({ eq: () => ({ order: async () => ({ data: [] }) }) }),
+    }));
+    const { result } = renderHook(() => useCourses(), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(from).toHaveBeenCalledTimes(1);
+    expect(update).not.toHaveBeenCalled();
+  });
+  it("shows fallback curriculum without inserting modules or changing prices", async () => {
+    from.mockClear();
+    const insert = vi.fn();
+    const update = vi.fn();
+    from.mockImplementation((table: string) => ({
+      insert, update,
+      select: () => ({ eq: () => table === "courses"
+        ? { maybeSingle: async () => ({ data: { id: "11111111-1111-4111-8111-111111111111", slug: ai.slug, title: ai.title, instructor: null } }) }
+        : { order: async () => ({ data: [] }) },
+      }),
+    }));
+    const { result } = renderHook(() => useCourse(ai.slug), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.modules.length).toBeGreaterThan(0);
+    expect(from).toHaveBeenCalledTimes(2);
+    expect(insert).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
   it("does not assign a fictional instructor to the static AI course", () => {
     expect(ai.instructorName).toBeNull();
     expect(ai.instructorBio).toBe("");

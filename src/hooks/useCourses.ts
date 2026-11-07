@@ -234,7 +234,6 @@ async function fetchCourses(): Promise<DbCourse[]> {
     )
     .map(mapStaticCourseToDbCourse);
 
-  void ensureAuthoritativeCoursePricing();
   return sortWebinarsFirst([...mapped, ...extraCourses]);
 }
 
@@ -269,9 +268,6 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
     return null;
   }
 
-  if ((course as any)?.id) {
-    void ensureAuthoritativeCoursePricing([(course as any).id]);
-  }
   const { data: dbModules } = await supabase
     .from("modules")
     .select("*, lessons:lessons(id, title, duration, order_index)")
@@ -301,39 +297,7 @@ async function fetchCourseByIdOrSlug(idOrSlug: string): Promise<DbCourse | null>
       })),
     }));
 
-    // Asynchronously seed modules & lessons into DB if course exists with a valid UUID
-    const isDbUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((course as any).id);
-    if (isDbUuid) {
-      (async () => {
-        try {
-          for (let mIdx = 0; mIdx < staticMatch.modules.length; mIdx++) {
-            const sm = staticMatch.modules[mIdx];
-            const { data: modRow } = await supabase
-              .from("modules")
-              .insert({
-                course_id: (course as any).id,
-                title: sm.title,
-                order_index: mIdx,
-              })
-              .select("id")
-              .single();
-
-            if (modRow && sm.lessons?.length) {
-              await supabase.from("lessons").insert(
-                sm.lessons.map((sl, lIdx) => ({
-                  module_id: modRow.id,
-                  title: sl.title,
-                  duration: sl.duration,
-                  order_index: lIdx,
-                }))
-              );
-            }
-          }
-        } catch (seedErr) {
-          console.warn("Async modules seed error:", seedErr);
-        }
-      })();
-    }
+    // Display-only fallback: public reads must never seed or modify curricula.
   }
 
   // Merge missing metadata with rich static defaults

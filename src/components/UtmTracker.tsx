@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useUtmTracking } from "@/hooks/useUtmTracking";
-import { trackLead } from "@/lib/track-lead";
+import { shouldSkipPassiveEvent, trackLead } from "@/lib/track-lead";
 import { gaPageview, gaSetUserId } from "@/lib/analytics";
 import { getVisitorGeo } from "@/lib/geo";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,9 +29,11 @@ export function UtmTracker() {
   // Warm geo lookup + push GA4 user_id once per session (so reports can join
   // signed-in users across devices). Fire-and-forget; never blocks routing.
   useEffect(() => {
-    void getVisitorGeo();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.id) gaSetUserId(data.user.id);
+    if (!shouldSkipPassiveEvent("pageview", window.location.hostname, navigator.userAgent)) {
+      void getVisitorGeo();
+    }
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user?.id) gaSetUserId(data.session.user.id);
     }).catch(() => { /* ignore */ });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       gaSetUserId(session?.user?.id ?? null);
@@ -55,6 +57,7 @@ export function UtmTracker() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    if (shouldSkipPassiveEvent("pageview", window.location.hostname, navigator.userAgent)) return;
     if (/^\/admin(\/|$)/.test(location.pathname)) {
       lastInternalPath.current = null;
       return;

@@ -1,5 +1,8 @@
 # Project Architecture Rules
 
+- Public course reads must remain side-effect-free; curriculum seeding and price/schedule writes must not run during listing or detail hydration, because scanner visits can otherwise trigger redundant writes.
+- Persist only public settings and homepage presentation data with the existing freshness timestamp; never persist checkout/access data, and always fetch on administrator invalidation so savings do not hide saved changes.
+
 - Keep optional journey events consent-gated, query-free and allowlisted; aggregate signup cohorts and inactive-session endpoints on the server, and give AI only administrator-authorized counts so inferred motives never masquerade as observed outcomes.
 - Generate analytics AI summaries only on explicit administrator request from server-fetched reports; categorize stored paths before AI handoff and stream the result so personal identifiers and fabricated browser counts cannot enter summaries.
 
