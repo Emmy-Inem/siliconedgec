@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/affiliates", "destination": "/career", "statusCode": 301 },
+    { "source": "/affiliate", "destination": "/career/dashboard", "statusCode": 301 },
+    { "source": "/p/about", "destination": "/about", "statusCode": 301 },
+    { "source": "/p/privacy", "destination": "/privacy", "statusCode": 301 },
+    { "source": "/p/terms", "destination": "/terms", "statusCode": 301 },
+    { "source": "/p/refund", "destination": "/refund-policy", "statusCode": 301 }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
