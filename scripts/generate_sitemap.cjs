@@ -10,8 +10,8 @@ if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   const urlMatch = envContent.match(/VITE_SUPABASE_URL=([^\r\n]+)/);
   const keyMatch = envContent.match(/VITE_SUPABASE_PUBLISHABLE_KEY=([^\r\n]+)/);
-  if (urlMatch) supabaseUrl = urlMatch[1].trim().replace(/["']/g, '');
-  if (keyMatch) supabaseKey = keyMatch[1].trim().replace(/["']/g, '');
+  if (!process.env.VITE_SUPABASE_URL && urlMatch) supabaseUrl = urlMatch[1].trim().replace(/["']/g, '');
+  if (!process.env.VITE_SUPABASE_PUBLISHABLE_KEY && keyMatch) supabaseKey = keyMatch[1].trim().replace(/["']/g, '');
 }
 
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;

@@ -27,7 +27,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     quote:
       "I had 47 unfinished Udemy tabs open for two years and still panicked whenever someone said 'deploy to production.' Two weeks into the live labs here, I broke a staging VPC, fixed it with the mentor watching, and finally stopped feeling like three kids in a trench coat pretending to be an engineer.",
     avatar_url:
-      "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905754697-xqhuhr.jpg",
+      supabase.storage.from("site-media").getPublicUrl("testimonials/1777905754697-xqhuhr.jpg").data.publicUrl,
     rating: 5,
     order_index: 1,
   },
@@ -38,7 +38,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     quote:
       "Humble pie tastes terrible, by the way. I joined thinking I already knew cloud architecture, until our instructor reviewed my IAM policies on day three and gently asked if I wanted to donate my entire database to the internet. Best career wake-up call I’ve ever paid for.",
     avatar_url:
-      "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905739307-o4rcip.jpg",
+      supabase.storage.from("site-media").getPublicUrl("testimonials/1777905739307-o4rcip.jpg").data.publicUrl,
     rating: 5,
     order_index: 2,
   },
@@ -49,7 +49,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     quote:
       "Before Silicon Edge, my deployment strategy was basically 'push on Friday and pray.' Learning Docker and CI/CD pipelines live with someone who actually answers your weirdest debugging questions in real time saved both my sleep schedule and my blood pressure.",
     avatar_url:
-      "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905701455-khhk1c.jpg",
+      supabase.storage.from("site-media").getPublicUrl("testimonials/1777905701455-khhk1c.jpg").data.publicUrl,
     rating: 5,
     order_index: 3,
   },
@@ -60,7 +60,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     quote:
       "My boss thinks I suddenly became a productivity machine. Truth is, after the Generative AI cohort I automated the Monday reporting workflow that used to eat my entire Sunday evening. I haven’t told him yet because I’m too busy enjoying having my weekends back.",
     avatar_url:
-      "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905772196-a738pp.jpg",
+      supabase.storage.from("site-media").getPublicUrl("testimonials/1777905772196-a738pp.jpg").data.publicUrl,
     rating: 5,
     order_index: 4,
   },
@@ -71,7 +71,7 @@ export const AUTHORITATIVE_STUDENT_TESTIMONIALS: PersonalizedTestimonialSeed[] =
     quote:
       "Six months ago I thought 'subnetting' was a fishing technique. My mum still tells the family I 'fix Wi-Fi for big companies,' which I’ve stopped correcting, because the Azure and network defense projects from this cohort actually landed me my first proper tech offer.",
     avatar_url:
-      "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/testimonials/1777905884635-zoihwo.jpg",
+      supabase.storage.from("site-media").getPublicUrl("testimonials/1777905884635-zoihwo.jpg").data.publicUrl,
     rating: 5,
     order_index: 5,
   },

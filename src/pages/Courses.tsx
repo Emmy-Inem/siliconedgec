@@ -105,7 +105,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
         price: 500000,
         discount_price: null,
         duration_hours: 32,
-        thumbnail_url: "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
+        thumbnail_url: supabase.storage.from("course-thumbnails").getPublicUrl("cloud-engineering-accelerator.png").data.publicUrl,
       }
     ];
 
@@ -127,7 +127,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
         url: `/courses/${c.slug || c.id}`,
         price: c.price ?? 500000,
         hours: c.duration_hours ?? 32,
-        thumbnail: c.thumbnail_url || "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
+        thumbnail: c.thumbnail_url || supabase.storage.from("course-thumbnails").getPublicUrl("cloud-engineering-accelerator.png").data.publicUrl,
       };
     });
   }, [fetchedCourses]);
