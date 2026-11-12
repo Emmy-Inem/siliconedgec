@@ -81,6 +81,7 @@ const InstructorAssist = lazy(() => import("./pages/admin/AdminInstructorAssist"
 import { AiCoach } from "./components/AiCoach";
 import { CustomScripts } from "./components/CustomScripts";
 import { CookieBanner } from "./components/CookieBanner";
+import { SignupPrompt } from "./components/SignupPrompt";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { NewAssessmentToast } from "./components/NewAssessmentToast";
@@ -335,6 +336,7 @@ const App = () => (
             <AiCoach />
             <CustomScripts />
             <CookieBanner />
+            <SignupPrompt />
             <GadsLabelsLoader />
             <SignupPromptModal />
           </CartProvider>

@@ -20,6 +20,16 @@ function Breakdown({ title, rows, label = "Page views" }: { title: string; rows:
   </section>;
 }
 
+const PAGE_NAMES: Record<string, string> = { "/": "Homepage", "/courses": "All courses", "/pricing": "Pricing", "/sign-in": "Sign in", "/sign-up": "Sign up", "/cart": "Cart", "/about": "About", "/contact": "Contact", "/instructors": "Instructors", "/blog": "Blog", "/business": "Business", "/certificates": "Certificates" };
+function pageLabel(page: string) {
+  const p = page || "/";
+  if (PAGE_NAMES[p]) return `${PAGE_NAMES[p]} (${p})`;
+  if (p.startsWith("/courses/")) return `Course: ${p.slice(9).replace(/-/g, " ")}`;
+  if (p.startsWith("/instructors/")) return `Instructor: ${p.slice(13).replace(/-/g, " ")}`;
+  if (p.startsWith("/blog/")) return `Article: ${p.slice(6).replace(/-/g, " ")}`;
+  return p;
+}
+
 export default function AnalyticsOverview() {
   const { adminRole } = useAuth();
   const [dates, setDates] = useState(() => analyticsPreset(30));
@@ -48,7 +58,7 @@ export default function AnalyticsOverview() {
       </div>
       <Button variant="ghost" size="icon" aria-label="Refresh analytics" title="Refresh analytics" disabled={query.isFetching || !range} onClick={() => query.refetch()}><RefreshCw className={`h-4 w-4 ${query.isFetching ? "animate-spin" : ""}`} /></Button>
     </div>
-    <p className="text-xs text-muted-foreground">{dates.from} – {dates.to} · UTC</p>
+    <p className="text-xs text-muted-foreground">{dates.from} – {dates.to} · {range?.p_tz ?? "UTC"} time</p>
     {!range ? <p role="alert" className="text-sm text-destructive">Choose a valid start and end date.</p> : query.isError ? <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Analytics could not be loaded. No figures have been substituted.</p><Button variant="outline" onClick={() => query.refetch()}>Try again</Button></div> : query.isLoading ? <p role="status" className="text-sm text-muted-foreground py-12">Loading analytics…</p> : stats && <>
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
@@ -60,25 +70,27 @@ export default function AnalyticsOverview() {
       </div>
       {stats.unidentifiedViews > 0 && <p className="text-xs text-muted-foreground">{stats.unidentifiedViews.toLocaleString()} older anonymous page views have no visitor identifier and are not counted as separate people.</p>}
       <section className="space-y-4 border-b border-border pb-6">
-        <h3 className="font-heading font-semibold">Signups & logins over time</h3>
+        <h3 className="font-heading font-semibold">Visitors, signups & logins over time</h3>
         <div className="h-64 w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%"><LineChart data={stats.daily} margin={{ top: 5, right: 8, bottom: 5, left: -20 }}>
-            <XAxis dataKey="day" tickFormatter={value => new Date(`${value}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} tick={{ fontSize: 11 }} minTickGap={35} axisLine={false} tickLine={false} />
+            <XAxis dataKey="day" tickFormatter={value => new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} tick={{ fontSize: 11 }} minTickGap={35} axisLine={false} tickLine={false} />
             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip /><Legend />
+            <Line dataKey="visitors" name="Visitors" stroke="hsl(var(--muted-foreground))" strokeWidth={2} dot={false} isAnimationActive={false} />
             <Line dataKey="signups" name="Signups" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} isAnimationActive={false} />
             <Line dataKey="logins" name="People who logged in" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} isAnimationActive={false} />
           </LineChart></ResponsiveContainer>
         </div>
       </section>
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-        <Breakdown title="Most-visited pages" rows={stats.pages.map(p => ({ name: p.page || "/", views: p.views }))} />
+        <Breakdown title="Most-visited pages" rows={stats.pages.map(p => ({ name: pageLabel(p.page), views: p.views }))} />
+        <Breakdown title="Courses viewed" rows={(stats.courses ?? []).map(c => ({ name: `${c.name} (${c.visitors} visitor${c.visitors === 1 ? "" : "s"})`, views: c.views }))} />
         <Breakdown title="Countries" rows={stats.countries.map(c => ({ name: c.name === "Unknown" ? "Location unavailable" : countryNames.of(c.name) || c.name, views: c.views }))} />
         <Breakdown title="Traffic sources" rows={stats.sources} />
         <Breakdown title="Devices" rows={stats.devices} />
       </div>
       <p className="text-xs text-muted-foreground">Visitor counts represent recorded browsers or signed-in accounts, not guaranteed individual people. Missing locations remain unavailable.</p>
     </>}
-    {range && <JourneyInsights range={range} />}
+    {range && <JourneyInsights range={{ p_from: range.p_from, p_to: range.p_to }} />}
   </div>;
 }
