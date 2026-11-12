@@ -88,6 +88,20 @@ export default function SignIn() {
     setLoading(false);
     if (error) {
       void trackJourney("signin_error", "authentication");
+      if (/email not confirmed/i.test(error.message)) {
+        const { error: resendError } = await supabase.auth.resend({
+          type: "signup",
+          email,
+          options: { emailRedirectTo: `${window.location.origin}/sign-in` },
+        });
+        toast({
+          title: "Please confirm your email",
+          description: resendError
+            ? "Your email isn't confirmed yet. Check your inbox (and spam) for the confirmation link."
+            : `We've sent a new confirmation link to ${email}. Open it, then sign in again.`,
+        });
+        return;
+      }
       const msg = error.message === "Invalid login credentials"
         ? "Invalid email or password. If you signed up with Google, use the Google button below."
         : error.message;
