@@ -4624,7 +4624,7 @@ export type Database = {
     }
     Functions: {
       admin_audience_analytics: {
-        Args: { p_from: string; p_to: string }
+        Args: { p_from: string; p_to: string; p_tz?: string }
         Returns: Json
       }
       admin_create_installment_plan: {
