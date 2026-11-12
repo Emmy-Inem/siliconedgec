@@ -63,15 +63,16 @@ export default function Cart() {
       const { data: rows, error } = await (supabase.rpc as any)("validate_promo_code", { p_code: code });
       if (error) throw error;
       const data = Array.isArray(rows) ? rows[0] : rows;
-      if (!data) { setPromoError("Invalid or expired promo code"); return; }
-      if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); return; }
-      if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); return; }
+      if (!data) { setPromoError("Invalid or expired promo code"); window.__lovableEvents?.track?.("project.promo_code_failed", { reason: "invalid" }); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { setPromoError("This promo code has expired"); window.__lovableEvents?.track?.("project.promo_code_failed", { reason: "expired" }); return; }
+      if (data.max_uses && data.usage_count >= data.max_uses) { setPromoError("This promo code has reached its usage limit"); window.__lovableEvents?.track?.("project.promo_code_failed", { reason: "limit_reached" }); return; }
       const scope: string[] = Array.isArray(data.course_ids) ? data.course_ids : [];
       if (scope.length > 0) {
         const cartCourseIds = items.map((i) => i.course_id);
         const allInScope = cartCourseIds.every((id) => scope.includes(id));
         if (!allInScope) {
           setPromoError("This promo code doesn't apply to one or more courses in your cart");
+          window.__lovableEvents?.track?.("project.promo_code_failed", { reason: "not_applicable" });
           return;
         }
       }

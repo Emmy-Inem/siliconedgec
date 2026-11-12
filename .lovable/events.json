@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.business_inquiry_submitted": {
+      "event_schema_version": 1,
+      "description": "Business training request form was submitted successfully.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    "project.coach_support_opened": {
+      "event_schema_version": 1,
+      "description": "Visitor opened Silicon Edge Support from the AI Coach.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "preset": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "project.payment_provider_redirected": {
+      "event_schema_version": 1,
+      "description": "Checkout sent the learner to the payment provider.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "wallet": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "project.payment_setup_failed": {
+      "event_schema_version": 1,
+      "description": "Checkout failed before reaching the payment provider.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project.promo_code_failed": {
+      "event_schema_version": 1,
+      "description": "A promo code entered in the cart was rejected.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "project.signup_prompt_action": {
+      "event_schema_version": 1,
+      "description": "One-minute sign-up popup was shown, dismissed, or led to sign up / sign in.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "shown",
+              "dismissed",
+              "sign_up",
+              "sign_in"
+            ]
+          }
+        }
+      }
+    },
+    "project.whatsapp_clicked": {
+      "event_schema_version": 1,
+      "description": "Visitor clicked a WhatsApp chat button.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "location"
+        ],
+        "properties": {
+          "location": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -178,6 +178,7 @@ export default function ForBusinesses() {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
     } else {
       setSubmitted(true);
+      window.__lovableEvents?.track?.("project.business_inquiry_submitted", {});
       trackLinkedInConversion();
       toast({ title: "Request submitted!", description: "We'll be in touch shortly." });
     }

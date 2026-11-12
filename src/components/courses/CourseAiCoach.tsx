@@ -161,6 +161,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
   };
 
   const openChatWithQuestion = (question?: string) => {
+    window.__lovableEvents?.track?.("project.coach_support_opened", { preset: !!question });
     setPanelOpen(false);
     setBubbleVisible(false);
     window.dispatchEvent(
@@ -299,6 +300,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
 
             <a
               href={COACH_WHATSAPP_URL}
+              onClick={() => window.__lovableEvents?.track?.("project.whatsapp_clicked", { location: "coach_panel" })}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 mx-3 mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 py-2 text-xs font-semibold !text-white hover:bg-[#1da851] shadow-sm transition-colors"

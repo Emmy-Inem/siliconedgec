@@ -265,7 +265,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
   };
 
   const talkToHuman = async () => {
-    if (!user) { window.open(COACH_WHATSAPP_URL, "_blank", "noopener,noreferrer"); return; }
+    if (!user) { window.__lovableEvents?.track?.("project.whatsapp_clicked", { location: "talk_to_human" }); window.open(COACH_WHATSAPP_URL, "_blank", "noopener,noreferrer"); return; }
     await assistant.requestHuman();
   };
 
@@ -404,6 +404,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
 
                 <a
                   href={COACH_WHATSAPP_URL}
+                  onClick={() => window.__lovableEvents?.track?.("project.whatsapp_clicked", { location: "support_chat" })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="shrink-0 mx-3 my-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold !text-white hover:bg-[#1da851]"

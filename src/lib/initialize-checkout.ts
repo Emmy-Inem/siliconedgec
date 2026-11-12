@@ -44,7 +44,7 @@ export async function initializeCheckout(body: Record<string, unknown> & { curre
     if (walletCheckout) {
       const result = await initializeDirectly();
       if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start wallet checkout.");
-      if (result.data.authorization_url) void trackJourney("checkout_redirected");
+      if (result.data.authorization_url) { void trackJourney("checkout_redirected"); window.__lovableEvents?.track?.("project.payment_provider_redirected", { provider: "stripe", currency: body.currency, wallet: true }); }
       return result.data;
     }
     const routerResult = await invoke("checkout-initialize", body);
@@ -53,10 +53,15 @@ export async function initializeCheckout(body: Record<string, unknown> & { curre
       result = await initializeDirectly();
     }
     if (result.status < 200 || result.status >= 300 || result.data.error) throw new Error(result.data.error || "Unable to start checkout.");
-    if (result.data.authorization_url) void trackJourney("checkout_redirected");
+    if (result.data.authorization_url) {
+      void trackJourney("checkout_redirected");
+      const url = String(result.data.authorization_url);
+      window.__lovableEvents?.track?.("project.payment_provider_redirected", { provider: url.includes("paystack") ? "paystack" : url.includes("stripe") ? "stripe" : "other", currency: body.currency, wallet: false });
+    }
     return result.data;
   } catch (error) {
     void trackJourney("checkout_error", "payment_setup");
+    window.__lovableEvents?.track?.("project.payment_setup_failed", { currency: body.currency });
     throw error;
   }
 }

@@ -30,6 +30,7 @@ export function SignupPrompt() {
       if (!shouldShowSignupPrompt(false, window.location.pathname, alreadyShown())) return;
       try { localStorage.setItem(SIGNUP_PROMPT_KEY, "1"); } catch { /* ignore */ }
       setOpen(true);
+      window.__lovableEvents?.track?.("project.signup_prompt_action", { action: "shown" });
     }, SIGNUP_PROMPT_DELAY_MS);
     return () => clearTimeout(timer);
   }, [eligible]);
@@ -37,15 +38,15 @@ export function SignupPrompt() {
   useEffect(() => { if (user) setOpen(false); }, [user]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && open) window.__lovableEvents?.track?.("project.signup_prompt_action", { action: "dismissed" }); setOpen(o); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-heading">Start your tech career journey</DialogTitle>
           <DialogDescription>Create a free account to save courses, track your progress and get updates on new intakes.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
-          <Button asChild className="flex-1"><Link to="/sign-up" onClick={() => setOpen(false)}>Sign up free</Link></Button>
-          <Button asChild variant="outline" className="flex-1"><Link to="/sign-in" onClick={() => setOpen(false)}>Sign in</Link></Button>
+          <Button asChild className="flex-1"><Link to="/sign-up" onClick={() => { window.__lovableEvents?.track?.("project.signup_prompt_action", { action: "sign_up" }); setOpen(false); }}>Sign up free</Link></Button>
+          <Button asChild variant="outline" className="flex-1"><Link to="/sign-in" onClick={() => { window.__lovableEvents?.track?.("project.signup_prompt_action", { action: "sign_in" }); setOpen(false); }}>Sign in</Link></Button>
         </div>
       </DialogContent>
     </Dialog>
