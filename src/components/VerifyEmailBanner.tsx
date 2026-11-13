@@ -4,20 +4,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { MailWarning, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { needsEmailVerification } from "@/lib/auth-verification";
 
 export function VerifyEmailBanner() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [sending, setSending] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  if (!user || (user as any).email_confirmed_at || dismissed) return null;
+  if (!user || !needsEmailVerification(user) || dismissed) return null;
 
   const resend = async () => {
+    if (sending || !user.email) return;
     setSending(true);
-    const { error } = await supabase.auth.resend({ type: "signup", email: user.email ?? "" });
-    setSending(false);
+    try {
+    const { error } = await supabase.auth.resend({ type: "signup", email: user.email, options: { emailRedirectTo: window.location.origin } });
     if (error) toast({ title: "Couldn't resend", description: error.message, variant: "destructive" });
     else toast({ title: "Verification email sent", description: "Check your inbox to confirm your email." });
+    } catch {
+      toast({ title: "Couldn't resend", description: "Unable to connect. Please try again.", variant: "destructive" });
+    } finally { setSending(false); }
   };
 
   return (

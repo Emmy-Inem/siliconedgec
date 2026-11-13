@@ -22,7 +22,7 @@ export default function ResetPassword() {
   useEffect(() => {
     // Supabase puts the recovery token in the URL hash
     const hash = window.location.hash;
-    if (hash.includes("type=recovery") || hash.includes("access_token")) {
+    if (new URLSearchParams(hash.slice(1)).get("type") === "recovery") {
       setHasRecoveryToken(true);
     }
     // Also listen for the auth state change to confirm session is in recovery mode
@@ -34,6 +34,7 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || !hasRecoveryToken) return;
     if (password.length < 8) {
       toast({ title: "Password too short", description: "Use at least 8 characters.", variant: "destructive" });
       return;
@@ -43,8 +44,8 @@ export default function ResetPassword() {
       return;
     }
     setLoading(true);
+    try {
     const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
     if (error) {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
     } else {
@@ -52,6 +53,9 @@ export default function ResetPassword() {
       toast({ title: "Password updated", description: "You can now sign in with your new password." });
       setTimeout(() => navigate("/sign-in"), 1500);
     }
+    } catch {
+      toast({ title: "Update failed", description: "Unable to connect. Please try again.", variant: "destructive" });
+    } finally { setLoading(false); }
   };
 
   return (

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GOOGLE_ADS_EVENTS, googleAdsConversion } from "./analytics";
+import { GOOGLE_ADS_EVENTS, googleAdsConversion, gaSetUserId, metaEvent } from "./analytics";
 
 beforeEach(() => {
   localStorage.clear();
@@ -7,7 +7,17 @@ beforeEach(() => {
   window.gtag = vi.fn();
   vi.spyOn(console, "info").mockImplementation(() => {});
 });
-afterEach(() => { delete window.gtag; delete window.__gadsLabelOverrides; vi.restoreAllMocks(); });
+afterEach(() => { delete window.gtag; delete window.fbq; delete window.__gadsLabelOverrides; vi.restoreAllMocks(); });
+
+it("sets GA identity without invalid Meta setters or duplicate pixel initialization", () => {
+  window.fbq = vi.fn();
+  gaSetUserId("test-user");
+  expect(window.gtag).toHaveBeenCalledWith("set", { user_id: "test-user" });
+  expect(window.fbq).not.toHaveBeenCalled();
+  metaEvent("Lead", { form_type: "business_training" });
+  expect(window.fbq).toHaveBeenCalledTimes(1);
+  expect(window.fbq).toHaveBeenCalledWith("track", "Lead", { form_type: "business_training" }, { eventID: expect.any(String) });
+});
 
 describe("Google Ads enquiry conversion", () => {
   it("uses the verified Lead label and leaves all other default labels unchanged", () => {

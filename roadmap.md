@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Enforce manual-only email verification prompts using auth-server identities; repair password recovery/resend connection handling and remove the invalid Meta matching setter without changing conversions. 33 tests pass; six public pages and a real signed-in dashboard checked with zero runtime errors. Interactive Google/Apple provider completion and email inbox delivery remain unverified.
+
 - [x] Audit and repair signup/signin redirects, normalized inputs, connection failures, and auth listener initialization; live settings verified, 23 focused/regression tests pass, browser verifies signup validation/retry and a real signed-in dashboard. Fresh signup confirmation-email delivery and interactive Google/Apple completion remain unverified; no test email inbox or provider interaction available.
 
 - [x] Reduce unnecessary automated analytics and repeat public-content reads: suppress webdriver passive events, use session attribution without per-view auth requests, persist public presentation content for the existing 30-minute window, and remove course hydration writes. 65 tests pass; browser verified cached settings/home content reload with no course writes or passive preview records. Daily credits remain unmeasured after these changes.

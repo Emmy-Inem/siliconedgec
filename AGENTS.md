@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+- Derive email-verification presentation from server-issued identities through the shared verification helper, never editable user metadata; password recovery requires a recovery-specific signal.
+
 - Validate post-auth destinations with the shared local-path helper, and defer database work outside auth callbacks to avoid open redirects and auth-lock deadlocks.
 
 - Public course reads must remain side-effect-free; curriculum seeding and price/schedule writes must not run during listing or detail hydration, because scanner visits can otherwise trigger redundant writes.

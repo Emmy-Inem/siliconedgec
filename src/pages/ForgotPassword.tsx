@@ -30,11 +30,12 @@ export default function ForgotPassword() {
       setError(parsed.error.issues[0].message);
       return;
     }
+    if (loading) return;
     setLoading(true);
+    try {
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    setLoading(false);
     if (resetError) {
       // Don't leak whether the email exists — keep the same success UX
       // and only surface unexpected errors via toast.
@@ -42,6 +43,9 @@ export default function ForgotPassword() {
       return;
     }
     setSent(true);
+    } catch {
+      toast({ title: "Could not send link", description: "Unable to connect. Please try again.", variant: "destructive" });
+    } finally { setLoading(false); }
   };
 
   return (
