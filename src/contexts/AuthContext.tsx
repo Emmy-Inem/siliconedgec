@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { safeAuthRedirect } from "@/lib/auth-redirect";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminRole, ROLE_RANK, StaffRole } from "@/lib/admin-permissions";
@@ -55,16 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminRole(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -76,7 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // the authenticated session's creation time, never page-load time.
             setTimeout(() => { void supabase.rpc("record_analytics_login"); }, 0);
           }
-          checkAdminRole(session.user.id).finally(() => setLoading(false));
+          // Never start a Supabase request while its auth callback holds the lock.
+          setTimeout(() => { void checkAdminRole(session.user.id).finally(() => setLoading(false)); }, 0);
           // After OAuth callback, the user often lands on "/" (default OAuth
           // redirect_uri). If a post-auth destination was stashed by the
           // influencer flow, honor it here.
@@ -89,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   sessionStorage.removeItem("sec_post_auth_redirect");
                   // Defer to next tick so React has finished updating auth state.
                   setTimeout(() => {
-                    window.location.replace(dest);
+                    window.location.replace(safeAuthRedirect(dest));
                   }, 50);
                 }
               }
@@ -103,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // The listener delivers INITIAL_SESSION; avoid a competing getSession result.
     return () => subscription.unsubscribe();
   }, []);
 

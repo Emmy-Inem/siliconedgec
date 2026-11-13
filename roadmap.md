@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Audit and repair signup/signin redirects, normalized inputs, connection failures, and auth listener initialization; live settings verified, 23 focused/regression tests pass, browser verifies signup validation/retry and a real signed-in dashboard. Fresh signup confirmation-email delivery and interactive Google/Apple completion remain unverified; no test email inbox or provider interaction available.
+
 - [x] Reduce unnecessary automated analytics and repeat public-content reads: suppress webdriver passive events, use session attribution without per-view auth requests, persist public presentation content for the existing 30-minute window, and remove course hydration writes. 65 tests pass; browser verified cached settings/home content reload with no course writes or passive preview records. Daily credits remain unmeasured after these changes.
 - [ ] Publish cost optimizations and compare equivalent full-day database active hours after billing ingestion (blocker: frontend publication and a later observation window). Do not claim daily savings from fewer queries alone.
 
