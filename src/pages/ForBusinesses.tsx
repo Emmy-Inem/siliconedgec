@@ -19,7 +19,7 @@ import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
 import { SEO } from "@/components/SEO";
 import { usePageImage } from "@/hooks/usePageImage";
-import { googleAdsConversion } from "@/lib/analytics";
+import { googleAdsConversion, metaEvent } from "@/lib/analytics";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -180,6 +180,9 @@ export default function ForBusinesses() {
     } else {
       try {
         googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: "business_training" });
+      } catch { /* Tracking must never affect a saved enquiry. */ }
+      try {
+        metaEvent("Lead", { form_type: "business_training" });
       } catch { /* Tracking must never affect a saved enquiry. */ }
       setSubmitted(true);
       window.__lovableEvents?.track?.("project.business_inquiry_submitted", {});
