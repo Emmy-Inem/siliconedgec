@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { googleAdsConversion } from "@/lib/analytics";
 import { Mail, Phone, MapPin, MessageSquare, Loader2 } from "lucide-react";
 
 export default function Contact() {
@@ -38,6 +39,9 @@ export default function Contact() {
         status: "new",
       });
       if (error) throw error;
+      try {
+        googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: "contact" });
+      } catch { /* Tracking must never affect a saved enquiry. */ }
       setSent(true);
       setForm({ name: "", email: "", company: "", phone: "", message: "" });
       toast({ title: "Message sent", description: "We'll get back to you shortly." });

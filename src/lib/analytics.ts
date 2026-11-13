@@ -352,7 +352,7 @@ export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
  */
 export const GOOGLE_ADS_EVENTS = {
   // Webinar / contact / business lead form submissions
-  Lead:                  { label: null as string | null, gaName: "generate_lead" },
+  Lead:                  { label: "uD3NCJDwybcdEKq5qsND" as string | null, gaName: "generate_lead" },
   // "Enroll Now" / "Add to cart" intent click on a course
   AddToCart:             { label: null as string | null, gaName: "add_to_cart" },
   // Cart → Paystack handoff
