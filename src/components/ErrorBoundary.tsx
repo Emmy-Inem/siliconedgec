@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { ErrorPage } from "./ErrorPage";
 import { captureException } from "@/lib/sentry";
+import { useLocation } from "react-router-dom";
 
 interface Props {
   children: ReactNode;
@@ -58,3 +59,8 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
+
+export function RouteErrorBoundary({ children, fallback }: Props) {
+  const location = useLocation();
+  return <ErrorBoundary key={location.key} fallback={fallback}>{children}</ErrorBoundary>;
+}

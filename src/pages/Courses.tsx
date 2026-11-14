@@ -6,7 +6,7 @@ import { CourseCard } from "@/components/CourseCard";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
 import { useCourses } from "@/hooks/useCourses";
 import { Search, Loader2, SlidersHorizontal, X, Cloud, Cpu, Code2, Shield, Rocket, GraduationCap, Users, ArrowRight, PlayCircle, Terminal, Clock, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -52,6 +52,7 @@ const HERO_COURSE_IDS = [AZURE_BOOTCAMP_ID, AI_COURSE_ID, CYBERSECURITY_COURSE_I
 
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
   const { format: formatPrice } = useLocalizedPrice();
+  const reduceMotion = useReducedMotion();
   // Query promoted banner config from site_content (own cache key so the
   // header strip's single-course default never overrides the hero carousel)
   const { data: config } = useQuery({
@@ -162,16 +163,26 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [direction, setDirection] = useState(1);
+  const [isPageVisible, setIsPageVisible] = useState(() => !document.hidden);
+
+  useEffect(() => {
+    const updateVisibility = () => setIsPageVisible(!document.hidden);
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
 
   // Auto-rotate stacked carousel if multiple courses exist
   useEffect(() => {
-    if (displayCourses.length <= 1 || isHovered) return;
+    if (displayCourses.length <= 1 || isHovered || isFocused || reduceMotion || !isPageVisible) return;
     const intervalTime = Math.max((config?.rotationSeconds ?? 7) * 1000, 3000);
     const timer = setInterval(() => {
+      setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % displayCourses.length);
     }, intervalTime);
     return () => clearInterval(timer);
-  }, [displayCourses.length, isHovered, config?.rotationSeconds]);
+  }, [displayCourses.length, isHovered, isFocused, reduceMotion, isPageVisible, config?.rotationSeconds]);
 
   // Keep index within bounds
   useEffect(() => {
@@ -187,12 +198,14 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
   const handlePrev = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setDirection(-1);
     setCurrentIndex((prev) => (prev - 1 + displayCourses.length) % displayCourses.length);
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setDirection(1);
     setCurrentIndex((prev) => (prev + 1) % displayCourses.length);
   };
 
@@ -221,7 +234,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left - copy */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.48, ease: "easeOut" }}
             className="lg:col-span-6"
@@ -232,7 +245,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
             <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[4rem] font-bold text-foreground mb-5 leading-[1.05] tracking-tight">
               Find the course that{" "}
-              <span className="relative inline-block whitespace-nowrap">
+              <span className="relative inline-block">
                 <span className="text-gradient">moves your career</span>
                 <span className="text-gold">.</span>
               </span>
@@ -264,17 +277,24 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                 className="relative select-none"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                onFocusCapture={() => setIsFocused(true)}
+                onBlurCapture={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) setIsFocused(false);
+                }}
+                role="region"
+                aria-roledescription="carousel"
+                aria-label="Featured courses"
               >
                 {/* Stacked Card 3 (deeper deck layer, shown if 3+ courses) */}
                 {displayCourses.length > 2 && (
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 translate-y-6 scale-[0.91] rounded-2xl md:rounded-3xl border border-slate-800/60 bg-slate-950 shadow-md opacity-35 z-0 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
+                    className="absolute inset-0 translate-y-6 scale-[0.91] rounded-2xl md:rounded-3xl border border-hero/10 bg-hero shadow-md opacity-35 z-0 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
                   >
                     {thirdCourse?.thumbnail && (
                       <img src={thirdCourse.thumbnail} alt={thirdCourse.title || "Course thumbnail"} className="w-full h-full object-cover opacity-20 blur-[1px]" />
                     )}
-                    <div className="absolute inset-0 bg-slate-950/80" />
+                    <div className="absolute inset-0 bg-hero/80" />
                   </div>
                 )}
 
@@ -282,107 +302,101 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
                 {displayCourses.length > 1 && (
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 translate-y-3 scale-[0.95] rounded-2xl md:rounded-3xl border border-slate-800/80 bg-slate-950 shadow-xl opacity-60 z-10 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
+                    className="absolute inset-0 translate-y-3 scale-[0.95] rounded-2xl md:rounded-3xl border border-hero/15 bg-hero shadow-xl opacity-60 z-10 pointer-events-none transition-all duration-500 overflow-hidden hidden sm:block"
                   >
                     {nextCourse?.thumbnail && (
                       <img src={nextCourse.thumbnail} alt={nextCourse.title || "Course thumbnail"} className="w-full h-full object-cover opacity-25 blur-[0.5px]" />
                     )}
-                    <div className="absolute inset-0 bg-slate-950/75" />
+                    <div className="absolute inset-0 bg-hero/75" />
                   </div>
                 )}
 
+                {displayCourses.length > 1 && (
+                  <div className="absolute top-6 right-6 md:top-8 md:right-8 z-30 flex items-center gap-1 rounded-full bg-navy-light border border-hero/15 px-1">
+                    <Button type="button" size="icon" variant="ghost" onClick={handlePrev} aria-label="Previous course" className="h-8 w-8 rounded-full text-hero-muted hover:text-hero hover:bg-hero/10">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span aria-live="polite" aria-atomic="true" className="w-9 text-center text-xs tabular-nums text-hero-muted">{currentIndex + 1} / {displayCourses.length}</span>
+                    <Button type="button" size="icon" variant="ghost" onClick={handleNext} aria-label="Next course" className="h-8 w-8 rounded-full text-hero-muted hover:text-hero hover:bg-hero/10">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
                 {/* Active Front Card */}
-                <div className="relative z-20">
-                  <AnimatePresence mode="wait">
+                <div className="relative z-20 grid h-[520px] xl:h-[480px]">
+                  <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                       key={activeCourse.id}
-                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                      transition={{ duration: 0.42, ease: "easeOut" }}
-                      className="group relative rounded-2xl md:rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl text-left flex flex-col justify-between min-h-[440px]"
+                      custom={direction}
+                      variants={{
+                        enter: (travel: number) => ({ opacity: 0, x: reduceMotion ? 0 : travel * 24 }),
+                        active: { opacity: 1, x: 0 },
+                        leave: (travel: number) => ({ opacity: 0, x: reduceMotion ? 0 : travel * -24 }),
+                      }}
+                      initial="enter"
+                      animate="active"
+                      exit="leave"
+                      transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeInOut" }}
+                      className="group relative rounded-2xl md:rounded-3xl border border-hero/15 bg-hero overflow-hidden shadow-2xl text-left flex flex-col justify-between h-full min-w-0 [grid-area:1/1]"
                     >
                       {/* Background course thumbnail image with subtle zoom */}
                       <img
                         src={activeCourse.thumbnail}
                         alt={activeCourse.title}
-                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out pointer-events-none"
+                        className="absolute inset-0 w-full h-full object-cover object-center motion-safe:group-hover:scale-105 motion-safe:transition-transform duration-700 ease-out pointer-events-none"
                       />
 
                       {/* Layered dark scrim & subtle blur for crystal-clear readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/50 pointer-events-none" />
-                      <div className="absolute inset-0 bg-slate-950/25 backdrop-blur-[1.5px] pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-hero via-hero/85 to-hero/50 pointer-events-none" />
+                      <div className="absolute inset-0 bg-hero/25 backdrop-blur-[1.5px] pointer-events-none" />
 
                       {/* Foreground content with razor-sharp contrast */}
                       <div className="relative z-10 p-6 md:p-8 flex flex-col justify-between h-full space-y-6">
                         {/* Top meta: Badge + Enrolling Now; Carousel Navigation if multiple courses */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-white/10">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pr-28 min-h-12 pb-3.5 border-b border-hero/10">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-slate-900/90 text-slate-100 border border-slate-700 shadow-sm backdrop-blur-sm">
+                            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-navy-light/90 text-hero border border-hero/15 shadow-sm backdrop-blur-sm">
                               {badgeLabel}
                             </span>
-                            <span className="text-xs text-slate-300 font-medium">
+                            <span className="text-xs text-hero-muted font-medium">
                               Enrolling Now
                             </span>
                           </div>
 
-                          {/* Stacked Carousel Controls (No 100% Practical text) */}
-                          {displayCourses.length > 1 && (
-                            <div className="flex items-center gap-1 bg-slate-900/85 border border-white/15 rounded-full px-2 py-0.5 backdrop-blur-md shadow-sm">
-                              <button
-                                type="button"
-                                onClick={handlePrev}
-                                aria-label="Previous course"
-                                className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                              >
-                                <ChevronLeft className="h-3.5 w-3.5" />
-                              </button>
-                              <span className="text-[10px] tabular-nums font-semibold text-slate-300 px-1">
-                                {currentIndex + 1} / {displayCourses.length}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={handleNext}
-                                aria-label="Next course"
-                                className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                              >
-                                <ChevronRight className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          )}
+
                         </div>
 
                         {/* Title & Concise Description */}
                         <div className="space-y-2.5">
-                          <h2 className="font-heading text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight drop-shadow-sm">
+                          <h2 className="font-heading text-xl sm:text-2xl font-bold text-hero leading-snug tracking-tight drop-shadow-sm">
                             {activeCourse.title}
                           </h2>
-                          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-lg font-normal drop-shadow-sm">
+                          <p className="text-xs sm:text-sm text-hero-muted leading-relaxed max-w-lg font-normal drop-shadow-sm">
                             {activeCourse.description}
                           </p>
                         </div>
 
                         {/* Core Pillars: Sleek glass chips */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <Terminal className="h-4 w-4 text-slate-400 shrink-0" />
+                          <div className="p-2.5 rounded-lg border border-hero/10 bg-navy-light/80 backdrop-blur-md flex items-center gap-2 text-hero-muted shadow-sm">
+                            <Terminal className="h-4 w-4 text-hero-muted shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar1}</span>
                           </div>
-                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                          <div className="p-2.5 rounded-lg border border-hero/10 bg-navy-light/80 backdrop-blur-md flex items-center gap-2 text-hero-muted shadow-sm">
+                            <Clock className="h-4 w-4 text-hero-muted shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar2}</span>
                           </div>
-                          <div className="p-2.5 rounded-lg border border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center gap-2 text-slate-200 shadow-sm">
-                            <ShieldCheck className="h-4 w-4 text-slate-400 shrink-0" />
+                          <div className="p-2.5 rounded-lg border border-hero/10 bg-navy-light/80 backdrop-blur-md flex items-center gap-2 text-hero-muted shadow-sm">
+                            <ShieldCheck className="h-4 w-4 text-hero-muted shrink-0" />
                             <span className="font-medium text-[11px] truncate">{pillar3}</span>
                           </div>
                         </div>
 
                         {/* Pricing & CTA */}
-                        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+                        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-hero/10">
                           <div>
-                            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Tuition</span>
-                            <span className="text-2xl font-bold font-heading text-white drop-shadow-sm">{formatPrice(Number(activeCourse.price))}</span>
+                            <span className="text-[10px] uppercase font-semibold tracking-wider text-hero-muted block">Tuition</span>
+                            <span className="text-2xl font-bold font-heading text-hero drop-shadow-sm">{formatPrice(Number(activeCourse.price))}</span>
                           </div>
 
                           <Button size="lg" asChild className="gap-2 font-medium hover-scale shadow-lg">

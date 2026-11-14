@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 type TechLogo = { name: string; src: string; tag: string };
 
@@ -20,6 +20,7 @@ const HERO_TECH_LOGOS: TechLogo[] = [
 /** Two slow orbital marquee rows of tech logos (top drifts right, bottom drifts left).
  * Frames the hero headline without crowding it; logos are always in motion. */
 export function FloatingTechLogos() {
+  const reduceMotion = useReducedMotion();
   type Pos = {
     top: string;
     left: string;
@@ -54,14 +55,14 @@ export function FloatingTechLogos() {
       {items.map(({ logo, pos }, i) => (
         <motion.div
           key={logo.name}
-          initial={{ opacity: 0, scale: 0.6, rotate: pos.rot }}
-          animate={{
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.6, rotate: pos.rot }}
+          animate={reduceMotion ? { opacity: 1, scale: 1, y: 0, rotate: pos.rot } : {
             opacity: 1,
             scale: 1,
             y: [0, -10, 0],
             rotate: [pos.rot, pos.rot + 3, pos.rot],
           }}
-          transition={{
+          transition={reduceMotion ? { duration: 0 } : {
             opacity: { duration: 0.6, delay: 0.2 + i * 0.04 },
             scale: { duration: 0.6, delay: 0.2 + i * 0.04, ease: "easeOut" },
             y: { duration: 6 + (i % 4), repeat: Infinity, ease: "easeInOut", delay: pos.delay },
@@ -72,7 +73,7 @@ export function FloatingTechLogos() {
             left: pos.left,
             width: pos.size,
             height: pos.size,
-            willChange: "transform",
+            willChange: reduceMotion ? "auto" : "transform",
           }}
           className="absolute p-1 hidden md:flex items-center justify-center drop-shadow-sm"
           title={logo.name}

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { BrowserRouter, MemoryRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { ErrorBoundary } from "./ErrorBoundary";
+import { ErrorBoundary, RouteErrorBoundary } from "./ErrorBoundary";
 import { ErrorPage } from "./ErrorPage";
 
 const Bomb = () => {
@@ -10,6 +10,31 @@ const Bomb = () => {
 };
 
 describe("ErrorBoundary and ErrorPage", () => {
+  it("recovers the destination after navigating away from a failed route", () => {
+    cleanup();
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      render(
+        <HelmetProvider>
+          <MemoryRouter initialEntries={["/broken"]}>
+            <RouteErrorBoundary>
+              <Routes>
+                <Route path="/broken" element={<Bomb />} />
+                <Route path="/courses" element={<p>Recovered course destination</p>} />
+              </Routes>
+            </RouteErrorBoundary>
+          </MemoryRouter>
+        </HelmetProvider>
+      );
+      expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument();
+      fireEvent.click(screen.getAllByRole("link", { name: /Browse Courses/i })[0]);
+      expect(screen.getByText("Recovered course destination")).toBeInTheDocument();
+      expect(screen.queryByText(/Something went wrong/i)).not.toBeInTheDocument();
+    } finally {
+      cleanup();
+      spy.mockRestore();
+    }
+  });
   it("renders ErrorPage with Home and Course links when an error is thrown", () => {
     // Suppress console.error in test output for the intentional test explosion
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});

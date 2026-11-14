@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Smooth the courses hero carousel and verify rapid navigation, stable height, reduced motion and 390/651px layouts; repair route-error recovery, homepage reduced motion and the lesson picture-in-picture shortcut. Public page checks produced no runtime errors; recovery and player regression tests cover the additional repairs.
+
 - [x] Enforce manual-only email verification prompts using auth-server identities; repair password recovery/resend connection handling and remove the invalid Meta matching setter without changing conversions. 33 tests pass; six public pages and a real signed-in dashboard checked with zero runtime errors. Interactive Google/Apple provider completion and email inbox delivery remain unverified.
 
 - [x] Audit and repair signup/signin redirects, normalized inputs, connection failures, and auth listener initialization; live settings verified, 23 focused/regression tests pass, browser verifies signup validation/retry and a real signed-in dashboard. Fresh signup confirmation-email delivery and interactive Google/Apple completion remain unverified; no test email inbox or provider interaction available.

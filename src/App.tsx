@@ -86,7 +86,7 @@ import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { GadsLabelsLoader } from "./components/GadsLabelsLoader";
 import { NewAssessmentToast } from "./components/NewAssessmentToast";
 import { HelmetProvider } from "react-helmet-async";
-import { ErrorBoundary } from "./components/ErrorBoundary";
+import { RouteErrorBoundary } from "./components/ErrorBoundary";
 import { ErrorPage } from "./components/ErrorPage";
 
 // Code-split admin pages — they only load when an admin route is visited
@@ -154,7 +154,7 @@ const App = () => (
           <CartProvider>
             <MaintenanceBanner />
             <NewAssessmentToast />
-            <ErrorBoundary>
+            <RouteErrorBoundary>
               <Suspense fallback={<PublicFallback />}>
               <Routes>
               <Route path="/" element={<Index />} />
@@ -332,7 +332,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </Suspense>
-            </ErrorBoundary>
+            </RouteErrorBoundary>
             <AiCoach />
             <CustomScripts />
             <CookieBanner />

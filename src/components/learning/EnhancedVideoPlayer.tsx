@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,6 +48,20 @@ export const EnhancedVideoPlayer = forwardRef<EnhancedVideoPlayerHandle, Props>(
       if (videoRef.current) videoRef.current.playbackRate = speed;
       localStorage.setItem(SPEED_KEY, String(speed));
     }, [speed]);
+
+    const togglePip = useCallback(async () => {
+      const v = videoRef.current;
+      if (!v || !pipSupported) return;
+      try {
+        if ((document as any).pictureInPictureElement) {
+          await (document as any).exitPictureInPicture();
+        } else {
+          await (v as any).requestPictureInPicture();
+        }
+      } catch {
+        // ignore; some browsers throw on disallowed contexts
+      }
+    }, [pipSupported]);
 
     // Keyboard shortcuts when the player is focused / hovered.
     useEffect(() => {
@@ -103,22 +117,9 @@ export const EnhancedVideoPlayer = forwardRef<EnhancedVideoPlayerHandle, Props>(
       };
       window.addEventListener("keydown", handler);
       return () => window.removeEventListener("keydown", handler);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [togglePip]);
 
-    const togglePip = async () => {
-      const v = videoRef.current;
-      if (!v || !pipSupported) return;
-      try {
-        if ((document as any).pictureInPictureElement) {
-          await (document as any).exitPictureInPicture();
-        } else {
-          await (v as any).requestPictureInPicture();
-        }
-      } catch {
-        // ignore; some browsers throw on disallowed contexts
-      }
-    };
+
 
     return (
       <div ref={containerRef} className="relative group">
