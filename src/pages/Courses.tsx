@@ -46,12 +46,16 @@ const HERO_TRACKS = [
 ];
 
 const AZURE_BOOTCAMP_ID = "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91";
+const AI_COURSE_ID = "a11b0001-1111-4000-8000-000000000001";
+const CYBERSECURITY_COURSE_ID = "130b215d-8f37-41d4-8dc2-837a92e1b58c";
+const HERO_COURSE_IDS = [AZURE_BOOTCAMP_ID, AI_COURSE_ID, CYBERSECURITY_COURSE_ID];
 
 const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function CoursesHero({ coursesCount }, ref) {
   const { format: formatPrice } = useLocalizedPrice();
-  // Query promoted banner config from site_content
+  // Query promoted banner config from site_content (own cache key so the
+  // header strip's single-course default never overrides the hero carousel)
   const { data: config } = useQuery({
-    queryKey: ["promoted-courses-banner-config"],
+    queryKey: ["courses-hero-banner-config"],
     queryFn: async () => {
       const { data } = await supabase
         .from("site_content")
@@ -74,7 +78,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
 
   const courseIds = (config?.courseIds && config.courseIds.length > 0)
     ? config.courseIds
-    : [AZURE_BOOTCAMP_ID];
+    : HERO_COURSE_IDS;
 
   // Query all promoted courses
   const { data: fetchedCourses = [] } = useQuery({
@@ -106,6 +110,30 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
         discount_price: null,
         duration_hours: 32,
         thumbnail_url: "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/course-thumbnails/cloud-engineering-accelerator.png",
+      },
+      {
+        id: AI_COURSE_ID,
+        title: "Generative AI & Large Language Models",
+        slug: "ai-beginners-llm-productivity",
+        description: "Demystify Large Language Models (ChatGPT, Claude, Gemini, DeepSeek). Master prompt engineering frameworks and build practical workflows for daily work.",
+        category: "Artificial Intelligence & Machine Learning",
+        difficulty: "Beginner",
+        price: 500000,
+        discount_price: null,
+        duration_hours: 24,
+        thumbnail_url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        id: CYBERSECURITY_COURSE_ID,
+        title: "Cybersecurity Fundamentals & Network Security",
+        slug: "cybersecurity-fundamentals-network-security",
+        description: "Understand the core security principles, network defense, firewalls, secure protocols, and identity & access management.",
+        category: "Cybersecurity",
+        difficulty: "Beginner",
+        price: 500000,
+        discount_price: null,
+        duration_hours: 40,
+        thumbnail_url: "/banners/cybersecurity.jpg",
       }
     ];
 

@@ -8,11 +8,12 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("react-router-dom", () => ({ useLocation: () => mocks.location }));
 vi.mock("@/hooks/useUtmTracking", () => ({ useUtmTracking: vi.fn() }));
-vi.mock("@/lib/track-lead", () => ({ trackLead: mocks.track }));
+vi.mock("@/lib/track-lead", () => ({ trackLead: mocks.track, shouldSkipPassiveEvent: vi.fn(() => false) }));
 vi.mock("@/lib/geo", () => ({ getVisitorGeo: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/analytics", () => ({ gaPageview: vi.fn(), gaSetUserId: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: {
   getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+  getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
   onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
 } } }));
 
