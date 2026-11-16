@@ -45,7 +45,7 @@ for (const { type, Component, success, fill } of cases) {
       return form;
     };
     const result = (error: unknown = null) => {
-      mocks.rpc.mockResolvedValue({ data: error ? null : { id: "test-enquiry", duplicate: false }, error });
+      mocks.rpc.mockResolvedValue({ data: error ? null : { id: "test-enquiry", duplicate: false, is_test: false }, error });
     };
 
     it("does not report a conversion on load or invalid input", () => {
@@ -67,7 +67,7 @@ for (const { type, Component, success, fill } of cases) {
       expect(mocks.rpc).toHaveBeenCalledTimes(1);
       expect(mocks.conversion).not.toHaveBeenCalled();
       expect(mocks.meta).not.toHaveBeenCalled();
-      resolve({ data: { id: "test-enquiry", duplicate: false }, error: null });
+      resolve({ data: { id: "test-enquiry", duplicate: false, is_test: false }, error: null });
       await waitFor(() => expect(mocks.conversion).toHaveBeenCalledTimes(1));
       expect(mocks.conversion).toHaveBeenCalledWith("Lead", { value: 0, currency: "GBP", form_type: type, transaction_id: "lead-test-enquiry" });
       // Meta Lead is emitted only for the business training enquiry, once,
@@ -91,7 +91,15 @@ for (const { type, Component, success, fill } of cases) {
     });
 
     it("does not report a second conversion for a duplicate submission", async () => {
-      mocks.rpc.mockResolvedValue({ data: { id: "test-enquiry", duplicate: true }, error: null });
+      mocks.rpc.mockResolvedValue({ data: { id: "test-enquiry", duplicate: true, is_test: false }, error: null });
+      const form = setup(); fill(); fireEvent.submit(form);
+      await waitFor(() => expect(screen.getByText(success)).toBeInTheDocument());
+      expect(mocks.conversion).not.toHaveBeenCalled();
+      expect(mocks.meta).not.toHaveBeenCalled();
+    });
+
+    it("does not report a conversion for a server-marked test enquiry", async () => {
+      mocks.rpc.mockResolvedValue({ data: { id: "test-enquiry", duplicate: false, is_test: true }, error: null });
       const form = setup(); fill(); fireEvent.submit(form);
       await waitFor(() => expect(screen.getByText(success)).toBeInTheDocument());
       expect(mocks.conversion).not.toHaveBeenCalled();

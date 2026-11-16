@@ -28,7 +28,7 @@ export function validateEnquiry(f: Form): Partial<Record<keyof Form, string>> {
   const e: Partial<Record<keyof Form, string>> = {};
   if (!f.name.trim()) e.name = "Please enter your name.";
   if (!EMAIL_RE.test(f.email.trim())) e.email = "Please enter a valid email address.";
-  if (!PHONE_RE.test(f.phone.trim())) e.phone = "Use international format starting with +, e.g. +234 801 234 5678.";
+  if (!PHONE_RE.test(f.phone.trim())) e.phone = "Use international format starting with +, e.g. +44 7700 900123.";
   if (f.country.trim().length < 2) e.country = "Please enter your country.";
   if (!f.experience) e.experience = "Please choose your experience level.";
   if (!f.start) e.start = "Please choose when you'd like to start.";
@@ -124,7 +124,7 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
                 <Input id="ce-email" type="email" className="h-11" autoComplete="email" maxLength={255} value={form.email} onChange={(e) => set("email", e.target.value)} {...aria("email")} />{err("email")}</div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div><Label htmlFor="ce-phone">Phone (international) *</Label>
-                  <Input id="ce-phone" type="tel" className="h-11" autoComplete="tel" placeholder="+234 801 234 5678" maxLength={24} value={form.phone} onChange={(e) => set("phone", e.target.value)} {...aria("phone")} />{err("phone")}</div>
+                  <Input id="ce-phone" type="tel" className="h-11" autoComplete="tel" placeholder="+44 7700 900123" maxLength={24} value={form.phone} onChange={(e) => set("phone", e.target.value)} {...aria("phone")} />{err("phone")}</div>
                 <div><Label htmlFor="ce-country">Country *</Label>
                   <Input id="ce-country" className="h-11" autoComplete="country-name" maxLength={80} value={form.country} onChange={(e) => set("country", e.target.value)} {...aria("country")} />{err("country")}</div>
               </div>

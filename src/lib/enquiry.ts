@@ -35,7 +35,7 @@ export function isTestEnquiry(name: string, email: string) {
 
 const MESSAGES: Record<string, string> = {
   rate_limited: "You've sent several enquiries in a short time. Please wait a few minutes and try again.",
-  invalid_phone: "Please enter your phone number in international format, e.g. +234 801 234 5678.",
+  invalid_phone: "Please enter your phone number in international format, e.g. +44 7700 900123.",
   invalid_email: "Please enter a valid email address.",
 };
 
@@ -60,18 +60,21 @@ export async function submitEnquiry(
     const code = Object.keys(MESSAGES).find((k) => error.message?.includes(k));
     throw new Error(code ? MESSAGES[code] : "We couldn't save your enquiry. Please check your details and try again.");
   }
-  const res = { ...(data as { id: string; duplicate: boolean }), isTest: isTestEnquiry(name, email) };
+  const d = (data ?? {}) as { id: string; duplicate: boolean; is_test?: boolean };
+  // The server's test flag is authoritative; a missing flag is treated as test (fail closed).
+  const res = { id: d.id, duplicate: !!d.duplicate, isTest: d.is_test !== false || isTestEnquiry(name, email) };
   // Fire-and-forget side channels; never affect the saved enquiry.
   if (!res.duplicate) {
+    // Recipient is fixed server-side; callers can only name the saved enquiry.
     supabase.functions.invoke("notify-business-lead", { body: { lead_id: res.id } }).catch(() => {});
   }
   return res;
 }
 
 /** Exactly one Lead conversion per newly persisted enquiry. */
-export function trackLeadOnce(res: { id: string; duplicate: boolean; isTest?: boolean }, formType: string) {
-  // Duplicates and labelled QA entries never count as Google Ads conversions.
-  if (res.duplicate || res.isTest) return;
+export function trackLeadOnce(res: { id: string; duplicate: boolean; isTest: boolean }, formType: string) {
+  // Duplicates and test entries (as decided by the server) never count as Google Ads conversions.
+  if (res.duplicate || res.isTest !== false) return;
   try {
     googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: formType, transaction_id: `lead-${res.id}` });
   } catch { /* Tracking must never affect a saved enquiry. */ }

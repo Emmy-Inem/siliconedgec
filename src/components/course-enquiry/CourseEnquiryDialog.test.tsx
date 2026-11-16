@@ -29,7 +29,7 @@ describe("Cloud cohort enquiry", () => {
   });
 
   it("saves the enquiry with the course preselected, then tracks one Lead", async () => {
-    mocks.rpc.mockResolvedValue({ data: { id: "lead-9", duplicate: false }, error: null });
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-9", duplicate: false, is_test: false }, error: null });
     open(); fill(); submit();
     await waitFor(() => expect(screen.getByText(/enquiry is saved/)).toBeInTheDocument());
     const p = mocks.rpc.mock.calls[0][1].p;
@@ -56,7 +56,8 @@ describe("Cloud cohort enquiry", () => {
   });
 
   it("never reports a labelled QA enquiry as a Google Ads conversion", async () => {
-    mocks.rpc.mockResolvedValue({ data: { id: "lead-qa", duplicate: false }, error: null });
+    // Even if a server response were wrong, a [TEST] name stays suppressed.
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-qa", duplicate: false, is_test: false }, error: null });
     open(); fill();
     fireEvent.change(screen.getByLabelText("Full name *"), { target: { value: "[TEST] QA" } });
     submit();
@@ -66,9 +67,25 @@ describe("Cloud cohort enquiry", () => {
   });
 
   it("sends the Lead with only non-personal fields", async () => {
-    mocks.rpc.mockResolvedValue({ data: { id: "lead-7", duplicate: false }, error: null });
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-7", duplicate: false, is_test: false }, error: null });
     open(); fill(); submit();
     await waitFor(() => expect(mocks.conversion).toHaveBeenCalledTimes(1));
     expect(mocks.conversion).toHaveBeenCalledWith("Lead", { value: 0, currency: "GBP", form_type: "course_enquiry", transaction_id: "lead-lead-7" });
+  });
+
+  it("suppresses the conversion when the server marks the row as test (e.g. +test@)", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-s", duplicate: false, is_test: true }, error: null });
+    open(); fill();
+    fireEvent.change(screen.getByLabelText("Email *"), { target: { value: "ops+test@example.test" } });
+    submit();
+    await waitFor(() => expect(screen.getByText(/enquiry is saved/)).toBeInTheDocument());
+    expect(mocks.conversion).not.toHaveBeenCalled();
+  });
+
+  it("suppresses the conversion when the server omits the test flag (fails closed)", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-x", duplicate: false }, error: null });
+    open(); fill(); submit();
+    await waitFor(() => expect(screen.getByText(/enquiry is saved/)).toBeInTheDocument());
+    expect(mocks.conversion).not.toHaveBeenCalled();
   });
 });
