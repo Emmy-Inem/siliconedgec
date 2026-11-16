@@ -32,7 +32,8 @@ export default function AdminBusinessLeads() {
   const { data: leads, isLoading } = useQuery({
     queryKey: ["admin-business-leads"],
     queryFn: async () => {
-      return await fetchAllRows<any>("business_leads", "*");
+      // Test entries are excluded from genuine lead reporting.
+      return (await fetchAllRows<any>("business_leads", "*")).filter((l: any) => !l.is_test);
     },
   });
 

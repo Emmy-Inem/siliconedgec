@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
 
     if (audience === "business_leads") {
       // business_leads.email is a free-text contact form, not auth.users.
-      const { data: leads } = await admin.from("business_leads").select("email");
+      const { data: leads } = await admin.from("business_leads").select("email").eq("is_test", false);
       for (const l of leads ?? []) {
         const e = (l as any).email?.trim()?.toLowerCase();
         if (e && !seen.has(e)) { seen.add(e); recipients.push(e); }

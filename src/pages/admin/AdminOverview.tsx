@@ -135,7 +135,7 @@ export default function AdminOverview() {
       ]);
       const [allRegs, allBizLeads] = await Promise.all([
         fetchAllRows<any>("course_registrations", "id, status, created_at"),
-        fetchAllRows<any>("business_leads", "id, status, created_at"),
+        fetchAllRows<any>("business_leads", "id, status, created_at, is_test, lead_type"),
       ]);
 
       const publishedCount = allCourses.filter(c => c.is_published).length;
@@ -203,7 +203,7 @@ export default function AdminOverview() {
         recentEnrollments,
         registrations: allRegs.length,
         newRegistrations: allRegs.filter((r: any) => r.status === "new").length,
-        businessLeads: allBizLeads.length,
+        businessLeads: allBizLeads.filter((l: any) => !l.is_test && (l.lead_type ?? "business") === "business").length,
       };
     },
   });

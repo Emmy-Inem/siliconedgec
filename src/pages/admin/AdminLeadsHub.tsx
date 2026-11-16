@@ -184,7 +184,10 @@ export default function AdminLeadsHub() {
   }, [leadSources]);
 
   // Clearly labelled test enquiries never count as genuine leads.
+  const [showTests, setShowTests] = useState(false);
   const genuineLeads = useMemo(() => (businessLeads as any[]).filter((x) => !x.is_test), [businessLeads]);
+  // Test entries can be shown for QA (e.g. to retry an alert) but never count.
+  const listedLeads = useMemo(() => (showTests ? (businessLeads as any[]) : genuineLeads), [showTests, businessLeads, genuineLeads]);
 
   const resolveChannel = (email?: string | null, userId?: string | null): Channel => {
     const em = (email || "").trim().toLowerCase();
@@ -251,7 +254,7 @@ export default function AdminLeadsHub() {
     }));
     const EXP: Record<string, string> = { beginner: "Beginner/career changer", it_professional: "IT professional", other: "Other" };
     const START: Record<string, string> = { "2026-11-28": "Start 28 Nov 2026", later_cohort: "Later cohort", exploring: "Exploring" };
-    const b: UnifiedLead[] = (genuineLeads as any[]).map((x) => {
+    const b: UnifiedLead[] = (listedLeads as any[]).map((x) => {
       const t = x.lead_type ?? "business";
       const a = (x.attribution ?? {}) as Record<string, string>;
       const campaign = [a.gclid ? "Google Ads click" : null, a.utm_source, a.utm_campaign].filter(Boolean).join(" / ");
@@ -260,7 +263,7 @@ export default function AdminLeadsHub() {
       leadId: x.id,
       notify: { status: x.notify_status ?? null, messageId: x.notify_message_id ?? null, attempts: x.notify_attempts ?? 0, error: x.notify_error ?? null },
       source: t === "course" ? "course_enquiry" : t === "contact" ? "contact" : "business",
-      name: x.contact_name,
+      name: x.is_test ? `${x.contact_name} (test — not counted)` : x.contact_name,
       email: x.email,
       phone: x.phone,
       course_title: t === "course" ? courseTitle(x.course_id) : t === "contact" ? "Contact form" : x.company_name,
@@ -273,7 +276,7 @@ export default function AdminLeadsHub() {
     };
     });
     return [...r, ...e, ...b].sort((a, z) => +new Date(z.created_at) - +new Date(a.created_at));
-  }, [registrations, enrollments, genuineLeads, courses, profiles, byEmail, byUser]);
+  }, [registrations, enrollments, listedLeads, courses, profiles, byEmail, byUser]);
 
   const filtered = useMemo(() => {
     const now = Date.now();
@@ -305,12 +308,12 @@ export default function AdminLeadsHub() {
   // platform that brought leads, not just whatever's currently filtered.
   const channelStats = useMemo(() => {
     const map = new Map<Channel, number>();
-    unified.forEach((u) => map.set(u.channel, (map.get(u.channel) ?? 0) + 1));
+    unified.filter((u) => !u.name.endsWith("(test — not counted)")).forEach((u) => map.set(u.channel, (map.get(u.channel) ?? 0) + 1));
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [unified]);
 
   const stats = useMemo(() => ({
-    total: unified.length,
+    total: unified.filter((u) => !u.name.endsWith("(test — not counted)")).length,
     registrations: registrations.length,
     // Show only paid enrollments here so the KPI matches Overview/Analytics
     // and isn't inflated by webinar shadow rows.
@@ -513,6 +516,10 @@ export default function AdminLeadsHub() {
           </SelectContent>
         </Select>
       </div>
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <input type="checkbox" checked={showTests} onChange={(e) => setShowTests(e.target.checked)} />
+        Show test entries (never counted)
+      </label>
       {dateRange === "custom" && <CustomDateRange from={cFrom} to={cTo} onChange={(f, t) => { setCFrom(f); setCTo(t); }} />}
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
