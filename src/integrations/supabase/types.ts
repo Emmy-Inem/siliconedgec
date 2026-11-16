@@ -971,6 +971,11 @@ export type Database = {
           job_title: string | null
           lead_type: string
           message: string | null
+          notify_attempts: number
+          notify_error: string | null
+          notify_last_attempt_at: string | null
+          notify_message_id: string | null
+          notify_status: string | null
           phone: string | null
           source_page: string | null
           status: string
@@ -997,6 +1002,11 @@ export type Database = {
           job_title?: string | null
           lead_type?: string
           message?: string | null
+          notify_attempts?: number
+          notify_error?: string | null
+          notify_last_attempt_at?: string | null
+          notify_message_id?: string | null
+          notify_status?: string | null
           phone?: string | null
           source_page?: string | null
           status?: string
@@ -1023,6 +1033,11 @@ export type Database = {
           job_title?: string | null
           lead_type?: string
           message?: string | null
+          notify_attempts?: number
+          notify_error?: string | null
+          notify_last_attempt_at?: string | null
+          notify_message_id?: string | null
+          notify_status?: string | null
           phone?: string | null
           source_page?: string | null
           status?: string

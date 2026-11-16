@@ -1,6 +1,6 @@
 import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -37,6 +37,8 @@ type UnifiedLead = {
   meta?: string;
   created_at: string;
   channel: Channel;
+  leadId?: string;
+  notify?: { status: string | null; messageId: string | null; attempts: number; error: string | null };
 };
 
 const SOURCE_META = {
@@ -48,6 +50,7 @@ const SOURCE_META = {
 } as const;
 
 export default function AdminLeadsHub() {
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [channelFilter, setChannelFilter] = useState<string>("all");
@@ -84,6 +87,44 @@ export default function AdminLeadsHub() {
     },
     refetchInterval: 30000,
   });
+
+  // Provider outcome for each enquiry alert (admins only).
+  const alertIds = useMemo(
+    () => (businessLeads as any[]).map((x) => x.notify_message_id).filter(Boolean) as string[],
+    [businessLeads],
+  );
+  const { data: alertLogs = [], refetch: refetchAlertLogs } = useQuery({
+    queryKey: ["hub-alert-logs", alertIds],
+    enabled: alertIds.length > 0,
+    queryFn: async () => {
+      const out: any[] = [];
+      for (let i = 0; i < alertIds.length; i += 100) {
+        const { data } = await (supabase.from("email_send_log") as any)
+          .select("message_id, status, error_message, metadata, created_at")
+          .in("message_id", alertIds.slice(i, i + 100))
+          .order("created_at", { ascending: false });
+        out.push(...(data ?? []));
+      }
+      return out;
+    },
+    refetchInterval: 60000,
+  });
+  const latestAlert = useMemo(() => {
+    const m = new Map<string, any>();
+    (alertLogs as any[]).forEach((r) => { if (!m.has(r.message_id)) m.set(r.message_id, r); });
+    return m;
+  }, [alertLogs]);
+  const [retrying, setRetrying] = useState<string | null>(null);
+  const retryAlert = async (leadId: string) => {
+    setRetrying(leadId);
+    try {
+      await supabase.functions.invoke("notify-business-lead", { body: { lead_id: leadId, retry: true } });
+    } finally {
+      setRetrying(null);
+      qc.invalidateQueries({ queryKey: ["hub-business-leads"] });
+      refetchAlertLogs();
+    }
+  };
 
   const { data: courses = [] } = useQuery({
     queryKey: ["hub-courses"],
@@ -216,6 +257,8 @@ export default function AdminLeadsHub() {
       const campaign = [a.gclid ? "Google Ads click" : null, a.utm_source, a.utm_campaign].filter(Boolean).join(" / ");
       return {
       id: `biz-${x.id}`,
+      leadId: x.id,
+      notify: { status: x.notify_status ?? null, messageId: x.notify_message_id ?? null, attempts: x.notify_attempts ?? 0, error: x.notify_error ?? null },
       source: t === "course" ? "course_enquiry" : t === "contact" ? "contact" : "business",
       name: x.contact_name,
       email: x.email,
@@ -525,6 +568,28 @@ export default function AdminLeadsHub() {
                       )}
                       {u.meta && <span className="ml-2 italic">· {u.meta}</span>}
                     </p>
+                    {u.notify && (() => {
+                      const log = u.notify.messageId ? latestAlert.get(u.notify.messageId) : null;
+                      const st = log?.status ?? u.notify.status;
+                      const label = !st ? "Alert not sent"
+                        : st === "sent" ? "Alert accepted by email provider (inbox delivery not confirmed)"
+                        : st === "queued" || st === "pending" || st === "sending" ? "Alert queued"
+                        : st === "dlq" || st === "failed" ? "Alert failed" : `Alert ${st}`;
+                      const providerId = log?.metadata?.provider_message_id;
+                      const failed = st === "failed" || st === "dlq";
+                      return (
+                        <p className={`text-[11px] mt-0.5 ${failed ? "text-destructive" : "text-muted-foreground"}`}>
+                          {label}{u.notify.attempts > 1 ? ` · ${u.notify.attempts} attempts` : ""}
+                          {providerId ? ` · provider id ${providerId}` : ""}
+                          {failed && (log?.error_message || u.notify.error) ? ` · ${(log?.error_message || u.notify.error).slice(0, 120)}` : ""}
+                          {failed && u.leadId && (
+                            <Button size="sm" variant="link" className="h-auto p-0 ml-2 text-[11px]" disabled={retrying === u.leadId} onClick={() => retryAlert(u.leadId!)}>
+                              {retrying === u.leadId ? "Retrying…" : "Retry alert"}
+                            </Button>
+                          )}
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     {u.email && u.email !== "—" && (

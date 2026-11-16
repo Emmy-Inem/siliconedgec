@@ -198,11 +198,22 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
     setSelectedGoal(null);
   };
 
+  // On small screens the cookie notice spans the bottom edge; hide the coach
+  // until a choice is made so neither covers the page's main actions.
+  const [cookieNoticeOpen, setCookieNoticeOpen] = useState(
+    () => typeof document !== "undefined" && document.documentElement.dataset.cookieNotice === "open",
+  );
+  useEffect(() => {
+    const onNotice = (e: Event) => setCookieNoticeOpen(!!(e as CustomEvent).detail?.open);
+    window.addEventListener("sec:cookie-notice", onNotice);
+    return () => window.removeEventListener("sec:cookie-notice", onNotice);
+  }, []);
+
   const currentTeaser = teasers[bubbleIndex % teasers.length];
   const TeaserIcon = currentTeaser.Icon;
 
   return (
-    <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-2 print:hidden max-w-[calc(100vw-1.5rem)]">
+    <div className={`${cookieNoticeOpen && !panelOpen && !chatOpen ? "max-sm:hidden " : ""}fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-2 print:hidden max-w-[calc(100vw-1.5rem)]`}>
       {/* Interactive Rotating Curiosity Bubble */}
       <AnimatePresence mode="wait">
         {(bubbleVisible || (isHovered && !panelOpen && !chatOpen)) && !panelOpen && !chatOpen && (

@@ -31,6 +31,15 @@ export function CookieBanner() {
     return () => { clearTimeout(t); window.removeEventListener("sec:analytics-settings", settings); };
   }, []);
 
+  // Let other floating UI (AI Coach) step aside while the notice is open,
+  // and reserve page space on small screens so content can scroll above it.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (open) root.dataset.cookieNotice = "open"; else delete root.dataset.cookieNotice;
+    window.dispatchEvent(new CustomEvent("sec:cookie-notice", { detail: { open } }));
+    return () => { delete root.dataset.cookieNotice; };
+  }, [open]);
+
   const accept = async (value: "all" | "analytics" | "essential") => {
     setSaving(true);
     setError("");

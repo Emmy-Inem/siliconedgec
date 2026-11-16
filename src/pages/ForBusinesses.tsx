@@ -158,7 +158,7 @@ export default function ForBusinesses() {
       company_size: formData.company_size.trim() || null,
       training_needs: [formData.training_focus.trim(), formData.training_needs.trim()].filter(Boolean).join("\n\n"),
     };
-    let res: { id: string; duplicate: boolean } | null = null;
+    let res: { id: string; duplicate: boolean; isTest: boolean } | null = null;
     let error: unknown = null;
     try {
       res = await submitEnquiry("business", payload, submissionKeyRef.current);
@@ -170,7 +170,7 @@ export default function ForBusinesses() {
     if (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
     } else {
-      if (res && !res.duplicate) {
+      if (res && !res.duplicate && !res.isTest) {
         trackLeadOnce(res, "business_training");
         try {
           metaEvent("Lead", { form_type: "business_training" });

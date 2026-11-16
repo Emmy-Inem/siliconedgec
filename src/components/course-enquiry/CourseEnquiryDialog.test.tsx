@@ -54,4 +54,21 @@ describe("Cloud cohort enquiry", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.conversion).not.toHaveBeenCalled();
   });
+
+  it("never reports a labelled QA enquiry as a Google Ads conversion", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-qa", duplicate: false }, error: null });
+    open(); fill();
+    fireEvent.change(screen.getByLabelText("Full name *"), { target: { value: "[TEST] QA" } });
+    submit();
+    await waitFor(() => expect(screen.getByText(/enquiry is saved/)).toBeInTheDocument());
+    expect(mocks.rpc.mock.calls[0][1].p.is_test).toBe(true);
+    expect(mocks.conversion).not.toHaveBeenCalled();
+  });
+
+  it("sends the Lead with only non-personal fields", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "lead-7", duplicate: false }, error: null });
+    open(); fill(); submit();
+    await waitFor(() => expect(mocks.conversion).toHaveBeenCalledTimes(1));
+    expect(mocks.conversion).toHaveBeenCalledWith("Lead", { value: 0, currency: "GBP", form_type: "course_enquiry", transaction_id: "lead-lead-7" });
+  });
 });

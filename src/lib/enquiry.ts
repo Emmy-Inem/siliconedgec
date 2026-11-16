@@ -43,7 +43,7 @@ export async function submitEnquiry(
   type: EnquiryType,
   fields: Record<string, unknown>,
   submissionKey: string,
-): Promise<{ id: string; duplicate: boolean }> {
+): Promise<{ id: string; duplicate: boolean; isTest: boolean }> {
   const name = String(fields.contact_name ?? "");
   const email = String(fields.email ?? "");
   const { data, error } = await (supabase.rpc as any)("submit_enquiry", {
@@ -60,7 +60,7 @@ export async function submitEnquiry(
     const code = Object.keys(MESSAGES).find((k) => error.message?.includes(k));
     throw new Error(code ? MESSAGES[code] : "We couldn't save your enquiry. Please check your details and try again.");
   }
-  const res = data as { id: string; duplicate: boolean };
+  const res = { ...(data as { id: string; duplicate: boolean }), isTest: isTestEnquiry(name, email) };
   // Fire-and-forget side channels; never affect the saved enquiry.
   if (!res.duplicate) {
     supabase.functions.invoke("notify-business-lead", { body: { lead_id: res.id } }).catch(() => {});
@@ -69,8 +69,9 @@ export async function submitEnquiry(
 }
 
 /** Exactly one Lead conversion per newly persisted enquiry. */
-export function trackLeadOnce(res: { id: string; duplicate: boolean }, formType: string) {
-  if (res.duplicate) return;
+export function trackLeadOnce(res: { id: string; duplicate: boolean; isTest?: boolean }, formType: string) {
+  // Duplicates and labelled QA entries never count as Google Ads conversions.
+  if (res.duplicate || res.isTest) return;
   try {
     googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: formType, transaction_id: `lead-${res.id}` });
   } catch { /* Tracking must never affect a saved enquiry. */ }

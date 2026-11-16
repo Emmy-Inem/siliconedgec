@@ -292,8 +292,11 @@ Deno.serve(async (req) => {
 
     const results: { to: string; ok: boolean; error?: string }[] = [];
     for (const to of recipients) {
-      const messageId = crypto.randomUUID();
       const isPrimary = to === payload.to;
+      // Callers may supply a deterministic id (service calls only) so retries
+      // of the same notification are recognised as one email.
+      const suppliedId = isServiceCall && isPrimary && typeof (body as any).message_id === "string" ? String((body as any).message_id).slice(0, 120) : "";
+      const messageId = suppliedId || crypto.randomUUID();
       const subject = isPrimary ? payload.subject : `[Silicon Edge copy] ${payload.subject}`;
       try {
         const { error } = await admin.rpc("enqueue_email", {

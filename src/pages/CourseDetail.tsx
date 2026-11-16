@@ -707,7 +707,7 @@ export default function CourseDetail() {
           {course.duration_weeks && <div><dt className="text-muted-foreground">Programme length</dt><dd>{course.duration_weeks} weeks</dd></div>}
           <div><dt className="text-muted-foreground">Total hours</dt><dd>{course.duration_hours} hours</dd></div>
           {isCloudCohortCourse && (
-            <div className="w-full sm:w-auto sm:ml-auto flex flex-col gap-1">
+            <div className="order-first sm:order-none w-full sm:w-auto sm:ml-auto flex flex-col gap-1">
               <dd className="text-muted-foreground text-xs">Live online · guided Azure labs · tutor feedback</dd>
               <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => setEnquiryOpen(true)}>
                 Ask About the 28 November Cohort

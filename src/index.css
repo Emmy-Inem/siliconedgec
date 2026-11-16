@@ -400,3 +400,9 @@ svg.lucide[class*="fill-primary"], svg.lucide[class*="fill-violet"], svg.lucide[
 :is(h1, h2, h3, h4, h5, h6, p, div, span, strong, b, label, dt, dd, li):is(.text-primary, .text-accent, [class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]):not(:is(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], [aria-selected="true"], [aria-current], [data-state="active"], [data-state="checked"], .bg-primary, .bg-accent)):not(:is(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], [aria-selected="true"], [aria-current], [data-state="active"], [data-state="checked"], .bg-primary, .bg-accent) *) {
   color: hsl(var(--neutral-copy)) !important;
 }
+
+/* Reserve room under page content while the cookie notice is open on small
+   screens, so every action can be scrolled above it. */
+@media (max-width: 639px) {
+  html[data-cookie-notice="open"] body { padding-bottom: 12rem; }
+}

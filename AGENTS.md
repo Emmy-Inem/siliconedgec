@@ -27,3 +27,4 @@
 - Keep carousel controls outside keyed slide animations and overlap slides in a stable grid track; pause rotation for focus, hidden tabs and reduced motion to prevent disappearing controls and layout jumps.
 - Reset the route error boundary on committed navigation so recovery links can render a healthy destination rather than retain a previous page failure.- Save every public enquiry through the shared validated, duplicate-keyed enquiry submission and fire the Lead conversion only for a newly saved row, so retries, failures and test entries never inflate conversions or genuine lead counts.
 - Load code-split pages through the shared retrying loader with a time-guarded single reload, so stale deployments recover without reload loops.
+- Enquiry alerts are claimed atomically per enquiry with a deterministic message id and record their outcome on the enquiry; only administrators may retry, and only after a failed attempt, so repeated requests never duplicate alerts.

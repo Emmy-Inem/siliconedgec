@@ -276,7 +276,7 @@ Deno.serve(async (req) => {
             ? payload.subject.trim()
             : 'Silicon Edge Consulting'
 
-        await sendLovableEmail(
+        const providerResult: any = await sendLovableEmail(
           {
             run_id: payload.run_id,
             to: payload.to,
@@ -304,6 +304,12 @@ Deno.serve(async (req) => {
           template_name: payload.label || queue,
           recipient_email: payload.to,
           status: 'sent',
+          // Provider acceptance evidence (not inbox delivery).
+          metadata: {
+            provider_message_id:
+              providerResult?.id ?? providerResult?.message_id ?? providerResult?.data?.id ?? null,
+            accepted_at: new Date().toISOString(),
+          },
         })
 
         // Delete from queue

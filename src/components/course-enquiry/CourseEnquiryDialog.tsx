@@ -96,7 +96,7 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o && status === "done") setStatus("idle"); }}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto w-[calc(100vw-1.5rem)] sm:w-full">
+      <DialogContent className="max-w-lg max-h-[90vh] max-h-[85dvh] overflow-y-auto overscroll-contain w-[calc(100vw-1.5rem)] sm:w-full">
         {status === "done" ? (
           <div className="py-6 text-center space-y-3" role="status">
             <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
@@ -110,7 +110,12 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
               <DialogTitle>Ask about the 28 November cohort</DialogTitle>
               <DialogDescription>{courseTitle}. Starts 28 November 2026 · 4 weeks · 32 hours, live online. Ask us for class times.</DialogDescription>
             </DialogHeader>
-            <form onSubmit={submit} noValidate className="space-y-4">
+            <form onSubmit={submit} noValidate className="space-y-4"
+              onFocus={(e) => {
+                // Keep the focused field visible above a mobile keyboard.
+                const el = e.target as HTMLElement;
+                if (window.matchMedia?.("(max-width: 639px)").matches) setTimeout(() => el.scrollIntoView?.({ block: "center" }), 250);
+              }}>
               <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
                 className="absolute -left-[9999px] h-0 w-0 opacity-0" value={form.website} onChange={(e) => set("website", e.target.value)} />
               <div><Label htmlFor="ce-name">Full name *</Label>
