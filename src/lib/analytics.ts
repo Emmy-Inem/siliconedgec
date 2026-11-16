@@ -487,11 +487,14 @@ export async function fireEnhancedConversionsTest(input: {
     phone: input.phone || "+2348000000000",
   });
   const event_id = `test-${Date.now().toString(36)}`;
-  googleAdsConversion("Lead", {
-    value: 1,
-    currency: "NGN",
-    transaction_id: event_id,
-    test_mode: true,
+  // Never send a real Lead conversion from the admin test button: Google
+  // ignores `test_mode`, so it would be counted as a genuine enquiry.
+  logPixelEvent({
+    ts: Date.now(),
+    vendor: "google",
+    event: "Lead (admin test — not sent to Google Ads)",
+    event_id,
+    params: { test_mode: true },
   });
   return event_id;
 }
