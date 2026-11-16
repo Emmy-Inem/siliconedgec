@@ -44,3 +44,15 @@ describe("Google Ads enquiry conversion", () => {
     delete window.__seConsent;
   });
 });
+describe("Lead label override safety", () => {
+  it("an empty saved override keeps the default Lead label", async () => {
+    const mod = await import("./analytics");
+    (window as any).__gadsLabelOverrides = {};
+    mod.applyGadsLabelOverrides({ Lead: "   " });
+    const calls: unknown[][] = [];
+    (window as any).gtag = (...a: unknown[]) => calls.push(a);
+    mod.googleAdsConversion("Lead", { transaction_id: "t1" });
+    const conv = calls.find((c) => c[1] === "conversion") as any[];
+    expect(conv[2].send_to).toBe("AW-18126380202/uD3NCJDwybcdEKq5qsND");
+  });
+});

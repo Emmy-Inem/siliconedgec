@@ -4,10 +4,10 @@ import Contact from "./Contact";
 import ForBusinesses from "./ForBusinesses";
 
 const mocks = vi.hoisted(() => ({
-  insert: vi.fn(), single: vi.fn(), invoke: vi.fn(), conversion: vi.fn(), meta: vi.fn(), toast: vi.fn(),
+  rpc: vi.fn(), invoke: vi.fn(), conversion: vi.fn(), meta: vi.fn(), toast: vi.fn(),
 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {
-  from: () => ({ insert: mocks.insert }), functions: { invoke: mocks.invoke },
+  rpc: mocks.rpc, functions: { invoke: mocks.invoke },
 } }));
 vi.mock("@/lib/analytics", () => ({ googleAdsConversion: mocks.conversion, metaEvent: mocks.meta }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast }), toast: mocks.toast }));
@@ -45,9 +45,7 @@ for (const { type, Component, success, fill } of cases) {
       return form;
     };
     const result = (error: unknown = null) => {
-      const response = { data: { id: "test-enquiry" }, error };
-      mocks.single.mockResolvedValue(response);
-      mocks.insert.mockReturnValue(type === "contact" ? Promise.resolve(response) : { select: () => ({ single: mocks.single }) });
+      mocks.rpc.mockResolvedValue({ data: error ? null : { id: "test-enquiry", duplicate: false }, error });
     };
 
     it("does not report a conversion on load or invalid input", () => {
@@ -56,7 +54,7 @@ for (const { type, Component, success, fill } of cases) {
       expect(mocks.meta).not.toHaveBeenCalled();
       // Native required-field validation must prevent submitting an empty form.
       form.requestSubmit();
-      expect(mocks.insert).not.toHaveBeenCalled();
+      expect(mocks.rpc).not.toHaveBeenCalled();
       expect(mocks.conversion).not.toHaveBeenCalled();
       expect(mocks.meta).not.toHaveBeenCalled();
     });
@@ -64,15 +62,14 @@ for (const { type, Component, success, fill } of cases) {
     it("waits for a successful insert, then sends exactly one PII-free conversion", async () => {
       let resolve: (value: unknown) => void = () => { throw new Error("Insert not pending"); };
       const pending = new Promise(r => { resolve = r; });
-      mocks.single.mockReturnValue(pending);
-      mocks.insert.mockReturnValue(type === "contact" ? pending : { select: () => ({ single: mocks.single }) });
+      mocks.rpc.mockReturnValue(pending);
       const form = setup(); fill(); fireEvent.submit(form);
-      expect(mocks.insert).toHaveBeenCalledTimes(1);
+      expect(mocks.rpc).toHaveBeenCalledTimes(1);
       expect(mocks.conversion).not.toHaveBeenCalled();
       expect(mocks.meta).not.toHaveBeenCalled();
-      resolve({ data: { id: "test-enquiry" }, error: null });
+      resolve({ data: { id: "test-enquiry", duplicate: false }, error: null });
       await waitFor(() => expect(mocks.conversion).toHaveBeenCalledTimes(1));
-      expect(mocks.conversion).toHaveBeenCalledWith("Lead", { value: 0, currency: "GBP", form_type: type });
+      expect(mocks.conversion).toHaveBeenCalledWith("Lead", { value: 0, currency: "GBP", form_type: type, transaction_id: "lead-test-enquiry" });
       // Meta Lead is emitted only for the business training enquiry, once,
       // with no personal data.
       if (type === "business_training") {
@@ -91,6 +88,14 @@ for (const { type, Component, success, fill } of cases) {
       expect(mocks.conversion).not.toHaveBeenCalled();
       expect(mocks.meta).not.toHaveBeenCalled();
       expect(screen.queryByText(success)).not.toBeInTheDocument();
+    });
+
+    it("does not report a second conversion for a duplicate submission", async () => {
+      mocks.rpc.mockResolvedValue({ data: { id: "test-enquiry", duplicate: true }, error: null });
+      const form = setup(); fill(); fireEvent.submit(form);
+      await waitFor(() => expect(screen.getByText(success)).toBeInTheDocument());
+      expect(mocks.conversion).not.toHaveBeenCalled();
+      expect(mocks.meta).not.toHaveBeenCalled();
     });
 
     it("keeps submission successful even when tracking throws", async () => {

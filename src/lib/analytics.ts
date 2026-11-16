@@ -409,7 +409,9 @@ export function googleAdsConversion(
   // to site_content + replayed into window.__gadsLabelOverrides on app
   // start). This lets the user activate proper conversion bidding without
   // a code change.
-  const overrideLabel = (typeof window !== "undefined" && window.__gadsLabelOverrides?.[eventKey]) || null;
+  const rawOverride = typeof window !== "undefined" ? window.__gadsLabelOverrides?.[eventKey] : undefined;
+  // Empty/whitespace saved overrides must never disable a valid default label.
+  const overrideLabel = typeof rawOverride === "string" && rawOverride.trim() ? rawOverride.trim() : null;
   const effectiveLabel = overrideLabel || cfg.label;
   const send_to = effectiveLabel ? `${GOOGLE_ADS_ACCOUNT}/${effectiveLabel}` : GOOGLE_ADS_ACCOUNT;
   // Pull stored UTM attribution so every conversion carries the campaign
@@ -531,5 +533,10 @@ export const GADS_LABELS_KEY = "gads_conversion_labels";
 
 export function applyGadsLabelOverrides(map: Partial<Record<GoogleAdsEventKey, string>>) {
   if (typeof window === "undefined") return;
-  window.__gadsLabelOverrides = { ...(window.__gadsLabelOverrides || {}), ...map };
+  const clean: Partial<Record<GoogleAdsEventKey, string>> = {};
+  (Object.keys(map) as GoogleAdsEventKey[]).forEach((k) => {
+    const v = map[k];
+    if (typeof v === "string" && v.trim()) clean[k] = v.trim();
+  });
+  window.__gadsLabelOverrides = { ...(window.__gadsLabelOverrides || {}), ...clean };
 }

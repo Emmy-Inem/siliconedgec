@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { googleAdsConversion } from "@/lib/analytics";
+import { submitEnquiry, trackLeadOnce, newSubmissionKey } from "@/lib/enquiry";
 import { Mail, Phone, MapPin, MessageSquare, Loader2 } from "lucide-react";
 
 export default function Contact() {
@@ -24,24 +24,23 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submissionKey, setSubmissionKey] = useState(newSubmissionKey);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sending) return;
     setSending(true);
     try {
-      const { error } = await supabase.from("business_leads").insert({
-        contact_name: form.name,
-        email: form.email,
-        company_name: form.company || "Individual",
-        phone: form.phone || null,
-        message: form.message,
+      const res = await submitEnquiry("contact", {
+        contact_name: form.name.trim(),
+        email: form.email.trim(),
+        company_name: form.company.trim() || "Individual",
+        phone: form.phone.trim() || null,
+        message: form.message.trim(),
         training_needs: "General contact form",
-        status: "new",
-      });
-      if (error) throw error;
-      try {
-        googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: "contact" });
-      } catch { /* Tracking must never affect a saved enquiry. */ }
+      }, submissionKey);
+      trackLeadOnce(res, "contact");
+      setSubmissionKey(newSubmissionKey());
       setSent(true);
       setForm({ name: "", email: "", company: "", phone: "", message: "" });
       toast({ title: "Message sent", description: "We'll get back to you shortly." });

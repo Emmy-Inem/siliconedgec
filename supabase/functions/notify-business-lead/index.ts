@@ -35,13 +35,37 @@ Deno.serve(async (req) => {
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
   try {
-    const payload = (await req.json()) as Payload;
-    if (!payload?.email || !payload?.company_name) {
-      return new Response(JSON.stringify({ error: "missing-fields" }), {
-        status: 400,
+    const body = await req.json().catch(() => ({}));
+    const leadId = typeof body?.lead_id === "string" ? body.lead_id : "";
+    // Load the saved row server-side; never trust client-sent details.
+    const { data: row } = leadId
+      ? await admin.from("business_leads").select("*").eq("id", leadId).maybeSingle()
+      : { data: null };
+    if (!row) {
+      return new Response(JSON.stringify({ error: "lead-not-found" }), {
+        status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Only notify once, and only for recent rows (prevents replay spam).
+    if (row.is_test || Date.now() - new Date(row.created_at).getTime() > 15 * 60 * 1000) {
+      return new Response(JSON.stringify({ ok: true, skipped: row.is_test ? "test" : "stale" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let courseTitle = "";
+    if (row.course_id) {
+      const { data: c } = await admin.from("courses").select("title").eq("id", row.course_id).maybeSingle();
+      courseTitle = c?.title ?? "";
+    }
+    const kind = row.lead_type === "course" ? "course enquiry" : row.lead_type === "contact" ? "contact message" : "business inquiry";
+    const payload: Payload = {
+      lead_id: row.id, company_name: row.company_name, contact_name: row.contact_name, job_title: row.job_title ?? undefined,
+      email: row.email, phone: row.phone ?? undefined, company_size: row.company_size ?? undefined,
+      training_needs: [courseTitle && `Course: ${courseTitle}`, row.country && `Country: ${row.country}`,
+        row.experience_level && `Experience: ${row.experience_level}`, row.intended_start && `Intended start: ${row.intended_start}`,
+        row.training_needs, row.message].filter(Boolean).join("\n"),
+    };
 
     // 1. Notify every admin in-app so the inquiry is visible on the site.
     const { data: admins } = await admin.from("user_roles").select("user_id").eq("role", "admin");
@@ -49,7 +73,7 @@ Deno.serve(async (req) => {
     if (adminIds.length) {
       const rows = adminIds.map((uid) => ({
         user_id: uid,
-        title: `New business inquiry: ${payload.company_name}`,
+        title: `New ${kind}: ${payload.contact_name}`,
         message: `${payload.contact_name} (${payload.email}) — ${(payload.training_needs ?? "").slice(0, 160)}`,
         type: "info" as const,
         link: "/admin/business-leads",
@@ -60,7 +84,7 @@ Deno.serve(async (req) => {
     // 2. Forward to info@ inbox via send-email (graceful fallback if no provider).
     const html = `
       <div style="font-family:system-ui,sans-serif;max-width:560px;padding:24px">
-        <h2>New B2B Inquiry</h2>
+        <h2>New ${esc(kind)}</h2>
         <p><strong>Company:</strong> ${esc(payload.company_name)}</p>
         <p><strong>Contact:</strong> ${esc(payload.contact_name)}${payload.job_title ? ` — ${esc(payload.job_title)}` : ""} &lt;${esc(payload.email)}&gt;</p>
         ${payload.phone ? `<p><strong>Phone:</strong> ${esc(payload.phone)}</p>` : ""}
@@ -77,7 +101,7 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
         body: JSON.stringify({
           to: NOTIFY_TO,
-          subject: `New B2B inquiry from ${payload.company_name}`,
+          subject: `New ${kind} from ${payload.contact_name}`,
           html,
         }),
       });

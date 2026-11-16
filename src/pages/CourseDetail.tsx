@@ -41,6 +41,9 @@ import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { CourseDetailHero } from "@/components/courses/CourseDetailHero";
 import { CourseReviewsSection } from "@/components/courses/CourseReviewsSection";
 import { COURSE_DETAIL_FAQS } from "@/components/courses/courseFaqs";
+import { CourseEnquiryDialog, COHORT_START_ISO } from "@/components/course-enquiry/CourseEnquiryDialog";
+
+const CLOUD_COHORT_SLUG = "cloud-engineering-accelerator-4-week-hands-on-bootcamp";
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -51,6 +54,7 @@ export default function CourseDetail() {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [syllabusOpen, setSyllabusOpen] = useState(false);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
@@ -600,6 +604,7 @@ export default function CourseDetail() {
 
   const totalLessons = curriculumModules.reduce((sum, m) => sum + m.lessons.length, 0);
   const isFreeWebinar = course.price === 0 || course.title.toUpperCase().startsWith("FREE");
+  const isCloudCohortCourse = course.slug === CLOUD_COHORT_SLUG && course.start_date === COHORT_START_ISO;
   const isEnrolled = !!enrollment || (isFreeWebinar && !!webinarReg);
   const bookmarked = isBookmarked(course.id);
   const inCart = isInCart(course.id);
@@ -701,6 +706,14 @@ export default function CourseDetail() {
           <div><dt className="text-muted-foreground">Start date</dt><dd>{course.start_date ? new Date(course.start_date + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "To be announced"}</dd></div>
           {course.duration_weeks && <div><dt className="text-muted-foreground">Programme length</dt><dd>{course.duration_weeks} weeks</dd></div>}
           <div><dt className="text-muted-foreground">Total hours</dt><dd>{course.duration_hours} hours</dd></div>
+          {isCloudCohortCourse && (
+            <div className="w-full sm:w-auto sm:ml-auto flex flex-col gap-1">
+              <dd className="text-muted-foreground text-xs">Live online · guided Azure labs · tutor feedback</dd>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => setEnquiryOpen(true)}>
+                Ask About the 28 November Cohort
+              </Button>
+            </div>
+          )}
         </dl>
       </div>
       {/* Main Content */}
@@ -991,6 +1004,11 @@ export default function CourseDetail() {
                         <ShoppingCart className="h-4 w-4" />
                         {inCart ? "Already in Cart" : "Add to cart"}
                       </Button>
+                      {isCloudCohortCourse && (
+                        <Button size="lg" variant="secondary" className="w-full" onClick={() => setEnquiryOpen(true)}>
+                          Ask About the 28 November Cohort
+                        </Button>
+                      )}
                       <Button
                         size="lg"
                         variant="outline"
@@ -1166,6 +1184,9 @@ export default function CourseDetail() {
         />
       )}
 
+      {isCloudCohortCourse && (
+        <CourseEnquiryDialog open={enquiryOpen} onOpenChange={setEnquiryOpen} courseId={course.id} courseTitle={course.title} />
+      )}
       <Footer />
       <WhatsAppFAB />
     </div>

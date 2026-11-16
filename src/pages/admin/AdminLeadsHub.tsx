@@ -26,7 +26,7 @@ import { isPaidEnrollment, isFreeEnrollment, dedupeFreeShadowEnrollments } from 
 
 type UnifiedLead = {
   id: string;
-  source: "registration" | "enrollment" | "business";
+  source: "registration" | "enrollment" | "business" | "course_enquiry" | "contact";
   name: string;
   email: string;
   phone?: string | null;
@@ -42,6 +42,8 @@ type UnifiedLead = {
 const SOURCE_META = {
   registration: { label: "Webinar / Event", color: "bg-blue-500/15 text-blue-700 border-blue-500/30", Icon: ClipboardCheck, link: "/admin/registrations" },
   enrollment: { label: "Course Enrollment", color: "bg-green-500/15 text-green-700 border-green-500/30", Icon: GraduationCap, link: "/admin/enrollments" },
+  course_enquiry: { label: "Course Enquiry", color: "bg-amber-500/15 text-amber-800 border-amber-500/30", Icon: GraduationCap, link: "/admin/business-leads" },
+  contact: { label: "Contact Message", color: "bg-muted text-foreground border-border", Icon: Inbox, link: "/admin/business-leads" },
   business: { label: "Business Lead", color: "bg-primary/15 text-primary border-primary/30", Icon: Briefcase, link: "/admin/business-leads" },
 } as const;
 
@@ -140,6 +142,9 @@ export default function AdminLeadsHub() {
     return { byEmail: e, byUser: u };
   }, [leadSources]);
 
+  // Clearly labelled test enquiries never count as genuine leads.
+  const genuineLeads = useMemo(() => (businessLeads as any[]).filter((x) => !x.is_test), [businessLeads]);
+
   const resolveChannel = (email?: string | null, userId?: string | null): Channel => {
     const em = (email || "").trim().toLowerCase();
     const src = (em && byEmail.get(em)) || (userId && byUser.get(userId)) || null;
@@ -203,20 +208,29 @@ export default function AdminLeadsHub() {
       created_at: x.created_at,
       channel: resolveChannel(null, x.user_id),
     }));
-    const b: UnifiedLead[] = (businessLeads as any[]).map((x) => ({
+    const EXP: Record<string, string> = { beginner: "Beginner/career changer", it_professional: "IT professional", other: "Other" };
+    const START: Record<string, string> = { "2026-11-28": "Start 28 Nov 2026", later_cohort: "Later cohort", exploring: "Exploring" };
+    const b: UnifiedLead[] = (genuineLeads as any[]).map((x) => {
+      const t = x.lead_type ?? "business";
+      const a = (x.attribution ?? {}) as Record<string, string>;
+      const campaign = [a.gclid ? "Google Ads click" : null, a.utm_source, a.utm_campaign].filter(Boolean).join(" / ");
+      return {
       id: `biz-${x.id}`,
-      source: "business",
+      source: t === "course" ? "course_enquiry" : t === "contact" ? "contact" : "business",
       name: x.contact_name,
       email: x.email,
       phone: x.phone,
-      course_title: x.company_name,
+      course_title: t === "course" ? courseTitle(x.course_id) : t === "contact" ? "Contact form" : x.company_name,
       status: x.status,
-      meta: x.job_title ? `${x.job_title}${x.industry ? ` · ${x.industry}` : ""}` : (x.industry ?? "—"),
+      meta: t === "course"
+        ? [x.country, EXP[x.experience_level] ?? x.experience_level, START[x.intended_start] ?? x.intended_start, campaign].filter(Boolean).join(" · ")
+        : x.job_title ? `${x.job_title}${x.industry ? ` · ${x.industry}` : ""}` : (x.industry ?? (campaign || "—")),
       created_at: x.created_at,
-      channel: resolveChannel(x.email, null),
-    }));
+      channel: a.gclid ? classifyChannel({ utm_source: a.utm_source || "google", utm_medium: a.utm_medium || "cpc" }) : (a.utm_source ? classifyChannel({ utm_source: a.utm_source, utm_medium: a.utm_medium }) : resolveChannel(x.email, null)),
+    };
+    });
     return [...r, ...e, ...b].sort((a, z) => +new Date(z.created_at) - +new Date(a.created_at));
-  }, [registrations, enrollments, businessLeads, courses, profiles, byEmail, byUser]);
+  }, [registrations, enrollments, genuineLeads, courses, profiles, byEmail, byUser]);
 
   const filtered = useMemo(() => {
     const now = Date.now();
@@ -258,8 +272,10 @@ export default function AdminLeadsHub() {
     // Show only paid enrollments here so the KPI matches Overview/Analytics
     // and isn't inflated by webinar shadow rows.
     enrollments: (enrollments as any[]).filter(isPaidEnrollment).length,
-    business: businessLeads.length,
-  }), [unified, registrations, enrollments, businessLeads]);
+    business: genuineLeads.filter((x: any) => (x.lead_type ?? "business") === "business").length,
+    courseEnquiries: genuineLeads.filter((x: any) => x.lead_type === "course").length,
+    contacts: genuineLeads.filter((x: any) => x.lead_type === "contact").length,
+  }), [unified, registrations, enrollments, genuineLeads]);
 
   const exportCsv = () => {
     const header = ["Source", "Channel", "Name", "Email", "Phone", "Course / Webinar / Company", "Status", "Meta", "Created"];
@@ -364,12 +380,14 @@ export default function AdminLeadsHub() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {[
           { label: "All", value: stats.total, Icon: Users, source: "all" },
           { label: "Webinars", value: stats.registrations, Icon: ClipboardCheck, source: "registration" },
           { label: "Paid Enrollments", value: stats.enrollments, Icon: GraduationCap, source: "enrollment" },
           { label: "B2B", value: stats.business, Icon: Briefcase, source: "business" },
+          { label: "Course Enquiries", value: stats.courseEnquiries, Icon: GraduationCap, source: "course_enquiry" },
+          { label: "Contact", value: stats.contacts, Icon: Inbox, source: "contact" },
         ].map((c) => (
           <button key={c.source} onClick={() => setSourceFilter(c.source)}
             className={`text-left p-4 rounded-xl border bg-card transition-all ${sourceFilter === c.source ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/30"}`}>
@@ -437,6 +455,8 @@ export default function AdminLeadsHub() {
             <SelectItem value="registration">Webinar registrations</SelectItem>
             <SelectItem value="enrollment">Course enrollments</SelectItem>
             <SelectItem value="business">Business leads</SelectItem>
+            <SelectItem value="course_enquiry">Course enquiries</SelectItem>
+            <SelectItem value="contact">Contact messages</SelectItem>
           </SelectContent>
         </Select>
         <Select value={dateRange} onValueChange={setDateRange}>

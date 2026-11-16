@@ -954,52 +954,79 @@ export type Database = {
       business_leads: {
         Row: {
           assigned_to: string | null
+          attribution: Json
           company_name: string
           company_size: string | null
           contact_name: string
+          country: string | null
+          course_id: string | null
           created_at: string
           email: string
+          experience_level: string | null
           id: string
           industry: string | null
+          intended_start: string | null
           internal_notes: string | null
+          is_test: boolean
           job_title: string | null
+          lead_type: string
           message: string | null
           phone: string | null
+          source_page: string | null
           status: string
+          submission_key: string | null
           training_needs: string | null
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
+          attribution?: Json
           company_name: string
           company_size?: string | null
           contact_name: string
+          country?: string | null
+          course_id?: string | null
           created_at?: string
           email: string
+          experience_level?: string | null
           id?: string
           industry?: string | null
+          intended_start?: string | null
           internal_notes?: string | null
+          is_test?: boolean
           job_title?: string | null
+          lead_type?: string
           message?: string | null
           phone?: string | null
+          source_page?: string | null
           status?: string
+          submission_key?: string | null
           training_needs?: string | null
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
+          attribution?: Json
           company_name?: string
           company_size?: string | null
           contact_name?: string
+          country?: string | null
+          course_id?: string | null
           created_at?: string
           email?: string
+          experience_level?: string | null
           id?: string
           industry?: string | null
+          intended_start?: string | null
           internal_notes?: string | null
+          is_test?: boolean
           job_title?: string | null
+          lead_type?: string
           message?: string | null
           phone?: string | null
+          source_page?: string | null
           status?: string
+          submission_key?: string | null
           training_needs?: string | null
           updated_at?: string
         }
@@ -4970,6 +4997,7 @@ export type Database = {
         Returns: undefined
       }
       slugify: { Args: { _text: string }; Returns: string }
+      submit_enquiry: { Args: { p: Json }; Returns: Json }
       ticket_staff_fields_unchanged: {
         Args: {
           _assigned_to: string

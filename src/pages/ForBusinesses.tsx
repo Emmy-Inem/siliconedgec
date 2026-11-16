@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFAB } from "@/components/WhatsAppFAB";
@@ -19,7 +19,8 @@ import { toast } from "@/hooks/use-toast";
 import businessTraining from "@/assets/stock/business-team.jpg";
 import { SEO } from "@/components/SEO";
 import { usePageImage } from "@/hooks/usePageImage";
-import { googleAdsConversion, metaEvent } from "@/lib/analytics";
+import { metaEvent } from "@/lib/analytics";
+import { submitEnquiry, trackLeadOnce, newSubmissionKey } from "@/lib/enquiry";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -105,6 +106,7 @@ export default function ForBusinesses() {
     training_needs: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const submissionKeyRef = useRef(newSubmissionKey());
   const [submitted, setSubmitted] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
 
@@ -132,6 +134,7 @@ export default function ForBusinesses() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const required = [
       "company_name",
       "contact_name",
@@ -155,35 +158,24 @@ export default function ForBusinesses() {
       company_size: formData.company_size.trim() || null,
       training_needs: [formData.training_focus.trim(), formData.training_needs.trim()].filter(Boolean).join("\n\n"),
     };
-    const { data: inserted, error } = await (supabase.from("business_leads") as any)
-      .insert(payload)
-      .select("id")
-      .single();
-    // Fan out: notify admins in-app and forward a copy to info@siliconedgec.com
-    // (the lead row above is the on-site copy). Failures here must not block
-    // the submitter — we've already saved the lead.
-    if (!error && inserted?.id) {
-      try {
-        await supabase.functions.invoke("notify-business-lead", {
-          body: {
-            lead_id: inserted.id,
-            ...payload,
-          },
-        });
-      } catch (e) {
-        console.warn("notify-business-lead failed", e);
-      }
+    let res: { id: string; duplicate: boolean } | null = null;
+    let error: unknown = null;
+    try {
+      res = await submitEnquiry("business", payload, submissionKeyRef.current);
+      submissionKeyRef.current = newSubmissionKey();
+    } catch (err) {
+      error = err;
     }
     setSubmitting(false);
     if (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" });
     } else {
-      try {
-        googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: "business_training" });
-      } catch { /* Tracking must never affect a saved enquiry. */ }
-      try {
-        metaEvent("Lead", { form_type: "business_training" });
-      } catch { /* Tracking must never affect a saved enquiry. */ }
+      if (res && !res.duplicate) {
+        trackLeadOnce(res, "business_training");
+        try {
+          metaEvent("Lead", { form_type: "business_training" });
+        } catch { /* Tracking must never affect a saved enquiry. */ }
+      }
       setSubmitted(true);
       window.__lovableEvents?.track?.("project.business_inquiry_submitted", {});
       trackLinkedInConversion();

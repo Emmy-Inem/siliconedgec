@@ -25,4 +25,5 @@
 - Keep the audience overview on an administrator-only, date-bounded aggregate RPC; count signups from auth creation, deduplicate authenticated login sessions, and never treat unidentified historical page views as unique people.
 - Record one internal view per committed public navigation with a persistent anonymous browser identifier and bounded geo lookup; suppress previews, crawlers, and sensitive URL parameters so audience metrics stay meaningful.
 - Keep carousel controls outside keyed slide animations and overlap slides in a stable grid track; pause rotation for focus, hidden tabs and reduced motion to prevent disappearing controls and layout jumps.
-- Reset the route error boundary on committed navigation so recovery links can render a healthy destination rather than retain a previous page failure.
+- Reset the route error boundary on committed navigation so recovery links can render a healthy destination rather than retain a previous page failure.- Save every public enquiry through the shared validated, duplicate-keyed enquiry submission and fire the Lead conversion only for a newly saved row, so retries, failures and test entries never inflate conversions or genuine lead counts.
+- Load code-split pages through the shared retrying loader with a time-guarded single reload, so stale deployments recover without reload loops.
