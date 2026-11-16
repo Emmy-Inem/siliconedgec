@@ -71,6 +71,13 @@
       "when": 1794843442365,
       "tag": "0009_server_authoritative_test_enquiries",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794843817216,
+      "tag": "0010_email_queue_overview_static_sql",
+      "breakpoints": true
     }
   ]
 }
