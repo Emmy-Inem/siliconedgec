@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Apply the requested 12-hour automatic administrator-report refresh and faster visitor lookups; verify real administrator reports and regression tests. Keep account/payment services and weekly backups unchanged; compare billed active hours only after publication and later billing ingestion.
+- [x] Apply 12-hour automatic refresh to all nine existing administrator polling-report pages; preserve manual refresh/save invalidation and avoid persistent private caches. Added visitor date index: identical 1,000-row lookup measured 779.724 ms before and 1.087 ms after. 52 files / 289 tests pass; preview build OK. Account/payment services and weekly backups unchanged.
+- [ ] Verify changed reports in a real signed-in administrator session (blocker: no requesting-user auth match; temporary QA account declined). Compare actual billed active hours after user-approved publication and later billing ingestion; query speed is not credit savings.
 
 - [x] Smooth the courses hero carousel and verify rapid navigation, stable height, reduced motion and 390/651px layouts; repair route-error recovery, homepage reduced motion and the lesson picture-in-picture shortcut. Public page checks produced no runtime errors; recovery and player regression tests cover the additional repairs.
 
