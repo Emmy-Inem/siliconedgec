@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,7 +85,7 @@ export default function AdminCourseActivity() {
 
   const { data: rows = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ["course-activity-feed", courseId],
-    refetchInterval: 60_000,
+    ...adminReportRefresh,
     queryFn: async () => {
       const { data, error } = await (supabase as any).rpc("get_course_activity_feed", {
         p_course_id: courseId || null,

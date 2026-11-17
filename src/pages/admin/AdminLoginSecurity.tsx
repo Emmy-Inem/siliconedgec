@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -77,7 +78,7 @@ export default function AdminLoginSecurity() {
   const { data: attempts = [], isLoading } = useQuery({
     queryKey: ["admin-login-attempts"],
     queryFn: async () => (await supabase.from("login_attempts").select("*").order("created_at", { ascending: false }).limit(2000)).data ?? [],
-    refetchInterval: 30_000,
+    ...adminReportRefresh,
   });
 
   const { data: blockedIps = [] } = useQuery({
@@ -244,7 +245,7 @@ export default function AdminLoginSecurity() {
           </div>
           <div>
             <h1 className="font-heading text-2xl font-bold">Login Security</h1>
-            <p className="text-sm text-muted-foreground">Failed sign-ins, locked accounts, IP intelligence — auto-refreshes every 30s</p>
+            <p className="text-sm text-muted-foreground">Failed sign-ins, locked accounts, IP intelligence — auto-refreshes every 12 hours</p>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">

@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS lead_sources_created_at_desc_idx ON public.lead_sources (created_at DESC);

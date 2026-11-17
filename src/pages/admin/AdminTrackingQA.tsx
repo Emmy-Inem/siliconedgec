@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
@@ -84,7 +85,7 @@ export default function AdminTrackingQA() {
       const rows = await fetchAllRows<Row>("lead_sources", "*", { pageSize: 1000, max: 5000 });
       return rows;
     },
-    refetchInterval: 15_000,
+    ...adminReportRefresh,
   });
 
   // TikTok Pixel runtime status — re-checked every 2s for up to ~10s so we

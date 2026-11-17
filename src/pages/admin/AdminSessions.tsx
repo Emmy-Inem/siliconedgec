@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Monitor, Smartphone, Globe, Search, RefreshCcw } from "lucide-react";
@@ -41,7 +42,7 @@ export default function AdminSessions() {
       if (error) throw error;
       return (data || []) as SessionRow[];
     },
-    refetchInterval: 30000,
+    ...adminReportRefresh,
   });
 
   const filtered = useMemo(

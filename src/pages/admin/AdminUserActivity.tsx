@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -66,8 +67,7 @@ export default function AdminUserActivity() {
     queryFn: async () => {
       return (await fetchAllRows<any>("user_activity_log", "*", { max: 5000 })) as ActivityRow[];
     },
-    refetchInterval: 15000,
-    refetchOnWindowFocus: true,
+    ...adminReportRefresh,
   });
 
   // Map user -> activity stats

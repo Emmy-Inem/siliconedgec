@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default function AdminBackupStatus() {
       if (error) throw error;
       return (data ?? []) as unknown as BackupRun[];
     },
-    refetchInterval: 30_000,
+    ...adminReportRefresh,
   });
 
   const runBackup = useMutation({

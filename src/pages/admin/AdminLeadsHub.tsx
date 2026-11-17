@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { CustomDateRange, inCustomRange, useUserEmails } from "@/components/admin/CustomDateRange";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -66,7 +67,7 @@ export default function AdminLeadsHub() {
     queryFn: async () => {
       return await fetchAllRows<any>("course_registrations", "*");
     },
-    refetchInterval: 30000,
+    ...adminReportRefresh,
   });
 
   const { data: enrollments = [], isLoading: l2 } = useQuery({
@@ -77,7 +78,7 @@ export default function AdminLeadsHub() {
         "id, user_id, course_id, payment_status, created_at, progress_percentage",
       );
     },
-    refetchInterval: 30000,
+    ...adminReportRefresh,
   });
 
   const { data: businessLeads = [], isLoading: l3 } = useQuery({
@@ -85,7 +86,7 @@ export default function AdminLeadsHub() {
     queryFn: async () => {
       return await fetchAllRows<any>("business_leads", "*");
     },
-    refetchInterval: 30000,
+    ...adminReportRefresh,
   });
 
   // Provider outcome for each enquiry alert (admins only).
@@ -107,7 +108,7 @@ export default function AdminLeadsHub() {
       }
       return out;
     },
-    refetchInterval: 60000,
+    ...adminReportRefresh,
   });
   const latestAlert = useMemo(() => {
     const m = new Map<string, any>();
@@ -149,7 +150,7 @@ export default function AdminLeadsHub() {
       );
       return all.filter((r: any) => r.created_at >= since);
     },
-    refetchInterval: 60000,
+    ...adminReportRefresh,
   });
 
   // Build O(1) lookup maps. Prefer the EARLIEST visit that carries any

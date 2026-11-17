@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,7 +52,7 @@ export default function AdminEmailQueue() {
       if (error) throw error;
       return data as unknown as Overview;
     },
-    refetchInterval: 30000,
+    ...adminReportRefresh,
   });
 
   const queues = data?.queues ?? [];

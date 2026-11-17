@@ -1,3 +1,4 @@
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,7 +74,7 @@ export default function AdminAuthReplay() {
       if (error) throw error;
       return (data ?? []) as Row[];
     },
-    refetchInterval: 30_000,
+    ...adminReportRefresh,
   });
 
   const sessions = useMemo(() => {
