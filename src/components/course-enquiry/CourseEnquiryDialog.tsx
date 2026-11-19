@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { newSubmissionKey, submitEnquiry, trackLeadOnce } from "@/lib/enquiry";
+import { z } from "zod";
 
 export const COHORT_START_ISO = "2026-11-28";
 const DRAFT_KEY = "sec_course_enquiry_draft";
@@ -26,6 +27,17 @@ function loadDraft(): Form {
 
 export function validateEnquiry(f: Form): Partial<Record<keyof Form, string>> {
   const e: Partial<Record<keyof Form, string>> = {};
+  const schema = z.object({
+    name: z.string().trim().min(1, "Please enter your name.").max(120, "Please keep your name under 120 characters."),
+    email: z.string().trim().email("Please enter a valid email address.").max(255),
+    phone: z.string().trim().regex(PHONE_RE, "Use international format starting with +, e.g. +44 7700 900123."),
+    country: z.string().trim().min(2, "Please enter your country.").max(80),
+    experience: z.enum(["beginner", "it_professional", "other"], { errorMap: () => ({ message: "Please choose your experience level." }) }),
+    start: z.enum(["2026-11-28", "later_cohort", "exploring"], { errorMap: () => ({ message: "Please choose when you'd like to start." }) }),
+    question: z.string().max(1000, "Please keep your question under 1000 characters."),
+  });
+  const result = schema.safeParse(f);
+  if (!result.success) result.error.issues.forEach((issue) => { e[issue.path[0] as keyof Form] = issue.message; });
   if (!f.name.trim()) e.name = "Please enter your name.";
   if (!EMAIL_RE.test(f.email.trim())) e.email = "Please enter a valid email address.";
   if (!PHONE_RE.test(f.phone.trim())) e.phone = "Use international format starting with +, e.g. +44 7700 900123.";
@@ -36,9 +48,10 @@ export function validateEnquiry(f: Form): Partial<Record<keyof Form, string>> {
   return e;
 }
 
-interface Props { open: boolean; onOpenChange: (o: boolean) => void; courseId: string; courseTitle: string; }
+interface Props { open: boolean; onOpenChange: (o: boolean) => void; courseId: string; courseTitle: string; mode?: "enquiry" | "registration"; }
 
-export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle }: Props) {
+export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle, mode = "enquiry" }: Props) {
+  const isRegistration = mode === "registration";
   const [form, setForm] = useState<Form>(loadDraft);
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
@@ -73,7 +86,8 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
       const res = await submitEnquiry("course", {
         contact_name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
         country: form.country.trim(), experience_level: form.experience, intended_start: form.start,
-        message: form.question.trim() || null, course_id: courseId, training_needs: `Course enquiry: ${courseTitle}`,
+        message: form.question.trim() || null, course_id: courseId,
+        training_needs: `${isRegistration ? "Course registration interest" : "Course enquiry"}: ${courseTitle}`,
       }, keyRef.current);
       trackLeadOnce(res, "course_enquiry");
       try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
@@ -100,15 +114,15 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
         {status === "done" ? (
           <div className="py-6 text-center space-y-3" role="status">
             <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
-            <DialogTitle>Thanks — your enquiry is saved</DialogTitle>
-            <DialogDescription>Our team will reply by email about the 28 November cohort.</DialogDescription>
+            <DialogTitle>{isRegistration ? "Your registration interest is saved" : "Thanks — your enquiry is saved"}</DialogTitle>
+            <DialogDescription>{isRegistration ? "Our team can follow up about this course and payment. Course content becomes available after payment is verified." : "Our team can follow up about the 28 November cohort."}</DialogDescription>
             <Button onClick={() => onOpenChange(false)} className="mt-2">Close</Button>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Ask about the 28 November cohort</DialogTitle>
-              <DialogDescription>{courseTitle}. Starts 28 November 2026 · 4 weeks · 32 hours, live online. Ask us for class times.</DialogDescription>
+              <DialogTitle>{isRegistration ? "Register your interest" : "Ask about the 28 November cohort"}</DialogTitle>
+              <DialogDescription>{isRegistration ? courseTitle : `${courseTitle}. Starts 28 November 2026 · 4 weeks · 32 hours, live online. Ask us for class times.`}</DialogDescription>
             </DialogHeader>
             <form onSubmit={submit} noValidate className="space-y-4"
               onFocus={(e) => {
@@ -138,17 +152,17 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle 
               <div><Label htmlFor="ce-start">When would you like to start? *</Label>
                 <select id="ce-start" className={selectCls} value={form.start} onChange={(e) => set("start", e.target.value as Form["start"])} {...aria("start")}>
                   <option value="">Choose one</option>
-                  <option value="2026-11-28">28 November 2026</option>
-                  <option value="later_cohort">A later cohort</option>
+                  {!isRegistration && <option value="2026-11-28">28 November 2026</option>}
+                  <option value="later_cohort">{isRegistration ? "Next available intake" : "A later cohort"}</option>
                   <option value="exploring">Just exploring</option>
                 </select>{err("start")}</div>
-              <div><Label htmlFor="ce-question">Your question (optional)</Label>
+              <div><Label htmlFor="ce-question">{isRegistration ? "Questions or payment preferences (optional)" : "Your question (optional)"}</Label>
                 <Textarea id="ce-question" rows={3} maxLength={1000} value={form.question} onChange={(e) => set("question", e.target.value)} {...aria("question")} />{err("question")}</div>
               {serverError && <p role="alert" className="text-sm text-destructive">{serverError}</p>}
               <Button type="submit" size="lg" className="w-full" disabled={status === "sending"}>
-                {status === "sending" ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Sending…</> : "Send enquiry"}
+                {status === "sending" ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Sending…</> : isRegistration ? "Register interest" : "Send enquiry"}
               </Button>
-              <p className="text-xs text-muted-foreground text-center">No account needed. We only use these details to reply to you.</p>
+              <p className="text-xs text-muted-foreground text-center">{isRegistration ? "No payment or account needed. We’ll use these details to follow up about your course. Registration does not grant lesson access." : "No account needed. We only use these details to reply to you."}</p>
             </form>
           </>
         )}

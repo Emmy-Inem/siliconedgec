@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+- Capture unpaid course registration interest through the shared enquiry submission into private leads, never webinar registration or enrollment writes; payment-verified access remains independent.
+
 - Use the shared in-memory administrator-report refresh policy on polling reports, preserving explicit refetch and save invalidation; this prevents unattended tabs repeatedly loading private reports without persisting sensitive data.
 
 - Derive email-verification presentation from server-issued identities through the shared verification helper, never editable user metadata; password recovery requires a recovery-specific signal.

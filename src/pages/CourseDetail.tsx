@@ -55,6 +55,7 @@ export default function CourseDetail() {
   const [registerOpen, setRegisterOpen] = useState(false);
   const [syllabusOpen, setSyllabusOpen] = useState(false);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [interestOpen, setInterestOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: course, isLoading, error } = useCourse(id);
   const { addToCart, isInCart } = useCart();
@@ -995,15 +996,20 @@ export default function CourseDetail() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Button
-                        size="lg"
-                        className="w-full gap-2"
-                        onClick={handleAddToCart}
-                        disabled={inCart}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {inCart ? "Already in Cart" : "Add to cart"}
-                      </Button>
+                      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-2">
+                        <Button
+                          size="lg"
+                          className="w-full gap-1.5 px-2 text-sm"
+                          onClick={handleAddToCart}
+                          disabled={inCart}
+                        >
+                          <ShoppingCart className="h-4 w-4 shrink-0" />
+                          {inCart ? "Already in Cart" : "Add to cart"}
+                        </Button>
+                        <Button size="lg" variant="secondary" className="w-full px-2 text-sm" onClick={() => setInterestOpen(true)}>
+                          Register
+                        </Button>
+                      </div>
                       {isCloudCohortCourse && (
                         <Button size="lg" variant="secondary" className="w-full" onClick={() => setEnquiryOpen(true)}>
                           Ask About the 28 November Cohort
@@ -1186,6 +1192,9 @@ export default function CourseDetail() {
 
       {isCloudCohortCourse && (
         <CourseEnquiryDialog open={enquiryOpen} onOpenChange={setEnquiryOpen} courseId={course.id} courseTitle={course.title} />
+      )}
+      {!isFreeWebinar && (
+        <CourseEnquiryDialog open={interestOpen} onOpenChange={setInterestOpen} courseId={course.id} courseTitle={course.title} mode="registration" />
       )}
       <Footer />
       <WhatsAppFAB />

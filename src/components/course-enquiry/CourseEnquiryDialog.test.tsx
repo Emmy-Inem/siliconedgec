@@ -21,6 +21,23 @@ const fill = (phone = "+234 801 234 5678") => {
 const submit = () => fireEvent.click(screen.getByRole("button", { name: "Send enquiry" }));
 
 describe("Cloud cohort enquiry", () => {
+  it("saves unpaid registration interest for the selected course without creating enrollment or checkout", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "interest-1", duplicate: false, is_test: true }, error: null });
+    render(<CourseEnquiryDialog open onOpenChange={() => {}} courseId="software-course" courseTitle="Software Engineering" mode="registration" />);
+    fill();
+    fireEvent.change(screen.getByLabelText("When would you like to start? *"), { target: { value: "later_cohort" } });
+    fireEvent.change(screen.getByLabelText("Full name *"), { target: { value: "[TEST] Course Registration" } });
+    fireEvent.click(screen.getByRole("button", { name: "Register interest" }));
+    await waitFor(() => expect(mocks.rpc).toHaveBeenCalledTimes(1));
+    expect(mocks.rpc.mock.calls[0][0]).toBe("submit_enquiry");
+    expect(mocks.rpc.mock.calls[0][1].p).toMatchObject({
+      lead_type: "course", course_id: "software-course", intended_start: "later_cohort",
+      training_needs: "Course registration interest: Software Engineering", is_test: true,
+    });
+    expect(mocks.conversion).not.toHaveBeenCalled();
+    expect(mocks.invoke.mock.calls.every(([name]) => name === "notify-business-lead")).toBe(true);
+  });
+
   it("rejects a phone number not in international format without saving or tracking", () => {
     open(); fill("08012345678"); submit();
     expect(screen.getByText(/international format/)).toBeInTheDocument();

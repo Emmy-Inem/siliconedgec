@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Add Register beside Add to cart on all five paid courses using private course leads and the existing follow-up pipeline; paid lesson access unchanged. Browser confirmed saved test status/course/contact details and adjacent buttons at 390px; 21 focused tests pass, preview build OK. Notification emails remain blocked by existing sender DNS setup; no publication.
+
 - [x] Apply 12-hour automatic refresh to all nine existing administrator polling-report pages; preserve manual refresh/save invalidation and avoid persistent private caches. Added visitor date index: identical 1,000-row lookup measured 779.724 ms before and 1.087 ms after. 52 files / 289 tests pass; preview build OK. Account/payment services and weekly backups unchanged.
 - [ ] Verify changed reports in a real signed-in administrator session (blocker: no requesting-user auth match; temporary QA account declined). Compare actual billed active hours after user-approved publication and later billing ingestion; query speed is not credit savings.
 
