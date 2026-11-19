@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { newSubmissionKey, submitEnquiry, trackLeadOnce } from "@/lib/enquiry";
+import { newSubmissionKey, submitEnquiry, trackCourseRegistrationOnce, trackLeadOnce } from "@/lib/enquiry";
 import { z } from "zod";
 
 export const COHORT_START_ISO = "2026-11-28";
@@ -90,6 +90,7 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle,
         training_needs: `${isRegistration ? "Course registration interest" : "Course enquiry"}: ${courseTitle}`,
       }, keyRef.current);
       trackLeadOnce(res, "course_enquiry");
+      if (isRegistration) trackCourseRegistrationOnce(res, courseId);
       try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       setForm(EMPTY);
       keyRef.current = newSubmissionKey();

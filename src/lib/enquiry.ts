@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { googleAdsConversion } from "@/lib/analytics";
+import { gaEvent, googleAdsConversion } from "@/lib/analytics";
 
 export type EnquiryType = "contact" | "business" | "course";
 const ATTR_KEYS = ["gclid", "gbraid", "wbraid", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
@@ -78,4 +78,12 @@ export function trackLeadOnce(res: { id: string; duplicate: boolean; isTest: boo
   try {
     googleAdsConversion("Lead", { value: 0, currency: "GBP", form_type: formType, transaction_id: `lead-${res.id}` });
   } catch { /* Tracking must never affect a saved enquiry. */ }
+}
+
+const sentRegistrations = new Set<string>();
+/** GA4 course_registration_completed: only for a new, real, server-confirmed row, once per submission id. */
+export function trackCourseRegistrationOnce(res: { id: string; duplicate: boolean; isTest: boolean }, courseId: string) {
+  if (!res?.id || res.duplicate || res.isTest !== false || sentRegistrations.has(res.id)) return;
+  sentRegistrations.add(res.id);
+  try { gaEvent("course_registration_completed", { course_id: courseId, transaction_id: `reg-${res.id}` }); } catch { /* never affect the saved row */ }
 }

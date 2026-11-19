@@ -1006,7 +1006,7 @@ export default function CourseDetail() {
                           <ShoppingCart className="h-4 w-4 shrink-0" />
                           {inCart ? "Already in Cart" : "Add to cart"}
                         </Button>
-                        <Button size="lg" variant="secondary" className="w-full px-2 text-sm" onClick={() => setInterestOpen(true)}>
+                        <Button size="lg" variant="secondary" className="w-full px-2 text-sm" onClick={() => { gaEvent("course_register_click", { course_id: course.id }); setInterestOpen(true); }}>
                           Register
                         </Button>
                       </div>
