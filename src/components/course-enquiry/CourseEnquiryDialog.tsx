@@ -11,6 +11,21 @@ import { z } from "zod";
 export const COHORT_START_ISO = "2026-11-28";
 const DRAFT_KEY = "sec_course_enquiry_draft";
 const PHONE_RE = /^\+[1-9][0-9 ()-]{6,19}$/;
+export const COUNTRIES: [string, string][] = [
+  ["Nigeria","+234"],["United Kingdom","+44"],["United States","+1"],["Canada","+1"],["Ghana","+233"],["Kenya","+254"],
+  ["South Africa","+27"],["Ireland","+353"],["Germany","+49"],["France","+33"],["Netherlands","+31"],["Spain","+34"],
+  ["Italy","+39"],["Poland","+48"],["Sweden","+46"],["Norway","+47"],["Belgium","+32"],["Switzerland","+41"],
+  ["United Arab Emirates","+971"],["Saudi Arabia","+966"],["Qatar","+974"],["Egypt","+20"],["Cameroon","+237"],
+  ["Rwanda","+250"],["Uganda","+256"],["Tanzania","+255"],["Zambia","+260"],["Zimbabwe","+263"],["Ethiopia","+251"],
+  ["India","+91"],["Pakistan","+92"],["Philippines","+63"],["Australia","+61"],["New Zealand","+64"],["Brazil","+55"],
+];
+/** Combine the chosen country code with the typed number (a leading 0 is dropped; a typed +code wins). */
+export function fullPhone(country: string, phone: string) {
+  const p = phone.trim();
+  if (p.startsWith("+")) return p;
+  const dial = COUNTRIES.find(([n]) => n === country)?.[1];
+  return dial ? `${dial} ${p.replace(/^0+/, "")}` : p;
+}
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type Form = {
@@ -30,7 +45,7 @@ export function validateEnquiry(f: Form): Partial<Record<keyof Form, string>> {
   const schema = z.object({
     name: z.string().trim().min(1, "Please enter your name.").max(120, "Please keep your name under 120 characters."),
     email: z.string().trim().email("Please enter a valid email address.").max(255),
-    phone: z.string().trim().regex(PHONE_RE, "Use international format starting with +, e.g. +44 7700 900123."),
+    phone: z.string().trim().regex(PHONE_RE, "Please enter a valid phone number, e.g. 7700 900123."),
     country: z.string().trim().min(2, "Please enter your country.").max(80),
     experience: z.enum(["beginner", "it_professional", "other"], { errorMap: () => ({ message: "Please choose your experience level." }) }),
     start: z.enum(["2026-11-28", "later_cohort", "exploring"], { errorMap: () => ({ message: "Please choose when you'd like to start." }) }),
@@ -40,7 +55,7 @@ export function validateEnquiry(f: Form): Partial<Record<keyof Form, string>> {
   if (!result.success) result.error.issues.forEach((issue) => { e[issue.path[0] as keyof Form] = issue.message; });
   if (!f.name.trim()) e.name = "Please enter your name.";
   if (!EMAIL_RE.test(f.email.trim())) e.email = "Please enter a valid email address.";
-  if (!PHONE_RE.test(f.phone.trim())) e.phone = "Use international format starting with +, e.g. +44 7700 900123.";
+  if (!PHONE_RE.test(f.phone.trim())) e.phone = "Please enter a valid phone number, e.g. 7700 900123.";
   if (f.country.trim().length < 2) e.country = "Please enter your country.";
   if (!f.experience) e.experience = "Please choose your experience level.";
   if (!f.start) e.start = "Please choose when you'd like to start.";
@@ -73,7 +88,8 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle,
     if (sendingRef.current) return;
     setServerError("");
     if (form.website) { setStatus("done"); return; } // spam trap: silently ignore bots
-    const errs = validateEnquiry(form);
+    const phone = fullPhone(form.country, form.phone);
+    const errs = validateEnquiry({ ...form, phone });
     setErrors(errs);
     if (Object.keys(errs).length) {
       const first = Object.keys(errs)[0];
@@ -84,7 +100,7 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle,
     setStatus("sending");
     try {
       const res = await submitEnquiry("course", {
-        contact_name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
+        contact_name: form.name.trim(), email: form.email.trim(), phone,
         country: form.country.trim(), experience_level: form.experience, intended_start: form.start,
         message: form.question.trim() || null, course_id: courseId,
         training_needs: `${isRegistration ? "Course registration interest" : "Course enquiry"}: ${courseTitle}`,
@@ -137,12 +153,16 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle,
                 <Input id="ce-name" className="h-11" autoComplete="name" maxLength={120} value={form.name} onChange={(e) => set("name", e.target.value)} {...aria("name")} />{err("name")}</div>
               <div><Label htmlFor="ce-email">Email *</Label>
                 <Input id="ce-email" type="email" className="h-11" autoComplete="email" maxLength={255} value={form.email} onChange={(e) => set("email", e.target.value)} {...aria("email")} />{err("email")}</div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div><Label htmlFor="ce-phone">Phone (international) *</Label>
-                  <Input id="ce-phone" type="tel" className="h-11" autoComplete="tel" placeholder="+44 7700 900123" maxLength={24} value={form.phone} onChange={(e) => set("phone", e.target.value)} {...aria("phone")} />{err("phone")}</div>
-                <div><Label htmlFor="ce-country">Country *</Label>
-                  <Input id="ce-country" className="h-11" autoComplete="country-name" maxLength={80} value={form.country} onChange={(e) => set("country", e.target.value)} {...aria("country")} />{err("country")}</div>
-              </div>
+              <div><Label htmlFor="ce-country">Country *</Label>
+                <select id="ce-country" className={selectCls} autoComplete="country-name" value={form.country} onChange={(e) => set("country", e.target.value)} {...aria("country")}>
+                  <option value="">Choose your country</option>
+                  {COUNTRIES.map(([n, d]) => <option key={n} value={n}>{n} ({d})</option>)}
+                </select>{err("country")}</div>
+              <div><Label htmlFor="ce-phone">Phone number *</Label>
+                <div className="flex">
+                  <span className="inline-flex h-11 items-center rounded-l-md border border-r-0 border-input bg-muted px-3 text-sm text-muted-foreground" aria-hidden="true">{COUNTRIES.find(([n]) => n === form.country)?.[1] ?? "+"}</span>
+                  <Input id="ce-phone" type="tel" inputMode="tel" className="h-11 rounded-l-none" autoComplete="tel-national" placeholder="7700 900123" maxLength={24} value={form.phone} onChange={(e) => set("phone", e.target.value)} {...aria("phone")} />
+                </div>{err("phone")}</div>
               <div><Label htmlFor="ce-experience">Experience level *</Label>
                 <select id="ce-experience" className={selectCls} value={form.experience} onChange={(e) => set("experience", e.target.value as Form["experience"])} {...aria("experience")}>
                   <option value="">Choose one</option>

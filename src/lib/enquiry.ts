@@ -35,7 +35,7 @@ export function isTestEnquiry(name: string, email: string) {
 
 const MESSAGES: Record<string, string> = {
   rate_limited: "You've sent several enquiries in a short time. Please wait a few minutes and try again.",
-  invalid_phone: "Please enter your phone number in international format, e.g. +44 7700 900123.",
+  invalid_phone: "Please choose your country and enter a valid phone number.",
   invalid_email: "Please enter a valid email address.",
 };
 

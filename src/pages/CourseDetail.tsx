@@ -29,7 +29,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
-import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
+import { tikTokEvent, metaEvent, gaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
@@ -999,14 +999,14 @@ export default function CourseDetail() {
                       <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-2">
                         <Button
                           size="lg"
-                          className="w-full gap-1.5 px-2 text-sm"
+                          className="w-full min-h-12 gap-1.5 px-2 text-sm"
                           onClick={handleAddToCart}
                           disabled={inCart}
                         >
                           <ShoppingCart className="h-4 w-4 shrink-0" />
                           {inCart ? "Already in Cart" : "Add to cart"}
                         </Button>
-                        <Button size="lg" variant="secondary" className="w-full px-2 text-sm" onClick={() => { gaEvent("course_register_click", { course_id: course.id }); setInterestOpen(true); }}>
+                        <Button type="button" size="lg" variant="secondary" aria-label="Register your interest in this course" className="relative z-10 w-full min-h-12 px-2 text-sm font-semibold touch-manipulation select-none transition-transform active:scale-95 hover:shadow-md" onClick={() => { gaEvent("course_register_click", { course_id: course.id }); setInterestOpen(true); }}>
                           Register
                         </Button>
                       </div>
