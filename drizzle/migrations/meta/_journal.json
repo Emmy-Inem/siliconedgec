@@ -85,6 +85,13 @@
       "when": 1794944159595,
       "tag": "0011_visitor_report_created_at_index",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795238860385,
+      "tag": "0012_influencer_click_counts_admin_only",
+      "breakpoints": true
     }
   ]
 }
