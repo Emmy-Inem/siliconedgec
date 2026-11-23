@@ -27,9 +27,20 @@ describe("Course Register click conversion", () => {
     });
   });
   it("never guesses a missing label or sends to the account alone", () => {
-    delete window.__gadsLabelOverrides;
+    window.__gadsLabelOverrides = { CourseRegisterClick: "" };
     googleAdsCourseRegisterClick("course-id");
     expect(window.gtag).not.toHaveBeenCalled();
+  });
+  it("sends configured production label when overrides are absent", () => {
+    delete window.__gadsLabelOverrides;
+    googleAdsCourseRegisterClick("course-id");
+    expect(window.gtag).toHaveBeenCalledTimes(1);
+    expect(window.gtag).toHaveBeenCalledWith("event", "conversion", {
+      send_to: "AW-18126380202/kMw5CN-1zLsdEKq5qsND",
+      course_id: "course-id",
+      user_data: {},
+      transport_type: "beacon",
+    });
   });
   it.each(["essential", "analytics", ""])("blocks without advertising acceptance: %s", (choice) => {
     localStorage.setItem("se_cookie_consent", choice);

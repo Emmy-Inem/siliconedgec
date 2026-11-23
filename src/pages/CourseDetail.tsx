@@ -983,6 +983,7 @@ export default function CourseDetail() {
                         size="lg"
                         className="w-full gap-2"
                         onClick={() => {
+                          try { googleAdsCourseRegisterClick(course.id); } catch { /* Tracking must never block registration. */ }
                           if (!user) {
                             requestSignup("register");
                             return;

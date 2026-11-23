@@ -9,6 +9,7 @@ declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
+    gtag_report_conversion?: (url?: string) => boolean;
     __gtagConsentDefaultSet?: boolean;
     __gadsLabelOverrides?: Partial<Record<string, string>>;
     __seConsent?: {
@@ -330,6 +331,7 @@ export function getTikTokPixelStatus(): TikTokPixelStatus {
 //      to flip ad_storage / ad_user_data / ad_personalization to granted.
 
 export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
+export const COURSE_REGISTER_CONVERSION_SEND_TO = "AW-18126380202/kMw5CN-1zLsdEKq5qsND";
 
 /**
  * Conversion label registry. Until the admin creates conversion actions
@@ -340,8 +342,8 @@ export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
  * with the string after the `/` in the snippet (e.g. "abcDEF123").
  */
 export const GOOGLE_ADS_EVENTS = {
-  // Existing "SEC - Course Register button clicked" action: exact label required.
-  CourseRegisterClick:    { label: null as string | null, gaName: "course_register_click" },
+  // Existing "SEC - Course Register button clicked" action: exact label configured.
+  CourseRegisterClick:    { label: "kMw5CN-1zLsdEKq5qsND" as string | null, gaName: "course_register_click" },
   // Webinar / contact / business lead form submissions
   Lead:                  { label: "uD3NCJDwybcdEKq5qsND" as string | null, gaName: "generate_lead" },
   // "Enroll Now" / "Add to cart" intent click on a course
@@ -368,7 +370,8 @@ export function googleAdsCourseRegisterClick(courseId: string) {
   if (localStorage.getItem("se_cookie_consent") !== "all" ||
       getConsentState()?.ad_storage !== "granted" ||
       getConsentState()?.ad_user_data !== "granted") return;
-  const label = (window.__gadsLabelOverrides?.CourseRegisterClick || GOOGLE_ADS_EVENTS.CourseRegisterClick.label)?.trim();
+  const override = window.__gadsLabelOverrides?.CourseRegisterClick;
+  const label = (override !== undefined ? override : GOOGLE_ADS_EVENTS.CourseRegisterClick.label)?.trim();
   if (!label || !/^[A-Za-z0-9_-]+$/.test(label)) return;
   safeGtag("event", "conversion", {
     send_to: `${GOOGLE_ADS_ACCOUNT}/${label}`,
