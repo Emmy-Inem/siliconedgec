@@ -9,6 +9,7 @@ declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
+    gtag_report_conversion?: (url?: string) => boolean;
     __gtagConsentDefaultSet?: boolean;
     __gadsLabelOverrides?: Partial<Record<string, string>>;
     __seConsent?: {
@@ -341,6 +342,33 @@ export function getTikTokPixelStatus(): TikTokPixelStatus {
 //      to flip ad_storage / ad_user_data / ad_personalization to granted.
 
 export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
+export const COURSE_REGISTER_CONVERSION_SEND_TO = "AW-18126380202/kMw5CN-1zLsdEKq5qsND";
+
+/**
+ * Triggers the Google Ads "SEC - Course Register button clicked" conversion
+ * via the global `gtag_report_conversion` snippet defined in index.html.
+ */
+export function reportCourseRegisterConversion(url?: string) {
+  if (typeof window === "undefined") return;
+  const event_id = makeEventId("CourseRegisterClick");
+  logPixelEvent({
+    ts: Date.now(),
+    vendor: "google",
+    event: "CourseRegisterClick",
+    event_id,
+    params: { send_to: COURSE_REGISTER_CONVERSION_SEND_TO, url },
+  });
+  if (typeof window.gtag_report_conversion === "function") {
+    try {
+      window.gtag_report_conversion(url);
+      return;
+    } catch { /* fallback below */ }
+  }
+  safeGtag("event", "conversion", {
+    send_to: COURSE_REGISTER_CONVERSION_SEND_TO,
+    ...(url ? { event_callback: () => { window.location.href = url; } } : {}),
+  });
+}
 
 /**
  * Conversion label registry. Until the admin creates conversion actions

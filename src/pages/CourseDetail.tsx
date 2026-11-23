@@ -29,7 +29,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { trackLead } from "@/lib/track-lead";
-import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData } from "@/lib/analytics";
+import { tikTokEvent, metaEvent, googleAdsConversion, setGoogleAdsUserData, reportCourseRegisterConversion, gaEvent } from "@/lib/analytics";
 import { SEO } from "@/components/SEO";
 import { siteUrl } from "@/lib/site-url";
 import { logUserActivity } from "@/lib/user-activity";
@@ -514,6 +514,7 @@ export default function CourseDetail() {
   });
 
   const handleAddToCart = () => {
+    reportCourseRegisterConversion();
     if (!user) { requestSignup("cart"); return; }
     if (courseId) {
       addToCart(courseId);
@@ -532,7 +533,7 @@ export default function CourseDetail() {
         value: Number(course?.price ?? 0),
         currency: "NGN",
       });
-      googleAdsConversion("AddToCart", {
+      gaEvent("add_to_cart", {
         value: Number(course?.price ?? 0),
         currency: "NGN",
         items: [{ id: courseId, name: course?.title }],
@@ -969,6 +970,7 @@ export default function CourseDetail() {
                         size="lg"
                         className="w-full gap-2"
                         onClick={() => {
+                          reportCourseRegisterConversion();
                           if (!user) {
                             requestSignup("register");
                             return;
