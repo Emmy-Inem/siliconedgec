@@ -33,3 +33,4 @@
 - Load code-split pages through the shared retrying loader with a time-guarded single reload, so stale deployments recover without reload loops.
 - Enquiry alerts are claimed atomically per enquiry with a deterministic message id and record their outcome on the enquiry; only administrators may retry, and only after a failed attempt, so repeated requests never duplicate alerts.
 - Course registration GA4 events fire only from the course Register CTA (course id only) and from the shared confirmed-save path for new non-test rows, once per submission id; keeps registration analytics separate from signup and payment.
+- Register click Ads reporting uses the existing tag with explicit Ads consent and an exact configured action label, without submission events or enhanced user data; missing labels must never send account-level conversions.

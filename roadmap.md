@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Add minimal Register-click Ads wiring to the shared course CTA, preserving the modal and separate GA4/submission events. All three preview courses open their forms and produce one isolated fixture conversion per click, zero on load; missing-label form works; 40 focused tests pass and preview build OK. Live pages currently send GA4 click only; no test conversions transmitted.
+- [ ] Activate the exact existing Register-click Ads action and verify published receipt (blocker: action label absent from code and saved settings; project Google Ads account read unavailable; awaiting full action send_to snippet and publication review). Signed-in browser checks remain unperformed. Do not publish unrelated drafts.
+
 - [x] Add Register beside Add to cart on all five paid courses using private course leads and the existing follow-up pipeline; paid lesson access unchanged. Browser confirmed saved test status/course/contact details and adjacent buttons at 390px; 21 focused tests pass, preview build OK. Notification emails remain blocked by existing sender DNS setup; no publication.
 
 - [x] Apply 12-hour automatic refresh to all nine existing administrator polling-report pages; preserve manual refresh/save invalidation and avoid persistent private caches. Added visitor date index: identical 1,000-row lookup measured 779.724 ms before and 1.087 ms after. 52 files / 289 tests pass; preview build OK. Account/payment services and weekly backups unchanged.

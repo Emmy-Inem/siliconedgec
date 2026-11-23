@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GOOGLE_ADS_EVENTS, googleAdsConversion, gaSetUserId, metaEvent } from "./analytics";
+import { GOOGLE_ADS_EVENTS, googleAdsConversion, googleAdsCourseRegisterClick, gaSetUserId, metaEvent } from "./analytics";
 
 beforeEach(() => {
   localStorage.clear();
@@ -8,6 +8,47 @@ beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => {});
 });
 afterEach(() => { delete window.gtag; delete window.fbq; delete window.__gadsLabelOverrides; vi.restoreAllMocks(); });
+
+describe("Course Register click conversion", () => {
+  beforeEach(() => {
+    localStorage.setItem("se_cookie_consent", "all");
+    window.__seConsent = { ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted", analytics_storage: "granted", source: "user", updated_at: 123 };
+    // Test fixture only; never installed as the production label.
+    window.__gadsLabelOverrides = { CourseRegisterClick: "fixture_click_label" };
+  });
+  afterEach(() => { delete window.__seConsent; });
+  it.each(["3b1f29ec-8fd4-4ff0-9357-1987b90e6c91", "a11b0001-1111-4000-8000-000000000001", "130b215d-8f37-41d4-8dc2-837a92e1b58c"])("sends one conversion with only course identity for %s", (id) => {
+    localStorage.setItem("sec_utm_params", JSON.stringify({ utm_term: "private@example.com" }));
+    expect(window.gtag).not.toHaveBeenCalled();
+    googleAdsCourseRegisterClick(id);
+    expect(window.gtag).toHaveBeenCalledTimes(1);
+    expect(window.gtag).toHaveBeenCalledWith("event", "conversion", {
+      send_to: "AW-18126380202/fixture_click_label", course_id: id, user_data: {}, transport_type: "beacon",
+    });
+  });
+  it("never guesses a missing label or sends to the account alone", () => {
+    delete window.__gadsLabelOverrides;
+    googleAdsCourseRegisterClick("course-id");
+    expect(window.gtag).not.toHaveBeenCalled();
+  });
+  it.each(["essential", "analytics", ""])("blocks without advertising acceptance: %s", (choice) => {
+    localStorage.setItem("se_cookie_consent", choice);
+    googleAdsCourseRegisterClick("course-id");
+    expect(window.gtag).not.toHaveBeenCalled();
+  });
+  it("honours withdrawal", () => {
+    if (window.__seConsent) window.__seConsent.ad_storage = "denied";
+    googleAdsCourseRegisterClick("course-id");
+    expect(window.gtag).not.toHaveBeenCalled();
+  });
+  it("queues one event without throwing when the tag is unavailable", () => {
+    delete window.gtag;
+    window.dataLayer = [];
+    expect(() => googleAdsCourseRegisterClick("course-id")).not.toThrow();
+    expect(window.dataLayer).toHaveLength(1);
+    expect(window.dataLayer?.[0][1]).toBe("conversion");
+  });
+});
 
 it("sets GA identity without invalid Meta setters or duplicate pixel initialization", () => {
   window.fbq = vi.fn();

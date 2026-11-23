@@ -340,6 +340,8 @@ export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
  * with the string after the `/` in the snippet (e.g. "abcDEF123").
  */
 export const GOOGLE_ADS_EVENTS = {
+  // Existing "SEC - Course Register button clicked" action: exact label required.
+  CourseRegisterClick:    { label: null as string | null, gaName: "course_register_click" },
   // Webinar / contact / business lead form submissions
   Lead:                  { label: "uD3NCJDwybcdEKq5qsND" as string | null, gaName: "generate_lead" },
   // "Enroll Now" / "Add to cart" intent click on a course
@@ -355,6 +357,27 @@ export const GOOGLE_ADS_EVENTS = {
 } as const;
 
 export type GoogleAdsEventKey = keyof typeof GOOGLE_ADS_EVENTS;
+
+/** Register intent only. Reuse the banner's Ads permission and tag queue,
+ * never replay blocked clicks or attach submission/UTM/enhanced user data.
+ * The modal opens synchronously, so no navigation wait is needed.
+ */
+export function googleAdsCourseRegisterClick(courseId: string) {
+  if (typeof window === "undefined" || !courseId) return;
+  if ((navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl) return;
+  if (localStorage.getItem("se_cookie_consent") !== "all" ||
+      getConsentState()?.ad_storage !== "granted" ||
+      getConsentState()?.ad_user_data !== "granted") return;
+  const label = (window.__gadsLabelOverrides?.CourseRegisterClick || GOOGLE_ADS_EVENTS.CourseRegisterClick.label)?.trim();
+  if (!label || !/^[A-Za-z0-9_-]+$/.test(label)) return;
+  safeGtag("event", "conversion", {
+    send_to: `${GOOGLE_ADS_ACCOUNT}/${label}`,
+    course_id: courseId,
+    // Override previously attached signup/enhanced-conversion data.
+    user_data: {},
+    transport_type: "beacon",
+  });
+}
 
 async function sha256Hex(input: string): Promise<string | null> {
   if (!input) return null;
