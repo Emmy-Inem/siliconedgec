@@ -15,7 +15,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { logUserActivity } from "@/lib/user-activity";
 import { trackLead } from "@/lib/track-lead";
 import { recordInfluencerConversion } from "@/lib/influencer-attribution";
-import { googleAdsConversion, setGoogleAdsUserData, tikTokEvent, metaEvent } from "@/lib/analytics";
+import { googleAdsConversion, setGoogleAdsUserData, tikTokEvent, metaEvent, reportCourseRegisterConversion } from "@/lib/analytics";
 import { getWhatsAppCommunityUrl } from "@/lib/whatsapp";
 
 const schema = z.object({
@@ -136,6 +136,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
       }
 
       // ───── Pixel conversions FIRST (before awaited DB writes) ─────
+      reportCourseRegisterConversion();
       // iOS Safari + in-app WebViews can drop in-flight requests if the
       // user navigates / closes the modal during the awaited inserts. By
       // firing pixels here we guarantee the conversion beacons leave the
