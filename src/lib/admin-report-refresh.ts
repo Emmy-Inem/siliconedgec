@@ -1,5 +1,5 @@
 /** In-memory report caching only; explicit refreshes and save invalidations still fetch. */
-export const ADMIN_REPORT_REFRESH_MS = 12 * 60 * 60 * 1000;
+export const ADMIN_REPORT_REFRESH_MS = 24 * 60 * 60 * 1000;
 
 export const adminReportRefresh = {
   refetchInterval: ADMIN_REPORT_REFRESH_MS,

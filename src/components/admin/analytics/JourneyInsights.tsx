@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Sparkles, Square } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -10,7 +11,7 @@ import { JourneyAnalytics, journeyPageLabel, reachPercent } from "@/lib/journey-
 export default function JourneyInsights({ range }: { range: { p_from: string; p_to: string } }) {
   const query = useQuery({
     queryKey: ["admin-journey-analytics", range.p_from, range.p_to],
-    staleTime: 300_000, refetchOnWindowFocus: false,
+    ...adminReportRefresh,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("admin_journey_analytics", range);
       if (error) throw error;

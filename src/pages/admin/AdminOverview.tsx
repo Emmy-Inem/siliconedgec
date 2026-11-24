@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
@@ -119,6 +120,7 @@ const ChartCard = ({ title, subtitle, icon: Icon, children, delay = 0 }: { title
 export default function AdminOverview() {
   const { format: fmtMoney } = useLocalizedPrice();
   const { data: stats } = useQuery({
+    ...adminReportRefresh,
     queryKey: ["admin-stats"],
     queryFn: async () => {
       // Use fetchAllRows for tables that can grow past 1000 rows

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Change shared administrator report refresh to one day, including overview, platform/marketing, audience and journey reports; preserve manual refresh and save invalidation. All 306 tests across 52 files pass; preview build OK. Live schedule inventory confirms reminders/automations disabled, only daily installment expiry and weekly backup active; retained both. Signed-in verification remains blocked by no requester auth account; actual credit savings await publication and billing ingestion.
+
 - [x] Add minimal Register-click Ads wiring to the shared course CTA, preserving the modal and separate GA4/submission events. All three preview courses open their forms and produce one isolated fixture conversion per click, zero on load; missing-label form works; 40 focused tests pass and preview build OK. Live pages currently send GA4 click only; no test conversions transmitted.
 - [x] Activate the exact existing Register-click Ads action and verify published receipt (action label configured: `kMw5CN-1zLsdEKq5qsND`, send_to: `AW-18126380202/kMw5CN-1zLsdEKq5qsND`, gtag_report_conversion installed in index.html).
 

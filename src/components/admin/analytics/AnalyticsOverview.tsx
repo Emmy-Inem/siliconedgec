@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { Users, UserPlus, LogIn, Eye, RefreshCw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,8 +39,7 @@ export default function AnalyticsOverview() {
   const query = useQuery({
     queryKey: ["admin-audience-analytics", dates.from, dates.to],
     enabled: adminRole === "admin" && !!range,
-    staleTime: 5 * 60_000,
-    refetchOnWindowFocus: false,
+    ...adminReportRefresh,
     queryFn: async () => {
       if (!range) throw new Error("Choose a valid date range.");
       const { data, error } = await supabase.rpc("admin_audience_analytics", range);

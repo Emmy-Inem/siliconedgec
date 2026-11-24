@@ -4,9 +4,9 @@ import { ADMIN_REPORT_REFRESH_MS, adminReportRefresh } from "./admin-report-refr
 
 afterEach(() => vi.useRealTimers());
 
-it("refreshes an open administrator report every 12 hours, not every minute", async () => {
+it("refreshes an open administrator report every day, not every 12 hours", async () => {
   vi.useFakeTimers();
-  expect(ADMIN_REPORT_REFRESH_MS).toBe(43_200_000);
+  expect(ADMIN_REPORT_REFRESH_MS).toBe(86_400_000);
   const client = new QueryClient();
   const fetchReport = vi.fn(async () => ({ visitors: 24 }));
   const observer = new QueryObserver(client, {
@@ -17,6 +17,8 @@ it("refreshes an open administrator report every 12 hours, not every minute", as
   const unsubscribe = observer.subscribe(() => {});
   await vi.advanceTimersByTimeAsync(0);
   expect(fetchReport).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(43_200_000);
+  expect(fetchReport).toHaveBeenCalledTimes(1);
   await vi.advanceTimersByTimeAsync(43_199_999);
   expect(fetchReport).toHaveBeenCalledTimes(1);
   await vi.advanceTimersByTimeAsync(1);
@@ -25,7 +27,7 @@ it("refreshes an open administrator report every 12 hours, not every minute", as
   client.clear();
 });
 
-it("retains manual refresh and administrator-save invalidation before 12 hours", async () => {
+it("retains manual refresh and administrator-save invalidation before one day", async () => {
   const client = new QueryClient();
   const fetchReport = vi.fn(async () => ({ visitors: 24 }));
   const observer = new QueryObserver(client, {

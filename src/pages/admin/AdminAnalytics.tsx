@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllRows } from "@/lib/fetch-all";
 import { isPaidEnrollment, isFreeEnrollment } from "@/lib/analytics-helpers";
@@ -200,7 +201,7 @@ export default function AdminAnalytics() {
 
       return { totalCourses: courses.length, totalUsers: profiles.length, totalEnrollments: enrollments.length, totalEstRevenue, totalPromoRevenue, totalCommission, totalDiscount, completionRate, avgProgress, paidCount: paidEnrollments.length, freeCount: freeEnrollments.length, monthlyData, difficultyData, catRevenueData, topCourses, topPromos, perCourseCompletion, cohortRevenueData };
     },
-    staleTime: 60_000,
+    ...adminReportRefresh,
     retry: 1,
   });
 

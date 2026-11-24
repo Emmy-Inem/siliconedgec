@@ -1,6 +1,7 @@
 import { CustomDateRange, inCustomRange } from "@/components/admin/CustomDateRange";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { adminReportRefresh } from "@/lib/admin-report-refresh";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
@@ -69,7 +70,7 @@ export default function AdminMarketingAnalytics() {
       const cols = "id, user_id, utm_source, utm_medium, utm_campaign, utm_content, landing_page, referrer, form_type, created_at, form_data";
       return await fetchAllRows<any>("lead_sources", cols, { pageSize: 1000, max: 10000 });
     },
-    staleTime: 60_000,
+    ...adminReportRefresh,
     retry: 1,
   });
 
@@ -78,7 +79,7 @@ export default function AdminMarketingAnalytics() {
     queryFn: async () => {
       return await fetchAllRows<any>("enrollments", "id, payment_status, created_at, course_id", { pageSize: 1000, max: 10000 });
     },
-    staleTime: 60_000,
+    ...adminReportRefresh,
     retry: 1,
   });
 
