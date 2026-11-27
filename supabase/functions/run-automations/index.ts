@@ -46,15 +46,15 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
       return { subject: `You're enrolled in ${t}`, title: "Enrolment confirmed", lines: [`Hi ${name}, your place on <strong>${t}</strong> is confirmed.`], cta: { label: "Start learning", url: `${SITE}/dashboard` } };
     }
     case "first_lesson_completed":
-      return { subject: "Great start — first lesson done", title: "You're off the mark", lines: [`Nice work ${name}, you completed your first lesson. Keep the streak going.`], cta: { label: "Continue", url: `${SITE}/dashboard` } };
+      return { subject: "Great start - first lesson done", title: "You're off the mark", lines: [`Nice work ${name}, you completed your first lesson. Keep the streak going.`], cta: { label: "Continue", url: `${SITE}/dashboard` } };
     case "certificate_ready":
       return { subject: "🎓 Your certificate is ready", title: "Congratulations!", lines: [`You've completed your programme, ${name}. Your certificate is ready to download.`, payload?.verification_code ? `Verification code: <code>${payload.verification_code}</code>` : ""].filter(Boolean), cta: { label: "View certificate", url: `${SITE}/certificates` } };
     case "cohort_access_granted":
-      return { subject: "You've been added to a cohort", title: "Welcome to your cohort", lines: [`Hi ${name}, you now have access to your cohort space — live sessions, discussions and materials live there.`], cta: { label: "Open cohort space", url: `${SITE}/cohorts` } };
+      return { subject: "You've been added to a cohort", title: "Welcome to your cohort", lines: [`Hi ${name}, you now have access to your cohort space - live sessions, discussions and materials live there.`], cta: { label: "Open cohort space", url: `${SITE}/cohorts` } };
     case "first_assignment_submitted":
-      return { subject: "Assignment submitted", title: "Submission received", lines: [`Thanks ${name} — your assignment is in and your instructor will grade it shortly.`], cta: { label: "View assignments", url: `${SITE}/dashboard` } };
+      return { subject: "Assignment submitted", title: "Submission received", lines: [`Thanks ${name} - your assignment is in and your instructor will grade it shortly.`], cta: { label: "View assignments", url: `${SITE}/dashboard` } };
     case "assignment_graded":
-      return { subject: "Your assignment has been graded", title: "Feedback is ready", lines: [`Hi ${name}, your instructor graded your assignment${payload?.grade != null ? ` — score: <strong>${payload.grade}</strong>` : ""}.`], cta: { label: "See feedback", url: `${SITE}/dashboard` } };
+      return { subject: "Your assignment has been graded", title: "Feedback is ready", lines: [`Hi ${name}, your instructor graded your assignment${payload?.grade != null ? ` - score: <strong>${payload.grade}</strong>` : ""}.`], cta: { label: "See feedback", url: `${SITE}/dashboard` } };
 
     // ---------- commerce ----------
     case "cart_added": {
@@ -66,7 +66,7 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
     case "purchase_confirmed": {
       const t = await courseTitle(payload?.course_id);
       return {
-        subject: `Payment received — ${t}`,
+        subject: `Payment received - ${t}`,
         title: "Thank you for your purchase",
         lines: [
           `Hi ${name}, we've received your payment of <strong>${money(payload?.amount, payload?.currency)}</strong> for <strong>${t}</strong>.`,
@@ -77,10 +77,10 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
     }
     case "payment_failed": {
       const t = await courseTitle(payload?.course_id);
-      return { subject: "Your payment didn't go through", title: "Payment unsuccessful", lines: [`Hi ${name}, your payment for <strong>${t}</strong> was not completed. No money has left your account — you can try again any time.`], cta: { label: "Try again", url: `${SITE}/courses` } };
+      return { subject: "Your payment didn't go through", title: "Payment unsuccessful", lines: [`Hi ${name}, your payment for <strong>${t}</strong> was not completed. No money has left your account - you can try again any time.`], cta: { label: "Try again", url: `${SITE}/courses` } };
     }
     case "installment_due":
-      return { subject: "Your next instalment is due soon", title: "Instalment reminder", lines: [`Hi ${name}, your next instalment${payload?.due_date ? ` is due on <strong>${payload.due_date}</strong>` : " is due soon"}${payload?.balance != null ? ` — outstanding balance ${money(payload.balance)}` : ""}. Keeping payments current keeps your course access active.`], cta: { label: "View my plan", url: `${SITE}/account` } };
+      return { subject: "Your next instalment is due soon", title: "Instalment reminder", lines: [`Hi ${name}, your next instalment${payload?.due_date ? ` is due on <strong>${payload.due_date}</strong>` : " is due soon"}${payload?.balance != null ? ` - outstanding balance ${money(payload.balance)}` : ""}. Keeping payments current keeps your course access active.`], cta: { label: "View my plan", url: `${SITE}/account` } };
 
     // ---------- learning ----------
     case "lesson_unlocked": {
@@ -102,7 +102,7 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
 
     // ---------- partner programme ----------
     case "affiliate_application_received":
-      return { subject: "We received your partner application", title: "Application received", lines: [`Thanks ${name} — your partner application is in review. We usually respond within two working days.`], cta: { label: "Visit the partner page", url: `${SITE}/career` } };
+      return { subject: "We received your partner application", title: "Application received", lines: [`Thanks ${name} - your partner application is in review. We usually respond within two working days.`], cta: { label: "Visit the partner page", url: `${SITE}/career` } };
     case "affiliate_approved":
       return { subject: "You're approved as a Silicon Edge partner", title: "Welcome to the partner programme", lines: [`Congratulations ${name}! Your partner account is live${payload?.code ? ` and your referral code is <code>${payload.code}</code>` : ""}. Head to your dashboard to build links and track earnings.`], cta: { label: "Open partner dashboard", url: `${SITE}/partner` } };
     case "affiliate_declined":
@@ -113,7 +113,7 @@ async function build(key: string, payload: any, name: string): Promise<Built | n
     }
     case "affiliate_conversion": {
       const t = await courseTitle(payload?.course_id);
-      return { subject: "You earned a commission", title: "New conversion", lines: [`Nice work ${name} — someone bought <strong>${t}</strong> through your link. Commission earned: <strong>${money(payload?.commission)}</strong>.`], cta: { label: "See your earnings", url: `${SITE}/partner` } };
+      return { subject: "You earned a commission", title: "New conversion", lines: [`Nice work ${name} - someone bought <strong>${t}</strong> through your link. Commission earned: <strong>${money(payload?.commission)}</strong>.`], cta: { label: "See your earnings", url: `${SITE}/partner` } };
     }
     case "payout_requested":
       return { subject: "Payout request received", title: "We're on it", lines: [`Hi ${name}, we've received your payout request for <strong>${money(payload?.amount)}</strong>. You'll get another email once it's paid.`], cta: { label: "View payouts", url: `${SITE}/partner` } };

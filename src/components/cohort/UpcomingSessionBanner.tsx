@@ -55,7 +55,7 @@ export default function UpcomingSessionBanner({ cohortId, userId }: { cohortId: 
       .upsert({ session_id: session.id, user_id: userId, status: "going" }, { onConflict: "session_id,user_id" });
     if (error) return toast.error(error.message);
     setRsvp("going");
-    toast.success("You're in — we'll remind you.");
+    toast.success("You're in - we'll remind you.");
   };
 
   const isLive = new Date(session.scheduled_at).getTime() - Date.now() < 5 * 60 * 1000;

@@ -37,7 +37,7 @@ export default function ForgotPassword() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (resetError) {
-      // Don't leak whether the email exists — keep the same success UX
+      // Don't leak whether the email exists - keep the same success UX
       // and only surface unexpected errors via toast.
       toast({ title: "Could not send link", description: resetError.message, variant: "destructive" });
       return;

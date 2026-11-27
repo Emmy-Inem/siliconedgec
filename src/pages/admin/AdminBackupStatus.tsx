@@ -22,7 +22,7 @@ interface BackupRun {
 }
 
 function bytes(n: number | null) {
-  if (!n) return "—";
+  if (!n) return "-";
   const units = ["B", "KB", "MB", "GB"];
   let v = n; let i = 0;
   while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
@@ -84,7 +84,7 @@ export default function AdminBackupStatus() {
         </div>
         <div className="rounded-2xl border border-border p-4 bg-card">
           <div className="flex items-center gap-2 text-xs text-muted-foreground"><Database className="h-3.5 w-3.5" /> Last success rows</div>
-          <p className="font-heading text-lg mt-1">{lastSuccess?.total_rows?.toLocaleString() ?? "—"}</p>
+          <p className="font-heading text-lg mt-1">{lastSuccess?.total_rows?.toLocaleString() ?? "-"}</p>
           <p className="text-xs text-muted-foreground mt-1">{lastSuccess?.tables_backed_up ?? 0} tables</p>
         </div>
         <div className="rounded-2xl border border-border p-4 bg-card">

@@ -28,8 +28,8 @@ const ROLE_BADGE: Record<string, { icon: typeof Shield; class: string; label: st
 };
 
 const columns: Column<ProfileWithRole>[] = [
-  { key: "full_name", label: "Name", render: (p) => p.full_name || "—" },
-  { key: "email", label: "Email", render: (p) => <span className="text-xs">{p.email || "—"}</span> },
+  { key: "full_name", label: "Name", render: (p) => p.full_name || "-" },
+  { key: "email", label: "Email", render: (p) => <span className="text-xs">{p.email || "-"}</span> },
   { key: "user_id", label: "User ID", render: (p) => <span className="font-mono text-xs">{p.user_id.slice(0, 8)}...</span> },
   {
     key: "role", label: "Role", render: (p) => {
@@ -42,7 +42,7 @@ const columns: Column<ProfileWithRole>[] = [
       );
     }
   },
-  { key: "bio", label: "Bio", render: (p) => <span className="line-clamp-1 max-w-xs">{p.bio || "—"}</span> },
+  { key: "bio", label: "Bio", render: (p) => <span className="line-clamp-1 max-w-xs">{p.bio || "-"}</span> },
   { key: "created_at", label: "Joined", render: (p) => new Date(p.created_at).toLocaleDateString() },
 ];
 

@@ -109,7 +109,7 @@ export function GoogleCalendarConnect() {
               Connected{row.google_email ? ` as ${row.google_email}` : ""} · live classes appear in your calendar automatically.
             </p>
           ) : (
-            <p className="text-xs text-muted-foreground">Connect once — every live class for your courses will be added to your Google Calendar with reminders.</p>
+            <p className="text-xs text-muted-foreground">Connect once - every live class for your courses will be added to your Google Calendar with reminders.</p>
           )}
         </div>
       </div>

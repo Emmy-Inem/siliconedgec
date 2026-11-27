@@ -152,7 +152,7 @@ export default function AdminHelp() {
               <div>
                 <Label>Category</Label>
                 <select className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" value={editing.category_id ?? ""} onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}>
-                  <option value="">— No category —</option>
+                  <option value="">- No category -</option>
                   {(cats ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.title}</option>)}
                 </select>
               </div>

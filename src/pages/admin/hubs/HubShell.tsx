@@ -45,7 +45,7 @@ export function HubShell({ title, description, tabs, defaultTab }: Props) {
 
   const handleChange = (value: string) => {
     if (!isValid(value)) return;
-    setActive(value); // immediate UI update — critical for mobile taps
+    setActive(value); // immediate UI update - critical for mobile taps
     if (lastSyncedRef.current === value) return;
     lastSyncedRef.current = value;
     const next = new URLSearchParams(params);

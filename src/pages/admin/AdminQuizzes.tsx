@@ -239,7 +239,7 @@ export default function AdminQuizzes({ courseId }: { courseId?: string } = {}) {
 
   const columns: Column<Quiz>[] = [
     { key: "title", label: "Quiz Title" },
-    { key: "lesson_id", label: "Lesson", render: (q) => <span className="text-xs">{(q.lessons as any)?.title || "—"}</span> },
+    { key: "lesson_id", label: "Lesson", render: (q) => <span className="text-xs">{(q.lessons as any)?.title || "-"}</span> },
     { key: "passing_score", label: "Passing Score", render: (q) => <Badge variant="secondary">{q.passing_score}%</Badge> },
     {
       key: "is_visible",

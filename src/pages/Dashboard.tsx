@@ -100,7 +100,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) {
       // Public Access Mode renders this page for signed-out visitors (see
-      // the !user && !publicAccess redirect below) — there's no per-user
+      // the !user && !publicAccess redirect below) - there's no per-user
       // data to fetch, but `fetching` must still resolve or the page is
       // stuck on "Loading your courses…" forever.
       setFetching(false);
@@ -226,7 +226,7 @@ export default function Dashboard() {
     e.payment_status === "free" ||
     webinarRegCourseIds.has(e.course_id) ||
     (e.course?.title ?? "").toUpperCase().startsWith("FREE");
-  // Favorited (bookmarked) courses float to the top of every list — that's
+  // Favorited (bookmarked) courses float to the top of every list - that's
   // the "favorite" contract now that the standalone header link is gone.
   const favIds = new Set(bookmarks.map((b) => b.course_id));
   const favFirst = <T extends { course_id: string }>(arr: T[]) =>
@@ -353,7 +353,7 @@ export default function Dashboard() {
                                             hour: "numeric",
                                             minute: "2-digit",
                                           })
-                                        : "Schedule TBA — we'll notify you"}
+                                        : "Schedule TBA - we'll notify you"}
                                     </p>
                                     <Button size="sm" className="w-full gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white" asChild>
                                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
@@ -428,7 +428,7 @@ export default function Dashboard() {
 
                     {completed.length > 0 && (
                       <div>
-                        <h2 className="font-heading text-xl font-bold mb-4">Completed — Certificates</h2>
+                        <h2 className="font-heading text-xl font-bold mb-4">Completed - Certificates</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {completed.map((enroll, i) => (
                             <motion.div key={enroll.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
@@ -633,7 +633,7 @@ export default function Dashboard() {
                   <div className="space-y-3">
                     {applications.map((app, i) => {
                       // Keep in sync with the STATUSES list in AdminJobApplications.tsx
-                      // — that's the source of truth for what an application's
+                      // - that's the source of truth for what an application's
                       // status can actually be set to.
                       const statusColor: Record<string, string> = {
                         submitted: "bg-blue-500/10 text-blue-600",

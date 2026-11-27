@@ -104,7 +104,7 @@ export function QuizQuestionsDialog({ lesson, onClose }: { lesson: LessonRef; on
         {quizzes.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6">
             No quiz exists on this lesson yet. Close this dialog, open the lesson, and use the Quiz
-            form to create one — you can add questions there too.
+            form to create one - you can add questions there too.
           </p>
         ) : (
           <div className="space-y-4">

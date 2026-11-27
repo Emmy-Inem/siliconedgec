@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
 
     const messages = Array.isArray(rawMessages) ? rawMessages.filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string").slice(-16).map(m => ({ role: m.role, content: m.content.slice(0, 4000) })) : [];
 
-    // Explicit "talk to a human" — no model call needed.
+    // Explicit "talk to a human" - no model call needed.
     if (requestHuman) {
       if (!userId) return new Response(JSON.stringify({ whatsappUrl: "https://wa.me/447741247592" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       const transcript = (messages ?? []).slice(-12).map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
 
     if (!upstream.ok || !upstream.body) {
       await releaseGuestQuestion();
-      if (upstream.status === 429) return new Response(JSON.stringify({ error: "Too many requests — please try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (upstream.status === 429) return new Response(JSON.stringify({ error: "Too many requests - please try again in a moment." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (upstream.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Our team has been notified." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       console.error("[ai-support] upstream", upstream.status, await upstream.text());
       return new Response(JSON.stringify({ error: "Assistant unavailable, please try again." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

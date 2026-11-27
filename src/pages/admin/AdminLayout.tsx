@@ -18,7 +18,7 @@ export default function AdminLayout() {
   // Eagerly load the permission matrix so canAccessRoute reflects DB edits.
   useRolePermissions();
 
-  // Reset main content scroll on route change. Do NOT scroll the sidebar —
+  // Reset main content scroll on route change. Do NOT scroll the sidebar -
   // it should preserve the admin's place in the navigation.
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });

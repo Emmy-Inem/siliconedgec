@@ -24,12 +24,12 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
   {
     id: "hero",
     title: "Hero Section",
-    description: "Top of the home page — first impression for visitors.",
+    description: "Top of the home page - first impression for visitors.",
     fields: [
       { key: "home_hero_eyebrow", label: "Eyebrow text", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.hero_eyebrow },
-      { key: "home_hero_title_pre", label: "Headline — opening line", type: "input", help: 'First line of the big hero headline (was "The edge to").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_pre },
-      { key: "home_hero_title_post", label: "Headline — closing line", type: "input", help: 'Last line under the rotating word (was "your tech career").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_post },
-      { key: "home_typewriter_words", label: "Rotating typewriter words", type: "textarea", help: "Comma-separated. Each word types out, pauses, then deletes — replace with whatever skills you teach.", defaultVal: HOME_CONTENT_DEFAULTS.typewriter_words.join(", ") },
+      { key: "home_hero_title_pre", label: "Headline - opening line", type: "input", help: 'First line of the big hero headline (was "The edge to").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_pre },
+      { key: "home_hero_title_post", label: "Headline - closing line", type: "input", help: 'Last line under the rotating word (was "your tech career").', defaultVal: HOME_CONTENT_DEFAULTS.hero_title_post },
+      { key: "home_typewriter_words", label: "Rotating typewriter words", type: "textarea", help: "Comma-separated. Each word types out, pauses, then deletes - replace with whatever skills you teach.", defaultVal: HOME_CONTENT_DEFAULTS.typewriter_words.join(", ") },
       { key: "home_hero_subtitle", label: "Subtitle / tagline", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.hero_subtitle },
       { key: "home_hero_cta_primary", label: "Primary CTA label", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.hero_cta_primary },
       { key: "home_hero_cta_secondary", label: "Secondary CTA label", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.hero_cta_secondary },
@@ -72,7 +72,7 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "Heading above the bento grid that explains your value proposition.",
     fields: [
       { key: "home_why_eyebrow", label: "Eyebrow text", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.why_eyebrow },
-      { key: "home_why_title", label: "Heading", type: "input", help: "Plain text — gradient styling is applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.why_title },
+      { key: "home_why_title", label: "Heading", type: "input", help: "Plain text - gradient styling is applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.why_title },
       { key: "home_why_description", label: "Description (optional)", type: "textarea", help: "Shown directly under the heading. Leave blank to hide.", defaultVal: "" },
     ],
   },
@@ -92,15 +92,15 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "The 4-step scroll-driven timeline. Step icons stay the same; only the text is editable.",
     fields: [
       { key: "home_how_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_eyebrow },
-      { key: "home_how_title", label: "Section heading", type: "input", help: "Plain text — gradient styling is applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.how_title },
-      { key: "home_how_step1_title", label: "Step 1 — Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step1_title },
-      { key: "home_how_step1_desc", label: "Step 1 — Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step1_desc },
-      { key: "home_how_step2_title", label: "Step 2 — Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step2_title },
-      { key: "home_how_step2_desc", label: "Step 2 — Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step2_desc },
-      { key: "home_how_step3_title", label: "Step 3 — Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step3_title },
-      { key: "home_how_step3_desc", label: "Step 3 — Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step3_desc },
-      { key: "home_how_step4_title", label: "Step 4 — Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step4_title },
-      { key: "home_how_step4_desc", label: "Step 4 — Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step4_desc },
+      { key: "home_how_title", label: "Section heading", type: "input", help: "Plain text - gradient styling is applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.how_title },
+      { key: "home_how_step1_title", label: "Step 1 - Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step1_title },
+      { key: "home_how_step1_desc", label: "Step 1 - Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step1_desc },
+      { key: "home_how_step2_title", label: "Step 2 - Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step2_title },
+      { key: "home_how_step2_desc", label: "Step 2 - Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step2_desc },
+      { key: "home_how_step3_title", label: "Step 3 - Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step3_title },
+      { key: "home_how_step3_desc", label: "Step 3 - Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step3_desc },
+      { key: "home_how_step4_title", label: "Step 4 - Title", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.how_step4_title },
+      { key: "home_how_step4_desc", label: "Step 4 - Description", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.how_step4_desc },
     ],
   },
   {
@@ -109,7 +109,7 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "Heading above the horizontal scrolling instructor cards.",
     fields: [
       { key: "home_instructors_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.instructors_eyebrow },
-      { key: "home_instructors_title", label: "Heading", type: "input", help: "Plain text — gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.instructors_title },
+      { key: "home_instructors_title", label: "Heading", type: "input", help: "Plain text - gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.instructors_title },
     ],
   },
   {
@@ -128,7 +128,7 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "Heading above the vertical scrolling testimonial columns. The actual reviews are managed under Content Hub → Testimonials.",
     fields: [
       { key: "home_testimonials_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.testimonials_eyebrow },
-      { key: "home_testimonials_title", label: "Heading", type: "input", help: "Plain text — gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.testimonials_title },
+      { key: "home_testimonials_title", label: "Heading", type: "input", help: "Plain text - gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.testimonials_title },
       {
         key: "home_testimonial_speed",
         label: "Scroll speed",
@@ -146,7 +146,7 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
   {
     id: "faq",
     title: "FAQ Section Header",
-    description: "Heading above the FAQ accordion. (To edit individual Q&A items, use the codebase — they aren't yet stored in the database.)",
+    description: "Heading above the FAQ accordion. (To edit individual Q&A items, use the codebase - they aren't yet stored in the database.)",
     fields: [
       { key: "home_faq_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.faq_eyebrow },
       { key: "home_faq_title", label: "Heading", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.faq_title },
@@ -159,7 +159,7 @@ const SECTIONS: { id: string; title: string; description: string; fields: Field[
     description: "The big purple block at the bottom of the home page.",
     fields: [
       { key: "home_cta_eyebrow", label: "Eyebrow", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.cta_eyebrow },
-      { key: "home_cta_title", label: "Heading", type: "input", help: "Plain text — gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.cta_title },
+      { key: "home_cta_title", label: "Heading", type: "input", help: "Plain text - gradient styling applied automatically.", defaultVal: HOME_CONTENT_DEFAULTS.cta_title },
       { key: "home_cta_subtitle", label: "Subtitle", type: "textarea", defaultVal: HOME_CONTENT_DEFAULTS.cta_subtitle },
       { key: "home_cta_primary", label: "Primary button label", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.cta_primary },
       { key: "home_cta_secondary", label: "Secondary button label", type: "input", defaultVal: HOME_CONTENT_DEFAULTS.cta_secondary },

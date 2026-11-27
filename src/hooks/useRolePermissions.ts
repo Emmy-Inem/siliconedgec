@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export function useRolePermissions() {
   const { user, adminRole } = useAuth();
   // Every staff role (including support, finance and content_editor) needs the
-  // matrix — route access for those roles lives only in role_permissions.
+  // matrix - route access for those roles lives only in role_permissions.
   const isStaff = Boolean(user && adminRole && ALL_STAFF_ROLES.includes(adminRole));
 
   return useQuery({

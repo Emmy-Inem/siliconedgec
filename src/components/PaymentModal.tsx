@@ -249,7 +249,7 @@ export function PaymentModal({ open, onOpenChange, courseId, courseTitle, price,
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {appliedPromo.code} — {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatLocalizedPrice(appliedPromo.discount_value)} off`}
+                    {appliedPromo.code} - {appliedPromo.discount_type === "percentage" ? `${appliedPromo.discount_value}% off` : `${formatLocalizedPrice(appliedPromo.discount_value)} off`}
                   </span>
                 </div>
                 <button onClick={removePromo} className="text-muted-foreground hover:text-foreground">

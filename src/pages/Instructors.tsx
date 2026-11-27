@@ -18,10 +18,10 @@ export default function Instructors() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Our Instructors — Meet Your Teaching Team" description="Meet the Silicon Edge Consulting instructors teaching cloud engineering, generative AI, cybersecurity, data engineering and software development." canonical="/instructors" />
+      <SEO title="Our Instructors - Meet Your Teaching Team" description="Meet the Silicon Edge Consulting instructors teaching cloud engineering, generative AI, cybersecurity, data engineering and software development." canonical="/instructors" />
       <Header />
 
-      {/* Hero — site-wide page hero pattern */}
+      {/* Hero - site-wide page hero pattern */}
       <section className="bg-secondary pt-header pb-10 md:pb-14 border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 relative">
           <div className="max-w-3xl pt-6 md:pt-10">

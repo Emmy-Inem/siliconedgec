@@ -210,7 +210,7 @@ export default function Cart() {
     if (!termsAccepted) return;
     if (!user && !publicAccess) { navigate("/sign-in"); return; }
     if (!user && publicAccess) {
-      toast({ title: "Sign in to checkout", description: "Public access lets you browse — sign in to complete a purchase." });
+      toast({ title: "Sign in to checkout", description: "Public access lets you browse - sign in to complete a purchase." });
       navigate("/sign-in");
       return;
     }
@@ -447,7 +447,7 @@ export default function Cart() {
                         <div className="flex items-center gap-2 min-w-0">
                           <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                           <span className="text-sm font-medium truncate">
-                            {appliedPromo.code} — {appliedPromo.discount_type === "percentage"
+                            {appliedPromo.code} - {appliedPromo.discount_type === "percentage"
                               ? `${appliedPromo.discount_value}% off`
                               : `${formatPrice(appliedPromo.discount_value)} off`}
                           </span>

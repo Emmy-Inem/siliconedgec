@@ -81,7 +81,7 @@ export default function AdminAnalytics() {
 
       const courseMap = new Map(courses.map(c => [c.id, c]));
       // Real revenue = sum of paid orders (Paystack-verified). Never derive
-      // from enrollment counts × list price — that inflates the number
+      // from enrollment counts × list price - that inflates the number
       // because legacy event/promo enrollments carry a `paid` status without
       // a matching Paystack payment.
       const PAID_ORDER = new Set(["paid","success","completed","confirmed"]);
@@ -192,7 +192,7 @@ export default function AdminAnalytics() {
         .sort((a, b) => b.rate - a.rate);
 
       // Completion / progress metrics only meaningful for actual paid course
-      // learners — webinar `free` rows have no curriculum to complete.
+      // learners - webinar `free` rows have no curriculum to complete.
       const learnerEnrollments = paidEnrollments.length > 0 ? paidEnrollments : enrollments.filter(e => e.payment_status !== "free");
       const completedCount = learnerEnrollments.filter(e => e.is_completed).length;
       const completionRate = learnerEnrollments.length > 0 ? Math.round((completedCount / learnerEnrollments.length) * 100) : 0;

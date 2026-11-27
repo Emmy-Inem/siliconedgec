@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
               </div>
               <a href="${cls.meeting_url}" style="display:inline-block;padding:12px 22px;background:#a855f7;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;margin-right:8px">Join the class</a>
               <a href="${cal.gcalUrl}" style="display:inline-block;padding:12px 22px;background:#1e293b;border:1px solid #334155;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">📅 Add to Google Calendar</a>
-              <p style="font-size:12px;color:#94a3b8;margin-top:14px">An .ics calendar invite is attached — opening it adds the class to Apple Calendar, Outlook, or any calendar app.</p>
+              <p style="font-size:12px;color:#94a3b8;margin-top:14px">An .ics calendar invite is attached - opening it adds the class to Apple Calendar, Outlook, or any calendar app.</p>
               <p style="font-size:12px;color:#94a3b8;margin-top:24px">You'll also get a reminder 1 hour before the class begins.</p>
             </div>`,
             attachments: [{ filename: `${cls.title.replace(/[^a-z0-9]+/gi, "-")}.ics`, content: cal.b64 }],

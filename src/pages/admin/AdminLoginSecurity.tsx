@@ -245,7 +245,7 @@ export default function AdminLoginSecurity() {
           </div>
           <div>
             <h1 className="font-heading text-2xl font-bold">Login Security</h1>
-            <p className="text-sm text-muted-foreground">Failed sign-ins, locked accounts, IP intelligence — auto-refreshes every 12 hours</p>
+            <p className="text-sm text-muted-foreground">Failed sign-ins, locked accounts, IP intelligence - auto-refreshes every 12 hours</p>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -283,7 +283,7 @@ export default function AdminLoginSecurity() {
         </CardContent>
       </Card>
 
-      {/* Public Access Mode toggle — lets visitors browse without signing in */}
+      {/* Public Access Mode toggle - lets visitors browse without signing in */}
       <Card className={publicAccess ? "border-amber-500/40 bg-amber-500/5" : "border-border"}>
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
@@ -329,7 +329,7 @@ export default function AdminLoginSecurity() {
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="p-4">
             <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-3 flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4" /> Active lockouts ({lockedAccounts.length}) — ≥5 failures in 15 min
+              <ShieldAlert className="h-4 w-4" /> Active lockouts ({lockedAccounts.length}) - ≥5 failures in 15 min
             </p>
             <div className="flex flex-wrap gap-2">
               {lockedAccounts.map(([k, v]) => (
@@ -372,7 +372,7 @@ export default function AdminLoginSecurity() {
                   const fh = (b.fails / peakBucket) * 100;
                   const oh = (b.ok / peakBucket) * 100;
                   return (
-                    <div key={i} className="flex-1 flex flex-col-reverse items-center gap-0.5 group" title={`${b.label} — ok: ${b.ok}, fail: ${b.fails}`}>
+                    <div key={i} className="flex-1 flex flex-col-reverse items-center gap-0.5 group" title={`${b.label} - ok: ${b.ok}, fail: ${b.fails}`}>
                       <span className="text-[9px] text-muted-foreground hidden md:block">{i % 4 === 0 ? b.label : ""}</span>
                       <div className="w-full bg-primary/70 rounded-t transition-all group-hover:bg-primary" style={{ height: `${oh}%` }} />
                       <div className="w-full bg-destructive/80 rounded-t transition-all group-hover:bg-destructive" style={{ height: `${fh}%` }} />
@@ -468,7 +468,7 @@ export default function AdminLoginSecurity() {
                       return (
                         <TableRow key={b.id}>
                           <TableCell className="font-mono text-xs">{b.ip_address}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{b.reason ?? "—"}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-xs truncate">{b.reason ?? "-"}</TableCell>
                           <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(b.created_at).toLocaleString()}</TableCell>
                           <TableCell className="text-xs">
                             {b.expires_at ? (
@@ -533,9 +533,9 @@ export default function AdminLoginSecurity() {
                             {a.success ? "OK" : "FAIL"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">{a.email ?? "—"}</TableCell>
-                        <TableCell className="font-mono text-xs">{a.ip_address ?? "—"}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[280px] truncate">{a.user_agent ?? "—"}</TableCell>
+                        <TableCell className="text-sm">{a.email ?? "-"}</TableCell>
+                        <TableCell className="font-mono text-xs">{a.ip_address ?? "-"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-[280px] truncate">{a.user_agent ?? "-"}</TableCell>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(a.created_at).toLocaleString()}</TableCell>
                       </TableRow>
                     ))}
@@ -656,7 +656,7 @@ function BackupsCard() {
   })();
 
   const fmtSize = (b: number | null) => {
-    if (!b) return "—";
+    if (!b) return "-";
     if (b < 1024) return `${b} B`;
     if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
     return `${(b / 1024 / 1024).toFixed(2)} MB`;
@@ -737,8 +737,8 @@ function BackupsCard() {
                         {b.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-xs">{b.table_count ?? "—"}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-xs">{b.row_count?.toLocaleString() ?? "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-xs">{b.table_count ?? "-"}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-xs">{b.row_count?.toLocaleString() ?? "-"}</TableCell>
                     <TableCell className="text-xs">{fmtSize(b.size_bytes)}</TableCell>
                     <TableCell className="hidden md:table-cell text-xs capitalize">{b.triggered_by}</TableCell>
                     <TableCell className="text-right">
@@ -748,7 +748,7 @@ function BackupsCard() {
                           <FileArchive className="h-3 w-3" /> Drive
                         </a>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -761,7 +761,7 @@ function BackupsCard() {
         <p className="text-[11px] text-muted-foreground mt-3 flex items-start gap-1.5">
           <AlertTriangle className="h-3 w-3 mt-0.5 text-amber-500 shrink-0" />
           Snapshots include database rows for app tables. Authentication users, uploaded files,
-          and edge function code are not in the snapshot — code is restorable via Lovable's chat history.
+          and edge function code are not in the snapshot - code is restorable via Lovable's chat history.
         </p>
       </CardContent>
     </Card>

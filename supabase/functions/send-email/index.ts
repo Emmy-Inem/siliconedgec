@@ -27,7 +27,7 @@ interface EmailPayload {
 const FALLBACK_TEMPLATES: Record<string, { subject: string; body: string }> = {
   tpl_welcome: {
     subject: "Welcome to Silicon Edge!",
-    body: "Hi {{name}},\n\nWelcome aboard! Start exploring courses at {{site_url}}/courses.\n\n— The Silicon Edge Team",
+    body: "Hi {{name}},\n\nWelcome aboard! Start exploring courses at {{site_url}}/courses.\n\n- The Silicon Edge Team",
   },
   tpl_enrollment: {
     subject: "You're enrolled in {{course_title}}",
@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
 
     // ---- recipients: the addressee plus (optionally) the internal team ----
     const recipients = new Set<string>([payload.to]);
-    // Bulk/nudge automations go to learners only — copying staff on hundreds of
+    // Bulk/nudge automations go to learners only - copying staff on hundreds of
     // these floods inboxes and trips the provider rate limit.
     const BULK_KEYS = new Set(["inactivity_nudge", "cart_abandoned", "cart_added", "lesson_unlocked", "installment_due"]);
     const label = template_key ?? (template as string | undefined) ?? "";

@@ -79,7 +79,7 @@ export default function AdminMedia() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-border rounded-xl">
           <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-muted-foreground">No media yet — add your first file.</p>
+          <p className="text-muted-foreground">No media yet - add your first file.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">

@@ -40,7 +40,7 @@ const columns: Column<Post>[] = [
       <span className="text-xs text-muted-foreground font-mono">/blog/{p.slug}</span>
     </div>
   )},
-  { key: "category", label: "Category", render: (p) => p.category || "—" },
+  { key: "category", label: "Category", render: (p) => p.category || "-" },
   { key: "status", label: "Status", render: (p) => (
     <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
       p.status === "published" ? "bg-green-100 text-green-700" :

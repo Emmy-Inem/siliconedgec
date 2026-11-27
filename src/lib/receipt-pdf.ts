@@ -47,7 +47,7 @@ export function generateReceiptPdf(input: ReceiptInput): jsPDF {
   doc.setFont("helvetica", "bold");
   doc.text("Billed To", margin, y);
   doc.setFont("helvetica", "normal");
-  doc.text(input.customerName || "—", margin, y + 14);
+  doc.text(input.customerName || "-", margin, y + 14);
   doc.text(input.customerEmail, margin, y + 28);
 
   y += 64;

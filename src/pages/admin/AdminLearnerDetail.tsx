@@ -120,7 +120,7 @@ export default function AdminLearnerDetail() {
           <Stat icon={Award} label="Certificates" value={data.certs.length} />
           <Stat icon={CreditCard} label="Net spend" value={fmtMoney(data.netSpend)} />
           <Stat icon={Activity} label="XP · Level" value={`${data.xp.total_points} · L${data.xp.level}`} />
-          <Stat icon={Calendar} label="Attendance" value={data.rsvps.length ? `${attendedRate}%` : "—"} />
+          <Stat icon={Calendar} label="Attendance" value={data.rsvps.length ? `${attendedRate}%` : "-"} />
         </div>
       </Card>
 
@@ -248,7 +248,7 @@ export default function AdminLearnerDetail() {
                   <div className="min-w-0">
                     <p className="truncate">{r.cohort_sessions?.title ?? "Session"}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {r.cohort_sessions?.scheduled_at ? new Date(r.cohort_sessions.scheduled_at).toLocaleString() : "—"}
+                      {r.cohort_sessions?.scheduled_at ? new Date(r.cohort_sessions.scheduled_at).toLocaleString() : "-"}
                     </p>
                   </div>
                   <Badge variant={r.attended ? "default" : "outline"} className="text-[10px]">
@@ -273,7 +273,7 @@ export default function AdminLearnerDetail() {
                   <div className="min-w-0">
                     <p className="truncate">{c.subject ?? "Conversation"}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : "—"}
+                      {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : "-"}
                     </p>
                   </div>
                   <Badge variant="outline" className="text-[10px]">{c.status}</Badge>

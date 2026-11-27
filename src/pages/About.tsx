@@ -65,7 +65,7 @@ export default function About() {
       />
       <Header />
 
-      {/* Hero — site-wide page hero pattern */}
+      {/* Hero - site-wide page hero pattern */}
       <section className="relative overflow-hidden bg-background pt-28 pb-14 md:pt-36 md:pb-20 border-b border-border/40">
         <div
           aria-hidden="true"

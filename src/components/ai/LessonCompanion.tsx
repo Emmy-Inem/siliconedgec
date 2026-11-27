@@ -50,7 +50,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
     const { data, error } = await supabase.functions.invoke("ai-quiz", { body: { action: "generate", lessonId, courseId } });
     if (error) {
       const msg = /402/.test(error.message) ? "AI credits are exhausted. Please contact support."
-        : /429/.test(error.message) ? "Too many requests — try again in a few seconds."
+        : /429/.test(error.message) ? "Too many requests - try again in a few seconds."
         : /401|403/.test(error.message) ? "You need to be enrolled in this course to use the AI tutor."
         : error.message;
       toast({ title: "Couldn't build the quiz", description: msg, variant: "destructive" });
@@ -175,7 +175,7 @@ export function LessonCompanion({ lessonId, lessonTitle, courseId }: Props) {
           <Button onClick={() => quick("Give me a concise TL;DR of this lesson with 3 key takeaways and 1 action item.")} className="w-full"><FileText className="h-4 w-4 mr-2" />Summarize this lesson</Button>
           <Button variant="outline" onClick={() => quick("Suggest 3 hands-on exercises I can do to practice this lesson.")} className="w-full">Suggest practice exercises</Button>
           <Button variant="outline" onClick={() => quick("What common mistakes do beginners make with this topic?")} className="w-full">Common pitfalls</Button>
-          <p className="text-[11px] text-muted-foreground text-center pt-2">Tap any prompt — answer appears in the Chat tab.</p>
+          <p className="text-[11px] text-muted-foreground text-center pt-2">Tap any prompt - answer appears in the Chat tab.</p>
         </TabsContent>
       </Tabs>
     </div>

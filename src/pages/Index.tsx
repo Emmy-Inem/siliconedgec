@@ -171,7 +171,7 @@ const fallbackInstructorImages = [instructor1, instructor2, instructor3, instruc
 
 
 type FallbackTestimonial = { id: string; name: string; role: string; quote: string; avatar_url: string | null; rating: number };
-/* No invented testimonials — only real entries from the database are shown. */
+/* No invented testimonials - only real entries from the database are shown. */
 const fallbackTestimonials: FallbackTestimonial[] = AUTHORITATIVE_STUDENT_TESTIMONIALS;
 
 /* ----------------------------- main ----------------------------- */
@@ -235,7 +235,7 @@ export default function Index() {
     countries: parseOverride(home?.stat_countries) ?? stats?.countries ?? 0,
   };
 
-  /* Only real instructors from the database — no invented profiles or ratings. */
+  /* Only real instructors from the database - no invented profiles or ratings. */
   const baseInstructors = (dbInstructors ?? []).map((i, idx) => ({
     id: i.id,
     name: i.name,
@@ -261,7 +261,7 @@ export default function Index() {
         name: t.name,
         role: t.role ?? "Student",
         quote: t.quote,
-        // Always have a display picture — fall back to a stock headshot if none set.
+        // Always have a display picture - fall back to a stock headshot if none set.
         avatar_url: t.avatar_url && t.avatar_url.trim().length > 0
           ? t.avatar_url
           : (stockAvatars[i % stockAvatars.length] as string),
@@ -284,7 +284,7 @@ export default function Index() {
   const { scrollYProgress: pageProgress } = useScroll();
   const progressX = useTransform(pageProgress, [0, 1], ["0%", "100%"]);
 
-  /* hero parallax — subtle enough to avoid jitter */
+  /* hero parallax - subtle enough to avoid jitter */
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 22]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.92]);
@@ -331,7 +331,7 @@ export default function Index() {
 
       {/* ───────────────── HERO (light, premium) ───────────────── */}
       <section ref={heroRef} className="relative overflow-hidden bg-background">
-        {/* soft purple hue background — top-only, very subtle */}
+        {/* soft purple hue background - top-only, very subtle */}
         <div className="absolute inset-0 bg-background" />
         {/* faint dot grid */}
         <div
@@ -363,7 +363,7 @@ export default function Index() {
             </motion.p>
 
 
-            {/* center brand mark — favicon */}
+            {/* center brand mark - favicon */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -513,7 +513,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* ───────────────── BENTO — WHY ───────────────── */}
+      {/* ───────────────── BENTO - WHY ───────────────── */}
       <section className="py-20 md:py-24 relative">
         <div className="container mx-auto px-5 sm:px-6">
           <motion.div {...sectionReveal} className="text-center mb-14 max-w-2xl mx-auto">
@@ -537,7 +537,7 @@ export default function Index() {
             viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4 md:gap-5 auto-rows-[minmax(180px,auto)]"
           >
-            {/* Large — live chat */}
+            {/* Large - live chat */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-4 row-span-2">
               <Link
                 to="/cohorts"
@@ -555,7 +555,7 @@ export default function Index() {
               </Link>
             </motion.div>
 
-            {/* Medium — completion */}
+            {/* Medium - completion */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 relative overflow-hidden hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <BadgeCheck className="h-4.5 w-4.5 text-foreground" />
@@ -566,7 +566,7 @@ export default function Index() {
               <p className="text-xs text-muted-foreground text-center mt-1">of cohort students finish their track</p>
             </motion.div>
 
-            {/* Medium — skills */}
+            {/* Medium - skills */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4.5 w-4.5 text-foreground" />
@@ -576,7 +576,7 @@ export default function Index() {
               <SkillChipsTile />
             </motion.div>
 
-            {/* Medium — community */}
+            {/* Medium - community */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2 glass-card rounded-3xl border border-border/60 p-6 hover:border-primary/30 transition-all">
                 <div className="flex items-center gap-2 mb-1">
                   <Handshake className="h-4.5 w-4.5 text-foreground" />
@@ -586,7 +586,7 @@ export default function Index() {
               <AvatarStackTile avatars={heroAvatars} />
             </motion.div>
 
-            {/* Small — lifetime */}
+            {/* Small - lifetime */}
             <motion.div variants={staggerItem} whileHover={{ y: -2, transition: { duration: 0.22, ease: "easeOut" } }} className="md:col-span-2">
               <Link
                 to={user ? "/dashboard" : "/courses"}
@@ -685,7 +685,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* ───────────────── HOW IT WORKS — scroll timeline ───────────────── */}
+      {/* ───────────────── HOW IT WORKS - scroll timeline ───────────────── */}
       <section ref={timelineRef} className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.05),transparent_70%)]" />
         <div className="container mx-auto px-5 sm:px-6 relative">

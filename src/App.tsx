@@ -90,7 +90,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { RouteErrorBoundary } from "./components/ErrorBoundary";
 import { ErrorPage } from "./components/ErrorPage";
 
-// Code-split admin pages — they only load when an admin route is visited
+// Code-split admin pages - they only load when an admin route is visited
 const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazyWithRetry(() => import("./pages/admin/AdminOverview"));
 const AdminCourseCreate = lazyWithRetry(() => import("./pages/admin/AdminCourseCreate"));
@@ -123,7 +123,7 @@ const AdminFallback = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Cache aggressively — most catalog/content data changes rarely.
+      // Cache aggressively - most catalog/content data changes rarely.
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 30,
       refetchOnWindowFocus: false,

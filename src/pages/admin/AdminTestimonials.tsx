@@ -51,7 +51,7 @@ const buildColumns = (
             : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
         }`}
       >
-        {t.is_published === false ? "Draft — publish" : "Published — unpublish"}
+        {t.is_published === false ? "Draft - publish" : "Published - unpublish"}
       </button>
     ),
   },
@@ -158,7 +158,7 @@ export default function AdminTestimonials() {
                   <input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://youtu.be/..." className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1">Video thumbnail (auto-generated on upload — override here if needed)</label>
+                  <label className="text-sm font-medium block mb-1">Video thumbnail (auto-generated on upload - override here if needed)</label>
                   <ImageUploader value={form.thumbnail_url} onChange={(url) => setForm({ ...form, thumbnail_url: url })} folder="testimonials" />
                 </div>
               </>

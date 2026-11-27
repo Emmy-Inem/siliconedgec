@@ -117,7 +117,7 @@ export function useSupportAssistant() {
           role: "assistant",
           content: session
             ? "You can continue with our support team here, or use the WhatsApp button to contact the team directly."
-            : "Use the WhatsApp button to contact our team directly — no website account is needed.",
+            : "Use the WhatsApp button to contact our team directly - no website account is needed.",
         }]);
       }
       return true;
@@ -129,7 +129,7 @@ export function useSupportAssistant() {
     }
   }, [messages, call]);
 
-  /** Explicit "talk to a human" — creates a ticket and emails all admins. */
+  /** Explicit "talk to a human" - creates a ticket and emails all admins. */
   const requestHuman = useCallback(async () => {
     setLoading(true);
     try {
@@ -141,7 +141,7 @@ export function useSupportAssistant() {
       }
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: `A human is on the way. I've created ticket **#${json.ticketNumber ?? "—"}** and emailed the team — keep typing here and they'll reply in this chat.`,
+        content: `A human is on the way. I've created ticket **#${json.ticketNumber ?? "-"}** and emailed the team - keep typing here and they'll reply in this chat.`,
       }]);
       setEscalated(true);
       return json as { ticketId: string | null; ticketNumber: number | null };

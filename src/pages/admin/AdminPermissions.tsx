@@ -74,7 +74,7 @@ const ROUTE_GROUPS: { label: string; routes: { path: string; label: string }[] }
   ]},
 ];
 
-// Kept in sync with FALLBACK_ALLOWED in src/lib/admin-permissions.ts — this is
+// Kept in sync with FALLBACK_ALLOWED in src/lib/admin-permissions.ts - this is
 // what "Reset to defaults" writes back to the role_permissions table.
 const DEFAULT_MATRIX: Record<Exclude<StaffRole, "admin">, string[]> = {
   moderator: ["/admin","/admin/dashboards","/admin/analytics","/admin/courses","/admin/categories","/admin/tags","/admin/paths","/admin/students","/admin/enrollments","/admin/quizzes","/admin/quiz-attempts","/admin/qna","/admin/announcements","/admin/testimonials","/admin/instructors","/admin/live-classes","/admin/assessments","/admin/people","/admin/communication","/admin/commerce","/admin/jobs-hub","/admin/content-hub","/admin/cohorts"],

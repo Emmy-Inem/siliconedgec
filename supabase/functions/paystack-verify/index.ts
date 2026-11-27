@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
     // Idempotent: the client re-invokes this on refresh/back-navigation before
     // it clears the ?verify=1 URL param. Paystack's own webhook may also have
-    // already flipped the order to "completed" — but the webhook does NOT send
+    // already flipped the order to "completed" - but the webhook does NOT send
     // the confirmation email or record promo/referral accounting, so order
     // status is the wrong idempotency key. Key off our own "verify" audit row
     // instead, so those one-time side effects still run exactly once.
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Audit trail entry — system-attributed verification
+    // Audit trail entry - system-attributed verification
     try {
       await supabase.from("admin_activity_log").insert({
         admin_user_id: order.user_id,

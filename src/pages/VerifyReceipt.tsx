@@ -55,7 +55,7 @@ export default function VerifyReceipt() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Verify Receipt — Silicon Edge Consulting" description="Verify the authenticity of a Silicon Edge Consulting payment receipt." />
+      <SEO title="Verify Receipt - Silicon Edge Consulting" description="Verify the authenticity of a Silicon Edge Consulting payment receipt." />
       <Header />
       <main className="container mx-auto px-4 py-12 md:py-20 max-w-3xl">
         <Button variant="ghost" size="sm" asChild className="mb-6">
@@ -154,7 +154,7 @@ function ReceiptDetails({ orders, courseTitles, total, created }: any) {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-muted-foreground">Issued:</span>
-          <span className="font-medium">{created ? new Date(created).toLocaleString() : "—"}</span>
+          <span className="font-medium">{created ? new Date(created).toLocaleString() : "-"}</span>
         </div>
         <div className="flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-muted-foreground" />

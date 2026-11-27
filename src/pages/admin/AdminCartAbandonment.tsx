@@ -50,7 +50,7 @@ export default function AdminCartAbandonment() {
       count: list.length,
       total: list.reduce((s, x) => s + Number(courseFor(x.course_id)?.price ?? 0), 0),
       oldest: Math.min(...list.map((x) => +new Date(x.created_at))),
-      titles: list.map((x) => courseFor(x.course_id)?.title ?? "—"),
+      titles: list.map((x) => courseFor(x.course_id)?.title ?? "-"),
       items: list,
     })).filter((g) => !search || g.name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => a.oldest - b.oldest);
@@ -165,7 +165,7 @@ export default function AdminCartAbandonment() {
                   const c = courseFor(it.course_id);
                   return (
                     <div key={it.id} className="flex items-center justify-between gap-2 text-xs p-2 rounded-md bg-muted/40">
-                      <span className="truncate">{c?.title ?? "—"}</span>
+                      <span className="truncate">{c?.title ?? "-"}</span>
                       <span className="text-muted-foreground shrink-0">{formatNaira(Number(c?.price ?? 0))}</span>
                     </div>
                   );

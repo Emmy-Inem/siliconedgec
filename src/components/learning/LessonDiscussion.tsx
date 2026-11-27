@@ -36,7 +36,7 @@ export function LessonDiscussion({
 }) {
   const { user, adminRole } = useAuth();
   // lesson_comments RLS only grants delete/moderate rights to admin and
-  // moderator (see the "Delete own lesson comment or admin" policy) — not
+  // moderator (see the "Delete own lesson comment or admin" policy) - not
   // every staff role that useAuth().isAdmin covers. Match that boundary here
   // so instructor/support/finance/content_editor staff don't see a delete
   // button that RLS silently no-ops.

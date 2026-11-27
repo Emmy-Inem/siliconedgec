@@ -39,7 +39,7 @@ describe("course start dates, programme length, and pricing consistency", () => 
       resolveCourseStartDate({
         id: "3b1f29ec-8fd4-4ff0-9357-1987b90e6c91",
         slug: "cloud-engineering-accelerator-4-week-hands-on-bootcamp",
-        title: "One-Month Cloud Engineering Bootcamp — Microsoft Azure",
+        title: "One-Month Cloud Engineering Bootcamp - Microsoft Azure",
         category: "Cloud Engineering",
         start_date: null,
       })

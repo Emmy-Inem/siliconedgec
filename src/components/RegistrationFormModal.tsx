@@ -70,7 +70,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
 
   const handleSubmit = async () => {
     if (!user?.id) {
-      // Should not happen — the modal short-circuits to a sign-in prompt below.
+      // Should not happen - the modal short-circuits to a sign-in prompt below.
       navigate(`/sign-in?next=/courses/${courseId}`);
       return;
     }
@@ -105,7 +105,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
           .select("id")
           .single();
         if (error) {
-          // Race condition: unique index already created a row — treat as success
+          // Race condition: unique index already created a row - treat as success
           if ((error as any)?.code === "23505") {
             setAlreadyRegistered(true);
           } else {
@@ -147,7 +147,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
         phone: parsed.data.whatsapp_number,
       });
       // Use a small but non-zero value so Google Ads bidding can score
-      // the lead. Webinar leads are a top-of-funnel signal — assign a
+      // the lead. Webinar leads are a top-of-funnel signal - assign a
       // proxy value (configurable later via Conversions UI).
       googleAdsConversion("WebinarRegistration", {
         value: 500,
@@ -171,7 +171,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
         currency: "NGN",
       });
 
-      // Track activity & lead source (DB writes — UTM is auto-attached)
+      // Track activity & lead source (DB writes - UTM is auto-attached)
       await Promise.all([
         logUserActivity({
           user_id: user.id,
@@ -200,7 +200,7 @@ export function RegistrationFormModal({ open, onOpenChange, courseId, courseTitl
           : `Confirmed for ${courseTitle}. Check your email & WhatsApp.`,
       });
       onSuccess?.();
-      // Don't auto-close — let user click WhatsApp CTA
+      // Don't auto-close - let user click WhatsApp CTA
     } catch (e: any) {
       toast({ title: "Couldn't register", description: e?.message ?? "Try again", variant: "destructive" });
     } finally {

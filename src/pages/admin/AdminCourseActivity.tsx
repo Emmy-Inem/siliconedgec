@@ -66,7 +66,7 @@ function timeAgo(iso: string) {
 }
 
 /**
- * Course Activity — a live feed of who opened a lesson, completed it, submitted
+ * Course Activity - a live feed of who opened a lesson, completed it, submitted
  * an assignment or attempted a quiz, with the learner's identity and context.
  */
 export default function AdminCourseActivity() {

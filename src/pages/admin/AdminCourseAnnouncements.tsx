@@ -86,7 +86,7 @@ export default function AdminCourseAnnouncements() {
 
   const columns: Column<Announcement>[] = [
     { key: "title", label: "Title" },
-    { key: "course_id", label: "Course", render: (a) => <span className="text-xs">{(a.courses as any)?.title || "—"}</span> },
+    { key: "course_id", label: "Course", render: (a) => <span className="text-xs">{(a.courses as any)?.title || "-"}</span> },
     { key: "created_at", label: "Date", render: (a) => format(new Date(a.created_at), "MMM d, yyyy") },
   ];
 

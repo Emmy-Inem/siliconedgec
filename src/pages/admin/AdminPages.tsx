@@ -34,7 +34,7 @@ const columns: Column<Page>[] = [
   { key: "status", label: "Status", render: (p) => (
     <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${p.status === "published" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span>
   )},
-  { key: "show_in_footer", label: "Footer", render: (p) => p.show_in_footer ? "✓" : "—" },
+  { key: "show_in_footer", label: "Footer", render: (p) => p.show_in_footer ? "✓" : "-" },
   { key: "updated_at", label: "Updated", render: (p) => new Date(p.updated_at).toLocaleDateString() },
 ];
 

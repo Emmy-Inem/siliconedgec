@@ -142,10 +142,10 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
       const rawDesc = c.description || "Practical live accelerator with hands-on labs, real architectures, and career preparation.";
       const shortDesc = (
         rawDesc.split(".")[0] + ". " + (rawDesc.split(".")[1] ? rawDesc.split(".")[1] + "." : "")
-      ).replace(/—/g, "-").trim();
+      ).replace(/-/g, "-").trim();
 
       const rawTitle = c.title || "Featured Programme";
-      const cleanTitle = rawTitle.replace(/—/g, "-");
+      const cleanTitle = rawTitle.replace(/-/g, "-");
 
       return {
         id: c.id,
@@ -209,7 +209,7 @@ const CoursesHero = forwardRef<HTMLElement, { coursesCount: number }>(function C
     setCurrentIndex((prev) => (prev + 1) % displayCourses.length);
   };
 
-  const badgeLabel = (config?.badgeText || "Featured Bootcamp").replace(/—/g, "-");
+  const badgeLabel = (config?.badgeText || "Featured Bootcamp").replace(/-/g, "-");
 
   const isAzureBootcamp = activeCourse.id === AZURE_BOOTCAMP_ID || activeCourse.title.toLowerCase().includes("azure");
   const pillar1 = isAzureBootcamp ? "Live Azure Labs" : (activeCourse.category ? `Hands-on ${activeCourse.category}` : "Live Cloud Labs");

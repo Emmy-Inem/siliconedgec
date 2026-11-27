@@ -12,16 +12,16 @@ const BACKUP_FOLDER_ID = "1UnS7V-Keds6fEHr0YO1dnzuo-5Lqok59";
 
 // Tables to back up. Excludes auth.* (managed), high-volume log/queue tables
 // (user_activity_log, login_attempts, email_send_log, email_send_state,
-// webhook_events, automation_events), and google_calendar_tokens — OAuth
+// webhook_events, automation_events), and google_calendar_tokens - OAuth
 // refresh tokens shouldn't be duplicated into a plaintext Drive file.
 //
-// Corrected against the actual schema (src/integrations/supabase/types.ts) —
+// Corrected against the actual schema (src/integrations/supabase/types.ts) -
 // this list previously referenced pre-rename table names that no longer
 // exist (course_categories, course_modules, course_lessons, pages,
 // site_settings, home_content, registrations, qna_questions/qna_answers,
 // wishlist_insights, live_class_registrations, email_templates), so every
-// backup silently skipped those tables — including the actual course
-// curriculum (modules/lessons) — while still reporting "success". It was
+// backup silently skipped those tables - including the actual course
+// curriculum (modules/lessons) - while still reporting "success". It was
 // also missing every table added by features shipped after this list was
 // written (cohorts, support tickets, the AI tutor, affiliates, bootcamps).
 const BACKUP_TABLES = [

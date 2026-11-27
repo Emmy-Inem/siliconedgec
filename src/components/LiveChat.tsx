@@ -44,7 +44,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
     setDraft("");
   }, [location.pathname]);
 
-  // Hide chat widget on admin routes — it conflicts with the admin
+  // Hide chat widget on admin routes - it conflicts with the admin
   // sidebar trigger (mobile) and clutters the workspace.
   const onAdminRoute = location.pathname.startsWith("/admin");
 
@@ -87,7 +87,7 @@ export function LiveChat({ embedded = false, onOpenChange, whatsappUrl }: { embe
   }, [assistant, user, onOpenChange]);
 
   // Once the assistant hands over (it could not answer, or the user asked for a
-  // person) the SAME thread continues with a human — we just open/attach the
+  // person) the SAME thread continues with a human - we just open/attach the
   // live conversation behind the scenes.
   const ensureConversation = useCallback(async () => {
     if (!user) return null;

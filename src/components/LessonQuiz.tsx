@@ -226,7 +226,7 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
           {/* Per-question feedback: answers vs. selected. Correct answers
               aren't exposed by the API, so we colour selections green when
               they match a known-correct choice from the latest submission
-              and grey otherwise — explanations come from the chosen option. */}
+              and grey otherwise - explanations come from the chosen option. */}
           <ol className="space-y-3" aria-label="Your answers">
             {quiz.questions.map((q, idx) => {
               const picked = submitted.answers[q.id];
@@ -279,10 +279,10 @@ export function LessonQuiz({ lessonId, onPass }: Props) {
                         <p className="font-semibold mb-0.5">
                           {picked && q.correct_answer && picked === q.correct_answer
                             ? "Why this is correct"
-                            : `Why the correct answer is "${q.correct_answer ?? "—"}"`}
+                            : `Why the correct answer is "${q.correct_answer ?? "-"}"`}
                         </p>
                         <p className="text-foreground/80">
-                          {q.explanation || "Revisit the lesson material above — this concept is covered in the preceding section."}
+                          {q.explanation || "Revisit the lesson material above - this concept is covered in the preceding section."}
                         </p>
                       </div>
                     )}

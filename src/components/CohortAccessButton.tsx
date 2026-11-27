@@ -109,7 +109,7 @@ export function CohortAccessButton({ courseId, variant = "card" }: { courseId?: 
   }
 
   if (!cohort) {
-    // User has other cohort memberships (bootcamp, other courses) — surface those instead of the dead empty state.
+    // User has other cohort memberships (bootcamp, other courses) - surface those instead of the dead empty state.
     if (otherCohorts.length > 0) {
       const first = otherCohorts[0];
       return (

@@ -1,6 +1,6 @@
 import { settleVerifiedInstallment } from "../_shared/installment-settlement.ts";
 import { stripePaymentState } from "../_shared/payment-routing.ts";
-// Stripe webhook receiver — ensures enrollment is fulfilled even if user closes window before redirect
+// Stripe webhook receiver - ensures enrollment is fulfilled even if user closes window before redirect
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { getCorsHeaders, handleCors } from "../_shared/cors.ts";
 import { getStripeSecretKey, retrieveStripeCheckoutSession } from "../_shared/stripe.ts";

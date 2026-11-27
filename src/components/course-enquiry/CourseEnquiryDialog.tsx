@@ -131,7 +131,7 @@ export function CourseEnquiryDialog({ open, onOpenChange, courseId, courseTitle,
         {status === "done" ? (
           <div className="py-6 text-center space-y-3" role="status">
             <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
-            <DialogTitle>{isRegistration ? "Your registration interest is saved" : "Thanks — your enquiry is saved"}</DialogTitle>
+            <DialogTitle>{isRegistration ? "Your registration interest is saved" : "Thanks - your enquiry is saved"}</DialogTitle>
             <DialogDescription>{isRegistration ? "Our team can follow up about this course and payment. Course content becomes available after payment is verified." : "Our team can follow up about the 28 November cohort."}</DialogDescription>
             <Button onClick={() => onOpenChange(false)} className="mt-2">Close</Button>
           </div>

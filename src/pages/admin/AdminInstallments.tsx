@@ -43,7 +43,7 @@ export default function AdminInstallments() {
   });
 
   const nameFor = (id: string) => (data?.profiles ?? []).find((p: any) => p.user_id === id)?.full_name ?? id.slice(0, 8);
-  const courseFor = (id: string) => (data?.courses ?? []).find((c: any) => c.id === id)?.title ?? "—";
+  const courseFor = (id: string) => (data?.courses ?? []).find((c: any) => c.id === id)?.title ?? "-";
 
   const createPlan = async () => {
     setBusy(true);
@@ -218,7 +218,7 @@ export default function AdminInstallments() {
                       <TableCell className="max-w-[220px] truncate">{courseFor(p.course_id)}</TableCell>
                       <TableCell>{formatNaira(Number(p.amount_paid ?? 0))} / {formatNaira(Number(p.total_amount ?? 0))}</TableCell>
                       <TableCell>{p.installments_paid}/{p.total_installments}</TableCell>
-                      <TableCell>{p.next_due_date ? new Date(p.next_due_date).toLocaleDateString() : "—"}</TableCell>
+                      <TableCell>{p.next_due_date ? new Date(p.next_due_date).toLocaleDateString() : "-"}</TableCell>
                       <TableCell className={expired ? "text-destructive" : undefined}>
                         {p.access_expires_at ? new Date(p.access_expires_at).toLocaleDateString() : "Permanent"}
                       </TableCell>

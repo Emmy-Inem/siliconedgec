@@ -60,7 +60,7 @@ export default function InstructorDetail() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={`${instructor.name} — Instructor at Silicon Edge`}
+        title={`${instructor.name} - Instructor at Silicon Edge`}
         description={(instructor.bio ?? `Learn from ${instructor.name}, ${instructor.role ?? "expert instructor"} at Silicon Edge.`).slice(0, 155)}
         image={instructor.avatar_url ?? undefined}
         canonical={siteUrl(`/instructors/${instructor.id}`)}

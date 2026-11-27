@@ -118,7 +118,7 @@ export default function InstructorStudents() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                    {r.last_seen ? new Date(r.last_seen).toLocaleDateString() : "—"}
+                    {r.last_seen ? new Date(r.last_seen).toLocaleDateString() : "-"}
                   </TableCell>
                   <TableCell className="text-right">
                     {r.completed ? <Badge>Completed</Badge> : <Badge variant="outline">In progress</Badge>}

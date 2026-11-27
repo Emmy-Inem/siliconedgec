@@ -106,10 +106,10 @@ export default function AdminPayouts() {
   const columns: Column<Payout>[] = [
     { key: "payee_name", label: "Payee", render: (p) => <div><div className="font-medium">{p.payee_name}</div><div className="text-[11px] text-muted-foreground capitalize">{p.payee_type}</div></div> },
     { key: "amount", label: "Amount", render: (p) => <span className="font-medium">{formatNaira(Number(p.amount))}</span> },
-    { key: "period", label: "Period", render: (p) => p.period_start ? `${p.period_start} → ${p.period_end ?? "—"}` : "—" },
-    { key: "method", label: "Method", render: (p) => <span className="capitalize text-xs">{(p.method ?? "—").replace(/_/g, " ")}</span> },
+    { key: "period", label: "Period", render: (p) => p.period_start ? `${p.period_start} → ${p.period_end ?? "-"}` : "-" },
+    { key: "method", label: "Method", render: (p) => <span className="capitalize text-xs">{(p.method ?? "-").replace(/_/g, " ")}</span> },
     { key: "status", label: "Status", render: (p) => <Badge className={STATUS_CLASS[p.status] ?? ""}>{p.status}</Badge> },
-    { key: "reference", label: "Reference", render: (p) => <span className="font-mono text-xs">{p.reference || "—"}</span> },
+    { key: "reference", label: "Reference", render: (p) => <span className="font-mono text-xs">{p.reference || "-"}</span> },
     { key: "created_at", label: "Created", render: (p) => new Date(p.created_at).toLocaleDateString() },
   ];
 

@@ -154,7 +154,7 @@ function CohortFormDialog({ open, onOpenChange, courses, cohort, onSaved }: { op
       <DialogContent>
         <DialogHeader><DialogTitle>{cohort ? "Edit cohort" : "New cohort"}</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <div><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Cloud Engineering — Spring 2026" /></div>
+          <div><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Cloud Engineering - Spring 2026" /></div>
           <div><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -204,7 +204,7 @@ function CohortDetail({ cohort, currentUserId, onEdit, onDelete }: { cohort: Coh
           {cohort.description && <p className="text-sm text-muted-foreground mt-1">{cohort.description}</p>}
           <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
             <Badge variant="outline">{cohort.status}</Badge>
-            {cohort.start_date && <span>{cohort.start_date} → {cohort.end_date || "—"}</span>}
+            {cohort.start_date && <span>{cohort.start_date} → {cohort.end_date || "-"}</span>}
           </div>
         </div>
         <div className="flex gap-2">

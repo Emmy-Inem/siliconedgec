@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 const URL = import.meta.env.VITE_SUPABASE_URL as string;
 const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-describe("RLS & Grants — role_permissions and RSVP attendance protection", () => {
+describe("RLS & Grants - role_permissions and RSVP attendance protection", () => {
   it("rejects anonymous reads on role_permissions matrix", async () => {
     if (!URL || !KEY) return;
     const supa = createClient(URL, KEY);

@@ -258,7 +258,7 @@ export function CourseAiCoach({ courseTitle, courseSlug = "" }: CourseAiCoachPro
         )}
       </AnimatePresence>
 
-      {/* Interactive Multi-View Coach Panel — constrained so it never clips at the top on mobile or desktop */}
+      {/* Interactive Multi-View Coach Panel - constrained so it never clips at the top on mobile or desktop */}
       <AnimatePresence>
         {panelOpen && (
           <motion.div

@@ -135,7 +135,7 @@ export const EnhancedVideoPlayer = forwardRef<EnhancedVideoPlayerHandle, Props>(
             className="w-full h-full"
           />
         </div>
-        {/* Overlay controls — sit above the video, do not block native controls (top-right). */}
+        {/* Overlay controls - sit above the video, do not block native controls (top-right). */}
         <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -184,12 +184,12 @@ export const EnhancedVideoPlayer = forwardRef<EnhancedVideoPlayerHandle, Props>(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="text-xs">
-              <DropdownMenuItem disabled>Space / K — Play / Pause</DropdownMenuItem>
-              <DropdownMenuItem disabled>← / → — Seek 10s</DropdownMenuItem>
-              <DropdownMenuItem disabled>↑ / ↓ — Volume</DropdownMenuItem>
-              <DropdownMenuItem disabled>M — Mute</DropdownMenuItem>
-              <DropdownMenuItem disabled>F — Fullscreen</DropdownMenuItem>
-              <DropdownMenuItem disabled>P — Picture in Picture</DropdownMenuItem>
+              <DropdownMenuItem disabled>Space / K - Play / Pause</DropdownMenuItem>
+              <DropdownMenuItem disabled>← / → - Seek 10s</DropdownMenuItem>
+              <DropdownMenuItem disabled>↑ / ↓ - Volume</DropdownMenuItem>
+              <DropdownMenuItem disabled>M - Mute</DropdownMenuItem>
+              <DropdownMenuItem disabled>F - Fullscreen</DropdownMenuItem>
+              <DropdownMenuItem disabled>P - Picture in Picture</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

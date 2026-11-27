@@ -120,7 +120,7 @@ export default function AdminMarketingAnalytics() {
     ? Math.round(((filtered.length - prevPeriodLeads.length) / prevPeriodLeads.length) * 100)
     : null;
 
-  // Source breakdown — uses channel classifier so visitors with no UTM but a
+  // Source breakdown - uses channel classifier so visitors with no UTM but a
   // recognisable referrer (Facebook, Instagram, Google, etc.) are NOT bucketed
   // as "Direct". True direct = no UTM AND no/own-domain referrer.
   const sourceData = useMemo(() => {
@@ -209,7 +209,7 @@ export default function AdminMarketingAnalytics() {
       .sort((a, b) => b.views - a.views);
   }, [filtered]);
 
-  // Referrer data — strip our own oauth.lovable.app round-trip referrer
+  // Referrer data - strip our own oauth.lovable.app round-trip referrer
   // (it's noise, not acquisition) and only show Direct when there genuinely
   // is no referrer host.
   const referrerData = useMemo(() => {
@@ -236,7 +236,7 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filtered]);
 
-  // Conversion metrics — split webinars vs course enrollments so we never
+  // Conversion metrics - split webinars vs course enrollments so we never
   // double-count and so the dashboard reflects reality (today: all conversions
   // are webinar registrations; no paid course has been sold yet).
   const totalVisits = filtered.filter(l => l.form_type === "page_visit" || l.form_type === "pageview").length;
@@ -264,14 +264,14 @@ export default function AdminMarketingAnalytics() {
     return Object.entries(map).map(([date, count]) => ({ date, enrollments: count }));
   }, [enrollments, dateFilter, cFrom, cTo]);
 
-  // Source + Campaign table — Source column now uses classified channel so
+  // Source + Campaign table - Source column now uses classified channel so
   // un-tagged Facebook / Instagram / Google traffic isn't lumped into Direct.
   // We track webinar and course conversions separately to prevent double-count.
   const tableData = useMemo(() => {
     const map: Record<string, { leads: number; webinars: number; courses: number }> = {};
     filtered.forEach(l => {
       const channel = classifyChannel({ utm_source: l.utm_source, utm_medium: l.utm_medium, referrer: l.referrer });
-      const key = `${channel}|||${l.utm_campaign || "—"}|||${l.utm_medium || "—"}`;
+      const key = `${channel}|||${l.utm_campaign || "-"}|||${l.utm_medium || "-"}`;
       if (!map[key]) map[key] = { leads: 0, webinars: 0, courses: 0 };
       map[key].leads++;
       if (isWebinarRow(l.form_type)) map[key].webinars++;
@@ -310,7 +310,7 @@ export default function AdminMarketingAnalytics() {
     filtered.forEach((l) => {
       if (l.form_type !== "pageview" && l.form_type !== "page_visit") return;
       totalViews++;
-      const id = l.user_id || `anon:${l.id}`; // anon rows can't be unified across visits — best effort
+      const id = l.user_id || `anon:${l.id}`; // anon rows can't be unified across visits - best effort
       visitors.add(id);
       const page = l.landing_page || "/";
       pageMap[page] = (pageMap[page] ?? 0) + 1;
@@ -343,7 +343,7 @@ export default function AdminMarketingAnalytics() {
         : null;
       if (country) countryMap[country] = (countryMap[country] ?? 0) + 1;
 
-      // City breakdown — only present when the geo lookup resolved via ipapi.
+      // City breakdown - only present when the geo lookup resolved via ipapi.
       // We key by "City, COUNTRY" so duplicate names across countries don't merge.
       const city: string | null = typeof fd.city === "string" && fd.city.length > 0 ? fd.city : null;
       if (city) {
@@ -467,7 +467,7 @@ export default function AdminMarketingAnalytics() {
         </select>
       </div>
 
-      {/* KPIs — visits (anonymous traffic) are now clearly separated from
+      {/* KPIs - visits (anonymous traffic) are now clearly separated from
           leads (a visitor who actually submitted something). Webinar regs
           and course enrollments are split so the same person never gets
           counted twice across both buckets. */}
@@ -499,7 +499,7 @@ export default function AdminMarketingAnalytics() {
       </div>
 
       {/* Reconciliation: every lead_sources row is one of {visit, lead,
-          other}. Sum should always equal the filtered row count — this
+          other}. Sum should always equal the filtered row count - this
           panel exposes the maths so admins can audit it. */}
       <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-xs">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -829,7 +829,7 @@ export default function AdminMarketingAnalytics() {
           />
         </TabsContent>
 
-        {/* SITE TRAFFIC — powered by platform analytics */}
+        {/* SITE TRAFFIC - powered by platform analytics */}
         <TabsContent value="site-traffic">
           <AnalyticsSiteTrafficTab
             trafficStats={trafficStats}

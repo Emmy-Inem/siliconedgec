@@ -62,7 +62,7 @@ export function useCourseAccess(courseId?: string | null) {
       };
     },
     enabled: !!user && !!courseId && !isStaff,
-    // Never serve stale access — a newly-granted enrollment must be picked up
+    // Never serve stale access - a newly-granted enrollment must be picked up
     // on the next page view without requiring a hard refresh/logout.
     staleTime: 0,
     refetchOnMount: "always",

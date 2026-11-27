@@ -106,16 +106,14 @@ export async function ensureAuthoritativeCoursePricing(courseIds?: string[]): Pr
       rows.map(async (row: any) => {
         const expectedStartDate = resolveCourseStartDate(row);
         const expectedDurationWeeks = resolveCourseDurationWeeks(row);
-        const hasStaleDiscountPrice = row.discount_price !== null && row.discount_price !== undefined;
         const hasStaleStartDate = (row.start_date ?? null) !== expectedStartDate;
         const hasStaleDurationWeeks = (row.duration_weeks ?? null) !== expectedDurationWeeks;
-        if (!hasStaleDiscountPrice && !hasStaleStartDate && !hasStaleDurationWeeks) return;
+        if (!hasStaleStartDate && !hasStaleDurationWeeks) return;
 
         const updateTable = supabase.from("courses");
         if (!updateTable || typeof updateTable.update !== "function") return;
         await updateTable
           .update({
-            discount_price: null,
             start_date: expectedStartDate,
             duration_weeks: expectedDurationWeeks,
           })
@@ -199,7 +197,7 @@ function sortWebinarsFirst(list: DbCourse[]): DbCourse[] {
   });
 }
 
-// Lightweight fetch for listing pages — no modules/lessons
+// Lightweight fetch for listing pages - no modules/lessons
 async function fetchCourses(): Promise<DbCourse[]> {
   const { data: courses, error } = await supabase
     .from("courses")

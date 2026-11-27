@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Influencer attribution per line item — based on order metadata UTM or explicit promo
+    // Influencer attribution per line item - based on order metadata UTM or explicit promo
     for (const o of orders) {
       try {
         const orderUtm = (o.metadata && (o.metadata as any).utm) || {};
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       } catch (e) { console.error("cart influencer attribution failed", e); }
     }
 
-    // Audit trail — one row per line item, attributed to the buying user (system verify)
+    // Audit trail - one row per line item, attributed to the buying user (system verify)
     try {
       const total = orders.reduce((s: number, o: any) => s + Number(o.amount ?? 0), 0);
       const rows = orders.map((o: any) => ({

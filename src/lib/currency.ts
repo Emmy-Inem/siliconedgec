@@ -103,7 +103,7 @@ export async function ensureGeoCountry(): Promise<string | null> {
     const fresh = cached && Date.now() - cachedAt < 24 * 60 * 60 * 1000;
     if (fresh && cached) return cached;
 
-    // Cloudflare's free trace endpoint — no key, fast, CORS-enabled.
+    // Cloudflare's free trace endpoint - no key, fast, CORS-enabled.
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 2500);
     const res = await fetch("https://www.cloudflare.com/cdn-cgi/trace", { signal: ctrl.signal });

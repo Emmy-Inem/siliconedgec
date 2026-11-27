@@ -9,9 +9,9 @@ import { Download, UserX, FileJson } from "lucide-react";
 // Every public table with a user_id column, per a scan of supabase/migrations
 // (see the "grep -c CREATE TABLE ... user_id" audit), plus tables that link to
 // a person under a different column name (e.g. support_ticket_messages.sender_id
-// — a message the user authored, whether as a customer or as staff replying).
+// - a message the user authored, whether as a customer or as staff replying).
 // This was previously a hand-picked 13-table list keyed only on "user_id" that
-// missed most of the app's tables — meaning "Erase Data" silently left personal
+// missed most of the app's tables - meaning "Erase Data" silently left personal
 // data behind in ~30 tables. If a new table with a person-owning column is
 // added, add it here too.
 const EXPORT_TABLES: { table: string; column: string }[] = [
@@ -78,7 +78,7 @@ export default function AdminGdprTools() {
       }
       if (failedTables.length) {
         toast({
-          title: "Erasure incomplete — data remains in some tables",
+          title: "Erasure incomplete - data remains in some tables",
           description: `Failed: ${failedTables.join("; ")}. Do not report this erasure as complete until resolved.`,
           variant: "destructive",
         });

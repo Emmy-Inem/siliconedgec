@@ -66,7 +66,7 @@ export function LessonNotes({ lessonId }: { lessonId: string }) {
         <Textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Type notes as you watch — auto-saved, only visible to you."
+          placeholder="Type notes as you watch - auto-saved, only visible to you."
           rows={5}
           className="resize-y text-sm"
         />

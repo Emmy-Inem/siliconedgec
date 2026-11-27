@@ -41,7 +41,7 @@ function clampString(v: unknown, max: number): string | null {
 
 /**
  * Persist a lead/conversion event with the currently-known UTM attribution.
- * Standardizes on `course_id` (snake_case) inside form_data — callers that pass
+ * Standardizes on `course_id` (snake_case) inside form_data - callers that pass
  * `courseId` will be normalized for downstream reporting joins.
  */
 /** Passive navigation events (not real form submissions). */
@@ -138,7 +138,7 @@ export async function trackLead({ formType, formData = {} }: TrackLeadOptions) {
 
   const parsed = leadRowSchema.safeParse(candidate);
   if (!parsed.success) {
-    // Never throw — tracking failures must not break UX. Log for QA visibility.
+    // Never throw - tracking failures must not break UX. Log for QA visibility.
     if (typeof console !== "undefined") {
       console.warn("[trackLead] dropped invalid lead row", {
         formType,

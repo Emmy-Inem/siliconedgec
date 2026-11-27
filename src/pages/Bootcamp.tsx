@@ -101,7 +101,7 @@ function EnrollmentCard({ enrollment: e }: { enrollment: Enrollment }) {
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Access revoked — {cohortName}</AlertTitle>
+        <AlertTitle>Access revoked - {cohortName}</AlertTitle>
         <AlertDescription>
           Payment was not completed by the bootcamp end date. Please contact admin about reinstatement.
         </AlertDescription>

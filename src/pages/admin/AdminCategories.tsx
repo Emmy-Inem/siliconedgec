@@ -64,7 +64,7 @@ export default function AdminCategories() {
   const columns: Column<Category>[] = [
     { key: "name", label: "Name" },
     { key: "slug", label: "Slug" },
-    { key: "description", label: "Description", render: (c) => <span className="truncate max-w-[200px] block">{c.description || "—"}</span> },
+    { key: "description", label: "Description", render: (c) => <span className="truncate max-w-[200px] block">{c.description || "-"}</span> },
     { key: "order_index", label: "Order" },
   ];
 

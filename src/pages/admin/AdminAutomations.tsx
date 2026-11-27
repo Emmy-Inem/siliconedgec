@@ -116,7 +116,7 @@ export default function AdminAutomations() {
     const { data: res, error } = await supabase.functions.invoke("run-automations", { body: {} });
     setRunning(false);
     if (error) return toast.error(error.message);
-    toast.success(`Queue drained — ${(res as any)?.sent ?? 0} sent, ${(res as any)?.skipped ?? 0} skipped`);
+    toast.success(`Queue drained - ${(res as any)?.sent ?? 0} sent, ${(res as any)?.skipped ?? 0} skipped`);
     qc.invalidateQueries({ queryKey: ["admin-automations"] });
   };
 
@@ -128,7 +128,7 @@ export default function AdminAutomations() {
     });
     setTesting(null);
     if (error || (res as any)?.ok === false) {
-      return toast.error(error?.message ?? "Test send failed — check the email delivery log");
+      return toast.error(error?.message ?? "Test send failed - check the email delivery log");
     }
     toast.success(`Test "${key}" sent to ${testEmail.trim()}`);
   };

@@ -22,7 +22,7 @@ export default function AdminStudents() {
     queryFn: async () => {
       const [profiles, enrollments] = await Promise.all([
         fetchAllRows<any>("profiles", "user_id, full_name, avatar_url"),
-        // courses(title) join via fetchAllRows works — PostgREST embed is just
+        // courses(title) join via fetchAllRows works - PostgREST embed is just
         // a column expression in the select string.
         fetchAllRows<any>(
           "enrollments",

@@ -20,7 +20,7 @@ import {
 import { format } from "date-fns";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 
-// Canonical public URL — always use the published domain for shareable
+// Canonical public URL - always use the published domain for shareable
 // influencer/UTM links so testers don't hit the preview-domain auth gate.
 const PUBLIC_SITE_URL = "https://siliconedgec.com";
 
@@ -631,7 +631,7 @@ export default function AdminInfluencerMarketing() {
                         <TableCell className="font-mono font-semibold text-primary text-sm">
                           {r.promo_codes?.code ?? <span className="text-muted-foreground">UTM only</span>}
                         </TableCell>
-                        <TableCell className="text-sm">{r.promo_codes?.influencer_name ?? r.utm_source ?? "—"}</TableCell>
+                        <TableCell className="text-sm">{r.promo_codes?.influencer_name ?? r.utm_source ?? "-"}</TableCell>
                         <TableCell className="text-sm max-w-[200px] truncate">{r.courses?.title}</TableCell>
                         <TableCell className="text-sm">{fmtMoney(Number(r.original_price))}</TableCell>
                         <TableCell className="text-sm text-destructive">{`-${fmtMoney(Number(r.discount_applied))}`}</TableCell>

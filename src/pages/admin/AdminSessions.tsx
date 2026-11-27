@@ -17,7 +17,7 @@ interface SessionRow {
 }
 
 function parseUA(ua: string | null) {
-  if (!ua) return { device: "Unknown", browser: "—" };
+  if (!ua) return { device: "Unknown", browser: "-" };
   const isMobile = /Mobile|Android|iPhone|iPad/i.test(ua);
   let browser = "Other";
   if (/Edg\//i.test(ua)) browser = "Edge";
@@ -131,7 +131,7 @@ export default function AdminSessions() {
                     const ua = parseUA(r.user_agent);
                     return (
                       <tr key={r.id} className="border-b border-border last:border-0 hover:bg-muted/30">
-                        <td className="px-4 py-3 font-medium">{r.email || "—"}</td>
+                        <td className="px-4 py-3 font-medium">{r.email || "-"}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             {ua.device === "Mobile" ? (

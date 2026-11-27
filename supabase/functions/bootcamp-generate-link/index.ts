@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
 
   // Flexible mode: omit amount to enable customer-entered amounts on Paystack.
   const paystackBody: Record<string, unknown> = {
-    name: `${cohort.name} — ${full_name}`,
+    name: `${cohort.name} - ${full_name}`,
     description: flexible
       ? `Flexible bootcamp payment. Pay any amount up to ₦${total_amount.toLocaleString()} before ${final_due_date ?? cohort.end_date}.`
       : `${installments} installments of ₦${installment_amount.toLocaleString()}. Total: ₦${total_amount.toLocaleString()}.`,

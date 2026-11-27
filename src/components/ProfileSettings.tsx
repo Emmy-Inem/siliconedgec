@@ -72,7 +72,7 @@ export function ProfileSettings() {
     const { data } = supabase.storage.from("course-thumbnails").getPublicUrl(path);
     setAvatarUrl(data.publicUrl);
     setUploading(false);
-    toast({ title: "Avatar uploaded — don't forget to save." });
+    toast({ title: "Avatar uploaded - don't forget to save." });
   };
 
   const handleDelete = async () => {

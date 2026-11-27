@@ -1,5 +1,5 @@
 import { settleVerifiedInstallment } from "../_shared/installment-settlement.ts";
-// Paystack webhook receiver — verifies signature and updates enrollment
+// Paystack webhook receiver - verifies signature and updates enrollment
 // reliably even if the user closes the browser before paystack-verify runs.
 // Signed via HMAC SHA-512 with PAYSTACK_SECRET_KEY in `x-paystack-signature`.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
-      // Already succeeded — drop the duplicate silently.
+      // Already succeeded - drop the duplicate silently.
       if (existing.status === "success") return ok();
       await supabase
         .from("webhook_events")
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!order) {
-      // Order may not be persisted yet on the very first delivery — ask
+      // Order may not be persisted yet on the very first delivery - ask
       // Paystack to retry so we don't lose the enrollment.
       await markFailed(new Error("order not found for reference " + reference));
       return retry("order not found yet");
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
         course_id: cid,
         payment_status: "paid",
       }));
-      // upsert on (user_id, course_id) makes this safe to replay — no
+      // upsert on (user_id, course_id) makes this safe to replay - no
       // duplicate enrollments are created on webhook retries.
       const { error: enrollErr } = await supabase
         .from("enrollments")

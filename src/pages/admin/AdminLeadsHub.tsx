@@ -32,7 +32,7 @@ type UnifiedLead = {
   email: string;
   phone?: string | null;
   course_title?: string;
-  /** Webinar/event title — only set for source==="registration". */
+  /** Webinar/event title - only set for source==="registration". */
   webinar_title?: string;
   status?: string;
   meta?: string;
@@ -214,11 +214,11 @@ export default function AdminLeadsHub() {
     if (city && country) return `${city}, ${country}`;
     if (city) return city;
     if (country) return country;
-    return "—";
+    return "-";
   };
 
   const courseTitle = (id: string | null | undefined) =>
-    id ? (courses.find((c: any) => c.id === id)?.title ?? "Unknown course") : "—";
+    id ? (courses.find((c: any) => c.id === id)?.title ?? "Unknown course") : "-";
   const profileName = (id: string | null | undefined) =>
     id ? (profiles.find((p: any) => p.user_id === id)?.full_name ?? "Unknown user") : "Guest";
 
@@ -246,7 +246,7 @@ export default function AdminLeadsHub() {
       id: `enr-${x.id}`,
       source: "enrollment",
       name: profileName(x.user_id),
-      email: "—",
+      email: "-",
       course_title: courseTitle(x.course_id),
       status: x.payment_status,
       meta: `${Math.round(x.progress_percentage ?? 0)}% complete`,
@@ -264,14 +264,14 @@ export default function AdminLeadsHub() {
       leadId: x.id,
       notify: { status: x.notify_status ?? null, messageId: x.notify_message_id ?? null, attempts: x.notify_attempts ?? 0, error: x.notify_error ?? null },
       source: t === "course" ? "course_enquiry" : t === "contact" ? "contact" : "business",
-      name: x.is_test ? `${x.contact_name} (test — not counted)` : x.contact_name,
+      name: x.is_test ? `${x.contact_name} (test - not counted)` : x.contact_name,
       email: x.email,
       phone: x.phone,
       course_title: t === "course" ? courseTitle(x.course_id) : t === "contact" ? "Contact form" : x.company_name,
       status: x.status,
       meta: t === "course"
         ? [x.country, EXP[x.experience_level] ?? x.experience_level, START[x.intended_start] ?? x.intended_start, campaign].filter(Boolean).join(" · ")
-        : x.job_title ? `${x.job_title}${x.industry ? ` · ${x.industry}` : ""}` : (x.industry ?? (campaign || "—")),
+        : x.job_title ? `${x.job_title}${x.industry ? ` · ${x.industry}` : ""}` : (x.industry ?? (campaign || "-")),
       created_at: x.created_at,
       channel: a.gclid ? classifyChannel({ utm_source: a.utm_source || "google", utm_medium: a.utm_medium || "cpc" }) : (a.utm_source ? classifyChannel({ utm_source: a.utm_source, utm_medium: a.utm_medium }) : resolveChannel(x.email, null)),
     };
@@ -309,12 +309,12 @@ export default function AdminLeadsHub() {
   // platform that brought leads, not just whatever's currently filtered.
   const channelStats = useMemo(() => {
     const map = new Map<Channel, number>();
-    unified.filter((u) => !u.name.endsWith("(test — not counted)")).forEach((u) => map.set(u.channel, (map.get(u.channel) ?? 0) + 1));
+    unified.filter((u) => !u.name.endsWith("(test - not counted)")).forEach((u) => map.set(u.channel, (map.get(u.channel) ?? 0) + 1));
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [unified]);
 
   const stats = useMemo(() => ({
-    total: unified.filter((u) => !u.name.endsWith("(test — not counted)")).length,
+    total: unified.filter((u) => !u.name.endsWith("(test - not counted)")).length,
     registrations: registrations.length,
     // Show only paid enrollments here so the KPI matches Overview/Analytics
     // and isn't inflated by webinar shadow rows.
@@ -365,7 +365,7 @@ export default function AdminLeadsHub() {
     const seen = new Map<string, string>(); // email -> name
     filtered.forEach((u) => {
       const e = (u.email || "").trim().toLowerCase();
-      if (!e || e === "—" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return;
+      if (!e || e === "-" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return;
       if (!seen.has(e)) seen.set(e, u.name || "");
     });
     return Array.from(seen.entries()).map(([email, name]) => ({ email, name }));
@@ -415,7 +415,7 @@ export default function AdminLeadsHub() {
           <div>
             <h1 className="font-heading text-2xl font-bold">Leads &amp; Enrollments Hub</h1>
             <p className="text-sm text-muted-foreground">
-              Unified timeline across webinars, paid enrollments, and B2B leads — {stats.total} total
+              Unified timeline across webinars, paid enrollments, and B2B leads - {stats.total} total
             </p>
           </div>
         </div>
@@ -560,7 +560,7 @@ export default function AdminLeadsHub() {
                       {u.status && <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {u.email !== "—" && <span>{u.email}</span>}
+                      {u.email !== "-" && <span>{u.email}</span>}
                       {u.phone && <span className="ml-2">· {u.phone}</span>}
                       {u.webinar_title && (
                         <span className="ml-2">
@@ -600,7 +600,7 @@ export default function AdminLeadsHub() {
                     })()}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    {u.email && u.email !== "—" && (
+                    {u.email && u.email !== "-" && (
                       <Button asChild size="icon" variant="ghost" className="h-7 w-7" title="Email">
                         <a href={`mailto:${u.email}`}><Mail className="h-3.5 w-3.5" /></a>
                       </Button>

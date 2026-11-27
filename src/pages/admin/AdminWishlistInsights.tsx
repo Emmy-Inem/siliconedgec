@@ -32,7 +32,7 @@ export default function AdminWishlistInsights() {
     queryFn: async () => await fetchAllRows<any>("enrollments", "user_id, course_id"),
   });
 
-  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
+  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "-";
   const userName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? id.slice(0, 8);
   const enrolled = useMemo(() => new Set(enrollments.map((e: any) => `${e.user_id}_${e.course_id}`)), [enrollments]);
   const profileFor = (id: string) => profiles.find((p: any) => p.user_id === id);

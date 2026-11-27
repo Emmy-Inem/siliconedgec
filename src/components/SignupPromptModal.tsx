@@ -53,18 +53,18 @@ export function SignupPromptModal() {
     },
     register: {
       title: "Create an account to register",
-      desc: "Free webinars are open to all — just create a quick account so we can save your seat.",
+      desc: "Free webinars are open to all - just create a quick account so we can save your seat.",
     },
     bookmark: {
       title: "Sign up to save courses",
-      desc: "Bookmark courses to revisit them anytime — it takes 30 seconds to create your free account.",
+      desc: "Bookmark courses to revisit them anytime - it takes 30 seconds to create your free account.",
     },
     review: {
       title: "Sign in to leave a review",
       desc: "Reviews come from verified learners. Create your free account to share your experience.",
     },
     cart: {
-      title: "Almost there — create your account",
+      title: "Almost there - create your account",
       desc: "We'll attach this course to your new account so you can pay and start learning right away.",
     },
   };

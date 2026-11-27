@@ -33,7 +33,7 @@ export function isLessonUnlocked(lessonId: string, ctx: UnlockContext): boolean 
   const idx = ctx.lessons.findIndex((l) => l.id === lessonId);
   if (idx < 0) return false;
   if (idx === 0) return true;
-  // Admin/instructor granted an explicit unlock — access is allowed even if
+  // Admin/instructor granted an explicit unlock - access is allowed even if
   // earlier lessons aren't done yet. Their real progress stays untouched.
   if (ctx.approved?.has(lessonId)) return true;
   // Otherwise every previous lesson must be completed.

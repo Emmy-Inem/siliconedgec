@@ -18,7 +18,7 @@ type Row = {
 
 const MEDALS = ["1st", "2nd", "3rd"];
 
-/** Friendly cohort leaderboard — gives members a reason to come back weekly. */
+/** Friendly cohort leaderboard - gives members a reason to come back weekly. */
 export default function CohortLeaderboard({ cohortId, userId }: { cohortId: string; userId: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,14 +62,14 @@ export default function CohortLeaderboard({ cohortId, userId }: { cohortId: stri
         <Card className="p-3 flex items-center gap-3 bg-muted/40 border-border">
           <Flame className="h-4 w-4 text-orange-500" />
           <p className="text-sm">
-            You're <span className="font-semibold">#{me + 1}</span> of {sorted.length} this {mode === "weekly" ? "week" : "cohort"} —
+            You're <span className="font-semibold">#{me + 1}</span> of {sorted.length} this {mode === "weekly" ? "week" : "cohort"} -
             {" "}{mode === "weekly" ? sorted[me].weekly_xp : sorted[me].xp} XP.
           </p>
         </Card>
       )}
 
       {sorted.length === 0 ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground">No activity yet — complete a lesson to get on the board.</Card>
+        <Card className="p-10 text-center text-sm text-muted-foreground">No activity yet - complete a lesson to get on the board.</Card>
       ) : (
         <div className="grid gap-2">
           {sorted.map((r, i) => (

@@ -47,7 +47,7 @@ export function CohortAssessmentsPanel({ courseId, kind }: { courseId: string | 
 
   useEffect(() => { loadLessons(); loadRows(); }, [courseId, kind]);
 
-  const lessonTitle = (id: string) => lessons.find((l) => l.lesson_id === id)?.lesson_title ?? "—";
+  const lessonTitle = (id: string) => lessons.find((l) => l.lesson_id === id)?.lesson_title ?? "-";
 
   const toggleVisible = async (row: any) => {
     const { error } = await db.from(kind).update({ is_visible: !row.is_visible }).eq("id", row.id);

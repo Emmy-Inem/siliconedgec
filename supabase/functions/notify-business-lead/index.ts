@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       courseTitle = c?.title ?? "";
     }
     const kind = row.lead_type === "course" ? "course enquiry" : row.lead_type === "contact" ? "contact message" : "business inquiry";
-    const qa = row.is_test ? "[INTERNAL QA — not a real lead] " : "";
+    const qa = row.is_test ? "[INTERNAL QA - not a real lead] " : "";
 
     // In-app notice for admins (genuine enquiries only).
     if (!row.is_test && attempt === 1) {
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       if (ids.length) {
         await admin.from("notifications").insert(ids.map((uid) => ({
           user_id: uid, title: `New ${kind}: ${row.contact_name}`,
-          message: `${row.contact_name} (${row.email})${courseTitle ? ` — ${courseTitle}` : ""}`.slice(0, 200),
+          message: `${row.contact_name} (${row.email})${courseTitle ? ` - ${courseTitle}` : ""}`.slice(0, 200),
           type: "info", link: "/admin/people?tab=leads-hub",
         })));
       }

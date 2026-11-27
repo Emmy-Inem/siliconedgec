@@ -141,7 +141,7 @@ export default function AdminOverview() {
       ]);
 
       const publishedCount = allCourses.filter(c => c.is_published).length;
-      // Paid enrollments only — `free` payment_status rows are auto-created
+      // Paid enrollments only - `free` payment_status rows are auto-created
       // for every webinar registration, so they would double-count with the
       // Webinar Registrations card if treated as paid course enrollments.
       const paidEnrollments = allEnrollments.filter(isPaidEnrollment);
@@ -178,7 +178,7 @@ export default function AdminOverview() {
       const courseMap = new Map<string, string>();
       allCourses.forEach(c => courseMap.set(c.id, c.title));
 
-      // Recent Enrollments should reflect *paid* course activity only —
+      // Recent Enrollments should reflect *paid* course activity only -
       // free webinar shadow rows already show on the Webinar Registrations
       // tile and would otherwise double-feed this list.
       const recentEnrollments = allEnrollments.filter(isPaidEnrollment).slice(0, 5).map(e => ({
@@ -246,7 +246,7 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      {/* Reconciliation — every figure on the cards is recomputed live from
+      {/* Reconciliation - every figure on the cards is recomputed live from
           the source tables (no cached counters) so the numbers can be
           audited against the database at a glance. */}
       <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4 text-xs">

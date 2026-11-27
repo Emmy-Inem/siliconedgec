@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 const URL = import.meta.env.VITE_SUPABASE_URL as string;
 const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-describe("RLS — enrollments table protection", () => {
+describe("RLS - enrollments table protection", () => {
   it("rejects anonymous insertion of active/paid enrollment records", async () => {
     if (!URL || !KEY) return;
     const supa = createClient(URL, KEY);

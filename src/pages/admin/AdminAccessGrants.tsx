@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logAdminActivity } from "@/lib/admin-logger";
 
 /**
- * Manual Access Grants — lets an admin/instructor hand a student access to a
+ * Manual Access Grants - lets an admin/instructor hand a student access to a
  * course without a Paystack payment. We upsert into `enrollments` with
  * `payment_status='granted'` and `access_source='manual_grant'`; the existing
  * `is_paid_enrolled` helper already treats those as valid access.
@@ -48,7 +48,7 @@ export default function AdminAccessGrants() {
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) {
-        // Fallback: some projects have no explicit FK-embed name — try a
+        // Fallback: some projects have no explicit FK-embed name - try a
         // simpler select and hydrate names client-side.
         const { data: rows } = await (supabase as any)
           .from("enrollments")
@@ -146,7 +146,7 @@ export default function AdminAccessGrants() {
         <div>
           <h1 className="font-heading text-xl font-bold">Manual Access Grants</h1>
           <p className="text-sm text-muted-foreground">
-            Give a student full access to a course without a Paystack payment — useful for
+            Give a student full access to a course without a Paystack payment - useful for
             scholarships, bootcamp participants, or make-good grants.
           </p>
         </div>

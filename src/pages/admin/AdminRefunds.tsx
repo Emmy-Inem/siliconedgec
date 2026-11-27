@@ -108,11 +108,11 @@ export default function AdminRefunds() {
   const orderMap = new Map((orders as any[]).map((o) => [o.id, o.reference]));
 
   const columns: Column<Refund>[] = [
-    { key: "order_id", label: "Order", render: (r) => <span className="font-mono text-xs">{(orderMap.get(r.order_id ?? "") as string) ?? (r.order_id ? `${r.order_id.slice(0, 8)}...` : "—")}</span> },
+    { key: "order_id", label: "Order", render: (r) => <span className="font-mono text-xs">{(orderMap.get(r.order_id ?? "") as string) ?? (r.order_id ? `${r.order_id.slice(0, 8)}...` : "-")}</span> },
     { key: "amount", label: "Amount", render: (r) => <span className="font-medium">{formatNaira(Number(r.amount))}</span> },
-    { key: "reason", label: "Reason", render: (r) => <span className="line-clamp-1 max-w-xs text-xs">{r.reason || "—"}</span> },
+    { key: "reason", label: "Reason", render: (r) => <span className="line-clamp-1 max-w-xs text-xs">{r.reason || "-"}</span> },
     { key: "status", label: "Status", render: (r) => <Badge className={STATUS_VARIANT[r.status] ?? ""}>{r.status}</Badge> },
-    { key: "processed_at", label: "Processed", render: (r) => r.processed_at ? new Date(r.processed_at).toLocaleDateString() : "—" },
+    { key: "processed_at", label: "Processed", render: (r) => r.processed_at ? new Date(r.processed_at).toLocaleDateString() : "-" },
     { key: "created_at", label: "Created", render: (r) => new Date(r.created_at).toLocaleDateString() },
   ];
 
@@ -138,7 +138,7 @@ export default function AdminRefunds() {
                 <SelectTrigger><SelectValue placeholder="Select order..." /></SelectTrigger>
                 <SelectContent>
                   {(orders as any[]).map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.reference} — {formatNaira(Number(o.amount))} ({o.status})</SelectItem>
+                    <SelectItem key={o.id} value={o.id}>{o.reference} - {formatNaira(Number(o.amount))} ({o.status})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

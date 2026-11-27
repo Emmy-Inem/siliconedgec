@@ -1,7 +1,7 @@
 /**
  * Thin wrapper around `gtag()` so the rest of the app doesn't need to know
  * whether GA4 has loaded yet. Calls are queued via `dataLayer` (gtag's own
- * mechanism) so they're delivered as soon as the script is ready — important
+ * mechanism) so they're delivered as soon as the script is ready - important
  * on slow mobile connections where the route change can race the GA script.
  */
 
@@ -47,7 +47,7 @@ function safeGtag(...args: any[]) {
   }
 }
 
-/** TikTok Pixel — safe wrapper. The base snippet in index.html stubs `ttq`
+/** TikTok Pixel - safe wrapper. The base snippet in index.html stubs `ttq`
  *  so calls made before the SDK loads are queued and replayed on load. */
 function safeTtq(method: "page" | "track" | "identify", ...args: any[]) {
   if (typeof window === "undefined") return;
@@ -133,7 +133,7 @@ function whenTtqReady(cb: () => void, timeoutMs = 4000) {
 }
 
 /** True once events.js has actually downloaded and replaced the queued
- *  stub. The TikTok base snippet doesn't expose a `.loaded` flag — instead
+ *  stub. The TikTok base snippet doesn't expose a `.loaded` flag - instead
  *  we check three real signals:
  *    1. A <script> tag for `events.js` exists in the DOM and has finished
  *       executing (no `data-loading` / readyState pending).
@@ -142,14 +142,14 @@ function whenTtqReady(cb: () => void, timeoutMs = 4000) {
  *       queue array as `setAndDefer`, but the live SDK replaces it).
  *    3. As a final fallback, if `ttq._partner` got populated (the live SDK
  *       sets it during init), we know events.js ran.
- *  Any one of these is sufficient — we use OR semantics so a strict
+ *  Any one of these is sufficient - we use OR semantics so a strict
  *  ad-blocker that strips one signal but not the others still passes. */
 function isTtqSdkLoaded(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const ttq: any = window.ttq;
     if (!ttq) return false;
-    // Signal 1 — events.js script tag is in the DOM and not still loading.
+    // Signal 1 - events.js script tag is in the DOM and not still loading.
     const scripts = document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
       const s = scripts[i] as HTMLScriptElement;
@@ -160,7 +160,7 @@ function isTtqSdkLoaded(): boolean {
         if (!(s as any).dataset?.failed) return true;
       }
     }
-    // Signal 2 — live SDK populated `_partner` or replaced `instance()`
+    // Signal 2 - live SDK populated `_partner` or replaced `instance()`
     if (ttq._partner) return true;
     if (typeof ttq.instance === "function") {
       const inst = ttq.instance(TIKTOK_PIXEL_ID);
@@ -191,7 +191,7 @@ export function gaPageview(path: string, title?: string) {
   metaPageview();
 }
 
-/** Generic GA4 event. Use sparingly — most analytics live in `lead_sources`. */
+/** Generic GA4 event. Use sparingly - most analytics live in `lead_sources`. */
 export function gaEvent(name: string, params: Record<string, unknown> = {}) {
   safeGtag("event", name, params);
 }
@@ -220,7 +220,7 @@ export function tikTokEvent(event: string, params: Record<string, unknown> = {})
 
 // ───── Meta (Facebook) Pixel ────────────────────────────────────────────
 // The base snippet in index.html stubs `window.fbq` so calls before the
-// SDK is ready are queued and replayed once fbevents.js loads — we still
+// SDK is ready are queued and replayed once fbevents.js loads - we still
 // guard every call to avoid throwing if a privacy extension nuked `fbq`.
 
 const META_PIXEL_ID = "802223455823137";
@@ -238,7 +238,7 @@ export function metaPageview() {
 
 /** Standard Meta Pixel event. Use the canonical event names where
  *  possible (AddToCart, InitiateCheckout, Purchase, CompleteRegistration,
- *  Lead, ViewContent) — they unlock Meta Ads optimisation. Pass an
+ *  Lead, ViewContent) - they unlock Meta Ads optimisation. Pass an
  *  `eventID` so server-side Conversions API calls can dedup later. */
 export function metaEvent(event: string, params: Record<string, unknown> = {}) {
   const eventID = makeEventId(event);
@@ -247,7 +247,7 @@ export function metaEvent(event: string, params: Record<string, unknown> = {}) {
   safeFbq("track", event, params, { eventID });
 }
 
-/** Custom (non-standard) Meta event — used for things Meta doesn't have a
+/** Custom (non-standard) Meta event - used for things Meta doesn't have a
  *  canonical name for, e.g. `DownloadCertificate`. */
 export function metaCustomEvent(event: string, params: Record<string, unknown> = {}) {
   const eventID = makeEventId(event);
@@ -278,7 +278,7 @@ export function getMetaPixelStatus(): MetaPixelStatus {
   };
 }
 
-/** Diagnostic snapshot of TikTok Pixel state — used by the admin Tracking QA
+/** Diagnostic snapshot of TikTok Pixel state - used by the admin Tracking QA
  *  page so admins can confirm the SDK actually loaded (not just queued) on
  *  whatever browser/device they're on. */
 export interface TikTokPixelStatus {
@@ -319,15 +319,15 @@ export function getTikTokPixelStatus(): TikTokPixelStatus {
 // Single Google Ads account loaded via gtag.js in index.html. We expose:
 //   1. A central event mapping (GOOGLE_ADS_EVENTS) so every conversion is
 //      named consistently across the codebase and easy to audit.
-//   2. `googleAdsConversion()` — fires `event: 'conversion'` with the
+//   2. `googleAdsConversion()` - fires `event: 'conversion'` with the
 //      correct `send_to` (account or labelled), value, currency and
 //      `transaction_id` (used by Google Ads for dedup, mirrors the same
 //      event_id we use for Meta/TikTok).
-//   3. Enhanced Conversions — when the user is signed in (or supplies an
+//   3. Enhanced Conversions - when the user is signed in (or supplies an
 //      email at registration), we hash with SHA-256 and pass via
 //      `gtag('set', 'user_data', ...)` so Google can match the conversion
 //      to a logged-in Google account even when 3rd-party cookies are gone.
-//   4. Consent Mode v2 helper — CookieBanner.tsx calls this on Accept all
+//   4. Consent Mode v2 helper - CookieBanner.tsx calls this on Accept all
 //      to flip ad_storage / ad_user_data / ad_personalization to granted.
 
 export const GOOGLE_ADS_ACCOUNT = "AW-18126380202";
@@ -336,7 +336,7 @@ export const COURSE_REGISTER_CONVERSION_SEND_TO = "AW-18126380202/kMw5CN-1zLsdEK
 /**
  * Conversion label registry. Until the admin creates conversion actions
  * in Google Ads (Tools → Conversions) and pastes the labels, we leave
- * these as `null` — the helper falls back to account-level `send_to`
+ * these as `null` - the helper falls back to account-level `send_to`
  * which still records the event under the account so it appears in
  * "All conversions" diagnostics. Once labels arrive, replace `null`
  * with the string after the `/` in the snippet (e.g. "abcDEF123").
@@ -350,7 +350,7 @@ export const GOOGLE_ADS_EVENTS = {
   AddToCart:             { label: null as string | null, gaName: "add_to_cart" },
   // Cart → Paystack handoff
   InitiateCheckout:      { label: null as string | null, gaName: "begin_checkout" },
-  // Free enrollment (₦0 course) — counts as a registration conversion
+  // Free enrollment (₦0 course) - counts as a registration conversion
   CompleteRegistration:  { label: null as string | null, gaName: "sign_up" },
   // Paid enrollment confirmed by Paystack
   Purchase:              { label: null as string | null, gaName: "purchase" },
@@ -474,7 +474,7 @@ export function googleAdsConversion(
   });
 }
 
-/** Update Google Consent Mode v2 — called by CookieBanner.tsx. */
+/** Update Google Consent Mode v2 - called by CookieBanner.tsx. */
 export function updateGoogleConsent(granted: boolean, source: "user" | "stored" = "user") {
   const state = {
     ad_storage: (granted ? "granted" : "denied") as "granted" | "denied",
@@ -491,7 +491,7 @@ export function updateGoogleConsent(granted: boolean, source: "user" | "stored" 
   }
 }
 
-/** Live snapshot of the current consent state — `null` if no
+/** Live snapshot of the current consent state - `null` if no
  *  update has been registered yet (cookie banner not yet acted on
  *  AND no stored choice was replayed). */
 export function getConsentState() {
@@ -518,7 +518,7 @@ export async function fireEnhancedConversionsTest(input: {
   logPixelEvent({
     ts: Date.now(),
     vendor: "google",
-    event: "Lead (admin test — not sent to Google Ads)",
+    event: "Lead (admin test - not sent to Google Ads)",
     event_id,
     params: { test_mode: true },
   });

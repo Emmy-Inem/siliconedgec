@@ -31,7 +31,7 @@ export function FlexiblePaymentButton({ courseIds, currency, disabled, promoCode
       if (!user) { navigate(`/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`); return; }
       setOpen(true); setQuote(null); setError(""); setAccepted(false); setScheduleAccepted(false);
       void ensureAuthoritativeCoursePricing(courseIds);
-    }}>Flexible payment — pay in installments</Button>
+    }}>Flexible payment - pay in installments</Button>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Flexible weekly payments</DialogTitle></DialogHeader>
       <p className="text-sm text-muted-foreground">Choose how many weekly payments you need. Your plan must finish before the final week of every selected course. No automatic charges. If your cart has different course dates, the earliest final-week deadline applies to the combined plan.</p>
       <label className="text-sm">Number of weekly payments
@@ -44,7 +44,7 @@ export function FlexiblePaymentButton({ courseIds, currency, disabled, promoCode
       }}>{busy ? "Loading…" : "Show my payment schedule"}</Button>
       {validQuote && <>
         <p className="font-medium">Total: {money(quote.total_minor)}</p>
-        <ol className="space-y-2 text-sm">{quote.schedule.map((p: any) => <li key={p.number} className="flex justify-between gap-3"><span>{p.number === 1 ? "First payment — today" : new Date(p.due_at).toLocaleDateString()}</span><strong>{money(p.amount_minor)}</strong></li>)}</ol>
+        <ol className="space-y-2 text-sm">{quote.schedule.map((p: any) => <li key={p.number} className="flex justify-between gap-3"><span>{p.number === 1 ? "First payment - today" : new Date(p.due_at).toLocaleDateString()}</span><strong>{money(p.amount_minor)}</strong></li>)}</ol>
         <p className="text-sm">Final balance deadline: <strong>{new Date(quote.deadline).toLocaleString()}</strong>. If unpaid when the final week starts, course access is suspended. Certificates are withheld until full payment and course completion.</p>
         <CheckoutTerms accepted={accepted} onChange={setAccepted} />
         <label className="flex gap-3 items-start text-sm"><input className="mt-1" type="checkbox" checked={scheduleAccepted} onChange={e => setScheduleAccepted(e.target.checked)} /><span>I accept this payment schedule, final deadline and access and certificate conditions.</span></label>

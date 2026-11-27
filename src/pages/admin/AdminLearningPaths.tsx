@@ -103,7 +103,7 @@ export default function AdminLearningPaths() {
 
   const columns: Column<LearningPath>[] = [
     { key: "title", label: "Title" },
-    { key: "description", label: "Description", render: (p) => <span className="truncate max-w-[200px] block">{p.description || "—"}</span> },
+    { key: "description", label: "Description", render: (p) => <span className="truncate max-w-[200px] block">{p.description || "-"}</span> },
     { key: "is_published", label: "Status", render: (p) => <Badge variant={p.is_published ? "default" : "secondary"}>{p.is_published ? "Published" : "Draft"}</Badge> },
   ];
 

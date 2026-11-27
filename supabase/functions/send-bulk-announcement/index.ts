@@ -1,5 +1,5 @@
 // Returns the list of recipient emails for an announcement audience.
-// Pulls emails from auth.users via the service-role admin API — these
+// Pulls emails from auth.users via the service-role admin API - these
 // addresses are NOT exposed to the client, so this MUST run server-side.
 // The admin UI then opens Gmail's compose window with these addresses
 // pre-filled in BCC. We also update the matching email_announcements row

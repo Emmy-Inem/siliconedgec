@@ -263,7 +263,7 @@ export default function AdminAssignmentSubmissions() {
                     {gradeInput && Number(gradeInput) >= (active.assignment?.max_points ?? 100) * 0.6
                       ? "✓ Pass"
                       : gradeInput
-                        ? "Below 60% — fail"
+                        ? "Below 60% - fail"
                         : ""}
                   </p>
                 </div>

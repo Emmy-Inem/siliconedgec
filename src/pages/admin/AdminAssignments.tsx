@@ -185,7 +185,7 @@ export default function AdminAssignments() {
           {(a.lessons as any)?.modules?.courses?.title
             ? `${(a.lessons as any).modules.courses.title} → `
             : ""}
-          {(a.lessons as any)?.title ?? "—"}
+          {(a.lessons as any)?.title ?? "-"}
         </span>
       ),
     },
@@ -198,7 +198,7 @@ export default function AdminAssignments() {
       key: "due_at",
       label: "Due",
       render: (a) => (
-        <span className="text-xs">{a.due_at ? new Date(a.due_at).toLocaleDateString() : "—"}</span>
+        <span className="text-xs">{a.due_at ? new Date(a.due_at).toLocaleDateString() : "-"}</span>
       ),
     },
     {

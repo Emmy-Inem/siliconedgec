@@ -56,7 +56,7 @@ export default function InstructorAssignments() {
   if (!activeCohort.course_id) {
     return (
       <Card className="p-6 text-sm text-muted-foreground">
-        This cohort isn't linked to a course yet — attach one in the admin cohorts page to grade assignments here.
+        This cohort isn't linked to a course yet - attach one in the admin cohorts page to grade assignments here.
       </Card>
     );
   }

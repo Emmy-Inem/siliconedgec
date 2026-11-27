@@ -17,7 +17,7 @@ interface AdminFeature {
 
 // `section` values here must be from the real vocabulary returned by
 // getAccessibleSections() in src/lib/admin-permissions.ts (Workspace / LMS /
-// Engagement / Finance / Content / Platform) — every non-admin staff role's
+// Engagement / Finance / Content / Platform) - every non-admin staff role's
 // results are filtered against this list, so a section name that doesn't
 // exist in that vocabulary silently hides the entry for every such role.
 const ALL_FEATURES: AdminFeature[] = [

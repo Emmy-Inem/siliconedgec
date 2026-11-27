@@ -205,7 +205,7 @@ export default function InstructorOverview() {
             />
           </div>
 
-          {/* Course health — the admin-level numbers for the cohort's course */}
+          {/* Course health - the admin-level numbers for the cohort's course */}
           <div>
             <h3 className="font-heading font-semibold text-sm mb-3">Course health</h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

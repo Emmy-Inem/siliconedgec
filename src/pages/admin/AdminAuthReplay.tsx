@@ -8,13 +8,13 @@ import { Loader2, LogIn, KeyRound, Mail, ShieldCheck, ArrowRight, User2, Globe, 
 import { format, formatDistanceToNow } from "date-fns";
 
 /**
- * Auth event replay — chronological per-user (or per-anonymous-session) timeline
+ * Auth event replay - chronological per-user (or per-anonymous-session) timeline
  * of the auth funnel events emitted by `UtmTracker`. Lets ops eyeball whether
  * UTMs/next-redirect/has_recovery_token survived navigation across mobile.
  *
  * Pulls the last 500 auth-flagged lead_sources rows and groups them by:
  *   - user_id when present (signed-in mid-flow)
- *   - otherwise by (utm_source|utm_campaign|landing_page) — best effort to
+ *   - otherwise by (utm_source|utm_campaign|landing_page) - best effort to
  *     stitch together the same anonymous funnel without writing a session id
  *     to the lead_sources table.
  */

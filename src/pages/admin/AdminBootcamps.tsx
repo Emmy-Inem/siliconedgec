@@ -208,7 +208,7 @@ export default function AdminBootcamps() {
                               <div className="text-xs text-muted-foreground">{e.email}</div>
                             </td>
                             <td className="p-2">{e.installments_paid}/{e.total_installments}</td>
-                            <td className="p-2">{e.next_due_date ?? "—"}</td>
+                            <td className="p-2">{e.next_due_date ?? "-"}</td>
                             <td className="p-2">
                               <Badge variant={
                                 e.status === "completed" ? "default" :

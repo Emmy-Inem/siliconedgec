@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Clock, Users, Heart, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { getCompareAtPrice } from "@/lib/course-pricing";
 import type { DbCourse } from "@/hooks/useCourses";
 import { useLocalizedPrice } from "@/hooks/useLocalizedPrice";
 import { StarRating } from "@/components/StarRating";
@@ -147,7 +148,14 @@ export const CourseCard = forwardRef<HTMLDivElement, { course: DbCourse; index?:
                 {isWebinar ? (
                   <span className="text-foreground">Free · Register</span>
                 ) : (
-                  format(course.price)
+                  <span className="inline-flex items-baseline gap-1.5">
+                    {getCompareAtPrice(course as any) && (
+                      <span className="text-xs font-normal text-muted-foreground line-through">
+                        {format(getCompareAtPrice(course as any) as number)}
+                      </span>
+                    )}
+                    {format(course.price)}
+                  </span>
                 )}
               </span>
             </div>

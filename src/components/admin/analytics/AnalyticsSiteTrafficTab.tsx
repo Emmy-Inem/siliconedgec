@@ -161,7 +161,7 @@ export function AnalyticsSiteTrafficTab({
         </motion.div>
       </div>
 
-      {/* Languages — only renders if we have data */}
+      {/* Languages - only renders if we have data */}
       {trafficStats.languages.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -214,7 +214,7 @@ export function AnalyticsSiteTrafficTab({
         </motion.div>
       ) : (
         <div className="bg-muted/20 border border-border rounded-2xl p-4 text-[11px] text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">Visitor countries — collecting…</strong> Geo is now resolved on
+          <strong className="text-foreground">Visitor countries - collecting…</strong> Geo is now resolved on
           every pageview via Cloudflare's edge. Country data will appear here as new visits come in. For
           richer geo (region/city + acquisition by country) open <em>GA4 → Reports → Demographics</em>.
         </div>
@@ -249,7 +249,7 @@ export function AnalyticsSiteTrafficTab({
       )}
 
       <div className="text-center">
-        <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events — no estimates.</p>
+        <p className="text-xs text-muted-foreground">All numbers above are computed live from your tracked events - no estimates.</p>
       </div>
     </div>
   );

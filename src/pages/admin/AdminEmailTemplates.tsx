@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 const TEMPLATES = [
-  { key: "tpl_welcome", label: "Welcome Email", defaults: { subject: "Welcome to Silicon Edge!", body: "Hi {{name}},\n\nWelcome aboard! Start exploring courses at {{site_url}}/courses.\n\n— The Silicon Edge Team" } },
+  { key: "tpl_welcome", label: "Welcome Email", defaults: { subject: "Welcome to Silicon Edge!", body: "Hi {{name}},\n\nWelcome aboard! Start exploring courses at {{site_url}}/courses.\n\n- The Silicon Edge Team" } },
   { key: "tpl_enrollment", label: "Enrollment Confirmation", defaults: { subject: "You're enrolled in {{course_title}}", body: "Hi {{name}},\n\nYour enrollment is confirmed. Begin learning here: {{course_url}}.\n\nGood luck!" } },
   { key: "tpl_certificate", label: "Certificate Issued", defaults: { subject: "Certificate ready: {{course_title}}", body: "Congratulations {{name}}!\n\nYou've successfully completed {{course_title}}.\n\nVerify your certificate: {{verify_url}}." } },
   { key: "tpl_reset", label: "Password Reset", defaults: { subject: "Reset your password", body: "Hi {{name}},\n\nClick the link to reset your password: {{reset_url}}.\n\nThis link expires in 1 hour. If you didn't request this, ignore this email." } },
@@ -123,7 +123,7 @@ export default function AdminEmailTemplates() {
   const resetToDefaults = () => {
     setSubject(tpl.defaults.subject);
     setBody(tpl.defaults.body);
-    toast({ title: "Reset", description: "Reverted to defaults — click Save to persist." });
+    toast({ title: "Reset", description: "Reverted to defaults - click Save to persist." });
   };
 
   const previewHtml = useMemo(() => buildPreviewHtml(subject, body), [subject, body]);

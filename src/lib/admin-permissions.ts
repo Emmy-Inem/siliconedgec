@@ -41,7 +41,7 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 // matrix so a corrupted/empty matrix never locks staff out of baseline routes.
 //
 // Every entry here must cover the hub routes rendered by AdminSidebar's
-// getAccessibleSections() for that role — otherwise the sidebar shows a link
+// getAccessibleSections() for that role - otherwise the sidebar shows a link
 // the role can't actually open, and canAccessRoute() bounces them back to
 // /admin. Keep the two in sync when either changes.
 const FALLBACK_ALLOWED: Record<Exclude<StaffRole, "admin">, string[]> = {

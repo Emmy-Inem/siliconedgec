@@ -14,7 +14,7 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
-// jsdom doesn't ship IntersectionObserver — required by embla-carousel.
+// jsdom doesn't ship IntersectionObserver - required by embla-carousel.
 class IO {
   observe() {}
   unobserve() {}

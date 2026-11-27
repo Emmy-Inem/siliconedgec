@@ -57,7 +57,7 @@ export async function notifyAdminsOfTicket(ticketId: string, kind: "created" | "
       : kind === "user_reply" ? `New reply on ticket #${t.ticket_number}`
       : `New support ticket #${t.ticket_number}`;
   const html = box(title, [
-    `<strong>Ticket:</strong> #${t.ticket_number} — ${t.subject}`,
+    `<strong>Ticket:</strong> #${t.ticket_number} - ${t.subject}`,
     `<strong>From:</strong> ${prof?.full_name ?? "Learner"} ${t.email ? `(${t.email})` : ""}`,
     `<strong>Priority:</strong> ${t.priority} · <strong>Category:</strong> ${t.category}`,
     `<strong>Message:</strong><br/>${(t.body ?? "").slice(0, 1500).replace(/\n/g, "<br/>")}`,
@@ -78,19 +78,19 @@ async function notifyUser(ticketId: string, kind: "created" | "reply" | "resolve
   if (!email) return;
   const map = {
     created: {
-      subject: `We received your request — ticket #${t.ticket_number}`,
+      subject: `We received your request - ticket #${t.ticket_number}`,
       title: "Your support request is with our team",
       lines: [`We've logged your question as ticket <strong>#${t.ticket_number}</strong>: ${t.subject}.`, "A member of the team will reply here and by email shortly."],
     },
     reply: {
       subject: `Reply on your ticket #${t.ticket_number}`,
       title: "Our team replied to your ticket",
-      lines: [`<strong>#${t.ticket_number}</strong> — ${t.subject}`, (message ?? "").slice(0, 1500).replace(/\n/g, "<br/>")],
+      lines: [`<strong>#${t.ticket_number}</strong> - ${t.subject}`, (message ?? "").slice(0, 1500).replace(/\n/g, "<br/>")],
     },
     resolved: {
       subject: `Ticket #${t.ticket_number} resolved`,
       title: "Your ticket has been resolved",
-      lines: [`<strong>#${t.ticket_number}</strong> — ${t.subject}`, t.resolution_note ? `Resolution: ${t.resolution_note}` : "If this is still an issue, just reply on the ticket and it reopens automatically."],
+      lines: [`<strong>#${t.ticket_number}</strong> - ${t.subject}`, t.resolution_note ? `Resolution: ${t.resolution_note}` : "If this is still an issue, just reply on the ticket and it reopens automatically."],
     },
   } as const;
   const m = map[kind];

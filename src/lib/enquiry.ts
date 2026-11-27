@@ -4,7 +4,7 @@ import { gaEvent, googleAdsConversion } from "@/lib/analytics";
 export type EnquiryType = "contact" | "business" | "course";
 const ATTR_KEYS = ["gclid", "gbraid", "wbraid", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
 
-/** Campaign attribution only — never personal data. */
+/** Campaign attribution only - never personal data. */
 export function collectAttribution(): Record<string, string> {
   const out: Record<string, string> = {};
   try {

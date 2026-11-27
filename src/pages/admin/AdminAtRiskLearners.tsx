@@ -67,7 +67,7 @@ export default function AdminAtRiskLearners() {
         rows.push({
           user_id: e.user_id,
           name: p?.full_name || "Unnamed",
-          course: courseMap.get(e.course_id) ?? "—",
+          course: courseMap.get(e.course_id) ?? "-",
           progress,
           daysSinceSeen,
           reasons,

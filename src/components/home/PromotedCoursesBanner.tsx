@@ -143,7 +143,7 @@ export function PromotedCoursesBanner() {
   const currentCourse = courses[currentIndex] || courses[0];
   const courseUrl = currentCourse.slug ? `/courses/${currentCourse.slug}` : `/courses/${currentCourse.id}`;
   const headlineText = config.customHeadline
-    ? `${config.customHeadline.replace(/—/g, "-")} - `
+    ? `${config.customHeadline.replace(/-/g, "-")} - `
     : "";
 
   const marqueeContent = (
@@ -163,7 +163,7 @@ export function PromotedCoursesBanner() {
           className="font-semibold text-white hover:text-primary underline-offset-4 hover:underline transition-colors flex items-center gap-1.5 shrink-0"
         >
           <GraduationCap className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-          <span>{currentCourse.title.replace(/—/g, "-")}</span>
+          <span>{currentCourse.title.replace(/-/g, "-")}</span>
         </Link>
 
         {currentCourse.duration_hours ? (

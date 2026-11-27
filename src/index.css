@@ -331,7 +331,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Premium iconography — bolder Lucide stroke + crisper line joins.
+   Premium iconography - bolder Lucide stroke + crisper line joins.
    Lucide ships at stroke-width 2; bumping to 2.25 + round joins gives a
    more confident, premium feel without breaking icon-button alignment.
    `:where()` keeps specificity at 0 so per-component overrides still win.

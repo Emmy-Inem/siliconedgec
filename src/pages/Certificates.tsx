@@ -74,7 +74,7 @@ export default function Certificates() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Verifiable Certificates — Silicon Edge"
+        title="Verifiable Certificates - Silicon Edge"
         description="Earn verifiable, QR-coded course completion certificates. Each certificate has a unique ID employers can validate online."
       />
       <Header />
@@ -225,7 +225,7 @@ export default function Certificates() {
                 <span className="block mt-2 text-xs">Complete a course to unlock download &amp; sharing.</span>
               )}
             </p>
-            {/* Scaled to fit the viewport width on every device — the PDF
+            {/* Scaled to fit the viewport width on every device - the PDF
                 download still renders at full 900×637 resolution. */}
             <div className="max-w-3xl mx-auto rounded-xl overflow-hidden shadow-xl border border-border/60">
               <ScaledCertificate>
@@ -328,7 +328,7 @@ function CertificateCardWithDownload({
         content_name: courseName,
         content_type: "certificate",
       });
-      // Meta has no canonical "Download" event — use a custom event so
+      // Meta has no canonical "Download" event - use a custom event so
       // it shows up under Events Manager → Custom Conversions.
       metaCustomEvent("DownloadCertificate", {
         content_ids: [certId],
@@ -409,7 +409,7 @@ function CertificateCardWithDownload({
  *
  * It deliberately contains no <text> and no web font: html2canvas serialises
  * SVG nodes into a standalone image, which drops any externally loaded font
- * (Great Vibes) and fell back to a serif face — that was the single biggest
+ * (Great Vibes) and fell back to a serif face - that was the single biggest
  * visual difference between the on-page sample and the exported PDF.
  */
 function SignatureMark({ name }: { name: string; variant?: "a" | "b" }) {
@@ -510,7 +510,7 @@ function BrandedCertificate({
   const lead = instructorName?.trim() || "Fauziyah Zakariyah";
   return (
     <div className="relative overflow-hidden bg-white" style={{ width: 900, height: 637 }} data-certificate-surface>
-      {/* Outer double border — gold + thin navy inner */}
+      {/* Outer double border - gold + thin navy inner */}
       <div className="absolute inset-3 rounded-xl border-[2px] pointer-events-none" style={{ borderColor: "hsl(var(--gold))" }} />
       <div className="absolute inset-[18px] rounded-lg border pointer-events-none" style={{ borderColor: "hsl(var(--navy) / 0.25)" }} />
 
@@ -556,7 +556,7 @@ function BrandedCertificate({
       </div>
 
       <div className="relative text-center h-full flex flex-col" style={{ padding: "40px 64px" }}>
-        {/* Header — logo */}
+        {/* Header - logo */}
         <div className="flex justify-center" style={{ marginBottom: 12 }}>
           <img src={logoDark} alt="Silicon Edge Consulting" className="h-10" />
         </div>
@@ -567,7 +567,7 @@ function BrandedCertificate({
         {/* Title with flanking ornaments.
             Neither flex centering nor inline vertical-align survives the
             html2canvas raster for 1px rules, so the rules are absolutely
-            positioned inside a fixed-height row — geometry html2canvas
+            positioned inside a fixed-height row - geometry html2canvas
             reproduces exactly. */}
         <div className="mb-1" style={{ position: "relative", height: 16, textAlign: "center", lineHeight: "16px", fontSize: 0 }}>
           <span
@@ -613,7 +613,7 @@ function BrandedCertificate({
         </p>
 
         {/* Badge row. html2canvas mis-computes the baseline of inline SVGs, which is
-            what pushed these icons out of line in the exported PDF — so each icon
+            what pushed these icons out of line in the exported PDF - so each icon
             sits in its own fixed-size flex box with an explicit line-height. */}
         <div className="mb-auto" style={{ color: "#6b7280", textAlign: "center", fontSize: 0 }}>
           {[
@@ -642,7 +642,7 @@ function BrandedCertificate({
           ))}
         </div>
 
-        {/* Footer — signatures + seal */}
+        {/* Footer - signatures + seal */}
         {/* Every column reserves the same 72px mark area so the three rule lines and
             the captions below them land on exactly the same baseline in the PDF. */}
         <div className="grid grid-cols-3 items-start" style={{ columnGap: 16, marginTop: 24 }}>
@@ -656,7 +656,7 @@ function BrandedCertificate({
             </p>
           </div>
 
-          {/* Center seal — same mark area, no rule underneath */}
+          {/* Center seal - same mark area, no rule underneath */}
           <div className="flex items-end justify-center" style={{ height: 72 }}>
             <SealMark />
           </div>

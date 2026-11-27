@@ -58,7 +58,7 @@ describe("LessonQuiz a11y regression", () => {
     renderQuiz();
     // Wait for quiz title to appear
     expect(await screen.findByText("Test quiz")).toBeInTheDocument();
-    // Each radio is wrapped in a <label> that contains the option text — RTL
+    // Each radio is wrapped in a <label> that contains the option text - RTL
     // resolves accessible name from the label's textContent.
     const radios = await screen.findAllByRole("radio");
     expect(radios.length).toBeGreaterThan(0);

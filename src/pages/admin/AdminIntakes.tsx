@@ -84,7 +84,7 @@ function runFor(runs: Map<string, CohortRun[]>, courseId: string | null, at: str
 }
 
 function fmtDate(d: string | null) {
-  return d ? new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—";
+  return d ? new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "-";
 }
 
 const naira = (n: number) => `₦${Math.round(n).toLocaleString()}`;
@@ -212,7 +212,7 @@ export default function AdminIntakes() {
           start_date: bc.start_date,
           end_date: bc.end_date,
           is_active: bc.is_active,
-          course: (courseById.get(bc.course_id) as any)?.title ?? "—",
+          course: (courseById.get(bc.course_id) as any)?.title ?? "-",
           signups: rows.length,
           paying: paying.length,
           fullyPaid: fullyPaid.length,
@@ -330,7 +330,7 @@ function IntakeCard({ b, kind }: { b: any; kind: "course" | "webinar" }) {
               <>
                 {run.cohort_number != null && <Badge variant="secondary">Cohort {run.cohort_number}</Badge>}
                 <span className="font-semibold">{run.name}</span>
-                <Badge variant="outline" className="text-[10px]">{run.status ?? "—"}</Badge>
+                <Badge variant="outline" className="text-[10px]">{run.status ?? "-"}</Badge>
               </>
             ) : (
               <>
@@ -344,7 +344,7 @@ function IntakeCard({ b, kind }: { b: any; kind: "course" | "webinar" }) {
         <div className="text-right text-xs text-muted-foreground">
           <div className="flex items-center gap-1 justify-end">
             <CalendarRange className="h-3.5 w-3.5" />
-            {run ? `${fmtDate(run.start_date)} – ${fmtDate(run.end_date)}` : "—"}
+            {run ? `${fmtDate(run.start_date)} – ${fmtDate(run.end_date)}` : "-"}
           </div>
           <div className="mt-0.5">
             Signups {fmtDate(b.firstAt)} → {fmtDate(b.lastAt)}

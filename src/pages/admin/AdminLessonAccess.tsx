@@ -19,13 +19,13 @@ const db = supabase as any;
  * Lets staff:
  *  - Pick a course + student
  *  - See each lesson's Locked / Unlocked / Completed state
- *  - Toggle unlock (writes/removes lesson_unlocks — the authoritative signal)
- *  - Toggle "mark complete" (writes lesson_progress) — independent from unlock
+ *  - Toggle unlock (writes/removes lesson_unlocks - the authoritative signal)
+ *  - Toggle "mark complete" (writes lesson_progress) - independent from unlock
  *  - Bulk unlock every lesson for that one student
  *  - Bulk unlock every lesson for every cohort member on that course
  *
  * The DB trigger `log_lesson_unlock_change` records each unlock/revoke into
- * admin_activity_log for the audit trail — nothing extra to wire here.
+ * admin_activity_log for the audit trail - nothing extra to wire here.
  */
 export default function AdminLessonAccess() {
   const qc = useQueryClient();

@@ -12,13 +12,13 @@ interface Props {
   folder?: string;
   /** Show a square preview instead of a wide one. */
   rounded?: boolean;
-  /** Hide the URL text input — only show preview + Upload button. */
+  /** Hide the URL text input - only show preview + Upload button. */
   hideUrlField?: boolean;
 }
 
 /**
  * Upload an image to the public `site-media` bucket and return its URL.
- * Also accepts a manually pasted URL — useful for external CDNs.
+ * Also accepts a manually pasted URL - useful for external CDNs.
  */
 export function ImageUploader({ value, onChange, folder = "general", rounded = false, hideUrlField = false }: Props) {
   const [uploading, setUploading] = useState(false);

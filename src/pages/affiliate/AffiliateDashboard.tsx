@@ -250,7 +250,7 @@ export default function AffiliateDashboard() {
             {!payoutDetailsValid(affiliate.payout_details) && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
                 <strong>{affiliate.payout_details ? "Payout details look incomplete" : "Add your payout details"}</strong>{" "}
-                — we can't send your commission until a full account name, number and bank are on file.
+                - we can't send your commission until a full account name, number and bank are on file.
                 Add them under <em>Settings</em>. Payouts settle in USD.
               </div>
             )}
@@ -322,7 +322,7 @@ export default function AffiliateDashboard() {
 
                 {selections.length === 0 ? (
                   <Card><CardContent className="p-6 text-sm text-muted-foreground">
-                    No courses selected yet — add courses under Settings to get a link per course.
+                    No courses selected yet - add courses under Settings to get a link per course.
                   </CardContent></Card>
                 ) : selections.map((s) => (
                   <SelectionLinkCard
@@ -339,7 +339,7 @@ export default function AffiliateDashboard() {
 
               <TabsContent value="courses" className="pt-4">
                 <Card className="mb-4">
-                  <CardHeader><CardTitle className="text-base">Clicks — last 30 days</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="text-base">Clicks - last 30 days</CardTitle></CardHeader>
                   <CardContent className="h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={clicksSeries}>
@@ -369,7 +369,7 @@ export default function AffiliateDashboard() {
                             const st = statsFor(s.course_id);
                             return (
                               <TableRow key={s.id}>
-                                <TableCell>{courseById[s.course_id]?.title ?? "—"}</TableCell>
+                                <TableCell>{courseById[s.course_id]?.title ?? "-"}</TableCell>
                                 <TableCell>{st.clicks}</TableCell>
                                 <TableCell>{st.signups}</TableCell>
                                 <TableCell>{st.conversions}</TableCell>
@@ -396,7 +396,7 @@ export default function AffiliateDashboard() {
                         {referrals.map((r) => (
                           <div key={r.id} className="rounded-lg border border-border/60 p-3 space-y-1">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-sm font-medium truncate">{courseById[r.course_id]?.title ?? "—"}</p>
+                              <p className="text-sm font-medium truncate">{courseById[r.course_id]?.title ?? "-"}</p>
                               <Badge variant="secondary" className="capitalize shrink-0">{r.status}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground capitalize">
@@ -420,9 +420,9 @@ export default function AffiliateDashboard() {
                           {referrals.map((r) => (
                             <TableRow key={r.id}>
                               <TableCell>{new Date(r.created_at).toLocaleDateString()}</TableCell>
-                              <TableCell>{courseById[r.course_id]?.title ?? "—"}</TableCell>
+                              <TableCell>{courseById[r.course_id]?.title ?? "-"}</TableCell>
                               <TableCell className="font-mono text-xs">
-                                {r.user_id ? `Learner ${String(r.user_id).slice(0, 4).toUpperCase()}` : "—"}
+                                {r.user_id ? `Learner ${String(r.user_id).slice(0, 4).toUpperCase()}` : "-"}
                               </TableCell>
                               <TableCell className="capitalize">{String(r.conversion_type).replace(/_/g, " ")}</TableCell>
                               <TableCell>{money(Number(r.amount ?? 0))}</TableCell>
@@ -487,7 +487,7 @@ export default function AffiliateDashboard() {
                               <TableCell>{new Date(p.paid_at ?? p.created_at).toLocaleDateString()}</TableCell>
                               <TableCell>{money(Number(p.amount ?? 0))}</TableCell>
                               <TableCell><Badge variant="secondary" className="capitalize">{p.status}</Badge></TableCell>
-                              <TableCell className="text-muted-foreground">{p.reference ?? "—"}</TableCell>
+                              <TableCell className="text-muted-foreground">{p.reference ?? "-"}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -510,7 +510,7 @@ export default function AffiliateDashboard() {
                         defaultLandingPath(s, course),
                         s.referral_code || affiliate.code,
                       );
-                      const brief = `${course?.title ?? "Silicon Edge course"} — job-ready training from Silicon Edge Consulting. Live cohorts, hands-on projects and a certificate on completion.\n\nEnrol here: ${url}`;
+                      const brief = `${course?.title ?? "Silicon Edge course"} - job-ready training from Silicon Edge Consulting. Live cohorts, hands-on projects and a certificate on completion.\n\nEnrol here: ${url}`;
                       return (
                         <div key={s.id} className="rounded-lg border border-border/60 p-4 space-y-2">
                           <p className="font-medium text-sm">{course?.title}</p>
@@ -632,7 +632,7 @@ function SelectionLinkCard({
       <CardContent className="space-y-3">
         {!approved && (
           <p className="text-sm text-muted-foreground">
-            Awaiting admin approval. You can already set up the link — it starts tracking once approved.
+            Awaiting admin approval. You can already set up the link - it starts tracking once approved.
           </p>
         )}
         <div className="grid gap-3 sm:grid-cols-2">

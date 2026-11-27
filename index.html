@@ -37,20 +37,20 @@
         security_storage: 'granted',
         wait_for_update: 500
       });
-      // Sentinel — gtag consumes the arguments above into its internal
+      // Sentinel - gtag consumes the arguments above into its internal
       // queue, so the Tracking QA panel can't reliably read them back
       // from window.dataLayer. We set this flag synchronously right
       // after the call so the UI can confirm defaults were registered.
       window.__gtagConsentDefaultSet = true;
-      // Disable automatic pageviews — we send them manually on every SPA
+      // Disable automatic pageviews - we send them manually on every SPA
       // route change (see src/lib/analytics.ts) so client-side navigations
       // are tracked correctly on iOS/Android in-app browsers too.
       gtag('config', 'G-XNK29YHXLT', { send_page_view: false });
-      // Google Ads conversion tracking — shares the same gtag.js runtime
+      // Google Ads conversion tracking - shares the same gtag.js runtime
       // loaded above, so no second loader script is required.
       // `allow_enhanced_conversions: true` lets us send hashed user_data
       // (email/phone) alongside conversions to recover attribution lost
-      // to ITP / in-app browsers — set per-event in src/lib/analytics.ts.
+      // to ITP / in-app browsers - set per-event in src/lib/analytics.ts.
       gtag('config', 'AW-18126380202', { allow_enhanced_conversions: true });
     </script>
 
@@ -86,15 +86,15 @@
         // iOS/Android in-app WebViews (Instagram, Facebook, TikTok,
         // LinkedIn) sometimes:
         //   1. Block the initial events.js request (slow JS engine, CSP,
-        //      tracking protection) — we retry the load once after 3s.
-        //   2. Suspend timers when the WebView is backgrounded — we
+        //      tracking protection) - we retry the load once after 3s.
+        //   2. Suspend timers when the WebView is backgrounded - we
         //      re-fire ttq.page() on `pageshow` (bfcache restore) and on
         //      `visibilitychange → visible` so abandoned sessions still
         //      report a pageview when the user returns.
         var PIXEL_ID = 'D7PTAHBC77UF8O7SC90G';
         function pixelLoaded() {
           // The base snippet's `_i[id]` is the queue array, NOT a status
-          // flag — it never gets `.loaded` set. The reliable signals are:
+          // flag - it never gets `.loaded` set. The reliable signals are:
           //  - the <script> tag for events.js is in the DOM (network OK)
           //  - or the live SDK has populated `ttq._partner`
           try {
@@ -115,7 +115,7 @@
             try { ttq.load(PIXEL_ID); ttq.page(); } catch (e) {}
           }
         }, 3000);
-        // bfcache restore (iOS Safari, Android Chrome) — fires `pageshow`
+        // bfcache restore (iOS Safari, Android Chrome) - fires `pageshow`
         // with persisted=true. Without this the pixel misses pageviews
         // when users swipe back into the app.
         w.addEventListener('pageshow', function (ev) {
@@ -127,7 +127,7 @@
             try { ttq.page(); } catch (e) {}
           }
         });
-        // QA log — visible in DevTools console. Helps confirm whether the
+        // QA log - visible in DevTools console. Helps confirm whether the
         // Pixel Helper "not detected" warning is caused by an ad-blocker.
         setTimeout(function () {
           try {
@@ -168,7 +168,7 @@
           try { fbq('track', 'PageView'); } catch (e) {}
         }
       });
-      // QA log — tells you whether the SDK actually downloaded (Pixel
+      // QA log - tells you whether the SDK actually downloaded (Pixel
       // Helper extension reports "no pixel" when fbevents.js is blocked,
       // even though the beacon may still fire to /tr).
       setTimeout(function () {
@@ -278,7 +278,7 @@
     <div id="root">
       <noscript>
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 40px auto; padding: 24px; line-height: 1.6; color: #1e293b;">
-          <h1>Silicon Edge Consulting — Job-Ready Tech Training</h1>
+          <h1>Silicon Edge Consulting - Job-Ready Tech Training</h1>
           <p>Silicon Edge Consulting delivers live, instructor-led training programs, real-world capstone projects, and career mentorship in Cloud Engineering (AWS, Azure, Google Cloud), DevOps, AI/ML, Cybersecurity, and Data Engineering.</p>
           <h2>Explore Our Training Programs</h2>
           <ul>

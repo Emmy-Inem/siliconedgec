@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 /**
- * Tracking QA dashboard — confirms UTM + analytics events fire on every
+ * Tracking QA dashboard - confirms UTM + analytics events fire on every
  * route change and that they map to the right fields. Pulls the last 200
  * lead_sources rows and breaks them down by:
  *  - event volume per form_type (last 24h)
@@ -88,7 +88,7 @@ export default function AdminTrackingQA() {
     ...adminReportRefresh,
   });
 
-  // TikTok Pixel runtime status — re-checked every 2s for up to ~10s so we
+  // TikTok Pixel runtime status - re-checked every 2s for up to ~10s so we
   // catch the SDK transition from "stub" → "loaded".
   const [ttStatus, setTtStatus] = useState<TikTokPixelStatus>(() => getTikTokPixelStatus());
   const [metaStatus, setMetaStatus] = useState<MetaPixelStatus>(() => getMetaPixelStatus());
@@ -104,7 +104,7 @@ export default function AdminTrackingQA() {
     return () => clearInterval(id);
   }, []);
 
-  // Live event_id feed — subscribes to the in-memory ring buffer in
+  // Live event_id feed - subscribes to the in-memory ring buffer in
   // analytics.ts so admins can visually confirm a conversion fired with
   // the right event_id (which is what server-side Conversions API will
   // dedup against).
@@ -281,17 +281,17 @@ export default function AdminTrackingQA() {
           <ChecklistRow ok={ttStatus.in_app_browser === null}
             label="Standard browser (not in-app WebView)"
             hint={ttStatus.in_app_browser
-              ? `Detected ${ttStatus.in_app_browser} in-app browser — attribution may be limited; verify CompletePayment fires.`
+              ? `Detected ${ttStatus.in_app_browser} in-app browser - attribution may be limited; verify CompletePayment fires.`
               : "Open the site from inside Instagram/Facebook to test in-app coverage."}
             warnInsteadOfFail />
         </ul>
         <div className="mt-3 rounded-md bg-muted/40 p-2 text-[10px] font-mono break-all text-muted-foreground">
-          UA: {ttStatus.user_agent || "—"}
+          UA: {ttStatus.user_agent || "-"}
         </div>
         <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
           <p className="font-medium text-foreground">Manual verification steps:</p>
           <ol className="list-decimal pl-4 space-y-0.5">
-            <li>Install the <span className="font-mono">TikTok Pixel Helper</span> Chrome extension and open the site — should show pixel <span className="font-mono">{ttStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
+            <li>Install the <span className="font-mono">TikTok Pixel Helper</span> Chrome extension and open the site - should show pixel <span className="font-mono">{ttStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
             <li>Open DevTools → Network → filter <span className="font-mono">tiktok</span>. You should see <span className="font-mono">events.js</span> (script) and <span className="font-mono">/api/v2/pixel</span> (POST 200).</li>
             <li>Trigger conversions in this order and confirm each beacon: <span className="font-mono">AddToCart</span> (Enroll Now) → <span className="font-mono">InitiateCheckout</span> (cart) → <span className="font-mono">CompletePayment</span> (after Paystack) → <span className="font-mono">Download</span> (certificate).</li>
             <li>In TikTok Ads Manager → Events Manager, set the pixel to <span className="font-mono">Test Event</span> mode and confirm events appear within ~30s.</li>
@@ -321,22 +321,22 @@ export default function AdminTrackingQA() {
             label="<noscript> fallback present in DOM"
             hint={noscriptOk
               ? "Crawlers and JS-disabled browsers will still hit /tr?id=802223455823137&ev=PageView&noscript=1 on every route (SPA shell is index.html)."
-              : "Could not find the <noscript> <img> tag for the Meta pixel — check index.html <body>."} />
+              : "Could not find the <noscript> <img> tag for the Meta pixel - check index.html <body>."} />
           <ChecklistRow ok={metaStatus.in_app_browser === null}
             label="Standard browser (not in-app WebView)"
             hint={metaStatus.in_app_browser
-              ? `Detected ${metaStatus.in_app_browser} in-app browser — verify Purchase fires; Conversions API recommended.`
+              ? `Detected ${metaStatus.in_app_browser} in-app browser - verify Purchase fires; Conversions API recommended.`
               : "Open the site from inside Instagram/Facebook to test in-app coverage."}
             warnInsteadOfFail />
         </ul>
         <div className="mt-4 pt-3 border-t text-[11px] text-muted-foreground space-y-1">
           <p className="font-medium text-foreground">Manual verification steps:</p>
           <ol className="list-decimal pl-4 space-y-0.5">
-            <li>Install the <span className="font-mono">Meta Pixel Helper</span> Chrome extension and open the site — should show pixel <span className="font-mono">{metaStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
+            <li>Install the <span className="font-mono">Meta Pixel Helper</span> Chrome extension and open the site - should show pixel <span className="font-mono">{metaStatus.pixel_id}</span> with a <span className="font-mono">PageView</span> event.</li>
             <li>Open DevTools → Network → filter <span className="font-mono">facebook.com/tr</span>. Each event fires a GET to <span className="font-mono">/tr</span> with <span className="font-mono">id={metaStatus.pixel_id}</span>.</li>
             <li>Trigger conversions and confirm in Meta Events Manager → Test Events: <span className="font-mono">AddToCart</span> → <span className="font-mono">InitiateCheckout</span> → <span className="font-mono">Purchase</span> (after Paystack) → <span className="font-mono">DownloadCertificate</span> (custom).</li>
             <li>SPA route check: navigate Home → Courses → Pricing; each route should fire a fresh <span className="font-mono">PageView</span>.</li>
-            <li>bfcache + visibility: tab away and return — <span className="font-mono">PageView</span> should re-fire (covers iOS in-app browser sleep).</li>
+            <li>bfcache + visibility: tab away and return - <span className="font-mono">PageView</span> should re-fire (covers iOS in-app browser sleep).</li>
           </ol>
         </div>
       </Card>
@@ -368,7 +368,7 @@ export default function AdminTrackingQA() {
                 warnInsteadOfFail
                 label={`Conversion labels configured (${filled}/${total})`}
                 hint={allOk
-                  ? "Every event sends to its own labelled action — bidding can use these signals."
+                  ? "Every event sends to its own labelled action - bidding can use these signals."
                   : `${total - filled} event(s) still send at account level. That's fine for diagnostics, but Google Ads needs labelled actions to optimise bidding. Paste labels in the form below.`} />
             );
           })()}
@@ -412,9 +412,9 @@ export default function AdminTrackingQA() {
           <ol className="list-decimal pl-4 space-y-0.5">
             <li>In Google Ads → <span className="font-mono">Tools → Conversions</span>, create a conversion action for each row above (or import GA4 key events).</li>
             <li>Open the action → "Tag setup" → "Use Google tag" → copy the value after <span className="font-mono">/</span> in <span className="font-mono">send_to: 'AW-…/LABEL'</span>.</li>
-            <li>Paste each label into the inputs above and click <span className="font-mono">Save labels</span> — they hydrate on every page load via <span className="font-mono">GadsLabelsLoader</span>.</li>
+            <li>Paste each label into the inputs above and click <span className="font-mono">Save labels</span> - they hydrate on every page load via <span className="font-mono">GadsLabelsLoader</span>.</li>
             <li>In <span className="font-mono">GA4 → Admin → Events</span>, mark these as <span className="font-mono">key events</span>: <span className="font-mono">purchase, sign_up, generate_lead, begin_checkout, add_to_cart</span>. They&apos;re already being sent by <span className="font-mono">googleAdsConversion()</span> with full UTM attribution.</li>
-            <li>Enable <span className="font-mono">Enhanced conversions</span> on the action and choose "Google tag" — hashed email + phone are already being sent via <span className="font-mono">setGoogleAdsUserData()</span>.</li>
+            <li>Enable <span className="font-mono">Enhanced conversions</span> on the action and choose "Google tag" - hashed email + phone are already being sent via <span className="font-mono">setGoogleAdsUserData()</span>.</li>
             <li>Use the <span className="font-mono">Google Tag Assistant</span> Chrome extension to confirm <span className="font-mono">conversion</span> events fire on this site with the right account.</li>
             <li>SPA route check: navigate Home → Courses → Pricing; gtag pageviews fire from <span className="font-mono">gaPageview()</span> (analytics.ts) on every route change.</li>
           </ol>
@@ -487,7 +487,7 @@ export default function AdminTrackingQA() {
                 try {
                   const id = await fireEnhancedConversionsTest({ email: testEmail, phone: testPhone });
                   setLastTestId(id);
-                  toast({ title: "Test conversion fired", description: `event_id ${id} — check Google Ads diagnostics in ~1 min.` });
+                  toast({ title: "Test conversion fired", description: `event_id ${id} - check Google Ads diagnostics in ~1 min.` });
                 } catch (e: any) {
                   toast({ title: "Test failed", description: e?.message ?? "Try again", variant: "destructive" });
                 } finally { setTestFiring(false); }
@@ -568,16 +568,16 @@ export default function AdminTrackingQA() {
               {rows.slice(0, 60).map((r) => {
                 const health = classifyHealth(r);
                 const utmBits = [r.utm_source, r.utm_medium, r.utm_campaign].filter(Boolean).join(" / ");
-                const fdKeys = r.form_data ? Object.keys(r.form_data).slice(0, 4).join(", ") : "—";
+                const fdKeys = r.form_data ? Object.keys(r.form_data).slice(0, 4).join(", ") : "-";
                 return (
                   <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30">
                     <td className="py-2 pr-3"><HealthIcon status={health} /></td>
                     <td className="py-2 pr-3 font-mono whitespace-nowrap">
                       {format(new Date(r.created_at), "MMM dd HH:mm:ss")}
                     </td>
-                    <td className="py-2 pr-3 font-mono">{r.form_type ?? "—"}</td>
-                    <td className="py-2 pr-3 truncate max-w-[180px]">{r.landing_page ?? "—"}</td>
-                    <td className="py-2 pr-3 truncate max-w-[180px] text-muted-foreground">{utmBits || "—"}</td>
+                    <td className="py-2 pr-3 font-mono">{r.form_type ?? "-"}</td>
+                    <td className="py-2 pr-3 truncate max-w-[180px]">{r.landing_page ?? "-"}</td>
+                    <td className="py-2 pr-3 truncate max-w-[180px] text-muted-foreground">{utmBits || "-"}</td>
                     <td className="py-2 pr-3 font-mono text-muted-foreground truncate max-w-[220px]">{fdKeys}</td>
                   </tr>
                 );

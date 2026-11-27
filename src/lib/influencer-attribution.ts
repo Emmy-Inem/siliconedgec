@@ -40,7 +40,7 @@ export async function resolveInfluencerPromoFromUtm(): Promise<{
 
 /**
  * Record a conversion in influencer_referrals. Idempotent thanks to the
- * (user_id, course_id, conversion_type) unique index — duplicates are ignored.
+ * (user_id, course_id, conversion_type) unique index - duplicates are ignored.
  */
 export async function recordInfluencerConversion(opts: {
   userId: string;
@@ -65,7 +65,7 @@ export async function recordInfluencerConversion(opts: {
   if (!promoId && !utm.utm_source && !utm.utm_campaign && !utm.utm_content) return;
 
   // SECURITY: Referral rows (with financial fields) are written exclusively
-  // server-side — by the auto_record_influencer_referral / _order triggers on
+  // server-side - by the auto_record_influencer_referral / _order triggers on
   // the registrations and orders tables, and by paystack-verify / paystack-
   // cart-verify edge functions using the service role. Clients are no longer
   // permitted to INSERT into influencer_referrals so that users cannot

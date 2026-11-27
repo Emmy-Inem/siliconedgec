@@ -69,7 +69,7 @@ export default function AdminCohortMetrics() {
           label: c.cohort_number ? `Cohort ${c.cohort_number}` : "",
           name: c.name,
           status: c.status,
-          course: courseTitle.get(c.course_id) ?? "—",
+          course: courseTitle.get(c.course_id) ?? "-",
           members: roster.length,
           avgProgress,
           completionRate,

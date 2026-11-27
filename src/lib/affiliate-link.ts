@@ -8,7 +8,7 @@ export function landingOptions(course?: { slug?: string | null; id?: string } | 
   const opts: LandingOption[] = [];
   if (slug) {
     opts.push({ value: `/courses/${slug}`, label: "Course page (recommended)" });
-    opts.push({ value: `/courses/${slug}?enrol=1`, label: "Course page — open checkout" });
+    opts.push({ value: `/courses/${slug}?enrol=1`, label: "Course page - open checkout" });
   }
   opts.push({ value: "/courses", label: "All courses" });
   opts.push({ value: "/pricing", label: "Pricing page" });

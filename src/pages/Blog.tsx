@@ -61,7 +61,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title={activeCategory ? `${activeCategory} Articles — Blog` : "Blog — Tech Career Insights & Tutorials"}
+        title={activeCategory ? `${activeCategory} Articles - Blog` : "Blog - Tech Career Insights & Tutorials"}
         description="Practical cloud computing, Azure and DevOps training guides for UK learners and global teams, from Silicon Edge Consulting."
         canonical={siteUrl(activeCategory ? `/blog?category=${encodeURIComponent(activeCategory)}` : "/blog")}
         jsonLd={jsonLd}

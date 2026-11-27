@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
  *
  * Each role dashboard is a full-page experience with its own chrome (header,
  * sidebar, footer), so they are embedded as same-origin frames rather than
- * re-mounted inline — that keeps every dashboard pixel-identical to what the
+ * re-mounted inline - that keeps every dashboard pixel-identical to what the
  * role actually sees, with no duplicated layout or data logic.
  */
 function DashboardFrame({ title, src }: { title: string; src: string }) {

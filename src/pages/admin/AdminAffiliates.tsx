@@ -298,7 +298,7 @@ export default function AdminAffiliates() {
                     <TableCell className="font-medium">{affiliateName(p.affiliate_id)}</TableCell>
                     <TableCell>{money(Number(p.amount ?? 0))}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : "—"}
+                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : "-"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={p.status === "paid" ? "default" : "secondary"} className="capitalize">
@@ -330,7 +330,7 @@ export default function AdminAffiliates() {
 
       <Dialog open={!!payoutFor} onOpenChange={(o) => !o && setPayoutFor(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Record payout — {payoutFor?.full_name}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Record payout - {payoutFor?.full_name}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="po-amount">Amount (USD)</Label>

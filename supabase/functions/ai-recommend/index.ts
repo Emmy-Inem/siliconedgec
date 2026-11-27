@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const notStarted = (enrolls ?? []).find((e: any) => !e.is_completed && (e.progress_percentage ?? 0) === 0);
     const myLiveClass = (live ?? []).find((l: any) => enrolledIds.has(l.course_id));
 
-    // Deterministic decision — no AI hallucinations about courses that don't exist.
+    // Deterministic decision - no AI hallucinations about courses that don't exist.
     let deterministic: any = null;
     if (myLiveClass) {
       const when = new Date(myLiveClass.scheduled_at);
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(deterministic), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // No enrollments — ask AI for a single explore suggestion from REAL catalog only.
+    // No enrollments - ask AI for a single explore suggestion from REAL catalog only.
     const catalog = (allCourses ?? []).filter((c: any) => !enrolledIds.has(c.id));
     if (catalog.length === 0) {
       return new Response(JSON.stringify({ headline: "Explore the catalog", message: "Find a course that matches your goals.", cta_label: "Browse courses", cta_href: "/courses", kind: "explore" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
     const validSlugs = new Set(catalog.map((c: any) => c.slug));
     if (!rec || !rec.cta_href || !rec.cta_href.startsWith("/courses/") || !validSlugs.has(rec.cta_href.replace("/courses/", "").replace("/learn", ""))) {
       const pick: any = catalog[0];
-      rec = { headline: "Recommended for you", message: `${pick.title} — a great place to start in ${pick.category}.`, cta_label: "View course", cta_href: `/courses/${pick.slug}`, kind: "next_course" };
+      rec = { headline: "Recommended for you", message: `${pick.title} - a great place to start in ${pick.category}.`, cta_label: "View course", cta_href: `/courses/${pick.slug}`, kind: "next_course" };
     }
     return new Response(JSON.stringify(rec), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {

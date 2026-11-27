@@ -79,7 +79,7 @@ export default function VerifyCertificate() {
                     </div>
                     <div>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">Course</dt>
-                      <dd className="font-semibold mt-1">{data.course?.title ?? "—"}</dd>
+                      <dd className="font-semibold mt-1">{data.course?.title ?? "-"}</dd>
                     </div>
                     <div>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">Issued</dt>

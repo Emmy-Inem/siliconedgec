@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// X (Twitter) inline SVG — Lucide doesn't ship the new X mark.
+// X (Twitter) inline SVG - Lucide doesn't ship the new X mark.
 const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
     <path d="M18.244 2H21l-6.52 7.45L22 22h-6.84l-4.78-6.24L4.8 22H2.04l6.97-7.96L2 2h6.96l4.32 5.71L18.244 2Zm-2.4 18h1.86L7.27 4H5.3l10.544 16Z" />

@@ -19,7 +19,7 @@ const NotFound = () => {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
 
-  /** Cover-page search fallback — when a user hits a dead URL we let them
+  /** Cover-page search fallback - when a user hits a dead URL we let them
    *  type a term and bounce them to /courses?q=… so they don't dead-end. */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ const NotFound = () => {
     setSlow(false);
     setGone(null);
 
-    // Fallback if the lookup is slow — show base 404 UI rather than a blocking spinner
+    // Fallback if the lookup is slow - show base 404 UI rather than a blocking spinner
     const slowTimer = window.setTimeout(() => { if (active) setSlow(true); }, LOOKUP_TIMEOUT_MS);
 
     (async () => {
@@ -48,7 +48,7 @@ const NotFound = () => {
         if (!active) return;
         setGone((data as unknown as GoneRow | null) ?? null);
       } catch {
-        // Network/RLS hiccup — treat as plain 404
+        // Network/RLS hiccup - treat as plain 404
         if (active) setGone(null);
       } finally {
         if (active) {
@@ -78,10 +78,10 @@ const NotFound = () => {
   return (
     <>
       <Helmet>
-        <title>{`${code} — ${title} | Silicon Edge Consulting`}</title>
+        <title>{`${code} - ${title} | Silicon Edge Consulting`}</title>
         <meta name="robots" content="noindex, nofollow, noarchive" />
         <meta name="googlebot" content="noindex, nofollow, noarchive" />
-        <meta property="og:title" content={`${code} — ${title}`} />
+        <meta property="og:title" content={`${code} - ${title}`} />
         <meta property="og:description" content={message} />
         <meta name="description" content={message} />
       </Helmet>

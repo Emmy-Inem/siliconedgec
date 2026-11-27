@@ -8,7 +8,7 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 interface CourseOpt { id: string; title: string; cohort_only: boolean | null }
 
 /**
- * LMS Sync Health — surfaces mismatches across the four systems that must
+ * LMS Sync Health - surfaces mismatches across the four systems that must
  * agree for a learner to have a working course experience:
  *   1. enrollments (paid / granted)
  *   2. cohort_members (for cohort-only courses)
@@ -110,8 +110,8 @@ export default function AdminLmsSyncHealth() {
         return {
           user_id: uid,
           name: profiles.get(uid)?.full_name || "(unknown)",
-          payment_status: enrol?.payment_status ?? "—",
-          access_source: enrol?.access_source ?? "—",
+          payment_status: enrol?.payment_status ?? "-",
+          access_source: enrol?.access_source ?? "-",
           in_cohort: inCohort,
           progress: progressCounts.get(uid) ?? { total: 0, done: 0 },
           submissions: submissionCounts.get(uid) ?? { total: 0, graded: 0 },
@@ -178,13 +178,13 @@ export default function AdminLmsSyncHealth() {
                     <td className="px-3 py-2 font-medium">{r.name}</td>
                     <td className="px-3 py-2">
                       <div>{r.payment_status}</div>
-                      {r.access_source !== "—" && (
+                      {r.access_source !== "-" && (
                         <div className="text-xs text-muted-foreground">via {r.access_source}</div>
                       )}
                     </td>
                     <td className="px-3 py-2">{r.in_cohort ? "Yes" : "No"}</td>
-                    <td className="px-3 py-2 tabular-nums">{r.progress.done}/{r.progress.total || "—"}</td>
-                    <td className="px-3 py-2 tabular-nums">{r.submissions.graded}/{r.submissions.total || "—"}</td>
+                    <td className="px-3 py-2 tabular-nums">{r.progress.done}/{r.progress.total || "-"}</td>
+                    <td className="px-3 py-2 tabular-nums">{r.submissions.graded}/{r.submissions.total || "-"}</td>
                     <td className="px-3 py-2">
                       {r.flags.length === 0 ? (
                         <span className="inline-flex items-center gap-1 text-emerald-600 text-xs">

@@ -11,7 +11,7 @@ type Content = Tables<"site_content">;
 
 const columns: Column<Content>[] = [
   { key: "key", label: "Key", render: (c) => <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">{c.key}</span> },
-  { key: "value", label: "Value", render: (c) => <span className="line-clamp-2 max-w-md">{c.value || "—"}</span> },
+  { key: "value", label: "Value", render: (c) => <span className="line-clamp-2 max-w-md">{c.value || "-"}</span> },
   { key: "content_type", label: "Type" },
   { key: "updated_at", label: "Updated", render: (c) => new Date(c.updated_at).toLocaleDateString() },
 ];

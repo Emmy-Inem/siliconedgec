@@ -4,7 +4,7 @@
 
 export const BRAND = {
   name: "Silicon Edge Consulting",
-  tagline: "Job-Ready Tech Training — AI · Cloud · DevOps",
+  tagline: "Job-Ready Tech Training - AI · Cloud · DevOps",
   site: "https://siliconedgec.com",
   logo:
     "https://sdddxnjlgjjaoayyraxn.supabase.co/storage/v1/object/public/site-media/email%2Flogo-light.png",

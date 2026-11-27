@@ -6,9 +6,9 @@ const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 // Regression: anonymous (and any non-admin authenticated) clients MUST NOT be
 // able to INSERT into influencer_referrals. The only SELECT policy is admin-
-// scoped, and there is intentionally no public INSERT policy — referral rows
+// scoped, and there is intentionally no public INSERT policy - referral rows
 // are created server-side by triggers and the Paystack edge functions only.
-describe("RLS — influencer_referrals INSERT is forbidden for clients", () => {
+describe("RLS - influencer_referrals INSERT is forbidden for clients", () => {
   it("rejects anonymous inserts of fabricated commission rows", async () => {
     if (!URL || !KEY) return; // skip in environments without env vars
     const supa = createClient(URL, KEY);

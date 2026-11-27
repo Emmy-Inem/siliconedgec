@@ -72,7 +72,7 @@ export default function AdminLiveClasses() {
     const detected = detectProvider(form.meeting_url);
     if (!form.meeting_url || form.meeting_provider === "other") return null;
     if (!detected) return `This doesn't look like a ${form.meeting_provider.replace("_", " ")} link.`;
-    if (detected !== form.meeting_provider) return `URL looks like ${detected.replace("_", " ")} — switch the provider above to match.`;
+    if (detected !== form.meeting_provider) return `URL looks like ${detected.replace("_", " ")} - switch the provider above to match.`;
     return null;
   })();
 
@@ -158,7 +158,7 @@ export default function AdminLiveClasses() {
     },
     onError: (e: any) => toast({
       title: "Save failed",
-      description: e?.message || e?.details || e?.hint || "Unknown error — please try again.",
+      description: e?.message || e?.details || e?.hint || "Unknown error - please try again.",
       variant: "destructive",
     }),
   });

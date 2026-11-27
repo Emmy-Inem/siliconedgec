@@ -38,7 +38,7 @@ export function LessonApprovalPanel({ courseId, currentLessonId, nextLessonId }:
     setLoading(true);
     // 1. Determine the roster of students eligible for this course.
     //    For cohort-based courses (e.g. the Bootcamp), only cohort members
-    //    are actual students — plain `enrollments` may contain comp/free
+    //    are actual students - plain `enrollments` may contain comp/free
     //    access rows we do not want to surface here. Fall back to
     //    `enrollments` (paid) for regular self-paced courses.
     const { data: cohorts } = await db
@@ -160,7 +160,7 @@ export function LessonApprovalPanel({ courseId, currentLessonId, nextLessonId }:
         )}
       </div>
       {!nextLessonId ? (
-        <p className="text-xs text-muted-foreground">This is the final lesson — no approvals needed.</p>
+        <p className="text-xs text-muted-foreground">This is the final lesson - no approvals needed.</p>
       ) : (
         <>
           <div className="relative mb-3">

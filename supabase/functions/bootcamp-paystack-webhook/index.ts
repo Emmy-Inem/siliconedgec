@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     enrollment = data;
   }
   if (!enrollment) {
-    // Retry later — Paystack will replay.
+    // Retry later - Paystack will replay.
     return new Response("enrollment not found", { status: 500, headers: corsHeaders });
   }
 
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
 
   // On completion: unlock the linked course (if any) via existing enrollments table.
   // The payment/installment record above is already durably saved and this
-  // event is already marked processed, so wrap the rest in try/catch — a bug
+  // event is already marked processed, so wrap the rest in try/catch - a bug
   // here (as previously happened with an undefined template variable) must
   // not surface as a 500, since a Paystack retry would just hit the
   // idempotency check and silently re-skip this notification forever.

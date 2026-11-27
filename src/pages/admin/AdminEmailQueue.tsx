@@ -109,7 +109,7 @@ export default function AdminEmailQueue() {
         {queues.map((q) => (
           <Card key={q.queue} className="p-4">
             <p className="text-xs text-muted-foreground">{QUEUE_LABELS[q.queue] ?? q.queue}</p>
-            <p className="text-2xl font-semibold">{q.length ?? "—"}</p>
+            <p className="text-2xl font-semibold">{q.length ?? "-"}</p>
             <p className="text-xs text-muted-foreground mt-1">
               {q.oldest_at ? `Oldest ${new Date(q.oldest_at).toLocaleString()}` : "Empty"}
             </p>
@@ -128,7 +128,7 @@ export default function AdminEmailQueue() {
                   <span className="font-medium">{e.recipient_email}</span>
                   <span className="text-xs text-muted-foreground">retries: {e.retry_count}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 break-all">ID {e.message_id ?? "—"}</p>
+                <p className="text-xs text-muted-foreground mt-1 break-all">ID {e.message_id ?? "-"}</p>
                 <p className="text-xs text-destructive mt-1">{e.error_message}</p>
               </div>
             ))}
@@ -178,9 +178,9 @@ export default function AdminEmailQueue() {
                   <td className="p-3 whitespace-nowrap text-muted-foreground">
                     {new Date(r.created_at).toLocaleString()}
                   </td>
-                  <td className="p-3">{r.template_name ?? "—"}</td>
+                  <td className="p-3">{r.template_name ?? "-"}</td>
                   <td className="p-3">{r.recipient_email}</td>
-                  <td className="p-3 text-xs break-all max-w-[12rem]">{r.message_id ?? "—"}</td>
+                  <td className="p-3 text-xs break-all max-w-[12rem]">{r.message_id ?? "-"}</td>
                   <td className="p-3">
                     <Badge variant="outline" className={STATUS_STYLES[r.status] ?? ""}>{r.status}</Badge>
                   </td>

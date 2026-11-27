@@ -65,7 +65,7 @@ export default function AdminOrders() {
     },
   });
 
-  // Audit trail — verify + refund events from admin_activity_log
+  // Audit trail - verify + refund events from admin_activity_log
   const { data: auditLog = [], isLoading: auditLoading } = useQuery({
     queryKey: ["admin-orders-audit"],
     queryFn: async () => {
@@ -80,7 +80,7 @@ export default function AdminOrders() {
     },
   });
 
-  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
+  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "-";
   const profileName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? "Guest";
   const referralFor = (orderId: string) => orderReferrals.find((r: any) => r.order_id === orderId);
 
@@ -373,7 +373,7 @@ export default function AdminOrders() {
                   <TableBody>
                     {auditLog.map((a: any) => {
                       const d = a.details ?? {};
-                      const ref = d.reference ?? d.cart_reference ?? d.paystack_reference ?? "—";
+                      const ref = d.reference ?? d.cart_reference ?? d.paystack_reference ?? "-";
                       const amt = Number(d.amount ?? d.cart_total ?? 0);
                       return (
                         <TableRow key={a.id}>
@@ -382,20 +382,20 @@ export default function AdminOrders() {
                             <Badge variant={a.action === "refund" ? "destructive" : "default"} className="capitalize text-[10px]">{a.action}</Badge>
                           </TableCell>
                           <TableCell className="font-mono text-xs">
-                            {ref !== "—" ? (
+                            {ref !== "-" ? (
                               <Link to={`/verify-receipt/${encodeURIComponent(ref)}`} className="hover:text-primary inline-flex items-center gap-1">
                                 {ref}<ExternalLink className="h-3 w-3 opacity-50" />
                               </Link>
-                            ) : "—"}
+                            ) : "-"}
                           </TableCell>
                           <TableCell>
                             {d.checkout_type && (
                               <Badge variant="outline" className="capitalize text-[10px]">{d.checkout_type}</Badge>
                             )}
                           </TableCell>
-                          <TableCell className="font-medium text-sm">{amt ? formatNaira(amt) : "—"}</TableCell>
+                          <TableCell className="font-medium text-sm">{amt ? formatNaira(amt) : "-"}</TableCell>
                           <TableCell className="text-sm">{profileName(a.admin_user_id)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[220px] truncate">{d.gateway_response ?? "—"}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[220px] truncate">{d.gateway_response ?? "-"}</TableCell>
                         </TableRow>
                       );
                     })}

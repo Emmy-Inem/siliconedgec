@@ -108,7 +108,7 @@ export default function AdminQuizAttempts() {
                   return (
                     <tr key={a.id} className="border-b border-border last:border-0 hover:bg-muted/30">
                       <td className="px-4 py-3">{a.profile_name}</td>
-                      <td className="px-4 py-3">{(a.quizzes as any)?.title || "—"}</td>
+                      <td className="px-4 py-3">{(a.quizzes as any)?.title || "-"}</td>
                       <td className="px-4 py-3 font-medium">{a.score}%</td>
                       <td className="px-4 py-3"><Badge variant={passed ? "default" : "destructive"}>{passed ? "Passed" : "Failed"}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{format(new Date(a.completed_at), "MMM d, yyyy")}</td>

@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminRole = async (userId: string) => {
     try {
-      // Single query against user_roles — pull every role for the user, then
+      // Single query against user_roles - pull every role for the user, then
       // pick the highest-priority one via ROLE_RANK.
       const { data, error } = await supabase
         .from("user_roles")
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  // isAdmin = "any staff role" — gates entry to /admin. The route-level
+  // isAdmin = "any staff role" - gates entry to /admin. The route-level
   // canAccessRoute guard in AdminLayout then narrows what each role sees.
   const isAdmin = adminRole !== null;
 

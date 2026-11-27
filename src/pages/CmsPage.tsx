@@ -95,7 +95,7 @@ export default function CmsPagePublic() {
           </div>
         ) : page && (
           <>
-            {/* Hero — matches Business / Certificates pattern */}
+            {/* Hero - matches Business / Certificates pattern */}
             <section className="relative overflow-hidden bg-white pt-28 pb-20 border-b border-border/40">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_55%)]" />
               <div

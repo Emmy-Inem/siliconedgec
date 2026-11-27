@@ -123,7 +123,7 @@ function isBoilerplateQuote(quote?: string | null): boolean {
     normalized.length === 0 ||
     normalized.includes("i started at stage zero") ||
     normalized.includes("build up enough knowledge and skills to transition into a well-paying career") ||
-    quote.includes("—")
+    quote.includes("-")
   );
 }
 
@@ -178,10 +178,10 @@ export function normalizeTestimonials<
     const isDuplicateOrBoilerplate =
       isBoilerplateQuote(row.quote) || (rawQuoteKey.length > 0 && seenQuotes.has(rawQuoteKey));
 
-    const finalQuote = (isDuplicateOrBoilerplate ? seed.quote : row.quote).replace(/\s*—\s*/g, ", ");
+    const finalQuote = (isDuplicateOrBoilerplate ? seed.quote : row.quote).replace(/\s*-\s*/g, ", ");
     seenQuotes.add(finalQuote.trim().toLowerCase());
 
-    const finalRole = (isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role)).replace(/\s*—\s*/g, " - ");
+    const finalRole = (isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role)).replace(/\s*-\s*/g, " - ");
     const finalAvatar =
       row.avatar_url && row.avatar_url.trim().length > 0
         ? row.avatar_url
@@ -246,8 +246,8 @@ export function syncAuthoritativeTestimonials(): Promise<void> {
           return supabase
             .from("testimonials")
             .update({
-              quote: isBoilerplateQuote(row.quote) ? seed.quote : row.quote.replace(/\s*—\s*/g, ", "),
-              role: isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role).replace(/\s*—\s*/g, " - "),
+              quote: isBoilerplateQuote(row.quote) ? seed.quote : row.quote.replace(/\s*-\s*/g, ", "),
+              role: isBoilerplateRole(row.role) ? seed.role : (row.role ?? seed.role).replace(/\s*-\s*/g, " - "),
             })
             .eq("id", row.id);
         })

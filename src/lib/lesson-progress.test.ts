@@ -35,7 +35,7 @@ describe("lesson unlock progression", () => {
   });
 
   it("does NOT unlock later lessons from out-of-order completions", () => {
-    // User somehow marks l3 done without l2 — l3/l4 must still be locked.
+    // User somehow marks l3 done without l2 - l3/l4 must still be locked.
     const ctx = { lessons, completed: new Set(["l1", "l3"]), hasPaid: true };
     expect(isLessonUnlocked("l2", ctx)).toBe(true);
     expect(isLessonUnlocked("l3", ctx)).toBe(false);
@@ -58,7 +58,7 @@ describe("lesson unlock progression", () => {
   });
 
   it("findResumeLesson ignores out-of-order completions", () => {
-    // l3 is done but l2 isn't — resume should still be l2.
+    // l3 is done but l2 isn't - resume should still be l2.
     const ctx = { lessons, completed: new Set(["l1", "l3"]), hasPaid: true };
     expect(findResumeLesson(ctx)?.id).toBe("l2");
   });

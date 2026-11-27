@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
           title: "Confirm your subscription",
           preheader: "One click and you're on the list.",
           bodyHtml: textToHtml(
-            "Thanks for signing up for the Silicon Edge Consulting newsletter — career tips, new cohorts, and job-ready training updates in AI, Cloud and DevOps.\n\nConfirm your email address to start receiving it.",
+            "Thanks for signing up for the Silicon Edge Consulting newsletter - career tips, new cohorts, and job-ready training updates in AI, Cloud and DevOps.\n\nConfirm your email address to start receiving it.",
           ),
           cta: { label: "Confirm subscription", url: confirmUrl },
           footerNote: "If you didn't request this, you can safely ignore this email.",

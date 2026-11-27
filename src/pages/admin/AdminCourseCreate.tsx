@@ -537,7 +537,7 @@ export default function AdminCourseCreate() {
           <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
             className="bg-card rounded-2xl border border-border p-4 sm:p-6 space-y-5">
 
-          {/* ───────────── STEP 1 — BASICS ───────────── */}
+          {/* ───────────── STEP 1 - BASICS ───────────── */}
           {step === 0 && (
             <>
               <div>
@@ -547,7 +547,7 @@ export default function AdminCourseCreate() {
 
               <div>
                 <label className="text-sm font-medium block mb-1">Course Title *</label>
-                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className={inputClass} placeholder="e.g. Cloud Engineering Accelerator — 4-Week Hands-On Bootcamp" />
+                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className={inputClass} placeholder="e.g. Cloud Engineering Accelerator - 4-Week Hands-On Bootcamp" />
               </div>
 
               <div>
@@ -630,7 +630,7 @@ export default function AdminCourseCreate() {
                   <div>
                     <label className="text-sm font-semibold flex items-center gap-1.5">
                       <span>Course Pricing</span>
-                      <span className="text-xs font-normal text-muted-foreground">— set or edit price directly</span>
+                      <span className="text-xs font-normal text-muted-foreground">- set or edit price directly</span>
                     </label>
                   </div>
                   {form.price > 0 && (
@@ -713,7 +713,7 @@ export default function AdminCourseCreate() {
             </>
           )}
 
-          {/* ───────────── STEP 2 — CURRICULUM ───────────── */}
+          {/* ───────────── STEP 2 - CURRICULUM ───────────── */}
           {step === 1 && (
             <>
               {courseId ? (
@@ -726,7 +726,7 @@ export default function AdminCourseCreate() {
             </>
           )}
 
-          {/* ───────────── STEP 3 — ADDITIONAL ───────────── */}
+          {/* ───────────── STEP 3 - ADDITIONAL ───────────── */}
           {step === 2 && (
             <>
               <div>

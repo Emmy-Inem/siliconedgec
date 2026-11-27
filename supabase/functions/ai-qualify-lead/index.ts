@@ -87,7 +87,7 @@ Return ONLY JSON: {"score": number 1-100, "tier": "hot"|"warm"|"cold", "rational
     let result: { score?: number; tier?: string; rationale?: string; next_step?: string } = {};
     try { result = JSON.parse(raw); } catch { result = {}; }
 
-    const stamp = `\n\n[AI qualify · ${new Date().toISOString().slice(0, 10)}] ${result.score ?? "?"}/100 (${result.tier ?? "?"}). ${result.rationale ?? ""} Next: ${result.next_step ?? "—"}`.trim();
+    const stamp = `\n\n[AI qualify · ${new Date().toISOString().slice(0, 10)}] ${result.score ?? "?"}/100 (${result.tier ?? "?"}). ${result.rationale ?? ""} Next: ${result.next_step ?? "-"}`.trim();
     await admin.from("business_leads")
       .update({ internal_notes: ((lead.internal_notes ?? "") + stamp).slice(0, 8000) })
       .eq("id", leadId);

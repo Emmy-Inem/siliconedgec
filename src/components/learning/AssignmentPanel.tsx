@@ -75,7 +75,7 @@ export function AssignmentPanel({ lessonId, onSubmitted }: { lessonId: string; o
     const safeName = file.name.replace(/[^\w.\-]+/g, "_");
     // RLS on assignment-submissions requires the object key to start with the
     // uploader's own auth uid (storage.foldername(name)[1] = auth.uid()::text).
-    // Path is unique per timestamp so upsert isn't needed — omitting it also
+    // Path is unique per timestamp so upsert isn't needed - omitting it also
     // avoids the UPDATE-policy branch that would otherwise be required.
     const path = `${user.id}/${a.id}-${Date.now()}-${safeName}`;
     const { error } = await supabase.storage

@@ -52,7 +52,7 @@ export function CareerCoachCard({ jobId }: { jobId?: string }) {
                   <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Top matches</p>
                   <ul className="space-y-1.5">
                     {result.matched_jobs.slice(0, 3).map((j, i) => (
-                      <li key={i} className="text-sm"><span className="font-semibold">{j.title}</span> — <span className="text-muted-foreground">{j.fit_reason}</span></li>
+                      <li key={i} className="text-sm"><span className="font-semibold">{j.title}</span> - <span className="text-muted-foreground">{j.fit_reason}</span></li>
                     ))}
                   </ul>
                 </div>
@@ -62,7 +62,7 @@ export function CareerCoachCard({ jobId }: { jobId?: string }) {
                   <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Skill gaps to close</p>
                   <ul className="space-y-1.5">
                     {result.skill_gaps.slice(0, 3).map((g, i) => (
-                      <li key={i} className="text-sm"><span className="font-semibold">{g.skill}</span> — <span className="text-muted-foreground">{g.why}</span></li>
+                      <li key={i} className="text-sm"><span className="font-semibold">{g.skill}</span> - <span className="text-muted-foreground">{g.why}</span></li>
                     ))}
                   </ul>
                 </div>

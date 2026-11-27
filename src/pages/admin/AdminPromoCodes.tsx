@@ -48,7 +48,7 @@ const columns: Column<PromoCode>[] = [
   { key: "usage_count", label: "Used", render: (p) => `${p.usage_count}${p.max_uses ? ` / ${p.max_uses}` : ""}` },
   { key: "revenue_generated", label: "Revenue", render: (p) => `₦${Number(p.revenue_generated || 0).toLocaleString()}` },
   { key: "is_active", label: "Status", render: (p) => <Badge variant={p.is_active ? "default" : "secondary"}>{p.is_active ? "Active" : "Inactive"}</Badge> },
-  { key: "expires_at", label: "Expires", render: (p) => p.expires_at ? new Date(p.expires_at).toLocaleDateString() : "—" },
+  { key: "expires_at", label: "Expires", render: (p) => p.expires_at ? new Date(p.expires_at).toLocaleDateString() : "-" },
 ];
 
 export default function AdminPromoCodes() {

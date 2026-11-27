@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 /**
  * Fetch every row from a table in batches, working around Supabase's
  * default 1000-row PostgREST cap. We page by `created_at` ordering with
- * `range()` until a short page returns. Use sparingly — only call for
+ * `range()` until a short page returns. Use sparingly - only call for
  * admin-side analytics where we genuinely need all rows.
  */
 export async function fetchAllRows<T = any>(

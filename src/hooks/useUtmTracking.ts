@@ -39,7 +39,7 @@ function getWithExpiry(key: string): UtmParams | null {
 
 /**
  * Read UTM params with legacy-key fallback. Older flows (RedirectInfluencer)
- * wrote into "utm_attribution" with a different shape — merge those in too so
+ * wrote into "utm_attribution" with a different shape - merge those in too so
  * influencer attribution survives across the app.
  */
 export function getStoredUtmParams(): UtmParams {
@@ -74,7 +74,7 @@ export function useUtmTracking() {
     const hashSearch = hashQueryStart >= 0 ? hash.slice(hashQueryStart + 1) : hash;
     const hashParams = new URLSearchParams(hashSearch);
     const params = new URLSearchParams();
-    // Hash first, then real query overrides — query is the canonical source.
+    // Hash first, then real query overrides - query is the canonical source.
     hashParams.forEach((v, k) => params.set(k, v));
     queryParams.forEach((v, k) => params.set(k, v));
 

@@ -47,7 +47,7 @@ export function QuizAIGenerator({ onAccept, defaultTopic = "" }: Props) {
       }));
       if (qs.length === 0) throw new Error("No questions returned");
       setQuestions(qs);
-      toast({ title: `Generated ${qs.length} questions — review and save` });
+      toast({ title: `Generated ${qs.length} questions - review and save` });
     } catch (e: any) {
       toast({ title: "Generation failed", description: e.message, variant: "destructive" });
     } finally {
@@ -109,7 +109,7 @@ export function QuizAIGenerator({ onAccept, defaultTopic = "" }: Props) {
       {questions.length > 0 && (
         <div className="space-y-3 border-t border-border pt-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Preview ({questions.length} questions) — edit before saving</p>
+            <p className="text-sm font-medium">Preview ({questions.length} questions) - edit before saving</p>
             <Button size="sm" onClick={() => onAccept(questions)}>
               <Check className="h-3 w-3 mr-1" /> Use these questions
             </Button>

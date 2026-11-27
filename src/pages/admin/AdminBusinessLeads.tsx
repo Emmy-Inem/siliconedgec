@@ -204,7 +204,7 @@ export default function AdminBusinessLeads() {
                 </div>
                 {aiResult && (
                   <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
-                    <p className="font-semibold">{aiResult.score ?? "?"}/100 · <span className="capitalize">{aiResult.tier ?? "—"}</span></p>
+                    <p className="font-semibold">{aiResult.score ?? "?"}/100 · <span className="capitalize">{aiResult.tier ?? "-"}</span></p>
                     {aiResult.rationale && <p className="text-muted-foreground">{aiResult.rationale}</p>}
                     {aiResult.next_step && <p><strong>Next:</strong> {aiResult.next_step}</p>}
                   </div>

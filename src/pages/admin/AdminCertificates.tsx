@@ -33,8 +33,8 @@ export default function AdminCertificates() {
     queryFn: async () => (await supabase.from("profiles").select("user_id, full_name")).data ?? [],
   });
 
-  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "—";
-  const profileName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? "—";
+  const courseTitle = (id: string) => courses.find((c: any) => c.id === id)?.title ?? "-";
+  const profileName = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? "-";
 
   const revoke = useMutation({
     mutationFn: async (id: string) => {

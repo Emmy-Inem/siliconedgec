@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getCompareAtPrice, getPercentOff } from "@/lib/course-pricing";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
@@ -105,7 +106,7 @@ export default function CourseDetail() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Real cohort instructor (Fauziyah for the Azure bootcamp, etc.) — always
+  // Real cohort instructor (Fauziyah for the Azure bootcamp, etc.) - always
   // wins over the placeholder row on the `instructors` table.
   const { data: cohortInstructors = [] } = useQuery({
     queryKey: ["course-cohort-instructors", courseId],
@@ -327,7 +328,7 @@ export default function CourseDetail() {
   const isLessonUnlocked = (lessonId: string): boolean => {
     if (isAdmin) return true;
     if (!hasPaidAccess) return false;
-    // Single source of truth — a lesson_unlocks row means "granted".
+    // Single source of truth - a lesson_unlocks row means "granted".
     if (unlockedIds.has(lessonId)) return true;
     // Sequential fallback for legacy students without any unlock rows yet:
     // first lesson is always open, everything else needs the previous one done.
@@ -522,7 +523,7 @@ export default function CourseDetail() {
     if (!user) { requestSignup("cart"); return; }
     if (courseId) {
       addToCart(courseId);
-      // TikTok intent signal — fires on the "Enroll Now / Add to cart" CTA.
+      // TikTok intent signal - fires on the "Enroll Now / Add to cart" CTA.
       tikTokEvent("AddToCart", {
         content_id: courseId,
         content_name: course?.title,
@@ -609,7 +610,8 @@ export default function CourseDetail() {
   const isEnrolled = !!enrollment || (isFreeWebinar && !!webinarReg);
   const bookmarked = isBookmarked(course.id);
   const inCart = isInCart(course.id);
-  const originalPrice = Math.round(course.price * 1.2);
+  const originalPrice = getCompareAtPrice(course as any);
+  const percentOff = getPercentOff(course as any);
   const hours = Math.floor(course.duration_hours);
   const minutes = Math.round((course.duration_hours - hours) * 60);
   const canOpenStudentArea = isEnrolled || (!!user && isAdmin);
@@ -617,7 +619,7 @@ export default function CourseDetail() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={`${course.title} — Silicon Edge`}
+        title={`${course.title} - Silicon Edge`}
         description={(course.description ?? `Master ${course.title} with live, instructor-led training.`).slice(0, 155)}
         image={course.thumbnail_url ?? undefined}
         type="website"
@@ -938,10 +940,15 @@ export default function CourseDetail() {
                     <span className="font-heading text-3xl md:text-4xl font-bold text-foreground">
                       {formatPrice(course.price)}
                     </span>
-                    {course.price > 0 && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {formatPrice(originalPrice)}
-                      </span>
+                    {originalPrice && (
+                      <>
+                        <span className="text-sm text-muted-foreground line-through">
+                          {formatPrice(originalPrice)}
+                        </span>
+                        <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
+                          {percentOff}% OFF
+                        </span>
+                      </>
                     )}
                   </div>
 
@@ -965,7 +972,7 @@ export default function CourseDetail() {
                           </Link>
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
-                          ✓ You're enrolled — {enrollment?.progress_percentage ?? 0}% complete
+                          ✓ You're enrolled - {enrollment?.progress_percentage ?? 0}% complete
                         </p>
                         <div className="pt-2 mt-2 border-t">
                           <div className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-2 flex items-center gap-1.5">

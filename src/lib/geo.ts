@@ -2,9 +2,9 @@
  * Lightweight, key-less visitor geo lookup.
  *
  * Resolution order:
- *   1. ipapi.co — gives us city + region + country (best signal)
- *   2. ipwho.is — secondary provider, also returns city/region
- *   3. Cloudflare /cdn-cgi/trace — country only, but rarely blocked
+ *   1. ipapi.co - gives us city + region + country (best signal)
+ *   2. ipwho.is - secondary provider, also returns city/region
+ *   3. Cloudflare /cdn-cgi/trace - country only, but rarely blocked
  *
  * Successful lookups are cached in localStorage with a 24h TTL so we make
  * one network call per visitor per day across tabs. A failed/unknown lookup
@@ -56,7 +56,7 @@ async function fromCloudflare(): Promise<VisitorGeo | null> {
     const res = await fetch("https://www.cloudflare.com/cdn-cgi/trace", {
       method: "GET",
       cache: "no-store",
-      // Don't send credentials — keeps the call lightweight and ITP-safe.
+      // Don't send credentials - keeps the call lightweight and ITP-safe.
       credentials: "omit",
     });
     if (!res.ok) return null;
@@ -142,7 +142,7 @@ export async function getVisitorGeo(): Promise<VisitorGeo | null> {
   }
 }
 
-/** Synchronous read of cached geo — use after `getVisitorGeo()` has resolved once. */
+/** Synchronous read of cached geo - use after `getVisitorGeo()` has resolved once. */
 export function getCachedVisitorGeo(): VisitorGeo | null {
   return readCache();
 }

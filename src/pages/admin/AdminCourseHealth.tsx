@@ -54,7 +54,7 @@ export default function AdminCourseHealth() {
     return Object.entries(counts).map(([id, v]) => ({
       id, ...v,
       rate: v.total ? (v.completed / v.total) * 100 : 0,
-      courseTitle: courses.find((c: any) => c.id === v.courseId)?.title ?? "—",
+      courseTitle: courses.find((c: any) => c.id === v.courseId)?.title ?? "-",
     })).filter((x) => x.total >= 3).sort((a, b) => a.rate - b.rate).slice(0, 15);
   }, [progress, lessons, modules, courses]);
 

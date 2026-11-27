@@ -73,7 +73,7 @@ export function InfluencerSignupPrompt() {
 
   if (!payload) return null;
   const name = payload.influencer?.trim() || "a Silicon Edge partner";
-  // Destination to return to after auth — the page they landed on (or the
+  // Destination to return to after auth - the page they landed on (or the
   // value stashed by RedirectInfluencer).
   let dest = "";
   try {
@@ -91,7 +91,7 @@ export function InfluencerSignupPrompt() {
         <DialogHeader>
           <Star className="h-6 w-6 text-foreground mx-auto mb-2" />
           <DialogTitle className="text-center">
-            Welcome — invited by {name}
+            Welcome - invited by {name}
           </DialogTitle>
           <DialogDescription className="text-center">
             Create a free Silicon Edge Consulting account to enroll in courses,

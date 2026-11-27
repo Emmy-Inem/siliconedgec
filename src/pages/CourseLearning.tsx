@@ -77,7 +77,7 @@ export default function CourseLearning() {
 
       // Assignment-type lessons are surfaced only via the /assignments page
       // (and the AssignmentPanel component). Do NOT include them in the
-      // sequential lesson list, sidebar, or prev/next navigation — they would
+      // sequential lesson list, sidebar, or prev/next navigation - they would
       // otherwise render a duplicate video/"Mark as Complete" viewer here.
       const nonAssignmentLessons = (lessons ?? []).filter(
         (l) => (l.content_type ?? "video") !== "assignment",
@@ -304,7 +304,7 @@ export default function CourseLearning() {
     if (publicAccess) return true;
     if (!user) return false;
     if (hasAdminAccess) return true;
-    // RPC is server-authoritative — trust it even when the local enrollment
+    // RPC is server-authoritative - trust it even when the local enrollment
     // row hasn't loaded yet (e.g. cohort_only courses where access comes
     // from cohort_members rather than an enrollment row).
     if (rpcAccess === true) return true;
